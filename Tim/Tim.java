@@ -20,7 +20,7 @@ public class Tim extends PircBot {
 	them in one place between checkins
 	 */
 	public String autonick = "Timmy";
-	public static String[] autochannels = {"#nanowrimo"};
+	public static String[] autochannels = {"#bottest"};
 	public static String autoserver = "irc.kydance.net";
 
 	/* private static String dbserver = "192.168.2.51";
@@ -630,9 +630,6 @@ public class Tim extends PircBot {
 						if (war.remaining > 0) {
 							war.remaining--;
 							switch ((int) war.remaining) {
-								default:
-									// do nothing
-									break;
 								case 60:
 								case 5:
 								case 4:
@@ -643,6 +640,12 @@ public class Tim extends PircBot {
 									break;
 								case 0:
 									this.endWar(war);
+								default:
+									if (( (int) war.remaining ) % 300 == 0) {
+										this.warEndCount(war);
+									}
+									// do nothing
+									break;
 							}
 						}
 					}
@@ -655,13 +658,20 @@ public class Tim extends PircBot {
 
 	private void warStartCount(WordWar war) {
 		this.sendMessage(war.getChannel(), war.getName() + ": Starting in "
-										   + ( ( war.remaining == 60 ) ? "one minute" : war.remaining + " seconds" ));
+										   + ( ( war.time_to_start == 60 ) ? "one minute" : war.time_to_start + " seconds" ));
 	}
 
 	private void warEndCount(WordWar war) {
-		this.sendMessage(war.getChannel(), war.getName() + ": "
-										   + ( ( war.remaining == 60 ) ? "one minute" : war.remaining + " seconds" )
-										   + " remaining!");
+		if (war.remaining < 60) {
+			this.sendMessage(war.getChannel(), war.getName() + ": "
+											   + war.remaining + ( ( war.remaining == 1 ) ? " second" : " seconds" )
+											   + " remaining!");
+		} else {
+			int remaining = (int) war.remaining / 60;
+			this.sendMessage(war.getChannel(), war.getName() + ": " + remaining
+											   + ( ( remaining == 1 ) ? " minute" : " minutes" )
+											   + " remaining!");
+		}
 	}
 
 	private void beginWar(WordWar war) {
