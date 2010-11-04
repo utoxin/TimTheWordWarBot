@@ -87,6 +87,7 @@ public class Tim extends PircBot {
 
 		}
 	}
+
 	private static String[] fridgeColours = {
 		"avocado green", "powder blue", "pale yellow", "sienna", "crimson", "lime green", "fushia",
 		"orangeish yellow", "neon pink", "topaz", "tope", "silver", "anguish", "teal", "aqua", "purple",
@@ -174,7 +175,7 @@ public class Tim extends PircBot {
 			this.doCommand(channel, sender, "@", message);
 		}
 		// Other fun stuff we can make him do
-		if (message.toLowerCase().contains("hello") && message.toLowerCase().contains(this.getNick())) {
+		if (message.toLowerCase().contains("hello") && message.toLowerCase().contains(this.getNick().toLowerCase())) {
 			this.sendMessage(channel, "Hello " + sender);
 		}
 		if (message.toLowerCase().startsWith("how many lights")) {
@@ -261,9 +262,9 @@ public class Tim extends PircBot {
 					}
 				}
 				boolean plural = warscount >= 2 || warscount == 0;
-				message += " There " + ((plural) ? "are" : "is") + " " + warscount
-						+ " war" + ((plural) ? "s" : "") + " currently "
-						+ "running in this channel" + ((warscount > 0) ? (": " + winfo) : ".");
+				message += " There " + ( ( plural ) ? "are" : "is" ) + " " + warscount
+						   + " war" + ( ( plural ) ? "s" : "" ) + " currently "
+						   + "running in this channel" + ( ( warscount > 0 ) ? ( ": " + winfo ) : "." );
 			}
 			this.sendDelayedMessage(channel, message, 1600);
 		}
@@ -307,7 +308,7 @@ public class Tim extends PircBot {
 					}
 				}
 				this.sendMessage(channel, sender + ": your timer has been set.");
-				this.sendDelayedNotice(sender, "Your timer has expired!", (int) (time * 60 * 1000));
+				this.sendDelayedNotice(sender, "Your timer has expired!", (int) ( time * 60 * 1000 ));
 			} else if (command.equals("settopic")) {
 				if (args != null && args.length > 0) {
 					String topic = args[0];
@@ -344,8 +345,8 @@ public class Tim extends PircBot {
 			} // add additional commands above here!!
 			else if (command.equals("help")) {
 				String str = "I am a robot trained by the WordWar Monks of Honolulu. You have "
-						+ "never heard of them. It is because they are awesome. I am capable "
-						+ "of running the following commands:";
+							 + "never heard of them. It is because they are awesome. I am capable "
+							 + "of running the following commands:";
 				this.sendMessage(channel, str);
 				str = "!startwar <duration> <time to start> <an optional name> - Starts a word war";
 				this.sendMessage(channel, str);
@@ -384,7 +385,7 @@ public class Tim extends PircBot {
 		} else if (prefix.equals("@")) {
 			long wordcount;
 			try {
-				wordcount = (long) (Double.parseDouble(command));
+				wordcount = (long) ( Double.parseDouble(command) );
 				for (Map.Entry<String, WordWar> wm : this.wars.entrySet()) {
 					this.sendMessage(channel, wm.getKey());
 				}
@@ -403,8 +404,8 @@ public class Tim extends PircBot {
 		String target = sender;
 		if (args != null && args.length > 0) {
 			if (!args[0].equalsIgnoreCase(this.getNick()) && !args[0].equalsIgnoreCase("himself")
-					&& !args[0].equalsIgnoreCase("herself") && !args[0].equalsIgnoreCase("Utoxin")
-					&& !args[0].equalsIgnoreCase("myst")) {
+				&& !args[0].equalsIgnoreCase("herself") && !args[0].equalsIgnoreCase("Utoxin")
+				&& !args[0].equalsIgnoreCase("myst")) {
 				target = "";
 				for (int i = 0; i < args.length; i++) {
 					target += args[i] + " ";
@@ -496,14 +497,14 @@ public class Tim extends PircBot {
 		long to_start = 5000;
 		String warname = "";
 		try {
-			time = (long) (Double.parseDouble(args[0]) * 60);
+			time = (long) ( Double.parseDouble(args[0]) * 60 );
 		} catch (Exception e) {
 			this.sendMessage(channel, sender + ": could not understand the duration parameter. Was it numeric?");
 			return;
 		}
 		if (args.length >= 2) {
 			try {
-				to_start = (long) (Double.parseDouble(args[1]) * 60);
+				to_start = (long) ( Double.parseDouble(args[1]) * 60 );
 			} catch (Exception e) {
 				this.sendMessage(channel, sender + ": could not understand the time to start parameter. Was it numeric?");
 				return;
@@ -571,7 +572,7 @@ public class Tim extends PircBot {
 			this.wars.put(war.getName().toLowerCase(), war);
 			this.sendMessage(channel, sender + ": your judged wordwar will start in " + to_start / 60 + " minutes.");
 			this.sendAction(channel, "To join " + sender + "'s wordwar, type: '!joinwar <your current word count> "
-					+ war.getName() + "' and start when I say go.");
+									 + war.getName() + "' and start when I say go.");
 		} else {
 			this.sendMessage(channel, sender + ": there is already a war with the name '" + warname + "'");
 		}
@@ -582,12 +583,12 @@ public class Tim extends PircBot {
 	}
 
 	private void listWars(String channel, String sender, String[] args, boolean all) {
-		String target = (args != null) ? sender : channel;
+		String target = ( args != null ) ? sender : channel;
 		if (this.wars != null && this.wars.size() > 0) {
 			for (Map.Entry<String, WordWar> wm : this.wars.entrySet()) {
 				if (all || wm.getValue().getChannel().equalsIgnoreCase(channel)) {
-					this.sendMessage(target, (all) ? wm.getValue().getDescriptionWithChannel()
-							: wm.getValue().getDescription());
+					this.sendMessage(target, ( all ) ? wm.getValue().getDescriptionWithChannel()
+											 : wm.getValue().getDescription());
 				}
 			}
 		} else {
@@ -609,6 +610,19 @@ public class Tim extends PircBot {
 					war = this.wars.get(itr.next());
 					if (war.time_to_start > 0) {
 						war.time_to_start--;
+						switch ((int) war.time_to_start) {
+							case 30:
+							case 15:
+							case 5:
+							case 4:
+							case 3:
+							case 2:
+							case 1:
+								this.warStartCount(war);
+								break;
+							default:
+								break;
+						}
 						if (war.time_to_start == 0) {
 							this.beginWar(war);
 						}
@@ -639,17 +653,22 @@ public class Tim extends PircBot {
 		}
 	}
 
+	private void warStartCount(WordWar war) {
+		this.sendMessage(war.getChannel(), war.getName() + ": Starting in "
+										   + ( ( war.remaining == 60 ) ? "one minute" : war.remaining + " seconds" ));
+	}
+
 	private void warEndCount(WordWar war) {
 		this.sendMessage(war.getChannel(), war.getName() + ": "
-				+ ((war.remaining == 60) ? "one minute" : war.remaining + " seconds")
-				+ " remaining!");
+										   + ( ( war.remaining == 60 ) ? "one minute" : war.remaining + " seconds" )
+										   + " remaining!");
 	}
 
 	private void beginWar(WordWar war) {
 		this.sendMessage(war.getChannel(), "WordWar: '" + war.getName() + " 'starts now! (" + war.getDuration() / 60 + " minutes)");
 		if (war.isManaged()) {
 			String[] users = null;
-			users = (String[]) (war.getParticipants().toArray(users));
+			users = (String[]) ( war.getParticipants().toArray(users) );
 			for (int i = 0; i < users.length; i++) {
 				this.sendMessage(users[i], "'" + war.getName() + "' has started! Write like mad!");
 			}
@@ -660,10 +679,10 @@ public class Tim extends PircBot {
 		this.sendMessage(war.getChannel(), "WordWar: '" + war.getName() + "' is over!");
 		if (war.isManaged()) {
 			String[] users = null;
-			users = (String[]) (war.getParticipants().toArray());
+			users = (String[]) ( war.getParticipants().toArray() );
 			for (int i = 0; i < users.length; i++) {
 				this.sendMessage(users[i], "'" + war.getName() + "' is over. Please tell me your new word counts by typing: "
-						+ "'!checkin <current word count> '" + war.getName() + "'");
+										   + "'!checkin <current word count> '" + war.getName() + "'");
 			}
 		} else {
 			this.wars.remove(war.getName().toLowerCase());
