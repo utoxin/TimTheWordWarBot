@@ -18,9 +18,10 @@
         <channel>#example</channel>
     </channels>
     <nicks>
-        <nick>Timmy</nick>
-        <nick>TimTheBot</nick>
-        <nick>ThereAreThoseWhoCallMeTim</nick>
+        <nick>
+            <name>Timmy</name>
+            <pass>Password</pass>
+        </nick>
     </nicks>
     <admins>
         <admin>AdminUser</admin>

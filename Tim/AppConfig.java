@@ -34,6 +34,7 @@ public class AppConfig extends XMLConfiguration {
         try {
             load();
         } catch (ConfigurationException configEx) {
+            configEx.printStackTrace();
         }
     }
 

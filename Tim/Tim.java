@@ -185,7 +185,7 @@ public class Tim extends PircBot {
         }
         // Other fun stuff we can make him do
         if (message.toLowerCase().contains("hello") && message.toLowerCase().contains(this.getNick().toLowerCase())) {
-            this.sendMessage(channel, "Hello " + sender);
+            this.sendMessage(channel, "Hi, " + sender + "!");
         }
         if (message.toLowerCase().startsWith("how many lights")) {
             this.sendMessage(channel, "There are FOUR LIGHTS!");
@@ -257,7 +257,7 @@ public class Tim extends PircBot {
     @Override
     public void onJoin(String channel, String sender, String login, String hostname) {
         if (!sender.equals(this.getName()) && !login.equals(this.getLogin())) {
-            String message = "Hello " + sender + "!";
+            String message = "Hello, " + sender + "!";
             if (this.wars.size() > 0) {
                 int warscount = 0;
                 String winfo = "";
