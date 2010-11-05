@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : BotConfig.xml
+    Created on : November 5, 2010, 10:19 AM
+    Author     : mwalker
+    Description:
+        Config file for Timmy the word sprint bot.
+
+        channels are the channels he auto-joins on connect
+        nicks is the list (in order of priority) of nicks he'll try to use
+        admins is the list of people with admin access to the bot
+-->
+
+<config>
+    <server>irc.example.net</server>
+    <channels>
+        <channel>#example</channel>
+    </channels>
+    <nicks>
+        <nick>Timmy</nick>
+        <nick>TimTheBot</nick>
+        <nick>ThereAreThoseWhoCallMeTim</nick>
+    </nicks>
+    <admins>
+        <admin>AdminUser</admin>
+    </admins>
+</config>
