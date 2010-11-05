@@ -640,6 +640,7 @@ public class Tim extends PircBot {
 									break;
 								case 0:
 									this.endWar(war);
+									break;
 								default:
 									if (( (int) war.remaining ) % 300 == 0) {
 										this.warEndCount(war);
@@ -658,7 +659,8 @@ public class Tim extends PircBot {
 
 	private void warStartCount(WordWar war) {
 		this.sendMessage(war.getChannel(), war.getName() + ": Starting in "
-										   + ( ( war.time_to_start == 60 ) ? "one minute" : war.time_to_start + " seconds" ));
+										   + ( ( war.time_to_start == 60 ) ? "one minute" : war.time_to_start + ( ( war.time_to_start == 1 ) ? " second" : " seconds" ) )
+										   + "!");
 	}
 
 	private void warEndCount(WordWar war) {
@@ -670,7 +672,7 @@ public class Tim extends PircBot {
 			int remaining = (int) war.remaining / 60;
 			this.sendMessage(war.getChannel(), war.getName() + ": " + remaining
 											   + ( ( remaining == 1 ) ? " minute" : " minutes" )
-											   + " remaining!");
+											   + " remaining.");
 		}
 	}
 
