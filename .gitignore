@@ -1,1 +1,4 @@
 BotConfig.xml
+.classpath
+.project
+*.class

@@ -117,6 +117,7 @@ public class Tim extends PircBot {
     private Random rand;
     private boolean shutdown;
 	private Collection ignore_list;
+	private Collection admin_list;
 	//public  MySQL db;
 
     public Tim() {
@@ -128,6 +129,7 @@ public class Tim extends PircBot {
         }
 
 		this.ignore_list = (Collection) Tim.config.getProperty("ignore.nick");
+		this.admin_list = (Collection) Tim.config.getProperty("admins.admin");
 
 		wars = Collections.synchronizedMap(new HashMap<String, WordWar>());
         warticker = new WarClockThread(this);
@@ -167,7 +169,7 @@ public class Tim extends PircBot {
 
     @Override
     protected void onAction(String sender, String login, String hostname, String target, String action) {
-        if (sender.equals("Utoxin")) {
+        if (this.admin_list.contains(sender)) {
             if (action.equalsIgnoreCase("punches " + this.getNick() + " in the face!")) {
                 this.sendAction(target, "falls over and dies.  x.x");
                 this.shutdown = true;
@@ -204,7 +206,7 @@ public class Tim extends PircBot {
 
     @Override
     protected void onPrivateMessage(String sender, String login, String hostname, String message) {
-        if (sender.equals("Utoxin") || sender.equals("Sue___b")) {
+        if (this.admin_list.contains(sender)) {
             String[] args = message.split(" ");
             if (args != null && args.length > 2) {
                 String msg = "";
@@ -222,7 +224,7 @@ public class Tim extends PircBot {
 
     @Override
     protected void onInvite(String targetNick, String sourceNick, String sourceLogin, String sourceHostname, String channel) {
-        if (targetNick.equals(this.getNick())) {
+        if (!this.ignore_list.contains(sourceNick) && targetNick.equals(this.getNick())) {
             String[] chanlist = this.getChannels();
             boolean isIn = false;
             for (int i = 0; i < chanlist.length; i++) {
@@ -250,7 +252,7 @@ public class Tim extends PircBot {
     @Override
     public void onNotice(String sender, String nick, String hostname, String target, String notice) {
         if (notice.contains("This nickname is registered")) {
-            this.sendMessage("NickServ", "identify PASSWORD");
+            this.sendMessage("NickServ", "identify p3nr0dp00ch");
         }
     }
 
@@ -378,7 +380,7 @@ public class Tim extends PircBot {
                 str = "I will also respond to invite commands if you would like to see me in another channel.";
                 this.sendMessage(channel, str);
             } else if (command.equals("shutdown")) {
-                if (sender.equals("Utoxin")) {
+                if (this.admin_list.contains(sender)) {
                     this.sendMessage(channel, "Shutting down...");
                     this.shutdown = true;
                     this.quitServer("I am shutting down! Bye!");
@@ -421,7 +423,7 @@ public class Tim extends PircBot {
         String target = sender;
         if (args != null && args.length > 0) {
             if (!args[0].equalsIgnoreCase(this.getNick()) && !args[0].equalsIgnoreCase("himself")
-                && !args[0].equalsIgnoreCase("herself") && !args[0].equalsIgnoreCase("Utoxin")
+                && !args[0].equalsIgnoreCase("herself") && !this.admin_list.contains(args[0])
                 && !args[0].equalsIgnoreCase("myst")) {
                 target = "";
                 for (int i = 0; i < args.length; i++) {
@@ -495,7 +497,8 @@ public class Tim extends PircBot {
                 name += " " + args[i];
             }
             if (this.wars.containsKey(name.toLowerCase())) {
-                if (sender.equalsIgnoreCase(this.wars.get(name.toLowerCase()).getStarter())) {
+                if (sender.equalsIgnoreCase(this.wars.get(name.toLowerCase()).getStarter())
+                		|| this.admin_list.contains(sender)) {
                     WordWar war = this.wars.remove(name.toLowerCase());
                     this.sendMessage(channel, "The war '" + war.getName() + "' has been ended.");
                 } else {
