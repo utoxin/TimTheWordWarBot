@@ -26,4 +26,8 @@
     <admins>
         <admin>AdminUser</admin>
     </admins>
+	<ignore>
+		<nick>TrutherWriter</nick>
+		<nick>PLACEHOLDER</nick>
+	</ignore>
 </config>
