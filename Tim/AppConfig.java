@@ -5,13 +5,15 @@ import org.apache.commons.configuration.XMLConfiguration;
 
 import java.util.Collection;
 
-public class AppConfig extends XMLConfiguration {
+public class AppConfig extends XMLConfiguration
+{
 
     private static AppConfig instance;
     private static final String configFile = "BotConfig.xml";
 
     // Singleton initialiser
-    static {
+    static
+    {
         instance = new AppConfig(configFile);
     }
 
@@ -20,7 +22,8 @@ public class AppConfig extends XMLConfiguration {
      *
      * @param fileName Configuration file name.
      */
-    private AppConfig(String fileName) {
+    private AppConfig(String fileName)
+    {
         init(fileName);
     }
 
@@ -29,11 +32,14 @@ public class AppConfig extends XMLConfiguration {
      *
      * @param fileName Configuration file name.
      */
-    private void init(String fileName) {
+    private void init(String fileName)
+    {
         setFileName(fileName);
-        try {
+        try
+        {
             load();
-        } catch (ConfigurationException configEx) {
+        } catch (ConfigurationException configEx)
+        {
             configEx.printStackTrace();
         }
     }
@@ -43,33 +49,47 @@ public class AppConfig extends XMLConfiguration {
      *
      * @return Singleton
      */
-    public static AppConfig getInstance() {
+    public static AppConfig getInstance()
+    {
         return instance;
     }
 
-    public static void main(String args[]) {
+    public static void main(String args[])
+    {
         AppConfig config = AppConfig.getInstance();
         System.out.println(config.getString("database.user-name"));
         System.out.println(config.getString("database.password"));
 
         Object obj = config.getProperty("lists.list");
-        if (obj instanceof Collection) {
-            int size = ( (Collection) obj ).size();
-            for (int i = 0; i < size; i++) {
+        if (obj instanceof Collection)
+        {
+            int size = ((Collection) obj).size();
+            for (int i = 0; i < size; i++)
+            {
                 System.out.println(config.getProperty("lists.list(" + i + ")"));
             }
-        } else if (obj instanceof String) {
-            System.out.println(config.getProperty("lists.list"));
+        } else
+        {
+            if (obj instanceof String)
+            {
+                System.out.println(config.getProperty("lists.list"));
+            }
         }
 
         obj = config.getProperty("batch-job.job.name");
-        if (obj instanceof Collection) {
-            int size = ( (Collection) obj ).size();
-            for (int i = 0; i < size; i++) {
+        if (obj instanceof Collection)
+        {
+            int size = ((Collection) obj).size();
+            for (int i = 0; i < size; i++)
+            {
                 System.out.println(config.getProperty("batch-job.job(" + i + ").name"));
             }
-        } else if (obj instanceof String) {
-            System.out.println(config.getProperty("batch-job.job.name"));
+        } else
+        {
+            if (obj instanceof String)
+            {
+                System.out.println(config.getProperty("batch-job.job.name"));
+            }
         }
     }
 }
