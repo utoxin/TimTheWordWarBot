@@ -116,7 +116,8 @@ public class Tim extends PircBot {
     private Fridge fridge;
     private Random rand;
     private boolean shutdown;
-    //public  MySQL db;
+	private Collection ignore_list;
+	//public  MySQL db;
 
     public Tim() {
         Object nicks = Tim.config.getProperty("nicks.nick");
@@ -126,7 +127,9 @@ public class Tim extends PircBot {
             this.setName((String) Tim.config.getProperty("nicks.nick"));
         }
 
-        wars = Collections.synchronizedMap(new HashMap<String, WordWar>());
+		this.ignore_list = (Collection) Tim.config.getProperty("ignore.nick");
+
+		wars = Collections.synchronizedMap(new HashMap<String, WordWar>());
         warticker = new WarClockThread(this);
         ticker = new Timer(true);
         ticker.scheduleAtFixedRate(warticker, 0, 1000);
@@ -176,23 +179,27 @@ public class Tim extends PircBot {
 
     @Override
     public void onMessage(String channel, String sender, String login, String hostname, String message) {
-        // Find all messages that start with ! and pass them to a method for further processing.
-        if (message.charAt(0) == '!') {
-            this.doCommand(channel, sender, "!", message);
-        } // Notation for wordcounts
-        else if (message.charAt(0) == '@') {
-            this.doCommand(channel, sender, "@", message);
-        }
-        // Other fun stuff we can make him do
-        if (message.toLowerCase().contains("hello") && message.toLowerCase().contains(this.getNick().toLowerCase())) {
-            this.sendMessage(channel, "Hi, " + sender + "!");
-        }
-        if (message.toLowerCase().startsWith("how many lights")) {
-            this.sendMessage(channel, "There are FOUR LIGHTS!");
-        }
-        if (message.startsWith(":(")) {
-            this.sendAction(channel, "gives " + sender + " a hug");
-        }
+		if (this.ignore_list.contains(sender)) {
+			return;
+		} else {
+			// Find all messages that start with ! and pass them to a method for further processing.
+			if (message.charAt(0) == '!') {
+				this.doCommand(channel, sender, "!", message);
+			} // Notation for wordcounts
+			else if (message.charAt(0) == '@') {
+				this.doCommand(channel, sender, "@", message);
+			}
+			// Other fun stuff we can make him do
+			if (message.toLowerCase().contains("hello") && message.toLowerCase().contains(this.getNick().toLowerCase())) {
+				this.sendMessage(channel, "Hi, " + sender + "!");
+			}
+			if (message.toLowerCase().startsWith("how many lights")) {
+				this.sendMessage(channel, "There are FOUR LIGHTS!");
+			}
+			if (message.startsWith(":(")) {
+				this.sendAction(channel, "gives " + sender + " a hug");
+			}
+		}
     }
 
     @Override
@@ -282,7 +289,8 @@ public class Tim extends PircBot {
     public void doCommand(String channel, String sender, String prefix, String message) {
         String command;
         String[] args = null;
-        int space = message.indexOf(" ");
+
+		int space = message.indexOf(" ");
         if (space > 0) {
             command = message.substring(1, space).toLowerCase();
             args = message.substring(space + 1).split(" ", 0);
