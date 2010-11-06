@@ -136,6 +136,7 @@ public class Tim extends PircBot
     private boolean shutdown;
     private Collection ignore_list;
     private Collection admin_list;
+    private String password;
     //public  MySQL db;
 
     public Tim()
@@ -143,12 +144,14 @@ public class Tim extends PircBot
         Object nicks = Tim.config.getProperty("nicks.nick");
         if (nicks instanceof Collection)
         {
-            this.setName((String) Tim.config.getProperty("nicks.nick(0)"));
+            this.setName((String) Tim.config.getProperty("nicks.nick(0).name"));
+            this.password = (String) Tim.config.getProperty("nicks.nick(0).pass");
         } else
         {
             if (nicks instanceof String)
             {
-                this.setName((String) Tim.config.getProperty("nicks.nick"));
+                this.setName((String) Tim.config.getProperty("nicks.nick.name"));
+                this.password = (String) Tim.config.getProperty("nicks.nick.pass");
             }
         }
 
@@ -313,7 +316,7 @@ public class Tim extends PircBot
     {
         if (notice.contains("This nickname is registered"))
         {
-            this.sendMessage("NickServ", "identify p3nr0dp00ch");
+            this.sendMessage("NickServ", "identify "+this.password);
         }
     }
 
@@ -1019,14 +1022,11 @@ public class Tim extends PircBot
     {
         Tim bot = new Tim();
 
-
         // Redirect output to SOMETHING I CAN DEBUG!!
 		/*try {
         System.setOut(new java.io.PrintStream("Timmy.log.txt"));
         } catch (IOException e) {
         }*/
-
-
 
         bot.setLogin("ThereAreSomeWhoCallMeTim_Bot");
         bot.setVerbose(true);
