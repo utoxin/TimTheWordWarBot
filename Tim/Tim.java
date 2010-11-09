@@ -357,6 +357,14 @@ public class Tim extends PircBot
                         + "running in this channel" + ((warscount > 0) ? (": " + winfo) : ".");
             }
             this.sendDelayedMessage(channel, message, 1600);
+
+            if (channel.toLowerCase() == null ? "#chatnanoml" == null : channel.toLowerCase().equals("#chatnanoml")) {
+                int r = this.rand.nextInt(100);
+
+                if (r < 5) {
+                    this.sendDelayedMessage(channel, "Welcome to the Congregation of Christ Baty!", 2400);
+                }
+            }
         }
     }
 
