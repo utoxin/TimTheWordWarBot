@@ -148,11 +148,8 @@ public class Tim extends PircBot
             this.password = (String) Tim.config.getProperty("nicks.nick(0).pass");
         } else
         {
-            if (nicks instanceof String)
-            {
                 this.setName((String) Tim.config.getProperty("nicks.nick.name"));
                 this.password = (String) Tim.config.getProperty("nicks.nick.pass");
-            }
         }
 
         this.ignore_list = (Collection) Tim.config.getProperty("ignore.nick");
@@ -763,64 +760,6 @@ public class Tim extends PircBot
         }
     }
 
-    private void startJudgedWar(String channel, String sender, String[] args)
-    {
-        long time;
-        long to_start = 5000;
-        String warname = "";
-        try
-        {
-            time = Integer.parseInt(args[0]) * 60;
-        } catch (Exception e)
-        {
-            this.sendMessage(channel, sender + ": could not understand the duration parameter. Was it numeric?");
-            return;
-        }
-
-        if (args.length >= 2)
-        {
-            try
-            {
-                to_start = Integer.parseInt(args[1]) * 60;
-            } catch (Exception e)
-            {
-                this.sendMessage(channel, sender + ": could not understand the time to start parameter. Was it numeric?");
-                return;
-            }
-        }
-
-        if (args.length >= 3)
-        {
-            warname = args[2];
-            for (int i = 3; i < args.length; i++)
-            {
-                warname = warname + " " + args[i];
-            }
-        } else
-        {
-            warname = sender + "'s war";
-        }
-
-        if (to_start < 60)
-        {
-            to_start = 60;
-        }
-
-        if (!this.wars.containsKey(warname.toLowerCase()))
-        {
-            WordWar war = new WordWar(time, to_start + 1, warname, sender, channel);
-            war.setManaged();
-            war.addParticipant(sender);
-            this.wars.put(war.getName().toLowerCase(), war);
-            this.sendMessage(channel, sender + ": your judged wordwar will start in " + to_start / 60 + " minutes.");
-            this.sendAction(channel, "To join " + sender + "'s wordwar, type: '!joinwar <your current word count> "
-                    + war.getName() + "' and start when I say go.");
-        } else
-        {
-            this.sendMessage(channel, sender + ": there is already a war with the name '" + warname + "'");
-        }
-    }
-
     private void listAllWars(String channel, String sender, String[] args)
     {
         this.listWars(channel, sender, args, true);
@@ -944,38 +883,13 @@ public class Tim extends PircBot
 
     private void beginWar(WordWar war)
     {
-        this.sendMessage(war.getChannel(), "WordWar: '" + war.getName() + " 'starts now! (" + war.getDuration() / 60 + " minutes)");
-        if (war.isManaged())
-        {
-            String[] users = null;
-            users = (String[]) (war.getParticipants().toArray(users));
-            for (int i = 0; i < users.length; i++)
-            {
-                this.sendMessage(users[i], "'" + war.getName() + "' has started! Write like mad!");
-            }
-        }
+        this.sendNotice(war.getChannel(), "WordWar: '" + war.getName() + " 'starts now! (" + war.getDuration() / 60 + " minutes)");
     }
 
     private void endWar(WordWar war)
     {
-        this.sendMessage(war.getChannel(), "WordWar: '" + war.getName() + "' is over!");
-        if (war.isManaged())
-        {
-            String[] users = null;
-            users = (String[]) (war.getParticipants().toArray());
-            for (int i = 0; i < users.length; i++)
-            {
-                this.sendMessage(users[i], "'" + war.getName() + "' is over. Please tell me your new word counts by typing: "
-                        + "'!checkin <current word count> '" + war.getName() + "'");
-            }
-        } else
-        {
-            this.wars.remove(war.getName().toLowerCase());
-            /*
-            Noisy
-            this.sendMessage(war.getChannel(), war.getName() + ", unmanaged war is removed.");
-             */
-        }
+        this.sendNotice(war.getChannel(), "WordWar: '" + war.getName() + "' is over!");
+        this.wars.remove(war.getName().toLowerCase());
     }
 
     private void useBackupNick()
