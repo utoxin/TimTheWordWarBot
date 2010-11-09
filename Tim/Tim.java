@@ -125,11 +125,11 @@ public class Tim extends PircBot
         "Get me a drink and ask again", "Indubidably", "What, you never just want to say hi?", "Never in your wildest dreams",
         "Only in your wildest dreams", "HAHAHAHAHAHAHAHAhahahaaa...  haahaaa...  phew...  Oh yeah, totally do it.",
         "You're joking!", "What even is that?", "Penguins", "Ninjas", "Zombies", "Pirates", "Robots",
-        "Throw a fridge at something",
+        "Throw a fridge at something", "The power of Baty compels you!", "Christ Baty wills it."
     };
     private static String[] greetings =
     {
-        "Welcome to the Congregation of Christ Baty!",
+        "Welcome to the Congregation of Christ Baty!", "Have you backed up your novel today?"
     };
     private static String[] commandments =
     {
@@ -364,15 +364,12 @@ public class Tim extends PircBot
             }
             this.sendDelayedMessage(channel, message, 1600);
 
-            if (channel.toLowerCase().equals("#chatnanoml"))
-            {
-                int r = this.rand.nextInt(100);
+            int r = this.rand.nextInt(100);
 
-                if (r < 5)
-                {
-                    r = this.rand.nextInt(Tim.greetings.length - 1);
-                    this.sendDelayedMessage(channel, Tim.greetings[r], 2400);
-                }
+            if (r < 5)
+            {
+                r = this.rand.nextInt(Tim.greetings.length - 1);
+                this.sendDelayedMessage(channel, Tim.greetings[r], 2400);
             }
         }
     }
