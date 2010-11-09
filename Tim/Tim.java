@@ -106,6 +106,7 @@ public class Tim extends PircBot
 
         }
     }
+
     private static String[] fridgeColours =
     {
         "avocado green", "powder blue", "pale yellow", "sienna", "crimson", "lime green", "fushia",
@@ -125,6 +126,20 @@ public class Tim extends PircBot
         "Only in your wildest dreams", "HAHAHAHAHAHAHAHAhahahaaa...  haahaaa...  phew...  Oh yeah, totally do it.",
         "You're joking!", "What even is that?", "Penguins", "Ninjas", "Zombies", "Pirates", "Robots",
         "Throw a fridge at something",
+    };
+    private static String[] greetings =
+    {
+        "Welcome to the Congregation of Christ Baty!",
+    };
+    private static String[] commandments =
+    {
+        "1. Thou shalt not edit during the Holy Month.", "2. Thou shalt offer up at least 1,667 words to the altar of Christ Baty.", 
+        "3. Keep thou holy the first and last days of the Holy Month, which is Novemeber.",
+        "4. Take not the name of Christ Baty in vain, unless it doth provide thee with greater word count, which is good.",
+        "5. Worry not about the quality of thy words, for Christ Baty cares not. Quantity is that which pleases Baty.",
+        "6. Thou must tell others of the way of the truth, by leading by example in your region.",
+        "7. <<WRITE THIS LATER>>", "8. <<WRITE THIS LATER>>", "9. <<WRITE THIS LATER>>", "10. <<WRITE THIS LATER>>",
+        "11. Thou shalt back up thy novel often, for it is displeasing in the eyes of Baty that you should lose it.",
     };
     //	private Wrimo[] wrimos;
     private Map<String, WordWar> wars;
@@ -148,8 +163,8 @@ public class Tim extends PircBot
             this.password = (String) Tim.config.getProperty("nicks.nick(0).pass");
         } else
         {
-                this.setName((String) Tim.config.getProperty("nicks.nick.name"));
-                this.password = (String) Tim.config.getProperty("nicks.nick.pass");
+            this.setName((String) Tim.config.getProperty("nicks.nick.name"));
+            this.password = (String) Tim.config.getProperty("nicks.nick.pass");
         }
 
         this.ignore_list = (Collection) Tim.config.getProperty("ignore.nick");
@@ -223,12 +238,9 @@ public class Tim extends PircBot
             {
                 this.doCommand(channel, sender, "!", message);
             } // Notation for wordcounts
-            else
+            else if (message.charAt(0) == '@')
             {
-                if (message.charAt(0) == '@')
-                {
-                    this.doCommand(channel, sender, "@", message);
-                }
+                this.doCommand(channel, sender, "@", message);
             }
             // Other fun stuff we can make him do
             if (message.toLowerCase().contains("hello") && message.toLowerCase().contains(this.getNick().toLowerCase()))
@@ -262,12 +274,9 @@ public class Tim extends PircBot
                 if (args[0].equalsIgnoreCase("say"))
                 {
                     this.sendMessage(args[1], msg);
-                } else
+                } else if (args[0].equalsIgnoreCase("act"))
                 {
-                    if (args[0].equalsIgnoreCase("act"))
-                    {
-                        this.sendAction(args[1], msg);
-                    }
+                    this.sendAction(args[1], msg);
                 }
             }
         }
@@ -313,7 +322,7 @@ public class Tim extends PircBot
     {
         if (notice.contains("This nickname is registered"))
         {
-            this.sendMessage("NickServ", "identify "+this.password);
+            this.sendMessage("NickServ", "identify " + this.password);
         }
     }
 
@@ -349,17 +358,20 @@ public class Tim extends PircBot
                     }
                 }
                 boolean plural = warscount >= 2 || warscount == 0;
-                message += " There " + ((plural) ? "are" : "is") + " " + warscount
-                        + " war" + ((plural) ? "s" : "") + " currently "
-                        + "running in this channel" + ((warscount > 0) ? (": " + winfo) : ".");
+                message += " There " + ( ( plural ) ? "are" : "is" ) + " " + warscount
+                           + " war" + ( ( plural ) ? "s" : "" ) + " currently "
+                           + "running in this channel" + ( ( warscount > 0 ) ? ( ": " + winfo ) : "." );
             }
             this.sendDelayedMessage(channel, message, 1600);
 
-            if (channel.toLowerCase() == null ? "#chatnanoml" == null : channel.toLowerCase().equals("#chatnanoml")) {
+            if (channel.toLowerCase().equals("#chatnanoml"))
+            {
                 int r = this.rand.nextInt(100);
 
-                if (r < 5) {
-                    this.sendDelayedMessage(channel, "Welcome to the Congregation of Christ Baty!", 2400);
+                if (r < 5)
+                {
+                    r = this.rand.nextInt(Tim.greetings.length - 1);
+                    this.sendDelayedMessage(channel, Tim.greetings[r], 2400);
                 }
             }
         }
@@ -390,182 +402,131 @@ public class Tim extends PircBot
                 {
                     this.sendMessage(channel, "Use: !startwar <duration in min> [<time to start in min> [<name>]]");
                 }
-            } else
+            } else if (command.equals("startjudgedwar"))
             {
-                if (command.equals("startjudgedwar"))
+                this.sendMessage(channel, "Not done yet, sorry!");
+            } else if (command.equals("joinwar"))
+            {
+                this.sendMessage(channel, "Not done yet, sorry!");
+            } else if (command.equals("endwar"))
+            {
+                this.endWar(channel, sender, args);
+            } else if (command.equals("listwars"))
+            {
+                this.listWars(channel, sender, args, false);
+            } else if (command.equals("listall"))
+            {
+                this.listAllWars(channel, sender, args);
+            } else if (command.equals("eggtimer"))
+            {
+                double time = 15;
+                if (args != null)
                 {
-                    this.sendMessage(channel, "Not done yet, sorry!");
-                } else
-                {
-                    if (command.equals("joinwar"))
+                    try
                     {
-                        this.sendMessage(channel, "Not done yet, sorry!");
-                    } else
+                        time = Double.parseDouble(args[0]);
+                    } catch (Exception e)
                     {
-                        if (command.equals("endwar"))
-                        {
-                            this.endWar(channel, sender, args);
-                        } else
-                        {
-                            if (command.equals("listwars"))
-                            {
-                                this.listWars(channel, sender, args, false);
-                            } else
-                            {
-                                if (command.equals("listall"))
-                                {
-                                    this.listAllWars(channel, sender, args);
-                                } else
-                                {
-                                    if (command.equals("eggtimer"))
-                                    {
-                                        double time = 15;
-                                        if (args != null)
-                                        {
-                                            try
-                                            {
-                                                time = Double.parseDouble(args[0]);
-                                            } catch (Exception e)
-                                            {
-                                                this.sendMessage(channel, "Could not understand first parameter. Was it numeric?");
-                                                return;
-                                            }
-                                        }
-                                        this.sendMessage(channel, sender + ": your timer has been set.");
-                                        this.sendDelayedNotice(sender, "Your timer has expired!", (int) (time * 60 * 1000));
-                                    } else
-                                    {
-                                        if (command.equals("settopic"))
-                                        {
-                                            if (args != null && args.length > 0)
-                                            {
-                                                String topic = args[0];
-                                                for (int i = 1; i < args.length; i++)
-                                                {
-                                                    topic += " " + args[i];
-                                                }
-                                                this.setTopic(channel, topic + " --" + sender);
-                                            }
-                                        } else
-                                        {
-                                            if (command.equals("sing"))
-                                            {
-                                                int r = this.rand.nextInt(100);
-                                                String response = "";
-                                                if (r > 90)
-                                                {
-                                                    response = "sings a beautiful song";
-                                                } else
-                                                {
-                                                    if (r > 60)
-                                                    {
-                                                        response = "chants a snappy ditty";
-                                                    } else
-                                                    {
-                                                        if (r > 30)
-                                                        {
-                                                            response = "starts singing 'It's a Small World'";
-                                                        } else
-                                                        {
-                                                            response = "screeches, and all the windows shatter";
-                                                        }
-                                                    }
-                                                }
-                                                this.sendAction(channel, response);
-                                            } else
-                                            {
-                                                if (command.equals("eightball") || command.equals("8-ball"))
-                                                {
-                                                    this.eightball(channel, sender, args);
-                                                } else
-                                                {
-                                                    if (command.equals("woot"))
-                                                    {
-                                                        this.sendAction(channel, "cheers! Hooray!");
-                                                    } else
-                                                    {
-                                                        if (command.equals("coffee") || command.equals("drink"))
-                                                        {
-                                                            this.fridge(channel, sender, args);
-                                                        } else
-                                                        {
-                                                            if (command.equals("getfor") || command.equals("drinkfor"))
-                                                            {
-                                                                this.fridgeFor(channel, sender, args);
-                                                            } else
-                                                            {
-                                                                if (command.equals("fridge"))
-                                                                {
-                                                                    this.throwFridge(channel, sender, args);
-                                                                } else
-                                                                {
-                                                                    if (command.equals("dance"))
-                                                                    {
-                                                                        this.sendAction(channel, "dances a cozy jig");
-                                                                    } // add additional commands above here!!
-                                                                    else
-                                                                    {
-                                                                        if (command.equals("help"))
-                                                                        {
-                                                                            String str = "I am a robot trained by the WordWar Monks of Honolulu. You have "
-                                                                                    + "never heard of them. It is because they are awesome. I am capable "
-                                                                                    + "of running the following commands:";
-                                                                            this.sendMessage(channel, str);
-                                                                            str = "!startwar <duration> <time to start> <an optional name> - Starts a word war";
-                                                                            this.sendMessage(channel, str);
-                                                                            str = "!listwars - I will tell you about the wars currently in progress.";
-                                                                            this.sendMessage(channel, str);
-                                                                            str = "!eggtimer <time> - I will send you a message after <time> minutes.";
-                                                                            this.sendMessage(channel, str);
-                                                                            str = "!coffee - I will get you a nice cup of coffee.";
-                                                                            this.sendMessage(channel, str);
-                                                                            str = "!drink <anything> - I will fetch you whatever you like.";
-                                                                            this.sendMessage(channel, str);
-                                                                            str = "I will also respond to invite commands if you would like to see me in another channel.";
-                                                                            this.sendMessage(channel, str);
-                                                                        } else
-                                                                        {
-                                                                            if (command.equals("shutdown"))
-                                                                            {
-                                                                                if (this.admin_list.contains(sender))
-                                                                                {
-                                                                                    this.sendMessage(channel, "Shutting down...");
-                                                                                    this.shutdown = true;
-                                                                                    this.quitServer("I am shutting down! Bye!");
-                                                                                    System.exit(0);
-                                                                                } else
-                                                                                {
-                                                                                    this.sendAction(channel, "sticks out his tounge");
-                                                                                    this.sendMessage(channel, "You can't make me, " + sender);
-                                                                                }
-                                                                            } /*else if (command.equals("restarttimer"))
-                                                                            {
-                                                                            if (sender.equals("Utoxin") || sender.equals("Sue___b"))
-                                                                            {
-                                                                            ticker.cancel();
-                                                                            ticker = null;
-                                                                            ticker = new Timer(true);
-                                                                            ticker.scheduleAtFixedRate(warticker, 0, 1000);
-                                                                            }
-                                                                            }*/ else
-                                                                            {
-                                                                                this.sendMessage(channel, sender + ": I don't know !" + command + ".");
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        this.sendMessage(channel, "Could not understand first parameter. Was it numeric?");
+                        return;
                     }
                 }
+                this.sendMessage(channel, sender + ": your timer has been set.");
+                this.sendDelayedNotice(sender, "Your timer has expired!", (int) ( time * 60 * 1000 ));
+            } else if (command.equals("settopic"))
+            {
+                if (args != null && args.length > 0)
+                {
+                    String topic = args[0];
+                    for (int i = 1; i < args.length; i++)
+                    {
+                        topic += " " + args[i];
+                    }
+                    this.setTopic(channel, topic + " --" + sender);
+                }
+            } else if (command.equals("sing"))
+            {
+                int r = this.rand.nextInt(100);
+                String response = "";
+                if (r > 90)
+                {
+                    response = "sings a beautiful song";
+                } else if (r > 60)
+                {
+                    response = "chants a snappy ditty";
+                } else if (r > 30)
+                {
+                    response = "starts singing 'It's a Small World'";
+                } else
+                {
+                    response = "screeches, and all the windows shatter";
+                }
+                this.sendAction(channel, response);
+            } else if (command.equals("eightball") || command.equals("8-ball"))
+            {
+                this.eightball(channel, sender, args);
+            } else if (command.equals("woot"))
+            {
+                this.sendAction(channel, "cheers! Hooray!");
+            } else if (command.equals("coffee") || command.equals("drink"))
+            {
+                this.fridge(channel, sender, args);
+            } else if (command.equals("getfor") || command.equals("drinkfor"))
+            {
+                this.fridgeFor(channel, sender, args);
+            } else if (command.equals("fridge"))
+            {
+                this.throwFridge(channel, sender, args);
+            } else if (command.equals("dance"))
+            {
+                this.sendAction(channel, "dances a cozy jig");
+            } else if (command.equals("commandment"))
+            {
+                this.commandment(channel, sender, args);
+            } // add additional commands above here!!
+            else if (command.equals("help"))
+            {
+                String str = "I am a robot trained by the WordWar Monks of Honolulu. You have "
+                             + "never heard of them. It is because they are awesome. I am capable "
+                             + "of running the following commands:";
+                this.sendMessage(channel, str);
+                str = "!startwar <duration> <time to start> <an optional name> - Starts a word war";
+                this.sendMessage(channel, str);
+                str = "!listwars - I will tell you about the wars currently in progress.";
+                this.sendMessage(channel, str);
+                str = "!eggtimer <time> - I will send you a message after <time> minutes.";
+                this.sendMessage(channel, str);
+                str = "!coffee - I will get you a nice cup of coffee.";
+                this.sendMessage(channel, str);
+                str = "!drink <anything> - I will fetch you whatever you like.";
+                this.sendMessage(channel, str);
+                str = "I will also respond to invite commands if you would like to see me in another channel.";
+                this.sendMessage(channel, str);
+            } else if (command.equals("shutdown"))
+            {
+                if (this.admin_list.contains(sender))
+                {
+                    this.sendMessage(channel, "Shutting down...");
+                    this.shutdown = true;
+                    this.quitServer("I am shutting down! Bye!");
+                    System.exit(0);
+                } else
+                {
+                    this.sendAction(channel, "sticks out his tounge");
+                    this.sendMessage(channel, "You can't make me, " + sender);
+                }
+            } /*else if (command.equals("restarttimer"))
+            {
+            if (sender.equals("Utoxin") || sender.equals("Sue___b"))
+            {
+            ticker.cancel();
+            ticker = null;
+            ticker = new Timer(true);
+            ticker.scheduleAtFixedRate(warticker, 0, 1000);
+            }
+            }*/ else
+            {
+                this.sendMessage(channel, sender + ": I don't know !" + command + ".");
             }
         } else
         {
@@ -574,7 +535,7 @@ public class Tim extends PircBot
                 long wordcount;
                 try
                 {
-                    wordcount = (long) (Double.parseDouble(command));
+                    wordcount = (long) ( Double.parseDouble(command) );
                     for (Map.Entry<String, WordWar> wm : this.wars.entrySet())
                     {
                         this.sendMessage(channel, wm.getKey());
@@ -593,14 +554,20 @@ public class Tim extends PircBot
         this.sendMessage(channel, Tim.eightballResponses[r]);
     }
 
+    private void commandment(String channel, String sender, String[] args)
+    {
+        int r = this.rand.nextInt(Tim.commandments.length - 1);
+        this.sendMessage(channel, Tim.commandments[r]);
+    }
+
     private void throwFridge(String channel, String sender, String[] args)
     {
         String target = sender;
         if (args != null && args.length > 0)
         {
             if (!args[0].equalsIgnoreCase(this.getNick()) && !args[0].equalsIgnoreCase("himself")
-                    && !args[0].equalsIgnoreCase("herself") && !this.admin_list.contains(args[0])
-                    && !args[0].equalsIgnoreCase("myst"))
+                && !args[0].equalsIgnoreCase("herself") && !this.admin_list.contains(args[0])
+                && !args[0].equalsIgnoreCase("myst"))
             {
                 target = "";
                 for (int i = 0; i < args.length; i++)
@@ -632,16 +599,13 @@ public class Tim extends PircBot
         if (i > 20)
         {
             act = "hurls a" + colour + " coloured fridge at " + target;
+        } else if (i > 3)
+        {
+            target = sender;
+            act = "hurls a" + colour + " coloured fridge at " + target + " and runs away giggling";
         } else
         {
-            if (i > 3)
-            {
-                target = sender;
-                act = "hurls a" + colour + " coloured fridge at " + target + " and runs away giggling";
-            } else
-            {
-                act = "trips and drops a" + colour + " fridge on himself";
-            }
+            act = "trips and drops a" + colour + " fridge on himself";
         }
         this.sendDelayedAction(channel, act, time);
     }
@@ -697,7 +661,7 @@ public class Tim extends PircBot
             if (this.wars.containsKey(name.toLowerCase()))
             {
                 if (sender.equalsIgnoreCase(this.wars.get(name.toLowerCase()).getStarter())
-                        || this.admin_list.contains(sender))
+                    || this.admin_list.contains(sender))
                 {
                     WordWar war = this.wars.remove(name.toLowerCase());
                     this.sendMessage(channel, "The war '" + war.getName() + "' has been ended.");
@@ -722,7 +686,7 @@ public class Tim extends PircBot
         String warname = "";
         try
         {
-            time = (long) (Double.parseDouble(args[0]) * 60);
+            time = (long) ( Double.parseDouble(args[0]) * 60 );
         } catch (Exception e)
         {
             this.sendMessage(channel, sender + ": could not understand the duration parameter. Was it numeric?");
@@ -732,7 +696,7 @@ public class Tim extends PircBot
         {
             try
             {
-                to_start = (long) (Double.parseDouble(args[1]) * 60);
+                to_start = (long) ( Double.parseDouble(args[1]) * 60 );
             } catch (Exception e)
             {
                 this.sendMessage(channel, sender + ": could not understand the time to start parameter. Was it numeric?");
@@ -775,15 +739,15 @@ public class Tim extends PircBot
 
     private void listWars(String channel, String sender, String[] args, boolean all)
     {
-        String target = (args != null) ? sender : channel;
+        String target = ( args != null ) ? sender : channel;
         if (this.wars != null && this.wars.size() > 0)
         {
             for (Map.Entry<String, WordWar> wm : this.wars.entrySet())
             {
                 if (all || wm.getValue().getChannel().equalsIgnoreCase(channel))
                 {
-                    this.sendMessage(target, (all) ? wm.getValue().getDescriptionWithChannel()
-                            : wm.getValue().getDescription());
+                    this.sendMessage(target, ( all ) ? wm.getValue().getDescriptionWithChannel()
+                                             : wm.getValue().getDescription());
                 }
             }
         } else
@@ -830,32 +794,29 @@ public class Tim extends PircBot
                         {
                             this.beginWar(war);
                         }
-                    } else
+                    } else if (war.remaining > 0)
                     {
-                        if (war.remaining > 0)
+                        war.remaining--;
+                        switch ((int) war.remaining)
                         {
-                            war.remaining--;
-                            switch ((int) war.remaining)
-                            {
-                                case 60:
-                                case 5:
-                                case 4:
-                                case 3:
-                                case 2:
-                                case 1:
+                            case 60:
+                            case 5:
+                            case 4:
+                            case 3:
+                            case 2:
+                            case 1:
+                                this.warEndCount(war);
+                                break;
+                            case 0:
+                                this.endWar(war);
+                                break;
+                            default:
+                                if (( (int) war.remaining ) % 300 == 0)
+                                {
                                     this.warEndCount(war);
-                                    break;
-                                case 0:
-                                    this.endWar(war);
-                                    break;
-                                default:
-                                    if (((int) war.remaining) % 300 == 0)
-                                    {
-                                        this.warEndCount(war);
-                                    }
-                                    // do nothing
-                                    break;
-                            }
+                                }
+                                // do nothing
+                                break;
                         }
                     }
                 }
@@ -869,8 +830,8 @@ public class Tim extends PircBot
     private void warStartCount(WordWar war)
     {
         this.sendMessage(war.getChannel(), war.getName() + ": Starting in "
-                + ((war.time_to_start == 60) ? "one minute" : war.time_to_start + ((war.time_to_start == 1) ? " second" : " seconds"))
-                + "!");
+                                           + ( ( war.time_to_start == 60 ) ? "one minute" : war.time_to_start + ( ( war.time_to_start == 1 ) ? " second" : " seconds" ) )
+                                           + "!");
     }
 
     private void warEndCount(WordWar war)
@@ -878,14 +839,14 @@ public class Tim extends PircBot
         if (war.remaining < 60)
         {
             this.sendMessage(war.getChannel(), war.getName() + ": "
-                    + war.remaining + ((war.remaining == 1) ? " second" : " seconds")
-                    + " remaining!");
+                                               + war.remaining + ( ( war.remaining == 1 ) ? " second" : " seconds" )
+                                               + " remaining!");
         } else
         {
             int remaining = (int) war.remaining / 60;
             this.sendMessage(war.getChannel(), war.getName() + ": " + remaining
-                    + ((remaining == 1) ? " minute" : " minutes")
-                    + " remaining.");
+                                               + ( ( remaining == 1 ) ? " minute" : " minutes" )
+                                               + " remaining.");
         }
     }
 
@@ -926,17 +887,14 @@ public class Tim extends PircBot
         Object channels = Tim.config.getProperty("channels.channel");
         if (channels instanceof Collection)
         {
-            int size = ((Collection) channels).size();
+            int size = ( (Collection) channels ).size();
             for (int i = 0; i < size; i++)
             {
                 this.joinChannel((String) Tim.config.getProperty("channels.channel(" + i + ")"));
             }
-        } else
+        } else if (channels instanceof String)
         {
-            if (channels instanceof String)
-            {
-                this.joinChannel((String) Tim.config.getProperty("channels.channel"));
-            }
+            this.joinChannel((String) Tim.config.getProperty("channels.channel"));
         }
     }
 
