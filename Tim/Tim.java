@@ -134,7 +134,7 @@ public class Tim extends PircBot
     };
     private static String[] commandments =
     {
-        "1. Thou shalt not edit during the Holy Month.", "2. Thou shalt offer up at least 1,667 words to the altar of Christ Baty.", 
+        "1. Thou shalt not edit during the Holy Month.", "2. Thou shalt offer up at least 1,667 words to the altar of Christ Baty.",
         "3. Keep thou holy the first and last days of the Holy Month, which is Novemeber.",
         "4. Take not the name of Christ Baty in vain, unless it doth provide thee with greater word count, which is good.",
         "5. Worry not about the quality of thy words, for Christ Baty cares not. Quantity is that which pleases Baty.",
@@ -528,23 +528,20 @@ public class Tim extends PircBot
             {
                 this.sendMessage(channel, sender + ": I don't know !" + command + ".");
             }
-        } else
+        } else if (prefix.equals("@"))
         {
-            if (prefix.equals("@"))
+            long wordcount;
+            try
             {
-                long wordcount;
-                try
+                wordcount = (long) ( Double.parseDouble(command) );
+                for (Map.Entry<String, WordWar> wm : this.wars.entrySet())
                 {
-                    wordcount = (long) ( Double.parseDouble(command) );
-                    for (Map.Entry<String, WordWar> wm : this.wars.entrySet())
-                    {
-                        this.sendMessage(channel, wm.getKey());
-                    }
-                } catch (Exception e)
-                {
+                    this.sendMessage(channel, wm.getKey());
                 }
-
+            } catch (Exception e)
+            {
             }
+
         }
     }
 
