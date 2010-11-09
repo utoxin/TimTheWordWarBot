@@ -129,7 +129,8 @@ public class Tim extends PircBot
     };
     private static String[] greetings =
     {
-        "Welcome to the Congregation of Christ Baty!", "Have you backed up your novel today?"
+        "Welcome to the Congregation of Christ Baty!", "Have you backed up your novel today?",
+        "Have you thanked an ML or Staff member recently?",
     };
     private static String[] commandments =
     {
@@ -138,7 +139,9 @@ public class Tim extends PircBot
         "4. Take not the name of Christ Baty in vain, unless it doth provide thee with greater word count, which is good.",
         "5. Worry not about the quality of thy words, for Christ Baty cares not. Quantity is that which pleases Baty.",
         "6. Thou must tell others of the way of the truth, by leading by example in your region.",
-        "7. <<WRITE THIS LATER>>", "8. <<WRITE THIS LATER>>", "9. <<WRITE THIS LATER>>", "10. <<WRITE THIS LATER>>",
+        "7. Honor thou those who sacrifice their time. They are known as MLs and Staff members, and they are blessed.",
+        "8. Once in your life, ye shall make a pilgrimage to NOWD to honor thine Christ Baty",
+        "9. Those that sacrifice their money shall be blessed with a halo of gold, which shall be a sign unto others.", "10. <<WRITE THIS LATER>>",
         "11. Thou shalt back up thy novel often, for it is displeasing in the eyes of Baty that you should lose it.",
     };
     //	private Wrimo[] wrimos;
