@@ -134,7 +134,7 @@ public class Tim extends PircBot
     };
     private static String[] commandments =
     {
-        "1. Thou shalt not edit during the Holy Month.", "2. Thou shalt offer up at least 1,667 words to the altar of Christ Baty.",
+        "1. Thou shalt not edit during the Holy Month.", "2. Thou shalt daily offer up at least 1,667 words to the altar of Christ Baty.",
         "3. Keep thou holy the first and last days of the Holy Month, which is Novemeber.",
         "4. Take not the name of Christ Baty in vain, unless it doth provide thee with greater word count, which is good.",
         "5. Worry not about the quality of thy words, for Christ Baty cares not. Quantity is that which pleases Baty.",
@@ -360,10 +360,14 @@ public class Tim extends PircBot
                         warscount++;
                     }
                 }
-                boolean plural = warscount >= 2 || warscount == 0;
-                message += " There " + ( ( plural ) ? "are" : "is" ) + " " + warscount
-                           + " war" + ( ( plural ) ? "s" : "" ) + " currently "
-                           + "running in this channel" + ( ( warscount > 0 ) ? ( ": " + winfo ) : "." );
+
+                if (warscount > 0)
+                {
+                    boolean plural = warscount >= 2 || warscount == 0;
+                    message += " There " + ( ( plural ) ? "are" : "is" ) + " " + warscount
+                               + " war" + ( ( plural ) ? "s" : "" ) + " currently "
+                               + "running in this channel" + ( ( warscount > 0 ) ? ( ": " + winfo ) : "." );
+                }
             }
             this.sendDelayedMessage(channel, message, 1600);
 
@@ -371,7 +375,7 @@ public class Tim extends PircBot
 
             if (r < 5)
             {
-                r = this.rand.nextInt(Tim.greetings.length - 1);
+                r = this.rand.nextInt(Tim.greetings.length);
                 this.sendDelayedMessage(channel, Tim.greetings[r], 2400);
             }
         }
@@ -515,6 +519,27 @@ public class Tim extends PircBot
                     this.sendAction(channel, "sticks out his tounge");
                     this.sendMessage(channel, "You can't make me, " + sender);
                 }
+            } else if (command.equals("reset"))
+            {
+                if (this.admin_list.contains(sender))
+                {
+                    this.sendMessage(channel, "Rebooting ...");
+
+                    wars = Collections.synchronizedMap(new HashMap<String, WordWar>());
+                    warticker = new WarClockThread(this);
+                    ticker = new Timer(true);
+                    ticker.scheduleAtFixedRate(warticker, 0, 1000);
+                    wars_lock = new Semaphore(1, true);
+                    timer_lock = new Semaphore(1, true);
+                    rand = new Random();
+                    this.shutdown = false;
+
+                    this.sendDelayedMessage(channel, "Can you hear me now?", 2400);
+                } else
+                {
+                    this.sendAction(channel, "sticks out his tounge");
+                    this.sendMessage(channel, "You can't make me, " + sender);
+                }
             } /*else if (command.equals("restarttimer"))
             {
             if (sender.equals("Utoxin") || sender.equals("Sue___b"))
@@ -547,13 +572,13 @@ public class Tim extends PircBot
 
     private void eightball(String channel, String sender, String[] args)
     {
-        int r = this.rand.nextInt(Tim.eightballResponses.length - 1);
+        int r = this.rand.nextInt(Tim.eightballResponses.length);
         this.sendMessage(channel, Tim.eightballResponses[r]);
     }
 
     private void commandment(String channel, String sender, String[] args)
     {
-        int r = this.rand.nextInt(Tim.commandments.length - 1);
+        int r = this.rand.nextInt(Tim.commandments.length);
         this.sendMessage(channel, Tim.commandments[r]);
     }
 
@@ -712,6 +737,13 @@ public class Tim extends PircBot
         {
             warname = sender + "'s war";
         }
+
+        if (Double.parseDouble(args[0]) < 1 || Double.parseDouble(args[1]) < 1)
+        {
+            this.sendMessage(channel, sender + ": Start delay and duration most both be at least 1.");
+            return;
+        }
+
         if (!this.wars.containsKey(warname.toLowerCase()))
         {
             WordWar war = new WordWar(time, to_start, warname, sender, channel);
