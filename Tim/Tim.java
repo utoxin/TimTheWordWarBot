@@ -508,7 +508,7 @@ public class Tim extends PircBot
                 this.sendMessage(channel, str);
             } else if (command.equals("shutdown"))
             {
-                if (this.admin_list.contains(sender))
+                if (this.admin_list.contains(sender) || this.admin_list.contains(channel))
                 {
                     this.sendMessage(channel, "Shutting down...");
                     this.shutdown = true;
@@ -521,11 +521,10 @@ public class Tim extends PircBot
                 }
             } else if (command.equals("reset"))
             {
-                if (this.admin_list.contains(sender))
+                if (this.admin_list.contains(sender) || this.admin_list.contains(channel))
                 {
                     this.sendMessage(channel, "Rebooting ...");
 
-                    wars = Collections.synchronizedMap(new HashMap<String, WordWar>());
                     warticker = new WarClockThread(this);
                     ticker = new Timer(true);
                     ticker.scheduleAtFixedRate(warticker, 0, 1000);
@@ -579,6 +578,9 @@ public class Tim extends PircBot
     private void commandment(String channel, String sender, String[] args)
     {
         int r = this.rand.nextInt(Tim.commandments.length);
+        if (args != null && args.length == 1 && Double.parseDouble(args[0]) > 0 && Double.parseDouble(args[0]) <= Tim.commandments.length) {
+            r = (int) Double.parseDouble(args[0]) - 1;
+        }
         this.sendMessage(channel, Tim.commandments[r]);
     }
 
@@ -683,7 +685,7 @@ public class Tim extends PircBot
             if (this.wars.containsKey(name.toLowerCase()))
             {
                 if (sender.equalsIgnoreCase(this.wars.get(name.toLowerCase()).getStarter())
-                    || this.admin_list.contains(sender))
+                    || this.admin_list.contains(sender) || this.admin_list.contains(channel))
                 {
                     WordWar war = this.wars.remove(name.toLowerCase());
                     this.sendMessage(channel, "The war '" + war.getName() + "' has been ended.");
