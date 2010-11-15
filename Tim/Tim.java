@@ -117,10 +117,10 @@ public class Tim extends PircBot
     private static String[] eightballResponses =
     {
         "Direction unclear", "Yes", "No", "Maybe, if you wiggle it a bit", "It depends", "Sometimes",
-        "Ask later", "Absolutely", "Porcupine", "Captian Picard is not aboard the Enterprise", "Probably",
+        "Ask later", "Absolutely", "Porcupine", "Captain Picard is not aboard the Enterprise", "Probably",
         "I think so", "It may be difficult", "No problem", "You have nothing to fear", "It is assured",
         "Have you tried hitting it?", "Maybe", "Yes", "Absolutely", "No", "Never", "Not in a million years",
-        "I'm sure of it", "Answer unclear", "Try again later", "Ask me again tomorrow", "No you",
+        "I'm sure of it", "Answer unclear", "Try again later", "Ask me again tomorrow", "No, you!",
         "That's what she said", "Only if you hop on one foot and sing a song", "Have a drink and ask again",
         "Get me a drink and ask again", "Indubidably", "What, you never just want to say hi?", "Never in your wildest dreams",
         "Only in your wildest dreams", "HAHAHAHAHAHAHAHAhahahaaa...  haahaaa...  phew...  Oh yeah, totally do it.",
@@ -143,6 +143,7 @@ public class Tim extends PircBot
         "8. Once in your life, ye shall make a pilgrimage to NOWD to honor thine Christ Baty",
         "9. Those that sacrifice their money shall be blessed with a halo of gold, which shall be a sign unto others.", "10. <<WRITE THIS LATER>>",
         "11. Thou shalt back up thy novel often, for it is displeasing in the eyes of Baty that you should lose it.",
+        "12. No narrative? No botheration!",
     };
     //	private Wrimo[] wrimos;
     private Map<String, WordWar> wars;
