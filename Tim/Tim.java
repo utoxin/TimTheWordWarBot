@@ -110,9 +110,10 @@ public class Tim extends PircBot
     private static String[] fridgeColours =
     {
         "avocado green", "powder blue", "pale yellow", "sienna", "crimson", "lime green", "fushia",
-        "orangeish yellow", "neon pink", "topaz", "tope", "silver", "anguish", "teal", "aqua", "purple",
+        "orangeish yellow", "neon pink", "topaz", "taupe", "silver", "anguish", "teal", "aqua", "purple",
         "beige", "burgundy", "scarlet", "navy", "turquoise", "cerulean", "olive", "black", "chocolate", "beige",
-        "invisible", "witchling", "maroon", "#BBC401", "oxide of chromium", "aubergine", "harvest gold"
+        "invisible", "witchling", "maroon", "#BBC401", "oxide of chromium", "aubergine", "harvest gold",
+        "sparkly vampire", "denim", "dirty yellow", "desert", "dessert", "dirt", 
     };
     private static String[] eightballResponses =
     {
@@ -125,12 +126,17 @@ public class Tim extends PircBot
         "Get me a drink and ask again", "Indubidably", "What, you never just want to say hi?", "Never in your wildest dreams",
         "Only in your wildest dreams", "HAHAHAHAHAHAHAHAhahahaaa...  haahaaa...  phew...  Oh yeah, totally do it.",
         "You're joking!", "What even is that?", "Penguins", "Ninjas", "Zombies", "Pirates", "Robots",
-        "Throw a fridge at something", "The power of Baty compels you!", "Christ Baty wills it."
+        "Throw a fridge at something", "The power of Baty compels you!", "Christ Baty wills it.", "Stop shaking me!",
+        "Don't touch me there!", "I need a RESPONSIBLE adult!", "As I see it, yes", "It is certain", "It is decidedly so",
+        "Most likely", "Outlook good", "Signs point to yes", "Without a doubt", "You may rely on it", "Better not tell you now",
+        "Concetrate, and ask again", "Very doubtful", "Of course! Wait... what did I just agree to?", "Ye... er, I mean no",
+        "Absolutely! Not.", "Why would you even ASK that?"
     };
     private static String[] greetings =
     {
         "Welcome to the Congregation of Christ Baty!", "Have you backed up your novel today?",
-        "Have you thanked an ML or Staff member recently?",
+        "Have you thanked an ML or Staff member recently?", "Have you donated yet this year?",
+        "Fact: Donators are more likely to win.",
     };
     private static String[] commandments =
     {
@@ -175,11 +181,13 @@ public class Tim extends PircBot
         this.admin_list = (Collection) Tim.config.getProperty("admins.admin");
 
         wars = Collections.synchronizedMap(new HashMap<String, WordWar>());
+
         warticker = new WarClockThread(this);
         ticker = new Timer(true);
         ticker.scheduleAtFixedRate(warticker, 0, 1000);
         wars_lock = new Semaphore(1, true);
         timer_lock = new Semaphore(1, true);
+
         rand = new Random();
         this.shutdown = false;
         //this.db = new MySQL(Tim.dbserver, Tim.dbserver, Tim.dbuser, Tim.dbpass);
@@ -862,6 +870,7 @@ public class Tim extends PircBot
                 this.wars_lock.release();
             } catch (Throwable e)
             {
+                this.wars_lock.release();
             }
         }
     }
