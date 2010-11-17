@@ -528,15 +528,20 @@ public class Tim extends PircBot
 
                     try
                     {
+                        warticker.cancel();
+                        warticker = null;
+
                         ticker.cancel();
+                        ticker = null;
                     } catch (Exception e)
                     {
                     }
 
+                    warticker = new WarClockThread(this);
                     ticker = new Timer(true);
                     ticker.scheduleAtFixedRate(warticker, 0, 1000);
 
-                    this.sendDelayedMessage(channel, "Can you hear me now?", 2400);
+                    this.sendDelayedMessage(channel, "Can you hear me now?", 2000);
                 } else
                 {
                     this.sendAction(channel, "sticks out his tounge");
