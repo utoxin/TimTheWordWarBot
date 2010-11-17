@@ -526,13 +526,15 @@ public class Tim extends PircBot
                 {
                     this.sendMessage(channel, "Rebooting ...");
 
-                    warticker = new WarClockThread(this);
+                    try
+                    {
+                        ticker.cancel();
+                    } catch (Exception e)
+                    {
+                    }
+
                     ticker = new Timer(true);
                     ticker.scheduleAtFixedRate(warticker, 0, 1000);
-                    wars_lock = new Semaphore(1, true);
-                    timer_lock = new Semaphore(1, true);
-                    rand = new Random();
-                    this.shutdown = false;
 
                     this.sendDelayedMessage(channel, "Can you hear me now?", 2400);
                 } else
