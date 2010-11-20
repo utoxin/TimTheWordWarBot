@@ -113,7 +113,8 @@ public class Tim extends PircBot
         "orangeish yellow", "neon pink", "topaz", "taupe", "silver", "anguish", "teal", "aqua", "purple",
         "beige", "burgundy", "scarlet", "navy", "turquoise", "cerulean", "olive", "black", "chocolate", "beige",
         "invisible", "witchling", "maroon", "#BBC401", "oxide of chromium", "aubergine", "harvest gold",
-        "sparkly vampire", "denim", "dirty yellow", "desert", "dessert", "dirt", 
+        "sparkly vampire", "denim", "dirty yellow", "desert", "dessert", "dirt", "#8F223B", "cinnamon",
+        "chrome", "leopard", "forest pink", "black", "blacker", "blackest", "poison", "Japan",
     };
     private static String[] eightballResponses =
     {
@@ -130,7 +131,9 @@ public class Tim extends PircBot
         "Don't touch me there!", "I need a RESPONSIBLE adult!", "As I see it, yes", "It is certain", "It is decidedly so",
         "Most likely", "Outlook good", "Signs point to yes", "Without a doubt", "You may rely on it", "Better not tell you now",
         "Concetrate, and ask again", "Very doubtful", "Of course! Wait... what did I just agree to?", "Ye... er, I mean no",
-        "Absolutely! Not.", "Why would you even ASK that?"
+        "Absolutely! Not.", "Why would you even ASK that?", "All your base are belong to me", "No. I mean Yes. Yes!",
+        "The answer to your question lies in your heart. Please tell it to stop - lying is bad for your cholesterol.",
+        "Have you tried sidling up to your problem?", "I didn't understand the question.", "YA RLY",
     };
     private static String[] greetings =
     {
@@ -266,6 +269,10 @@ public class Tim extends PircBot
             if (message.startsWith(":("))
             {
                 this.sendAction(channel, "gives " + sender + " a hug");
+            }
+            if (message.startsWith(":'())"))
+            {
+            	this.sendAction(channel, "passes " + sender + " a tissue");
             }
         }
     }
