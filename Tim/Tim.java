@@ -126,7 +126,7 @@ public class Tim extends PircBot
         "Get me a drink and ask again", "Indubidably", "What, you never just want to say hi?", "Never in your wildest dreams",
         "Only in your wildest dreams", "HAHAHAHAHAHAHAHAhahahaaa...  haahaaa...  phew...  Oh yeah, totally do it.",
         "You're joking!", "What even is that?", "Penguins", "Ninjas", "Zombies", "Pirates", "Robots",
-        "Throw a fridge at something", "The power of Baty compels you!", "Christ Baty wills it.", "Stop shaking me!",
+        "Throw a fridge at something", "The power of Baty compels you!", "Chris T. Baty wills it.", "Stop shaking me!",
         "Don't touch me there!", "I need a RESPONSIBLE adult!", "As I see it, yes", "It is certain", "It is decidedly so",
         "Most likely", "Outlook good", "Signs point to yes", "Without a doubt", "You may rely on it", "Better not tell you now",
         "Concetrate, and ask again", "Very doubtful", "Of course! Wait... what did I just agree to?", "Ye... er, I mean no",
@@ -134,19 +134,19 @@ public class Tim extends PircBot
     };
     private static String[] greetings =
     {
-        "Welcome to the Congregation of Christ Baty!", "Have you backed up your novel today?",
+        "Welcome to the Congregation of Chris T. Baty!", "Have you backed up your novel today?",
         "Have you thanked an ML or Staff member recently?", "Have you donated yet this year?",
         "Fact: Donators are more likely to win.",
     };
     private static String[] commandments =
     {
-        "1. Thou shalt not edit during the Holy Month.", "2. Thou shalt daily offer up at least 1,667 words to the altar of Christ Baty.",
-        "3. Keep thou holy the first and last days of the Holy Month, which is Novemeber.",
-        "4. Take not the name of Christ Baty in vain, unless it doth provide thee with greater word count, which is good.",
-        "5. Worry not about the quality of thy words, for Christ Baty cares not. Quantity is that which pleases Baty.",
+        "1. Thou shalt not edit during the Holy Month.", "2. Thou shalt daily offer up at least 1,667 words to the altar of Chris T. Baty.",
+        "3. Keep thou holy the first and last days of the Holy Month, which is November.",
+        "4. Take not the name of Chris T. Baty in vain, unless it doth provide thee with greater word count, which is good.",
+        "5. Worry not about the quality of thy words, for Chris T. Baty cares not. Quantity is that which pleases Baty.",
         "6. Thou must tell others of the way of the truth, by leading by example in your region.",
         "7. Honor thou those who sacrifice their time. They are known as MLs and Staff members, and they are blessed.",
-        "8. Once in your life, ye shall make a pilgrimage to NOWD to honor thine Christ Baty",
+        "8. Once in your life, ye shall make a pilgrimage to NOWD to honor thine Chris T. Baty",
         "9. Those that sacrifice their money shall be blessed with a halo of gold, which shall be a sign unto others.", "10. <<WRITE THIS LATER>>",
         "11. Thou shalt back up thy novel often, for it is displeasing in the eyes of Baty that you should lose it.",
         "12. No narrative? No botheration!",
@@ -382,7 +382,7 @@ public class Tim extends PircBot
 
             int r = this.rand.nextInt(100);
 
-            if (r < 5)
+            if (r < 4)
             {
                 r = this.rand.nextInt(Tim.greetings.length);
                 this.sendDelayedMessage(channel, Tim.greetings[r], 2400);
