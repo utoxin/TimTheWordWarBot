@@ -154,6 +154,84 @@ public class Tim extends PircBot
         "11. Thou shalt back up thy novel often, for it is displeasing in the eyes of Baty that you should lose it.",
         "12. No narrative? No botheration!",
     };
+    private static String[] aypwips = 
+    {
+    	"Sure, %s, but how are we going to find chaps our size?",
+    	"I think so, %s, but where we going to find a duck and a host at this hour?",
+    	"Well, I think so %s, but burlap chafes me so.",
+    	"I think so %s, but this time you put the trousers on the chimp.",
+    	"I think so %s, but this time you wear the tutu.",
+    	"I think so %s, but me and Pipi Longstocking, I mean, what would the children look like?",
+    	"Well, I think so %s, but if we didn't have ears, we'd look like weasels.",
+    	"Wuh, I think so %s, but isn't Regis Philbin already married?",
+    	"Uh ... yeah, %s, but where are we going to find rubber pants our size?",
+    	"I think so, but where will we find an open tattoo parlor at this time of night?",
+    	"I think so %s, but culottes have a tendency to ride up so.",
+    	"Wuh, I think so, but wel'll never get a monkey to use dental floss.",
+    	"I think so %s, but if they called them 'sad meals', kids wouldn't buy them.",
+    	"Well, I think so %s, but I can't memorize a whole opera in Yiddish.",
+    	"Aww, I think so, %s, but balancing a family and a career ... uh, it's all too much for me.",
+    	"I think so %s, but there's still a bug in there from last time.",
+    	"I think so %s, but I get all clammy inside the tent. ",
+    	"I think so %s, but I don't think Kay Ballard is in the union?",
+    	"I think so %s, but the Rockettes? I mean, it's mostly girls, isn't it?",
+    	"I think so %s, but pants with horizontal stripes makes me look chubby.",
+    	"Well, I think so %s, but pantyhose are so uncomfortable in the summertime.",
+    	"I think so %s, but it's a miracle this one grew back.",
+    	"Well, I think so %s but first you'd have to take that whole bridge apart wouldn't you?",
+    	"I think so, %s, but 'Snowball for Windows'?",
+    	"Well, I think so %s, but 'apply North Pole' to what?",
+    	"I think so %s, but, snort, no, no, it's too stupid.",
+    	"Umm, I think so %s, but umm, why would Sophia Loren do a musical?",
+    	"Umm, I think so %s, but what if the chicken won't wear the nylons?",
+    	"I think so %s, but isn't that why they invented tube socks?",
+    	"I think so %s but what if we stick to the seat covers?",
+    	"Ewww, I think so %s, but I think I'd rather eat the Macarena.",
+    	"I think so %s, but don't we need a pool to play Marco Polo?",
+    	"Well, I think so, but Kevin Costner with an English accent?",
+    	"Well, I think so %s, but do I really need two tongues?",
+    	"We eat the box?",
+    	"I think so %s, but don't camels spit a lot?",
+    	"I think so %s, but Pete Rose? I mean, can we trust him?",
+    	"I think so %s, but how do we get a pair of Abe Vegoda's pants?",
+    	"I think so %s, but why would Peter Bogdanovich?",
+    	"Well, I think so %s, but if Jimmy cracks corn and no one cares, why does he keep doing it?",
+    	"I think so %s, but isn't a cucumber that small called a gerkin?",
+    	"I think so %s, but if we had a snowmobile, wouldn't it melt before summer?",
+    	"I think so %s, but how we will get all seven dwarves to shave their legs?",
+    	"I think so %s, but how do we get the Spice Girls into the paella?",
+    	"I think so %s, but if we get Sam spayed, he'll never have any puppies.",
+    	"Well, I think so %s, but wouldn't anything lose its flavor on the bedpost overnight?",
+    	"I think so %s, but three round meals a day wouldn't be as hard to swallow.",
+    	"But calling it Pu-Pu platter? What were they thinking?",
+    	"I think so %s, but if we give peas a chance, won't the lima beans feel left out?",
+    	"I think so %s, but if the plural of mouse is mice, wouldn't the plural of spouse be spice?",
+    	"I think so %s, but can the gummi worms really live in peace with the Marshmellow Chicks?",
+    	"Yes %s, but if our knees bent the other way, how would we ride a bicycle?",
+    	"Yes, but why does the chicken cross the road, huh, if not for love? Oh, I don't know.",
+    	"I think so %s, but I prefer space jelly.",
+    	"I think so %s, but why would anyone want a depressed tongue?",
+    	"I think so %s, but who wants to see Snow White and the Seven Samuri?",
+    	"I think so %s, but then my name would be 'thumby'.",
+    	"I think so %s, but I find scratching just makes it worse.",
+    	"I think so %s, but shouldn't the bat boy be wearing a cape.",
+    	"Umm, I think so %s, but why would anyone want to Pierce Brosnan?",
+    	"Me thinks so %s, verily, but doest thou think Pete Rose by any other name would still smell as sweaty?",
+    	"I think so %s, but will they let the Cranberry Duchess stay in the Lincoln Bedroon?",
+    	"I think so %s, but why does a forklift have to be so big if all it does is lift forks?",
+    	"I think so %s, but wouldn't his movies be more suitable for children if he was named 'Jean Claude Van Darn'?",
+    	"I think so %s, but what if the hippopotimus won't wear the beach thong?",
+    	"Whew! I'd say the odds of that are terribly slim.",
+    	"I think so %s, but if was only supposed to be a three hour tour, why did Howells bring all his money?",
+    	"I think so %s, but Zero Mostel times anything is still Zero Mostel.",
+    	"I think so %s, but if we have nothing to fear but fear itself, then why does Elenor Roosevelt wear that spooky mask?",
+    	"Umm, I think so Big %s Fish Face Stove Pipe Wiggle Room Eileen. but if you get a long little doggie, wouldn't you just call it a dachshund?",
+    	"I think so %s, but then I'd have to know what pondering is, wouldn't I?",
+    	"I think so %s, but 'instant karma' always gets so lumpy.",
+    	"Umm, I think so %s, but a show about two talking lab mice? It'll never get on the air!",
+    	
+    	
+    };
     //	private Wrimo[] wrimos;
     private Map<String, WordWar> wars;
     private WarClockThread warticker;
@@ -273,6 +351,12 @@ public class Tim extends PircBot
             if (message.startsWith(":'())"))
             {
             	this.sendAction(channel, "passes " + sender + " a tissue");
+            }
+            if (message.toLowerCase().contains("are you thinking what i'm thinking") 
+            		|| message.toLowerCase().contains("are you pondering what i'm pondering"))
+            {
+            	int i = this.rand.nextInt(Tim.aypwips.length - 1);
+            	this.sendMessage(channel, String.format(Tim.aypwips[i], sender));
             }
         }
     }
