@@ -1,3 +1,19 @@
+/**
+ *  This file is part of Timmy, the Wordwar Bot.
+ *
+ *  Timmy is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Timmy is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Timmy.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package Tim;
 
 import java.io.IOException;
@@ -157,7 +173,7 @@ public class Tim extends PircBot
     private static String[] aypwips = 
     {
     	"Sure, %s, but how are we going to find chaps our size?",
-    	"I think so, %s, but where we going to find a duck and a host at this hour?",
+    	"I think so, %s, but where we going to find a duck and a hose at this hour?",
     	"Well, I think so %s, but burlap chafes me so.",
     	"I think so %s, but this time you put the trousers on the chimp.",
     	"I think so %s, but this time you wear the tutu.",
@@ -167,7 +183,7 @@ public class Tim extends PircBot
     	"Uh ... yeah, %s, but where are we going to find rubber pants our size?",
     	"I think so, but where will we find an open tattoo parlor at this time of night?",
     	"I think so %s, but culottes have a tendency to ride up so.",
-    	"Wuh, I think so, but wel'll never get a monkey to use dental floss.",
+    	"Wuh, I think so, but we'll never get a monkey to use dental floss.",
     	"I think so %s, but if they called them 'sad meals', kids wouldn't buy them.",
     	"Well, I think so %s, but I can't memorize a whole opera in Yiddish.",
     	"Aww, I think so, %s, but balancing a family and a career ... uh, it's all too much for me.",
@@ -229,8 +245,6 @@ public class Tim extends PircBot
     	"I think so %s, but then I'd have to know what pondering is, wouldn't I?",
     	"I think so %s, but 'instant karma' always gets so lumpy.",
     	"Umm, I think so %s, but a show about two talking lab mice? It'll never get on the air!",
-    	
-    	
     };
     //	private Wrimo[] wrimos;
     private Map<String, WordWar> wars;
@@ -580,7 +594,7 @@ public class Tim extends PircBot
                 this.fridgeFor(channel, sender, args);
             } else if (command.equals("fridge"))
             {
-                this.throwFridge(channel, sender, args);
+                this.throwFridge(channel, sender, args, true);
             } else if (command.equals("dance"))
             {
                 this.sendAction(channel, "dances a cozy jig");
@@ -619,6 +633,24 @@ public class Tim extends PircBot
                     this.sendAction(channel, "sticks out his tounge");
                     this.sendMessage(channel, "You can't make me, " + sender);
                 }
+            } else if (command.equals("credits"))
+            {
+                this.sendMessage(channel, "I was created by MysteriousAges and Utoxin during NaNoWriMo 2010. My code is based on the PircBot Java library. Sourcecode is available here: https://github.com/utoxin/TimTheWordWarBot");
+            } else if (command.equals("anything") || command.equals("jack") || command.equals("squat"))
+            {
+                this.sendMessage(channel, "Nice try, " + sender + ", trying to get me to look stupid.");
+
+                int r = this.rand.nextInt(100);
+                if (r < 10)
+                {
+                    this.defenestrate(channel, sender, sender.split(" ", 0), false);
+                } else if(r < 20)
+                {
+                    this.throwFridge(channel, sender, sender.split(" ", 0), false);
+                }
+            } else if (command.equals("defenestrate"))
+            {
+                this.defenestrate(channel, sender, args, true);
             } else if (command.equals("reset"))
             {
                 if (this.admin_list.contains(sender) || this.admin_list.contains(channel))
@@ -691,7 +723,7 @@ public class Tim extends PircBot
         this.sendMessage(channel, Tim.commandments[r]);
     }
 
-    private void throwFridge(String channel, String sender, String[] args)
+    private void throwFridge(String channel, String sender, String[] args, Boolean righto)
     {
         String target = sender;
         if (args != null && args.length > 0)
@@ -707,8 +739,13 @@ public class Tim extends PircBot
                 }
             }
         }
-        this.sendMessage(channel, "Righto...");
-        int time = 5 + rand.nextInt(15);
+
+        if (righto)
+        {
+            this.sendMessage(channel, "Righto...");
+        }
+
+        int time = 2 + rand.nextInt(15);
         time *= 1000;
         this.sendDelayedAction(channel, "looks back and forth, then slinks off...", time);
         time += rand.nextInt(10) * 500 + 1500;
@@ -737,6 +774,50 @@ public class Tim extends PircBot
         } else
         {
             act = "trips and drops a" + colour + " fridge on himself";
+        }
+        this.sendDelayedAction(channel, act, time);
+    }
+
+    private void defenestrate(String channel, String sender, String[] args, Boolean righto)
+    {
+        String target = sender;
+        if (args != null && args.length > 0)
+        {
+            if (!args[0].equalsIgnoreCase(this.getNick()) && !args[0].equalsIgnoreCase("himself")
+                && !args[0].equalsIgnoreCase("herself") && !this.admin_list.contains(args[0]))
+            {
+                target = "";
+                for (int i = 0; i < args.length; i++)
+                {
+                    target += args[i] + " ";
+                }
+            }
+        }
+
+        if (righto)
+        {
+            this.sendMessage(channel, "Righto...");
+        }
+
+        int time = 2 + rand.nextInt(15);
+        time *= 1000;
+        this.sendDelayedAction(channel, "looks around for a convenient window, then slinks off...", time);
+        time += rand.nextInt(10) * 500 + 1500;
+
+        int i = rand.nextInt(100);
+        String act = "";
+        String colour = Tim.fridgeColours[rand.nextInt(Tim.fridgeColours.length)];
+
+        if (i > 20)
+        {
+            act = "throws " + target + "through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
+        } else if (i > 3)
+        {
+            target = sender;
+            act = "laughs maniacally then throws " + target + "through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
+        } else
+        {
+            act = "trips and falls out the window!";
         }
         this.sendDelayedAction(channel, act, time);
     }
