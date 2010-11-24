@@ -279,7 +279,8 @@ public class Tim extends PircBot
 			"Umm, I think so Big %s Fish Face Stove Pipe Wiggle Room Eileen. but if you get a long little doggie, wouldn't you just call it a dachshund?",
 			"I think so %s, but then I'd have to know what pondering is, wouldn't I?",
 			"I think so %s, but 'instant karma' always gets so lumpy.",
-			"Umm, I think so %s, but a show about two talking lab mice? It'll never get on the air!", };
+			"Umm, I think so %s, but a show about two talking lab mice? It'll never get on the air!",
+	};
 	private static String[] flavours = { "peach fudge", "juniper", "vanilla",
 			"blue", "angry buffalo", "coffe", "insanity-covered squid",
 			"white pen", "fried chicken", "peppermint chocolate", "crab apple",
@@ -287,13 +288,14 @@ public class Tim extends PircBot
 			"silicon dioxide", "arsenic", "almonds", "strontium-237",
 			"Popplers", "a little-endian unsigned 42", "pudding",
 			"Nanaimo bars", "toffee", "farts", "rubber bands", "hilarity",
-			"mould... have you gone bad?", "MattKinsi", "dasies",
+			"mould... have you gone bad?", "MattKinsi", "daisies",
 			"squid-covered insanity", "GLaDOS... I should call her sometime",
 			"inspiration", "stagnation", "word-padding", "lemon",
 			"a slice of lemon wrapped 'round a large gold brick",
 			"almost, but not quite, entirely unlike tea",
 			"tea. Earl Grey. Hot.", "orange serbet", "orange pekoe",
-			"licorice", "cherry chocolate lemons", };
+			"licorice", "cherry chocolate lemons",
+	};
 	// private Wrimo[] wrimos;
 	private Map<String, WordWar> wars;
 	private WarClockThread warticker;
@@ -695,6 +697,10 @@ public class Tim extends PircBot
 			{
 				this.sendAction(channel, "dances a cozy jig");
 			}
+			else if (command.equals("lick"))
+			{
+				this.lick(channel, sender, args);
+			}
 			else if (command.equals("commandment"))
 			{
 				this.commandment(channel, sender, args);
@@ -792,6 +798,40 @@ public class Tim extends PircBot
 			{
 			}
 
+		}
+	}
+
+	private void lick(String channel, String sender, String[] args)
+	{
+		if (args.length >= 1)
+		{
+			String argStr = args[0];
+			for (int i = 1; i < args.length; i++)
+			{
+				argStr += " " + args[i];
+			}
+			if (args[0].equalsIgnoreCase("MysteriousAges"))
+			{
+				this.sendAction(channel, "licks " + argStr + ". Tastes like... like...");
+				this.sendDelayedMessage(channel, "Like the Apocalypse.", 1000);
+				this.sendDelayedAction(channel, "cowers in fear", 2400);
+			}
+			else if (args[0].equalsIgnoreCase(this.getNick()))
+			{
+				this.sendAction(channel, "licks " + args[0] + ". Tastes like tastes like tastes like meta.");
+			}
+			else if (this.admin_list.contains(args[0]))
+			{
+				this.sendAction(channel, "licks " + argStr + ". Tastes like perfection, pure and simple.");
+			}
+			else
+			{
+				this.sendAction(channel, "licks " + argStr + ". Tastes like " + Tim.flavours[this.rand.nextInt(Tim.flavours.length - 1)]);
+			}
+		}
+		else
+		{
+			this.sendAction(channel, "licks " + sender + "! Tastes like " + Tim.flavours[this.rand.nextInt(Tim.flavours.length - 1)]);
 		}
 	}
 
