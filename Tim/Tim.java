@@ -16,11 +16,8 @@
  */
 package Tim;
 
-import java.io.IOException;
-import java.sql.Date;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -122,7 +119,6 @@ public class Tim extends PircBot
 
         }
     }
-
     private static String[] fridgeColours =
     {
         "avocado green", "powder blue", "pale yellow", "sienna", "crimson", "lime green", "fushia",
@@ -170,81 +166,92 @@ public class Tim extends PircBot
         "11. Thou shalt back up thy novel often, for it is displeasing in the eyes of Baty that you should lose it.",
         "12. No narrative? No botheration!",
     };
-    private static String[] aypwips = 
+    private static String[] aypwips =
     {
-    	"Sure, %s, but how are we going to find chaps our size?",
-    	"I think so, %s, but where we going to find a duck and a hose at this hour?",
-    	"Well, I think so %s, but burlap chafes me so.",
-    	"I think so %s, but this time you put the trousers on the chimp.",
-    	"I think so %s, but this time you wear the tutu.",
-    	"I think so %s, but me and Pipi Longstocking, I mean, what would the children look like?",
-    	"Well, I think so %s, but if we didn't have ears, we'd look like weasels.",
-    	"Wuh, I think so %s, but isn't Regis Philbin already married?",
-    	"Uh ... yeah, %s, but where are we going to find rubber pants our size?",
-    	"I think so, but where will we find an open tattoo parlor at this time of night?",
-    	"I think so %s, but culottes have a tendency to ride up so.",
-    	"Wuh, I think so, but we'll never get a monkey to use dental floss.",
-    	"I think so %s, but if they called them 'sad meals', kids wouldn't buy them.",
-    	"Well, I think so %s, but I can't memorize a whole opera in Yiddish.",
-    	"Aww, I think so, %s, but balancing a family and a career ... uh, it's all too much for me.",
-    	"I think so %s, but there's still a bug in there from last time.",
-    	"I think so %s, but I get all clammy inside the tent. ",
-    	"I think so %s, but I don't think Kay Ballard is in the union?",
-    	"I think so %s, but the Rockettes? I mean, it's mostly girls, isn't it?",
-    	"I think so %s, but pants with horizontal stripes makes me look chubby.",
-    	"Well, I think so %s, but pantyhose are so uncomfortable in the summertime.",
-    	"I think so %s, but it's a miracle this one grew back.",
-    	"Well, I think so %s but first you'd have to take that whole bridge apart wouldn't you?",
-    	"I think so, %s, but 'Snowball for Windows'?",
-    	"Well, I think so %s, but 'apply North Pole' to what?",
-    	"I think so %s, but, snort, no, no, it's too stupid.",
-    	"Umm, I think so %s, but umm, why would Sophia Loren do a musical?",
-    	"Umm, I think so %s, but what if the chicken won't wear the nylons?",
-    	"I think so %s, but isn't that why they invented tube socks?",
-    	"I think so %s but what if we stick to the seat covers?",
-    	"Ewww, I think so %s, but I think I'd rather eat the Macarena.",
-    	"I think so %s, but don't we need a pool to play Marco Polo?",
-    	"Well, I think so, but Kevin Costner with an English accent?",
-    	"Well, I think so %s, but do I really need two tongues?",
-    	"We eat the box?",
-    	"I think so %s, but don't camels spit a lot?",
-    	"I think so %s, but Pete Rose? I mean, can we trust him?",
-    	"I think so %s, but how do we get a pair of Abe Vegoda's pants?",
-    	"I think so %s, but why would Peter Bogdanovich?",
-    	"Well, I think so %s, but if Jimmy cracks corn and no one cares, why does he keep doing it?",
-    	"I think so %s, but isn't a cucumber that small called a gerkin?",
-    	"I think so %s, but if we had a snowmobile, wouldn't it melt before summer?",
-    	"I think so %s, but how we will get all seven dwarves to shave their legs?",
-    	"I think so %s, but how do we get the Spice Girls into the paella?",
-    	"I think so %s, but if we get Sam spayed, he'll never have any puppies.",
-    	"Well, I think so %s, but wouldn't anything lose its flavor on the bedpost overnight?",
-    	"I think so %s, but three round meals a day wouldn't be as hard to swallow.",
-    	"But calling it Pu-Pu platter? What were they thinking?",
-    	"I think so %s, but if we give peas a chance, won't the lima beans feel left out?",
-    	"I think so %s, but if the plural of mouse is mice, wouldn't the plural of spouse be spice?",
-    	"I think so %s, but can the gummi worms really live in peace with the Marshmellow Chicks?",
-    	"Yes %s, but if our knees bent the other way, how would we ride a bicycle?",
-    	"Yes, but why does the chicken cross the road, huh, if not for love? Oh, I don't know.",
-    	"I think so %s, but I prefer space jelly.",
-    	"I think so %s, but why would anyone want a depressed tongue?",
-    	"I think so %s, but who wants to see Snow White and the Seven Samuri?",
-    	"I think so %s, but then my name would be 'thumby'.",
-    	"I think so %s, but I find scratching just makes it worse.",
-    	"I think so %s, but shouldn't the bat boy be wearing a cape.",
-    	"Umm, I think so %s, but why would anyone want to Pierce Brosnan?",
-    	"Me thinks so %s, verily, but doest thou think Pete Rose by any other name would still smell as sweaty?",
-    	"I think so %s, but will they let the Cranberry Duchess stay in the Lincoln Bedroon?",
-    	"I think so %s, but why does a forklift have to be so big if all it does is lift forks?",
-    	"I think so %s, but wouldn't his movies be more suitable for children if he was named 'Jean Claude Van Darn'?",
-    	"I think so %s, but what if the hippopotimus won't wear the beach thong?",
-    	"Whew! I'd say the odds of that are terribly slim.",
-    	"I think so %s, but if was only supposed to be a three hour tour, why did Howells bring all his money?",
-    	"I think so %s, but Zero Mostel times anything is still Zero Mostel.",
-    	"I think so %s, but if we have nothing to fear but fear itself, then why does Elenor Roosevelt wear that spooky mask?",
-    	"Umm, I think so Big %s Fish Face Stove Pipe Wiggle Room Eileen. but if you get a long little doggie, wouldn't you just call it a dachshund?",
-    	"I think so %s, but then I'd have to know what pondering is, wouldn't I?",
-    	"I think so %s, but 'instant karma' always gets so lumpy.",
-    	"Umm, I think so %s, but a show about two talking lab mice? It'll never get on the air!",
+        "Sure, %s, but how are we going to find chaps our size?",
+        "I think so, %s, but where we going to find a duck and a hose at this hour?",
+        "Well, I think so %s, but burlap chafes me so.",
+        "I think so %s, but this time you put the trousers on the chimp.",
+        "I think so %s, but this time you wear the tutu.",
+        "I think so %s, but me and Pipi Longstocking, I mean, what would the children look like?",
+        "Well, I think so %s, but if we didn't have ears, we'd look like weasels.",
+        "Wuh, I think so %s, but isn't Regis Philbin already married?",
+        "Uh ... yeah, %s, but where are we going to find rubber pants our size?",
+        "I think so, but where will we find an open tattoo parlor at this time of night?",
+        "I think so %s, but culottes have a tendency to ride up so.",
+        "Wuh, I think so, but we'll never get a monkey to use dental floss.",
+        "I think so %s, but if they called them 'sad meals', kids wouldn't buy them.",
+        "Well, I think so %s, but I can't memorize a whole opera in Yiddish.",
+        "Aww, I think so, %s, but balancing a family and a career ... uh, it's all too much for me.",
+        "I think so %s, but there's still a bug in there from last time.",
+        "I think so %s, but I get all clammy inside the tent. ",
+        "I think so %s, but I don't think Kay Ballard is in the union?",
+        "I think so %s, but the Rockettes? I mean, it's mostly girls, isn't it?",
+        "I think so %s, but pants with horizontal stripes makes me look chubby.",
+        "Well, I think so %s, but pantyhose are so uncomfortable in the summertime.",
+        "I think so %s, but it's a miracle this one grew back.",
+        "Well, I think so %s but first you'd have to take that whole bridge apart wouldn't you?",
+        "I think so, %s, but 'Snowball for Windows'?",
+        "Well, I think so %s, but 'apply North Pole' to what?",
+        "I think so %s, but, snort, no, no, it's too stupid.",
+        "Umm, I think so %s, but umm, why would Sophia Loren do a musical?",
+        "Umm, I think so %s, but what if the chicken won't wear the nylons?",
+        "I think so %s, but isn't that why they invented tube socks?",
+        "I think so %s but what if we stick to the seat covers?",
+        "Ewww, I think so %s, but I think I'd rather eat the Macarena.",
+        "I think so %s, but don't we need a pool to play Marco Polo?",
+        "Well, I think so, but Kevin Costner with an English accent?",
+        "Well, I think so %s, but do I really need two tongues?",
+        "We eat the box?",
+        "I think so %s, but don't camels spit a lot?",
+        "I think so %s, but Pete Rose? I mean, can we trust him?",
+        "I think so %s, but how do we get a pair of Abe Vegoda's pants?",
+        "I think so %s, but why would Peter Bogdanovich?",
+        "Well, I think so %s, but if Jimmy cracks corn and no one cares, why does he keep doing it?",
+        "I think so %s, but isn't a cucumber that small called a gerkin?",
+        "I think so %s, but if we had a snowmobile, wouldn't it melt before summer?",
+        "I think so %s, but how we will get all seven dwarves to shave their legs?",
+        "I think so %s, but how do we get the Spice Girls into the paella?",
+        "I think so %s, but if we get Sam spayed, he'll never have any puppies.",
+        "Well, I think so %s, but wouldn't anything lose its flavor on the bedpost overnight?",
+        "I think so %s, but three round meals a day wouldn't be as hard to swallow.",
+        "But calling it Pu-Pu platter? What were they thinking?",
+        "I think so %s, but if we give peas a chance, won't the lima beans feel left out?",
+        "I think so %s, but if the plural of mouse is mice, wouldn't the plural of spouse be spice?",
+        "I think so %s, but can the gummi worms really live in peace with the Marshmellow Chicks?",
+        "Yes %s, but if our knees bent the other way, how would we ride a bicycle?",
+        "Yes, but why does the chicken cross the road, huh, if not for love? Oh, I don't know.",
+        "I think so %s, but I prefer space jelly.",
+        "I think so %s, but why would anyone want a depressed tongue?",
+        "I think so %s, but who wants to see Snow White and the Seven Samuri?",
+        "I think so %s, but then my name would be 'thumby'.",
+        "I think so %s, but I find scratching just makes it worse.",
+        "I think so %s, but shouldn't the bat boy be wearing a cape.",
+        "Umm, I think so %s, but why would anyone want to Pierce Brosnan?",
+        "Me thinks so %s, verily, but doest thou think Pete Rose by any other name would still smell as sweaty?",
+        "I think so %s, but will they let the Cranberry Duchess stay in the Lincoln Bedroon?",
+        "I think so %s, but why does a forklift have to be so big if all it does is lift forks?",
+        "I think so %s, but wouldn't his movies be more suitable for children if he was named 'Jean Claude Van Darn'?",
+        "I think so %s, but what if the hippopotimus won't wear the beach thong?",
+        "Whew! I'd say the odds of that are terribly slim.",
+        "I think so %s, but if was only supposed to be a three hour tour, why did Howells bring all his money?",
+        "I think so %s, but Zero Mostel times anything is still Zero Mostel.",
+        "I think so %s, but if we have nothing to fear but fear itself, then why does Elenor Roosevelt wear that spooky mask?",
+        "Umm, I think so Big %s Fish Face Stove Pipe Wiggle Room Eileen. but if you get a long little doggie, wouldn't you just call it a dachshund?",
+        "I think so %s, but then I'd have to know what pondering is, wouldn't I?",
+        "I think so %s, but 'instant karma' always gets so lumpy.",
+        "Umm, I think so %s, but a show about two talking lab mice? It'll never get on the air!",
+    };
+    private static String[] flavours =
+    {
+        "peach fudge", "juniper", "vanilla", "blue", "angry buffalo", "coffe", "insanity-covered squid", "white pen",
+        "fried chicken", "peppermint chocolate", "crab apple", "pine needles", "mashed porkchops", "torment", "lightbulb",
+        "silicon dioxide", "arsenic", "almonds", "strontium-237", "Popplers", "a little-endian unsigned 42", "pudding",
+        "Nanaimo bars", "toffee", "farts", "rubber bands", "hilarity", "mould... have you gone bad?", "MattKinsi",
+        "dasies", "squid-covered insanity", "GLaDOS... I should call her sometime", "inspiration", "stagnation",
+        "word-padding", "lemon", "a slice of lemon wrapped 'round a large gold brick",
+        "almost, but not quite, entirely unlike tea", "tea. Earl Grey. Hot.", "orange serbet", "orange pekoe",
+        "licorice", "cherry chocolate lemons",
     };
     //	private Wrimo[] wrimos;
     private Map<String, WordWar> wars;
@@ -354,23 +361,23 @@ public class Tim extends PircBot
             {
                 this.sendMessage(channel, "Hi, " + sender + "!");
             }
-            if (message.toLowerCase().startsWith("how many lights"))
+            if (message.toLowerCase().contains("how many lights"))
             {
                 this.sendMessage(channel, "There are FOUR LIGHTS!");
             }
-            if (message.startsWith(":("))
+            if (message.contains(":("))
             {
                 this.sendAction(channel, "gives " + sender + " a hug");
             }
-            if (message.startsWith(":'())"))
+            if (message.contains(":'())"))
             {
-            	this.sendAction(channel, "passes " + sender + " a tissue");
+                this.sendAction(channel, "passes " + sender + " a tissue");
             }
-            if (message.toLowerCase().contains("are you thinking what i'm thinking") 
-            		|| message.toLowerCase().contains("are you pondering what i'm pondering"))
+            if (message.toLowerCase().contains("are you thinking what i'm thinking")
+                || message.toLowerCase().contains("are you pondering what i'm pondering"))
             {
-            	int i = this.rand.nextInt(Tim.aypwips.length - 1);
-            	this.sendMessage(channel, String.format(Tim.aypwips[i], sender));
+                int i = this.rand.nextInt(Tim.aypwips.length - 1);
+                this.sendMessage(channel, String.format(Tim.aypwips[i], sender));
             }
         }
     }
@@ -478,9 +485,9 @@ public class Tim extends PircBot
                 if (warscount > 0)
                 {
                     boolean plural = warscount >= 2 || warscount == 0;
-                    message += " There " + ( ( plural ) ? "are" : "is" ) + " " + warscount
-                               + " war" + ( ( plural ) ? "s" : "" ) + " currently "
-                               + "running in this channel" + ( ( warscount > 0 ) ? ( ": " + winfo ) : "." );
+                    message += " There " + ((plural) ? "are" : "is") + " " + warscount
+                               + " war" + ((plural) ? "s" : "") + " currently "
+                               + "running in this channel" + ((warscount > 0) ? (": " + winfo) : ".");
                 }
             }
             this.sendDelayedMessage(channel, message, 1600);
@@ -550,7 +557,7 @@ public class Tim extends PircBot
                     }
                 }
                 this.sendMessage(channel, sender + ": your timer has been set.");
-                this.sendDelayedNotice(sender, "Your timer has expired!", (int) ( time * 60 * 1000 ));
+                this.sendDelayedNotice(sender, "Your timer has expired!", (int) (time * 60 * 1000));
             } else if (command.equals("settopic"))
             {
                 if (args != null && args.length > 0)
@@ -598,6 +605,9 @@ public class Tim extends PircBot
             } else if (command.equals("dance"))
             {
                 this.sendAction(channel, "dances a cozy jig");
+            } else if (command.equals("lick"))
+            {
+                this.lick(channel, sender, args);
             } else if (command.equals("commandment"))
             {
                 this.commandment(channel, sender, args);
@@ -644,7 +654,7 @@ public class Tim extends PircBot
                 if (r < 10)
                 {
                     this.defenestrate(channel, sender, sender.split(" ", 0), false);
-                } else if(r < 20)
+                } else if (r < 20)
                 {
                     this.throwFridge(channel, sender, sender.split(" ", 0), false);
                 }
@@ -696,7 +706,7 @@ public class Tim extends PircBot
             long wordcount;
             try
             {
-                wordcount = (long) ( Double.parseDouble(command) );
+                wordcount = (long) (Double.parseDouble(command));
                 for (Map.Entry<String, WordWar> wm : this.wars.entrySet())
                 {
                     this.sendMessage(channel, wm.getKey());
@@ -705,6 +715,36 @@ public class Tim extends PircBot
             {
             }
 
+        }
+    }
+
+    private void lick(String channel, String sender, String[] args)
+    {
+        if (args.length >= 1)
+        {
+            String argStr = args[0];
+            for (int i = 1; i < args.length; i++)
+            {
+                argStr += " " + args[i];
+            }
+            if (args[0].equalsIgnoreCase("MysteriousAges"))
+            {
+                this.sendAction(channel, "licks " + argStr + ". Tastes like... like...");
+                this.sendDelayedMessage(channel, "Like the Apocalypse.", 1000);
+                this.sendDelayedAction(channel, "cowers in fear", 2400);
+            } else if (args[0].equalsIgnoreCase(this.getNick()))
+            {
+                this.sendAction(channel, "licks " + args[0] + ". Tastes like tastes like tastes like meta.");
+            } else if (this.admin_list.contains(args[0]))
+            {
+                this.sendAction(channel, "licks " + argStr + ". Tastes like perfection, pure and simple.");
+            } else
+            {
+                this.sendAction(channel, "licks " + argStr + ". Tastes like " + Tim.flavours[this.rand.nextInt(Tim.flavours.length - 1)]);
+            }
+        } else
+        {
+            this.sendAction(channel, "licks " + sender + "! Tastes like " + Tim.flavours[this.rand.nextInt(Tim.flavours.length - 1)]);
         }
     }
 
@@ -717,7 +757,8 @@ public class Tim extends PircBot
     private void commandment(String channel, String sender, String[] args)
     {
         int r = this.rand.nextInt(Tim.commandments.length);
-        if (args != null && args.length == 1 && Double.parseDouble(args[0]) > 0 && Double.parseDouble(args[0]) <= Tim.commandments.length) {
+        if (args != null && args.length == 1 && Double.parseDouble(args[0]) > 0 && Double.parseDouble(args[0]) <= Tim.commandments.length)
+        {
             r = (int) Double.parseDouble(args[0]) - 1;
         }
         this.sendMessage(channel, Tim.commandments[r]);
@@ -898,7 +939,7 @@ public class Tim extends PircBot
         String warname = "";
         try
         {
-            time = (long) ( Double.parseDouble(args[0]) * 60 );
+            time = (long) (Double.parseDouble(args[0]) * 60);
         } catch (Exception e)
         {
             this.sendMessage(channel, sender + ": could not understand the duration parameter. Was it numeric?");
@@ -908,7 +949,7 @@ public class Tim extends PircBot
         {
             try
             {
-                to_start = (long) ( Double.parseDouble(args[1]) * 60 );
+                to_start = (long) (Double.parseDouble(args[1]) * 60);
             } catch (Exception e)
             {
                 this.sendMessage(channel, sender + ": could not understand the time to start parameter. Was it numeric?");
@@ -958,14 +999,14 @@ public class Tim extends PircBot
 
     private void listWars(String channel, String sender, String[] args, boolean all)
     {
-        String target = ( args != null ) ? sender : channel;
+        String target = (args != null) ? sender : channel;
         if (this.wars != null && this.wars.size() > 0)
         {
             for (Map.Entry<String, WordWar> wm : this.wars.entrySet())
             {
                 if (all || wm.getValue().getChannel().equalsIgnoreCase(channel))
                 {
-                    this.sendMessage(target, ( all ) ? wm.getValue().getDescriptionWithChannel()
+                    this.sendMessage(target, (all) ? wm.getValue().getDescriptionWithChannel()
                                              : wm.getValue().getDescription());
                 }
             }
@@ -1030,7 +1071,7 @@ public class Tim extends PircBot
                                 this.endWar(war);
                                 break;
                             default:
-                                if (( (int) war.remaining ) % 300 == 0)
+                                if (((int) war.remaining) % 300 == 0)
                                 {
                                     this.warEndCount(war);
                                 }
@@ -1050,7 +1091,7 @@ public class Tim extends PircBot
     private void warStartCount(WordWar war)
     {
         this.sendMessage(war.getChannel(), war.getName() + ": Starting in "
-                                           + ( ( war.time_to_start == 60 ) ? "one minute" : war.time_to_start + ( ( war.time_to_start == 1 ) ? " second" : " seconds" ) )
+                                           + ((war.time_to_start == 60) ? "one minute" : war.time_to_start + ((war.time_to_start == 1) ? " second" : " seconds"))
                                            + "!");
     }
 
@@ -1059,13 +1100,13 @@ public class Tim extends PircBot
         if (war.remaining < 60)
         {
             this.sendMessage(war.getChannel(), war.getName() + ": "
-                                               + war.remaining + ( ( war.remaining == 1 ) ? " second" : " seconds" )
+                                               + war.remaining + ((war.remaining == 1) ? " second" : " seconds")
                                                + " remaining!");
         } else
         {
             int remaining = (int) war.remaining / 60;
             this.sendMessage(war.getChannel(), war.getName() + ": " + remaining
-                                               + ( ( remaining == 1 ) ? " minute" : " minutes" )
+                                               + ((remaining == 1) ? " minute" : " minutes")
                                                + " remaining.");
         }
     }
@@ -1107,7 +1148,7 @@ public class Tim extends PircBot
         Object channels = Tim.config.getProperty("channels.channel");
         if (channels instanceof Collection)
         {
-            int size = ( (Collection) channels ).size();
+            int size = ((Collection) channels).size();
             for (int i = 0; i < size; i++)
             {
                 this.joinChannel((String) Tim.config.getProperty("channels.channel(" + i + ")"));
