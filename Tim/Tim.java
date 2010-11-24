@@ -229,8 +229,17 @@ public class Tim extends PircBot
     	"I think so %s, but then I'd have to know what pondering is, wouldn't I?",
     	"I think so %s, but 'instant karma' always gets so lumpy.",
     	"Umm, I think so %s, but a show about two talking lab mice? It'll never get on the air!",
-    	
-    	
+    };
+    private static String[] flavours = 
+    {
+    	"peach fudge", "juniper", "vanilla", "blue", "angry buffalo", "coffe", "insanity-covered squid", "white pen",
+    	"fried chicken", "peppermint chocolate", "crab apple", "pine needles", "mashed porkchops", "torment", "lightbulb",
+    	"silicon dioxide", "arsenic", "almonds", "strontium-237", "Popplers", "a little-endian unsigned 42", "pudding",
+    	"Nanaimo bars", "toffee", "farts", "rubber bands", "hilarity", "mould... have you gone bad?", "MattKinsi",
+    	"dasies", "squid-covered insanity", "GLaDOS... I should call her sometime", "inspiration", "stagnation",
+    	"word-padding", "lemon", "a slice of lemon wrapped 'round a large gold brick",
+    	"almost, but not quite, entirely unlike tea", "tea. Earl Grey. Hot.", "orange serbet", "orange pekoe",
+    	"licorice", "cherry chocolate lemons", 
     };
     //	private Wrimo[] wrimos;
     private Map<String, WordWar> wars;
@@ -340,15 +349,15 @@ public class Tim extends PircBot
             {
                 this.sendMessage(channel, "Hi, " + sender + "!");
             }
-            if (message.toLowerCase().startsWith("how many lights"))
+            if (message.toLowerCase().contains("how many lights"))
             {
                 this.sendMessage(channel, "There are FOUR LIGHTS!");
             }
-            if (message.startsWith(":("))
+            if (message.contains(":("))
             {
                 this.sendAction(channel, "gives " + sender + " a hug");
             }
-            if (message.startsWith(":'())"))
+            if (message.contains(":'())"))
             {
             	this.sendAction(channel, "passes " + sender + " a tissue");
             }
