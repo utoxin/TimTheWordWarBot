@@ -803,7 +803,7 @@ public class Tim extends PircBot
 
 	private void lick(String channel, String sender, String[] args)
 	{
-		if (args.length >= 1)
+		if (args != null && args.length >= 1)
 		{
 			String argStr = args[0];
 			for (int i = 1; i < args.length; i++)
