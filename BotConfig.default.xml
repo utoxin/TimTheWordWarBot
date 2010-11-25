@@ -25,6 +25,7 @@
         channels are the channels he auto-joins on connect
         nicks is the list (in order of priority) of nicks he'll try to use
         admins is the list of people with admin access to the bot
+        adultchannels are channels that get all commands, even those that might offend
 -->
 
 <config>
@@ -45,4 +46,7 @@
 		<nick>TrutherWriter</nick>
 		<nick>PLACEHOLDER</nick>
 	</ignore>
+    <adultchannels>
+        <channel>#channel</channel>
+    </adultchannels>
 </config>

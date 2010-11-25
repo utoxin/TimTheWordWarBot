@@ -263,6 +263,7 @@ public class Tim extends PircBot
     private boolean shutdown;
     private Collection ignore_list;
     private Collection admin_list;
+    private Collection adult_channels;
     private String password;
     //public  MySQL db;
 
@@ -281,6 +282,7 @@ public class Tim extends PircBot
 
         this.ignore_list = (Collection) Tim.config.getProperty("ignore.nick");
         this.admin_list = (Collection) Tim.config.getProperty("admins.admin");
+        this.adult_channels = (Collection) Tim.config.getProperty("adultchannels.channel");
 
         wars = Collections.synchronizedMap(new HashMap<String, WordWar>());
 
@@ -720,31 +722,37 @@ public class Tim extends PircBot
 
     private void lick(String channel, String sender, String[] args)
     {
-        if (args.length >= 1)
+        if (this.adult_channels.contains(channel))
         {
-            String argStr = args[0];
-            for (int i = 1; i < args.length; i++)
+            if (args.length >= 1)
             {
-                argStr += " " + args[i];
-            }
-            if (args[0].equalsIgnoreCase("MysteriousAges"))
-            {
-                this.sendAction(channel, "licks " + argStr + ". Tastes like... like...");
-                this.sendDelayedMessage(channel, "Like the Apocalypse.", 1000);
-                this.sendDelayedAction(channel, "cowers in fear", 2400);
-            } else if (args[0].equalsIgnoreCase(this.getNick()))
-            {
-                this.sendAction(channel, "licks " + args[0] + ". Tastes like tastes like tastes like meta.");
-            } else if (this.admin_list.contains(args[0]))
-            {
-                this.sendAction(channel, "licks " + argStr + ". Tastes like perfection, pure and simple.");
+                String argStr = args[0];
+                for (int i = 1; i < args.length; i++)
+                {
+                    argStr += " " + args[i];
+                }
+                if (args[0].equalsIgnoreCase("MysteriousAges"))
+                {
+                    this.sendAction(channel, "licks " + argStr + ". Tastes like... like...");
+                    this.sendDelayedMessage(channel, "Like the Apocalypse.", 1000);
+                    this.sendDelayedAction(channel, "cowers in fear", 2400);
+                } else if (args[0].equalsIgnoreCase(this.getNick()))
+                {
+                    this.sendAction(channel, "licks " + args[0] + ". Tastes like tastes like tastes like meta.");
+                } else if (this.admin_list.contains(args[0]))
+                {
+                    this.sendAction(channel, "licks " + argStr + ". Tastes like perfection, pure and simple.");
+                } else
+                {
+                    this.sendAction(channel, "licks " + argStr + ". Tastes like " + Tim.flavours[this.rand.nextInt(Tim.flavours.length)]);
+                }
             } else
             {
-                this.sendAction(channel, "licks " + argStr + ". Tastes like " + Tim.flavours[this.rand.nextInt(Tim.flavours.length - 1)]);
+                this.sendAction(channel, "licks " + sender + "! Tastes like " + Tim.flavours[this.rand.nextInt(Tim.flavours.length)]);
             }
         } else
         {
-            this.sendAction(channel, "licks " + sender + "! Tastes like " + Tim.flavours[this.rand.nextInt(Tim.flavours.length - 1)]);
+            this.sendMessage(channel, "Sorry, I don't do that here.");
         }
     }
 
