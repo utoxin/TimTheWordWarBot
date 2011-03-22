@@ -119,7 +119,7 @@ public class Tim extends PircBot
 
         }
     }
-    private static String[] fridgeColours =
+    private static String[] colours =
     {
         "avocado green", "powder blue", "pale yellow", "sienna", "crimson", "lime green", "fushia",
         "orangeish yellow", "neon pink", "topaz", "taupe", "silver", "anguish", "teal", "aqua", "purple",
@@ -630,7 +630,9 @@ public class Tim extends PircBot
                 this.sendMessage(channel, str);
                 str = "!drink <anything> - I will fetch you whatever you like.";
                 this.sendMessage(channel, str);
-                str = "I will also respond to invite commands if you would like to see me in another channel.";
+                str = "!credits - Details of my creators, and where to find my source code.";
+                this.sendMessage(channel, str);
+                str = "I will also respond to the /invite command if you would like to see me in another channel.";
                 this.sendMessage(channel, str);
             } else if (command.equals("shutdown"))
             {
@@ -663,6 +665,9 @@ public class Tim extends PircBot
             } else if (command.equals("defenestrate"))
             {
                 this.defenestrate(channel, sender, args, true);
+            } else if (command.equals("foof"))
+            {
+                this.foof(channel, sender, args, true);
             } else if (command.equals("reset"))
             {
                 if (this.admin_list.contains(sender) || this.admin_list.contains(channel))
@@ -726,11 +731,8 @@ public class Tim extends PircBot
         {
             if (args.length >= 1)
             {
-                String argStr = args[0];
-                for (int i = 1; i < args.length; i++)
-                {
-                    argStr += " " + args[i];
-                }
+                String argStr = implodeArray(args);
+
                 if (args[0].equalsIgnoreCase("MysteriousAges"))
                 {
                     this.sendAction(channel, "licks " + argStr + ". Tastes like... like...");
@@ -781,11 +783,7 @@ public class Tim extends PircBot
                 && !args[0].equalsIgnoreCase("herself") && !this.admin_list.contains(args[0])
                 && !args[0].equalsIgnoreCase("myst"))
             {
-                target = "";
-                for (int i = 0; i < args.length; i++)
-                {
-                    target += args[i] + " ";
-                }
+                target = implodeArray(args) + " ";
             }
         }
 
@@ -798,7 +796,7 @@ public class Tim extends PircBot
         time *= 1000;
         this.sendDelayedAction(channel, "looks back and forth, then slinks off...", time);
         time += rand.nextInt(10) * 500 + 1500;
-        String colour = Tim.fridgeColours[rand.nextInt(Tim.fridgeColours.length - 1)];
+        String colour = Tim.colours[rand.nextInt(Tim.colours.length - 1)];
         switch (colour.charAt(0))
         {
             case 'a':
@@ -835,11 +833,7 @@ public class Tim extends PircBot
             if (!args[0].equalsIgnoreCase(this.getNick()) && !args[0].equalsIgnoreCase("himself")
                 && !args[0].equalsIgnoreCase("herself") && !this.admin_list.contains(args[0]))
             {
-                target = "";
-                for (int i = 0; i < args.length; i++)
-                {
-                    target += args[i] + " ";
-                }
+                target = implodeArray(args) + " ";
             }
         }
 
@@ -855,7 +849,7 @@ public class Tim extends PircBot
 
         int i = rand.nextInt(100);
         String act = "";
-        String colour = Tim.fridgeColours[rand.nextInt(Tim.fridgeColours.length)];
+        String colour = Tim.colours[rand.nextInt(Tim.colours.length)];
 
         if (i > 20)
         {
@@ -867,6 +861,46 @@ public class Tim extends PircBot
         } else
         {
             act = "trips and falls out the window!";
+        }
+        this.sendDelayedAction(channel, act, time);
+    }
+
+    private void foof(String channel, String sender, String[] args, Boolean righto)
+    {
+        String target = sender;
+        if (args != null && args.length > 0)
+        {
+            if (!args[0].equalsIgnoreCase(this.getNick()) && !args[0].equalsIgnoreCase("himself")
+                && !args[0].equalsIgnoreCase("herself") && !this.admin_list.contains(args[0]))
+            {
+                target = implodeArray(args);
+            }
+        }
+
+        if (righto)
+        {
+            this.sendMessage(channel, "Righto...");
+        }
+
+        int time = 2 + rand.nextInt(15);
+        time *= 1000;
+        this.sendDelayedAction(channel, "surreptitiously works his way over to the couch, looking ever so casual...", time);
+        time += rand.nextInt(10) * 500 + 1500;
+
+        int i = rand.nextInt(100);
+        String act = "";
+        String colour = Tim.colours[rand.nextInt(Tim.colours.length)];
+
+        if (i > 20)
+        {
+            act = "grabs a " + colour + " pillow, and throws it at " + target + ", hitting them squarely in the back of the head.";
+        } else if (i > 3)
+        {
+            target = sender;
+            act = "laughs maniacally then throws a "+ colour + " pillow at " + target + ", then runs off and hides behind the nearest couch.";
+        } else
+        {
+            act = "trips and lands on a " + colour + " pillow. Oof!";
         }
         this.sendDelayedAction(channel, act, time);
     }
@@ -914,11 +948,7 @@ public class Tim extends PircBot
     {
         if (args != null && args.length > 0)
         {
-            String name = args[0];
-            for (int i = 1; i < args.length; i++)
-            {
-                name += " " + args[i];
-            }
+            String name = implodeArray(args);
             if (this.wars.containsKey(name.toLowerCase()))
             {
                 if (sender.equalsIgnoreCase(this.wars.get(name.toLowerCase()).getStarter())
@@ -1181,5 +1211,22 @@ public class Tim extends PircBot
         bot.setVerbose(true);
         bot.setMessageDelay(350);
         bot.connectToServer();
+    }
+
+    private String implodeArray(String[] inputArray) {
+        String AsImplodedString;
+        if (inputArray.length==0) {
+            AsImplodedString = "";
+        } else {
+            StringBuffer sb = new StringBuffer();
+            sb.append(inputArray[0]);
+            for (int i=1;i<inputArray.length;i++) {
+                sb.append(" ");
+                sb.append(inputArray[i]);
+            }
+            AsImplodedString = sb.toString();
+        }
+
+        return AsImplodedString;
     }
 }
