@@ -429,6 +429,10 @@ public class Tim extends PircBot {
 			}
 			this.sendDelayedMessage(channel, message, 1600);
 
+			if (Pattern.matches("(?i)mib_......", sender)) {
+				this.sendDelayedMessage(channel, String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", sender), 2400);
+			}
+
 			int r = this.rand.nextInt(100);
 
 			if (r < 4) {
