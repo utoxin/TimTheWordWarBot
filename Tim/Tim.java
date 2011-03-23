@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
+import java.util.regex.*;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
@@ -257,25 +258,42 @@ public class Tim extends PircBot {
 		this.shutdown = false;
 	}
 
-	// Destructor. Sort of. I think?
 	@Override
 	public synchronized void dispose() {
 		super.dispose();
 	}
 
-	/*
-	delay is in milliseconds
+	/**
+	 * Sends an message with a delay
+	 *
+	 * @param target The user or channel to send the message to
+	 * @param action The string for the text of the message
+	 * @param delay The delay in milliseconds
 	 */
 	public void sendDelayedMessage(String target, String message, int delay) {
 		DelayCommand talk = new DelayCommand(this, target, message, ActionType.MESSAGE);
 		this.ticker.schedule(talk, delay);
 	}
 
+	/**
+	 * Sends an action with a delay
+	 *
+	 * @param target The user or channel to send the action to
+	 * @param action The string for the text of the action
+	 * @param delay The delay in milliseconds
+	 */
 	public void sendDelayedAction(String target, String action, int delay) {
 		DelayCommand act = new DelayCommand(this, target, action, ActionType.ACTION);
 		this.ticker.schedule(act, delay);
 	}
 
+	/**
+	 * Sends a notice with a delay
+	 *
+	 * @param target The user or channel to send the notice to
+	 * @param action The string for the text of the notice
+	 * @param delay The delay in milliseconds
+	 */
 	public void sendDelayedNotice(String target, String action, int delay) {
 		DelayCommand act = new DelayCommand(this, target, action, ActionType.NOTICE);
 		this.ticker.schedule(act, delay);
@@ -308,20 +326,24 @@ public class Tim extends PircBot {
 			// Other fun stuff we can make him do
 			if (message.toLowerCase().contains("hello") && message.toLowerCase().contains(this.getNick().toLowerCase())) {
 				this.sendMessage(channel, "Hi, " + sender + "!");
-			}
-			if (message.toLowerCase().contains("how many lights")) {
+			} else if (message.toLowerCase().contains("how many lights")) {
 				this.sendMessage(channel, "There are FOUR LIGHTS!");
-			}
-			if (message.contains(":(")) {
+			} else if (message.contains(":(")) {
 				this.sendAction(channel, "gives " + sender + " a hug");
-			}
-			if (message.contains(":'())")) {
+			} else if (message.contains(":'())")) {
 				this.sendAction(channel, "passes " + sender + " a tissue");
-			}
-			if (message.toLowerCase().contains("are you thinking what i'm thinking")
+			} else if (message.toLowerCase().contains("are you thinking what i'm thinking")
 				|| message.toLowerCase().contains("are you pondering what i'm pondering")) {
 				int i = this.rand.nextInt(Tim.aypwips.length - 1);
 				this.sendMessage(channel, String.format(Tim.aypwips[i], sender));
+			} else {
+				int Options = Pattern.CASE_INSENSITIVE;
+				Pattern changeNick = Pattern.compile("how do i (change|set) my (nick|name)", Options);
+				Matcher myMatcher = changeNick.matcher(message);
+
+				if (myMatcher.find()) {
+					this.sendMessage(channel, String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", sender));
+				}
 			}
 		}
 	}
