@@ -337,11 +337,7 @@ public class Tim extends PircBot {
 				int i = this.rand.nextInt(Tim.aypwips.length - 1);
 				this.sendMessage(channel, String.format(Tim.aypwips[i], sender));
 			} else {
-				int Options = Pattern.CASE_INSENSITIVE;
-				Pattern changeNick = Pattern.compile("how do i (change|set) my (nick|name)", Options);
-				Matcher myMatcher = changeNick.matcher(message);
-
-				if (myMatcher.find()) {
+				if (Pattern.matches("(?i).*how do i (change|set) my (nick|name).*", message)) {
 					this.sendMessage(channel, String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", sender));
 				}
 			}
