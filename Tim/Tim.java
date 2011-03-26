@@ -22,10 +22,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.*;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
+import com.mysql.jdbc.*;
 import org.jibble.pircbot.*;
 
 public class Tim extends PircBot {
@@ -232,7 +235,9 @@ public class Tim extends PircBot {
 	private String password;
 
 	public Tim() {
-		Object nicks = Tim.config.getProperty("nicks.nick");
+        Statement stmt;
+
+        Object nicks = Tim.config.getProperty("nicks.nick");
 		if (nicks instanceof Collection) {
 			this.setName((String) Tim.config.getProperty("nicks.nick(0).name"));
 			this.password = (String) Tim.config.getProperty("nicks.nick(0).pass");
