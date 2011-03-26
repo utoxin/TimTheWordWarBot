@@ -123,19 +123,19 @@ public class Tim extends PircBot {
 		"The answer to your question lies in your heart. Please tell it to stop - lying is bad for your cholesterol.",
 		"Have you tried sidling up to your problem?", "I didn't understand the question.", "YA RLY",};
 	private static String[] greetings = {
-		"Welcome to the Congregation of Chris T. Baty!", "Have you backed up your novel today?",
+		"Welcome to the Congregation of Chris T. Baty!", "Have you backed up your writing today?",
 		"Have you thanked an ML or Staff member recently?", "Have you donated yet this year?",
 		"Fact: Donators are more likely to win.",};
 	private static String[] commandments = {
-		"1. Thou shalt not edit during the Holy Month.", "2. Thou shalt daily offer up at least 1,667 words to the altar of Chris T. Baty.",
-		"3. Keep thou holy the first and last days of the Holy Month, which is November.",
+		"1. Thou shalt not edit during the Holy Months.", "2. Thou shalt daily offer up at least 1,667 words to the altar of Chris T. Baty.",
+		"3. Keep thou holy the first and last days of the Holy Months, which are April and November.",
 		"4. Take not the name of Chris T. Baty in vain, unless it doth provide thee with greater word count, which is good.",
 		"5. Worry not about the quality of thy words, for Chris T. Baty cares not. Quantity is that which pleases Baty.",
 		"6. Thou must tell others of the way of the truth, by leading by example in your region.",
 		"7. Honor thou those who sacrifice their time. They are known as MLs and Staff members, and they are blessed.",
 		"8. Once in your life, ye shall make a pilgrimage to NOWD to honor thine Chris T. Baty",
-		"9. Those that sacrifice their money shall be blessed with a halo of gold, which shall be a sign unto others.", "10. <<WRITE THIS LATER>>",
-		"11. Thou shalt back up thy novel often, for it is displeasing in the eyes of Baty that you should lose it.",
+		"9. Those that sacrifice their money shall be blessed with gold, which shall be a sign unto others.", "10. <<WRITE THIS LATER>>",
+		"11. Thou shalt back up thy writing often, for it is displeasing in the eyes of Baty that you should lose it.",
 		"12. No narrative? No botheration!",};
 	private static String[] aypwips = {
 		"Sure, %s, but how are we going to find chaps our size?",
@@ -223,8 +223,7 @@ public class Tim extends PircBot {
 	private Map<String, WordWar> wars;
 	private WarClockThread warticker;
 	private Timer ticker;
-	private Semaphore wars_lock, timer_lock;
-	private Fridge fridge;
+	private Semaphore wars_lock;
 	private Random rand;
 	private boolean shutdown;
 	private Collection ignore_list;
@@ -252,7 +251,6 @@ public class Tim extends PircBot {
 		ticker = new Timer(true);
 		ticker.scheduleAtFixedRate(warticker, 0, 1000);
 		wars_lock = new Semaphore(1, true);
-		timer_lock = new Semaphore(1, true);
 
 		rand = new Random();
 		this.shutdown = false;
@@ -339,7 +337,13 @@ public class Tim extends PircBot {
 			} else {
 				if (Pattern.matches("(?i).*how do i (change|set) my (nick|name).*", message)) {
 					this.sendMessage(channel, String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", sender));
-				}
+				} else if (Pattern.matches("(?i)Timmy.*[?]", message)) {
+                    int r = this.rand.nextInt(100);
+
+                    if (r < 50) {
+                        this.eightball(channel, sender, null);
+                    }
+                }
 			}
 		}
 	}
@@ -687,7 +691,7 @@ public class Tim extends PircBot {
 		if (args != null && args.length > 0) {
 			if (!args[0].equalsIgnoreCase(this.getNick()) && !args[0].equalsIgnoreCase("himself")
 				&& !args[0].equalsIgnoreCase("herself") && !this.admin_list.contains(args[0])) {
-				target = implodeArray(args) + " ";
+				target = implodeArray(args);
 			}
 		}
 
@@ -990,7 +994,7 @@ public class Tim extends PircBot {
 		if (inputArray.length == 0) {
 			AsImplodedString = "";
 		} else {
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			sb.append(inputArray[0]);
 			for (int i = 1; i < inputArray.length; i++) {
 				sb.append(" ");
