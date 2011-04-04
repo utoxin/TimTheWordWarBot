@@ -879,8 +879,8 @@ public class Tim extends PircBot {
 					if (war.time_to_start > 0) {
 						war.time_to_start--;
 						switch ((int) war.time_to_start) {
+							case 60:
 							case 30:
-							case 15:
 							case 5:
 							case 4:
 							case 3:
@@ -889,6 +889,9 @@ public class Tim extends PircBot {
 								this.warStartCount(war);
 								break;
 							default:
+								if (( (int) war.time_to_start ) % 300 == 0) {
+									this.warStartCount(war);
+								}
 								break;
 						}
 						if (war.time_to_start == 0) {
@@ -925,9 +928,16 @@ public class Tim extends PircBot {
 	}
 
 	private void warStartCount(WordWar war) {
-		this.sendMessage(war.getChannel(), war.getName() + ": Starting in "
-										   + ( ( war.time_to_start == 60 ) ? "one minute" : war.time_to_start + ( ( war.time_to_start == 1 ) ? " second" : " seconds" ) )
-										   + "!");
+		if (war.time_to_start < 60) {
+			this.sendMessage(war.getChannel(), war.getName() + ": Starting in "
+											   + war.time_to_start + ( ( war.time_to_start == 1 ) ? " second" : " seconds" )
+											   + "!");
+		} else {
+			int time_to_start = (int) war.time_to_start / 60;
+			this.sendMessage(war.getChannel(), war.getName() + ": Starting in " + time_to_start
+											   + ( ( time_to_start == 1 ) ? " minute" : " minutes" )
+											   + "!");
+		}
 	}
 
 	private void warEndCount(WordWar war) {
