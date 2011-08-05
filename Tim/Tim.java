@@ -330,6 +330,10 @@ public class Tim extends PircBot {
 				System.exit(0);
 			}
 		}
+
+		if (!sender.equals(this.getNick()) && !"".equals(target)) {
+			this.interact(sender, target, action);
+		}
 	}
 
 	@Override
@@ -377,52 +381,47 @@ public class Tim extends PircBot {
                     }
                 }
 			}
-
-            long elapsed = (System.currentTimeMillis()/1000) - this.chatterTimer;
-            long odds = (long) Math.sqrt(elapsed / 60);
-            if (odds > 20) {
-                odds = 20;
-            }
-
-            if (message.toLowerCase().contains("timmy")) {
-                odds = odds * 4;
-            }
-            
-            int i = rand.nextInt(100);
-            if (i < odds) {
-                int j = rand.nextInt(100);                
-
-                if (j > 20) {
-                    int r = this.rand.nextInt(Tim.eightballResponses.length);
-                    this.sendDelayedAction(channel, "mutters under his breath, \"" + Tim.eightballResponses[r] + "\"", rand.nextInt(1500));
-                } else if (j > 10) {
-					this.throwFridge(channel, sender, sender.split(" ", 0), false);
-                } else if (j > 7) {
-                    this.defenestrate(channel, sender, sender.split(" "), false);
-                } else if (j > 3) {
-    				int r = this.rand.nextInt(100);
-                    String response = "";
-                    if (r > 90) {
-                        response = "sings a beautiful song";
-                    } else if (r > 60) {
-                        response = "chants a snappy ditty";
-                    } else if (r > 30) {
-                        response = "starts singing 'It's a Small World'";
-                    } else {
-                        response = "screeches, and all the windows shatter";
-                    }
-                    this.sendAction(channel, response);
-                } else {
-                    this.foof(channel, sender, sender.split(" "), false);
-                }
-
-                this.sendMessage("#timmydebug", "Elapsed Time: "+Long.toString(elapsed)+"  Odds: "+Long.toString(odds)+"  Chatter Timer: "+Long.toString(this.chatterTimer));
-                this.chatterTimer = this.chatterTimer + rand.nextInt((int) elapsed/5);
-                this.sendMessage("#timmydebug", "Updated Chatter Timer: "+Long.toString(this.chatterTimer));
-            }
-        }
+			
+			if (!sender.equals(this.getNick()) && !"".equals(channel)) {
+				this.interact(sender, channel, message);
+			}
+		}
     }
 
+	private void interact(String sender, String channel, String message) {
+		long elapsed = (System.currentTimeMillis()/1000) - this.chatterTimer;
+		long odds = (long) Math.sqrt(elapsed / 10);
+		if (odds > 25) {
+			odds = 25;
+		}
+
+		if (message.toLowerCase().contains("timmy")) {
+			odds = odds * 4;
+		}
+
+		int i = rand.nextInt(100);
+		if (i < odds) {
+			int j = rand.nextInt(100);                
+
+			if (j > 20) {
+				int r = this.rand.nextInt(Tim.eightballResponses.length);
+				this.sendDelayedAction(channel, "mutters under his breath, \"" + Tim.eightballResponses[r] + "\"", rand.nextInt(1500));
+			} else if (j > 10) {
+				this.throwFridge(channel, sender, sender.split(" ", 0), false);
+			} else if (j > 7) {
+				this.defenestrate(channel, sender, sender.split(" "), false);
+			} else if (j > 3) {
+				this.sing(channel);
+			} else {
+				this.foof(channel, sender, sender.split(" "), false);
+			}
+
+			this.sendMessage("#timmydebug", "Elapsed Time: "+Long.toString(elapsed)+"  Odds: "+Long.toString(odds)+"  Chatter Timer: "+Long.toString(this.chatterTimer));
+			this.chatterTimer = this.chatterTimer + rand.nextInt((int) elapsed/5);
+			this.sendMessage("#timmydebug", "Updated Chatter Timer: "+Long.toString(this.chatterTimer));
+		}
+	}
+	
 	@Override
 	protected void onPrivateMessage(String sender, String login, String hostname, String message) {
 		if (this.admin_list.contains(sender)) {
@@ -570,18 +569,7 @@ public class Tim extends PircBot {
 					this.setTopic(channel, topic + " --" + sender);
 				}
 			} else if (command.equals("sing")) {
-				int r = this.rand.nextInt(100);
-				String response = "";
-				if (r > 90) {
-					response = "sings a beautiful song";
-				} else if (r > 60) {
-					response = "chants a snappy ditty";
-				} else if (r > 30) {
-					response = "starts singing 'It's a Small World'";
-				} else {
-					response = "screeches, and all the windows shatter";
-				}
-				this.sendAction(channel, response);
+				this.sing(channel);
 			} else if (command.equals("eightball") || command.equals("8-ball")) {
 				this.eightball(channel, sender, args);
 			} else if (command.equals("woot")) {
@@ -712,6 +700,21 @@ public class Tim extends PircBot {
 		this.sendMessage(channel, Tim.eightballResponses[r]);
 	}
 
+	private void sing(String channel) {
+		int r = this.rand.nextInt(100);
+		String response = "";
+		if (r > 90) {
+			response = "sings a beautiful song";
+		} else if (r > 60) {
+			response = "chants a snappy ditty";
+		} else if (r > 30) {
+			response = "starts singing 'It's a Small World'";
+		} else {
+			response = "screeches, and all the windows shatter";
+		}
+		this.sendAction(channel, response);
+	}
+
 	private void commandment(String channel, String sender, String[] args) {
 		int r = this.rand.nextInt(Tim.commandments.length);
 		if (args != null && args.length == 1 && Double.parseDouble(args[0]) > 0 && Double.parseDouble(args[0]) <= Tim.commandments.length) {
@@ -786,10 +789,10 @@ public class Tim extends PircBot {
 		String colour = Tim.colours[rand.nextInt(Tim.colours.length)];
 
 		if (i > 20) {
-			act = "throws " + target + "through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
+			act = "throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
 		} else if (i > 3) {
 			target = sender;
-			act = "laughs maniacally then throws " + target + "through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
+			act = "laughs maniacally then throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
 		} else {
 			act = "trips and falls out the window!";
 		}
