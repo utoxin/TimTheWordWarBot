@@ -223,6 +223,27 @@ public class Tim extends PircBot {
 		"word-padding", "lemon", "a slice of lemon wrapped 'round a large gold brick",
 		"almost, but not quite, entirely unlike tea", "tea. Earl Grey. Hot.", "orange serbet", "orange pekoe",
 		"licorice", "cherry chocolate lemons",};
+    private static String[] deities = {
+        "Agdistis", "Ah Puch", "Ahura Mazda", "Alberich", "Allah", "Amaterasu", "An", "Anansi", "Anat", "Andvari", 
+        "Anshar", "Anu", "Aphrodite", "Apollo", "Apsu", "Ares", "Artemis", "Asclepius", "Athena", "Athirat", "Athtart", 
+        "Atlas", "Baal", "Ba Xian", "Bacchus", "Balder", "Bast", "Bellona", "Bergelmir", "Bes", "Bixia Yuanjin", "Bragi", 
+        "Brahma", "Brigit", "Camaxtli", "Ceres", "Ceridwen", "Cernunnos", "Chac", "Chalchiuhtlicue", "Charun", "Chemosh", 
+        "Cheng-huang", "Cybele", "Dagon", "Damkina", "Davlin", "Dawn", "Demeter", "Diana", "Di Cang", "Dionysus", "Ea", 
+        "El", "Enki", "Enlil", "Eos", "Epona", "Ereskigal", "Farbauti", "Fenrir", "Forseti", "Fortuna", "Freya", "Freyr", 
+        "Frigg", "Gaia", "Ganesha", "Ganga", "Garuda", "Gauri", "Geb", "Geong Si", "Guanyin", "Hades", "Hanuman", "Hathor", 
+        "Hecate", "Helios", "Heng-o", "Hephaestus", "Hera", "Hermes", "Hestia", "Hod", "Hoderi", "Hoori", "Horus", "Hotei", 
+        "Huitzilopochtli", "Hsi-Wang-Mu", "Hygeia", "Inanna", "Inti", "Iris", "Ishtar", "Isis", "Ixtab", "Izanaki", 
+        "Izanami", "Jesus", "Juno", "Jupiter", "Juturna", "Kagutsuchi", "Kartikeya", "Khepri", "Ki", "Kingu", "Kinich Ahau",
+        "Kishar", "Krishna", "Kuan-yin", "Kukulcan", "Kvasir", "Lakshmi", "Leto", "Liza", "Loki", "Lugh", "Luna", "Magna Mater", 
+        "Maia", "Marduk", "Mars", "Mazu", "Medb", "Mercury", "Mimir", "Min", "Minerva", "Mithras", "Morrigan", "Mot", "Mummu", 
+        "Muses", "Nammu", "Nanna", "Nanse", "Neith", "Nemesis", "Nephthys", "Neptune", "Nergal", "Ninazu", "Ninhurzag", "Nintu", 
+        "Ninurta", "Njord", "Nugua", "Nut", "Odin", "Ohkuninushi", "Ohyamatsumi", "Orgelmir", "Osiris", "Ostara", "Pan", 
+        "Parvati", "Phaethon", "Phoebe", "Phoebus Apollo", "Pilumnus", "Poseidon", "Quetzalcoatl", "Rama", "Re", "Rhea", 
+        "Sabazius", "Sarasvati", "Selene", "Shiva", "Seshat", "Set", "Shamash", "Shapsu", "Shen Yi", "Shiva", "Shu", "Si-Wang-Mu", 
+        "Sin", "Sirona", "Sol", "Surya", "Susanoh", "Tawaret", "Tefnut", "Tezcatlipoca", "Thanatos", "Thor", "Thoth", "Tiamat", 
+        "Tianhou", "Tlaloc", "Tonatiuh", "Toyo-Uke-Bime", "Tyche", "Tyr", "Utu", "Uzume", "Vediovis", "Venus", "Vesta", "Vishnu", 
+        "Volturnus", "Vulcan", "Xipe", "Xi Wang-mu", "Xochipilli", "Xochiquetzal", "Yam", "Yarikh", "Yhwh", "Ymir", "Yu-huang", 
+        "Yum Kimil", "Zeus", "Chris T. Baty", "Cthulu", "Barney", "himself", "Utoxin",};
 	private Map<String, WordWar> wars;
 	private WarClockThread warticker;
 	private Timer ticker;
@@ -233,6 +254,7 @@ public class Tim extends PircBot {
 	private Collection admin_list;
 	private Collection adult_channels;
 	private String password;
+    private long chatterTimer;
 
 	public Tim() {
         Statement stmt;
@@ -256,7 +278,8 @@ public class Tim extends PircBot {
 		ticker = new Timer(true);
 		ticker.scheduleAtFixedRate(warticker, 0, 1000);
 		wars_lock = new Semaphore(1, true);
-
+        chatterTimer = System.currentTimeMillis()/1000;
+        
 		rand = new Random();
 		this.shutdown = false;
 	}
@@ -312,6 +335,10 @@ public class Tim extends PircBot {
 				System.exit(0);
 			}
 		}
+
+		if (!sender.equals(this.getNick()) && !"".equals(target)) {
+			this.interact(sender, target, action);
+		}
 	}
 
 	@Override
@@ -322,37 +349,84 @@ public class Tim extends PircBot {
 			// Find all messages that start with ! and pass them to a method for further processing.
 			if (message.charAt(0) == '!') {
 				this.doCommand(channel, sender, "!", message);
+                return;
 			} // Notation for wordcounts
 			else if (message.charAt(0) == '@') {
 				this.doCommand(channel, sender, "@", message);
+                return;
 			}
 			// Other fun stuff we can make him do
 			if (message.toLowerCase().contains("hello") && message.toLowerCase().contains(this.getNick().toLowerCase())) {
 				this.sendMessage(channel, "Hi, " + sender + "!");
+                return;
 			} else if (message.toLowerCase().contains("how many lights")) {
 				this.sendMessage(channel, "There are FOUR LIGHTS!");
+                return;
 			} else if (message.contains(":(")) {
 				this.sendAction(channel, "gives " + sender + " a hug");
+                return;
 			} else if (message.contains(":'())")) {
 				this.sendAction(channel, "passes " + sender + " a tissue");
+                return;
 			} else if (message.toLowerCase().contains("are you thinking what i'm thinking")
 				|| message.toLowerCase().contains("are you pondering what i'm pondering")) {
 				int i = this.rand.nextInt(Tim.aypwips.length - 1);
 				this.sendMessage(channel, String.format(Tim.aypwips[i], sender));
+                return;
 			} else {
 				if (Pattern.matches("(?i).*how do i (change|set) my (nick|name).*", message)) {
 					this.sendMessage(channel, String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", sender));
-				} else if (Pattern.matches("(?i)Timmy.*[?]", message)) {
+                    return;
+                } else if (Pattern.matches("(?i)Timmy.*[?]", message)) {
                     int r = this.rand.nextInt(100);
 
                     if (r < 50) {
                         this.eightball(channel, sender, null);
+                        return;
                     }
                 }
 			}
+			
+			if (!sender.equals(this.getNick()) && !"".equals(channel)) {
+				this.interact(sender, channel, message);
+			}
+		}
+    }
+
+	private void interact(String sender, String channel, String message) {
+		long elapsed = (System.currentTimeMillis()/1000) - this.chatterTimer;
+		long odds = (long) Math.sqrt(elapsed / 10);
+		if (odds > 25) {
+			odds = 25;
+		}
+
+		if (message.toLowerCase().contains("timmy")) {
+			odds = odds * 4;
+		}
+
+		int i = rand.nextInt(100);
+		if (i < odds) {
+			int j = rand.nextInt(100);                
+
+			if (j > 20) {
+				int r = this.rand.nextInt(Tim.eightballResponses.length);
+				this.sendDelayedAction(channel, "mutters under his breath, \"" + Tim.eightballResponses[r] + "\"", rand.nextInt(1500));
+			} else if (j > 10) {
+				this.throwFridge(channel, sender, sender.split(" ", 0), false);
+			} else if (j > 7) {
+				this.defenestrate(channel, sender, sender.split(" "), false);
+			} else if (j > 3) {
+				this.sing(channel);
+			} else {
+				this.foof(channel, sender, sender.split(" "), false);
+			}
+
+			this.sendMessage("#timmydebug", "Elapsed Time: "+Long.toString(elapsed)+"  Odds: "+Long.toString(odds)+"  Chatter Timer: "+Long.toString(this.chatterTimer));
+			this.chatterTimer = this.chatterTimer + rand.nextInt((int) elapsed/5);
+			this.sendMessage("#timmydebug", "Updated Chatter Timer: "+Long.toString(this.chatterTimer));
 		}
 	}
-
+	
 	@Override
 	protected void onPrivateMessage(String sender, String login, String hostname, String message) {
 		if (this.admin_list.contains(sender)) {
@@ -500,18 +574,7 @@ public class Tim extends PircBot {
 					this.setTopic(channel, topic + " --" + sender);
 				}
 			} else if (command.equals("sing")) {
-				int r = this.rand.nextInt(100);
-				String response = "";
-				if (r > 90) {
-					response = "sings a beautiful song";
-				} else if (r > 60) {
-					response = "chants a snappy ditty";
-				} else if (r > 30) {
-					response = "starts singing 'It's a Small World'";
-				} else {
-					response = "screeches, and all the windows shatter";
-				}
-				this.sendAction(channel, response);
+				this.sing(channel);
 			} else if (command.equals("eightball") || command.equals("8-ball")) {
 				this.eightball(channel, sender, args);
 			} else if (command.equals("woot")) {
@@ -571,6 +634,8 @@ public class Tim extends PircBot {
 				}
 			} else if (command.equals("defenestrate")) {
 				this.defenestrate(channel, sender, args, true);
+			} else if (command.equals("summon")) {
+				this.summon(channel, sender, args, true);
 			} else if (command.equals("foof")) {
 				this.foof(channel, sender, args, true);
 			} else if (command.equals("reset")) {
@@ -621,7 +686,7 @@ public class Tim extends PircBot {
 					this.sendDelayedMessage(channel, "Like the Apocalypse.", 1000);
 					this.sendDelayedAction(channel, "cowers in fear", 2400);
 				} else if (args[0].equalsIgnoreCase(this.getNick())) {
-					this.sendAction(channel, "licks " + args[0] + ". Tastes like tastes like tastes like meta.");
+					this.sendAction(channel, "licks " + args[0] + ". Tastes like meta.");
 				} else if (this.admin_list.contains(args[0])) {
 					this.sendAction(channel, "licks " + argStr + ". Tastes like perfection, pure and simple.");
 				} else {
@@ -638,6 +703,21 @@ public class Tim extends PircBot {
 	private void eightball(String channel, String sender, String[] args) {
 		int r = this.rand.nextInt(Tim.eightballResponses.length);
 		this.sendMessage(channel, Tim.eightballResponses[r]);
+	}
+
+	private void sing(String channel) {
+		int r = this.rand.nextInt(100);
+		String response = "";
+		if (r > 90) {
+			response = "sings a beautiful song";
+		} else if (r > 60) {
+			response = "chants a snappy ditty";
+		} else if (r > 30) {
+			response = "starts singing 'It's a Small World'";
+		} else {
+			response = "screeches, and all the windows shatter";
+		}
+		this.sendAction(channel, response);
 	}
 
 	private void commandment(String channel, String sender, String[] args) {
@@ -714,13 +794,44 @@ public class Tim extends PircBot {
 		String colour = Tim.colours[rand.nextInt(Tim.colours.length)];
 
 		if (i > 20) {
-			act = "throws " + target + "through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
+			act = "throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
 		} else if (i > 3) {
 			target = sender;
-			act = "laughs maniacally then throws " + target + "through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
+			act = "laughs maniacally then throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
 		} else {
 			act = "trips and falls out the window!";
 		}
+		this.sendDelayedAction(channel, act, time);
+	}
+
+	private void summon(String channel, String sender, String[] args, Boolean righto) {
+		String target = "";
+		if (args == null || args.length == 0) {
+            target = Tim.deities[rand.nextInt(Tim.deities.length)];
+		} else {
+            target = implodeArray(args);
+        }
+
+		if (righto) {
+			this.sendMessage(channel, "Righto...");
+		}
+
+		int time = 2 + rand.nextInt(15);
+		time *= 1000;
+		this.sendDelayedAction(channel, "prepares the summoning circle required to bring "+target+" into the world...", time);
+		time += rand.nextInt(10) * 500 + 1500;
+
+		int i = rand.nextInt(100);
+		String act = "";
+
+		if (i > 50) {
+            act = "completes the ritual successfully, drawing "+target+" through, and binding them into the summoning circle!";
+        } else if (i > 30) {
+            act = "completes the ritual, drawing "+target+" through, but something goes wrong and they fade away after just a few moments.";
+		} else {
+            String target2 = Tim.deities[rand.nextInt(Tim.deities.length)];
+            act = "attempts to summon "+target+", but something goes horribly wrong. After the smoke clears, "+target2+" is left standing on the smoldering remains of the summoning circle.";
+        }
 		this.sendDelayedAction(channel, act, time);
 	}
 
@@ -871,7 +982,7 @@ public class Tim extends PircBot {
 
 	private void _tick() {
 		this._warsUpdate();
-	}
+    }
 
 	private void _warsUpdate() {
 		if (this.wars != null && this.wars.size() > 0) {
@@ -884,8 +995,8 @@ public class Tim extends PircBot {
 					if (war.time_to_start > 0) {
 						war.time_to_start--;
 						switch ((int) war.time_to_start) {
+							case 60:
 							case 30:
-							case 15:
 							case 5:
 							case 4:
 							case 3:
@@ -894,6 +1005,9 @@ public class Tim extends PircBot {
 								this.warStartCount(war);
 								break;
 							default:
+								if (( (int) war.time_to_start ) % 300 == 0) {
+									this.warStartCount(war);
+								}
 								break;
 						}
 						if (war.time_to_start == 0) {
@@ -930,9 +1044,16 @@ public class Tim extends PircBot {
 	}
 
 	private void warStartCount(WordWar war) {
-		this.sendMessage(war.getChannel(), war.getName() + ": Starting in "
-										   + ( ( war.time_to_start == 60 ) ? "one minute" : war.time_to_start + ( ( war.time_to_start == 1 ) ? " second" : " seconds" ) )
-										   + "!");
+		if (war.time_to_start < 60) {
+			this.sendMessage(war.getChannel(), war.getName() + ": Starting in "
+											   + war.time_to_start + ( ( war.time_to_start == 1 ) ? " second" : " seconds" )
+											   + "!");
+		} else {
+			int time_to_start = (int) war.time_to_start / 60;
+			this.sendMessage(war.getChannel(), war.getName() + ": Starting in " + time_to_start
+											   + ( ( time_to_start == 1 ) ? " minute" : " minutes" )
+											   + "!");
+		}
 	}
 
 	private void warEndCount(WordWar war) {
@@ -983,7 +1104,9 @@ public class Tim extends PircBot {
 		} else if (channels instanceof String) {
 			this.joinChannel((String) Tim.config.getProperty("channels.channel"));
 		}
-	}
+
+        this.joinChannel("#timmydebug");
+    }
 
 	public static void main(String[] args) {
 		Tim bot = new Tim();
