@@ -976,16 +976,8 @@ public class Tim extends PircBot {
 		this._warsUpdate();
     }
 
-    private void _chatterCheck() {
-    }
-
-    private void _updateChatterTimer() {
-            this.chatterTimer = System.currentTimeMillis()/1000;
-    }
-    
 	private void _warsUpdate() {
 		if (this.wars != null && this.wars.size() > 0) {
-            this._updateChatterTimer();
 			try {
 				this.wars_lock.acquire();
 				Iterator<String> itr = this.wars.keySet().iterator();
