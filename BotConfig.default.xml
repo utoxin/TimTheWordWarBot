@@ -29,6 +29,10 @@
 -->
 
 <config>
+	<sql_server>localhost</sql_server>
+	<sql_database>TimmyDB</sql_database>
+	<sql_user>user</sql_user>
+	<sql_password>password</sql_password>
     <server>irc.example.net</server>
     <channels>
         <channel>#example</channel>

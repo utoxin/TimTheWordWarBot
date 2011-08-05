@@ -28,7 +28,7 @@ import java.util.regex.*;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
-import com.mysql.jdbc.*;
+import java.sql.*;
 import org.jibble.pircbot.*;
 
 public class Tim extends PircBot {
@@ -38,7 +38,7 @@ public class Tim extends PircBot {
 	Defining these at the top so I can conveniently change
 	them in one place between checkins
 	 */
-	public String autonick = "Timmy";
+	public String autonick = "TimmyTest";
 	public static String[] autochannels = {
 		"#bottest"
 	};
@@ -255,10 +255,9 @@ public class Tim extends PircBot {
 	private Collection adult_channels;
 	private String password;
     private long chatterTimer;
+	private Connection mysql;
 
 	public Tim() {
-        Statement stmt;
-
         Object nicks = Tim.config.getProperty("nicks.nick");
 		if (nicks instanceof Collection) {
 			this.setName((String) Tim.config.getProperty("nicks.nick(0).name"));
@@ -279,7 +278,18 @@ public class Tim extends PircBot {
 		ticker.scheduleAtFixedRate(warticker, 0, 1000);
 		wars_lock = new Semaphore(1, true);
         chatterTimer = System.currentTimeMillis()/1000;
-        
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			String url = "jdbc:mysql://"+Tim.config.getString("sql_server")+":3306/"+Tim.config.getString("sql_database");
+			try {
+				this.mysql = DriverManager.getConnection(url, Tim.config.getString("sql_user"), Tim.config.getString("sql_password"));
+			} catch (SQLException ex) {
+				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		} catch (ClassNotFoundException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
 		rand = new Random();
 		this.shutdown = false;
 	}
