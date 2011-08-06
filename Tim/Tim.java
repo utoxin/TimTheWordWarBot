@@ -390,9 +390,9 @@ public class Tim extends PircBot {
 
 	private void interact(String sender, String channel, String message) {
 		long elapsed = (System.currentTimeMillis()/1000) - this.chatterTimer;
-		long odds = (long) Math.sqrt(elapsed / 10);
-		if (odds > 25) {
-			odds = 25;
+		long odds = (long) Math.sqrt(elapsed / 15);
+		if (odds > 20) {
+			odds = 20;
 		}
 
 		if (message.toLowerCase().contains("timmy")) {
@@ -417,7 +417,7 @@ public class Tim extends PircBot {
 			}
 
 			this.sendMessage("#timmydebug", "Elapsed Time: "+Long.toString(elapsed)+"  Odds: "+Long.toString(odds)+"  Chatter Timer: "+Long.toString(this.chatterTimer));
-			this.chatterTimer = this.chatterTimer + rand.nextInt((int) elapsed/5);
+			this.chatterTimer = this.chatterTimer + rand.nextInt((int) elapsed/2);
 			this.sendMessage("#timmydebug", "Updated Chatter Timer: "+Long.toString(this.chatterTimer));
 		}
 	}
