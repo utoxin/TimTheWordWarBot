@@ -115,25 +115,26 @@ public class Tim extends PircBot {
 		"Get me a drink and ask again", "Indubidably", "What, you never just want to say hi?", "Never in your wildest dreams",
 		"Only in your wildest dreams", "HAHAHAHAHAHAHAHAhahahaaa...  haahaaa...  phew...  Oh yeah, totally do it.",
 		"You're joking!", "What even is that?", "Penguins", "Ninjas", "Zombies", "Pirates", "Robots",
-		"Throw a fridge at something", "The power of Baty compels you!", "Chris T. Baty wills it.", "Stop shaking me!",
+		"Throw a fridge at something", "The power of Baty compels you!", "Chris Baty wills it.", "Stop shaking me!",
 		"Don't touch me there!", "I need a RESPONSIBLE adult!", "As I see it, yes", "It is certain", "It is decidedly so",
 		"Most likely", "Outlook good", "Signs point to yes", "Without a doubt", "You may rely on it", "Better not tell you now",
 		"Concetrate, and ask again", "Very doubtful", "Of course! Wait... what did I just agree to?", "Ye... er, I mean no",
 		"Absolutely! Not.", "Why would you even ASK that?", "All your base are belong to me", "No. I mean Yes. Yes!",
 		"The answer to your question lies in your heart. Please tell it to stop - lying is bad for your cholesterol.",
-		"Have you tried sidling up to your problem?", "I didn't understand the question.", "YA RLY",};
+		"Have you tried sidling up to your problem?", "I didn't understand the question.", "YA RLY", "42", "101010",
+		""};
 	private static String[] greetings = {
-		"Welcome to the Congregation of Chris T. Baty!", "Have you backed up your writing today?",
+		"Welcome to the Congregation of Chris Baty!", "Have you backed up your writing today?",
 		"Have you thanked an ML or Staff member recently?", "Have you donated yet this year?",
 		"Fact: Donators are more likely to win.",};
 	private static String[] commandments = {
-		"1. Thou shalt not edit during the Holy Months.", "2. Thou shalt daily offer up at least 1,667 words to the altar of Chris T. Baty.",
+		"1. Thou shalt not edit during the Holy Months.", "2. Thou shalt daily offer up at least 1,667 words to the altar of Chris Baty.",
 		"3. Keep thou holy the first and last days of the Holy Months, which are April and November.",
-		"4. Take not the name of Chris T. Baty in vain, unless it doth provide thee with greater word count, which is good.",
-		"5. Worry not about the quality of thy words, for Chris T. Baty cares not. Quantity is that which pleases Baty.",
+		"4. Take not the name of Chris Baty in vain, unless it doth provide thee with greater word count, which is good.",
+		"5. Worry not about the quality of thy words, for Chris Baty cares not. Quantity is that which pleases Baty.",
 		"6. Thou must tell others of the way of the truth, by leading by example in your region.",
 		"7. Honor thou those who sacrifice their time. They are known as MLs and Staff members, and they are blessed.",
-		"8. Once in your life, ye shall make a pilgrimage to NOWD to honor thine Chris T. Baty",
+		"8. Once in your life, ye shall make a pilgrimage to NOWD to honor thine Chris Baty",
 		"9. Those that sacrifice their money shall be blessed with gold, which shall be a sign unto others.", "10. <<WRITE THIS LATER>>",
 		"11. Thou shalt back up thy writing often, for it is displeasing in the eyes of Baty that you should lose it.",
 		"12. No narrative? No botheration!",};
@@ -240,7 +241,8 @@ public class Tim extends PircBot {
         "Sin", "Sirona", "Sol", "Surya", "Susanoh", "Tawaret", "Tefnut", "Tezcatlipoca", "Thanatos", "Thor", "Thoth", "Tiamat", 
         "Tianhou", "Tlaloc", "Tonatiuh", "Toyo-Uke-Bime", "Tyche", "Tyr", "Utu", "Uzume", "Vediovis", "Venus", "Vesta", "Vishnu", 
         "Volturnus", "Vulcan", "Xipe", "Xi Wang-mu", "Xochipilli", "Xochiquetzal", "Yam", "Yarikh", "Yhwh", "Ymir", "Yu-huang", 
-        "Yum Kimil", "Zeus", "Chris T. Baty", "Cthulu", "Barney", "himself", "Utoxin",};
+        "Yum Kimil", "Zeus", "Chris Baty", "Cthulhu", "Barney", "himself", "Utoxin", "his evil twin", "his better half",
+		"Sailor Moon", "The Nothing", "Arhu", "Falcor", "... You don't want to know."};
 	private Map<String, WordWar> wars;
 	private WarClockThread warticker;
 	private Timer ticker;
