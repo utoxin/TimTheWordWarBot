@@ -1240,6 +1240,12 @@ public class Tim extends PircBot {
 			s.setBoolean(1, adult);
 			s.setString(2, channel);
 			s.executeUpdate();
+
+			if (adult) {
+				this.adult_channels.add(channel);
+			} else {
+				this.adult_channels.remove(channel);
+			}
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
