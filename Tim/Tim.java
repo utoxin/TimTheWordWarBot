@@ -1218,7 +1218,7 @@ public class Tim extends PircBot {
 		try {
 			PreparedStatement s = this.mysql.prepareStatement("INSERT INTO `channels` (`channel`, `adult`) VALUES (?, 0)");
 			s.setString(1, channel);
-			s.executeQuery();
+			s.executeUpdate();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -1228,7 +1228,7 @@ public class Tim extends PircBot {
 		try {
 			PreparedStatement s = this.mysql.prepareStatement("DELETE FROM `channels` WHERE `channel` = ?");
 			s.setString(1, channel);
-			s.executeQuery();
+			s.executeUpdate();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -1239,7 +1239,7 @@ public class Tim extends PircBot {
 			PreparedStatement s = this.mysql.prepareStatement("UPDATE `channels` SET adult = ? WHERE `channel` = ?");
 			s.setBoolean(1, adult);
 			s.setString(2, channel);
-			s.executeQuery();
+			s.executeUpdate();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
