@@ -157,13 +157,13 @@ CREATE TABLE IF NOT EXISTS `commandments` (
 
 INSERT INTO `commandments` (`id`, `string`) VALUES
 (1, '1. Thou shalt not edit during the Holy Months.'),
-(2, '2. Thou shalt daily offer up at least 1,667 words to the altar of Chris T. Baty.'),
+(2, '2. Thou shalt daily offer up at least 1,667 words to the altar of Chris Baty.'),
 (3, '3. Keep thou holy the first and last days of the Holy Months, which are April and November.'),
-(4, '4. Take not the name of Chris T. Baty in vain, unless it doth provide thee with greater word count, which is good.'),
-(5, '5. Worry not about the quality of thy words, for Chris T. Baty cares not. Quantity is that which pleases Baty.'),
+(4, '4. Take not the name of Chris Baty in vain, unless it doth provide thee with greater word count, which is good.'),
+(5, '5. Worry not about the quality of thy words, for Chris Baty cares not. Quantity is that which pleases Baty.'),
 (6, '6. Thou must tell others of the way of the truth, by leading by example in your region.'),
 (7, '7. Honor thou those who sacrifice their time. They are known as MLs and Staff members, and they are blessed.'),
-(8, '8. Once in your life, ye shall make a pilgrimage to NOWD to honor thine Chris T. Baty'),
+(8, '8. Once in your life, ye shall make a pilgrimage to NOWD to honor thine Chris Baty'),
 (9, '9. Those that sacrifice their money shall be blessed with gold, which shall be a sign unto others.'),
 (10, '10. <<WRITE THIS LATER>>'),
 (11, '11. Thou shalt back up thy writing often, for it is displeasing in the eyes of Baty that you should lose it.'),
@@ -393,11 +393,18 @@ INSERT INTO `deities` (`id`, `string`) VALUES
 (215, 'Yu-huang'),
 (216, 'Yum Kimil'),
 (217, 'Zeus'),
-(218, 'Chris T. Baty'),
+(218, 'Chris Baty'),
 (219, 'Cthulu'),
 (220, 'Barney'),
 (221, 'himself'),
-(222, 'Utoxin');
+(222, 'Utoxin'),
+(223, 'his evil twin'),
+(224, 'his better half'),
+(225, 'Sailor Moon'),
+(226, 'The Nothing'),
+(227, 'Arhu'),
+(228, 'Falcor'),
+(228, '... You don\'t want to know.');
 
 CREATE TABLE IF NOT EXISTS `eightballs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -452,7 +459,7 @@ INSERT INTO `eightballs` (`id`, `string`) VALUES
 (44, 'Robots'),
 (45, 'Throw a fridge at something'),
 (46, 'The power of Baty compels you!'),
-(47, 'Chris T. Baty wills it.'),
+(47, 'Chris Baty wills it.'),
 (48, 'Stop shaking me!'),
 (49, 'Don''t touch me there!'),
 (50, 'I need a RESPONSIBLE adult!'),
@@ -476,7 +483,9 @@ INSERT INTO `eightballs` (`id`, `string`) VALUES
 (68, 'The answer to your question lies in your heart. Please tell it to stop - lying is bad for your cholesterol.'),
 (69, 'Have you tried sidling up to your problem?'),
 (70, 'I didn''t understand the question.'),
-(71, 'YA RLY');
+(71, 'YA RLY'),
+(72, '42'),
+(73, '101010');
 
 CREATE TABLE IF NOT EXISTS `flavours` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -536,7 +545,7 @@ CREATE TABLE IF NOT EXISTS `greetings` (
 ) DEFAULT CHARSET=utf8;
 
 INSERT INTO `greetings` (`id`, `string`) VALUES
-(1, 'Welcome to the Congregation of Chris T. Baty!'),
+(1, 'Welcome to the Congregation of Chris Baty!'),
 (2, 'Have you backed up your writing today?'),
 (3, 'Have you thanked an ML or Staff member recently?'),
 (4, 'Have you donated yet this year?'),
