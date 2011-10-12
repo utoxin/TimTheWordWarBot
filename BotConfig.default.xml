@@ -29,24 +29,8 @@
 -->
 
 <config>
-    <server>irc.example.net</server>
-    <channels>
-        <channel>#example</channel>
-    </channels>
-    <nicks>
-        <nick>
-            <name>Timmy</name>
-            <pass>Password</pass>
-        </nick>
-    </nicks>
-    <admins>
-        <admin>AdminUser</admin>
-    </admins>
-	<ignore>
-		<nick>TrutherWriter</nick>
-		<nick>PLACEHOLDER</nick>
-	</ignore>
-    <adultchannels>
-        <channel>#channel</channel>
-    </adultchannels>
+	<sql_server>localhost</sql_server>
+	<sql_database>TimmyDB</sql_database>
+	<sql_user>user</sql_user>
+	<sql_password>password</sql_password>
 </config>
