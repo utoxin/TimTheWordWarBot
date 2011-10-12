@@ -18,7 +18,6 @@ package Tim;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
@@ -29,20 +28,14 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.jibble.pircbot.*;
 
 public class Tim extends PircBot {
 	public static AppConfig config = AppConfig.getInstance();
-
-	/*
-	Defining these at the top so I can conveniently change
-	them in one place between checkins
-	 */
-	public String autonick = "TimmyTest";
-	public static String[] autochannels = {
-		"#bottest"
-	};
-	public static String autoserver = "irc.kydance.net";
 
 	public class WarClockThread extends TimerTask {
 		private Tim parent;
@@ -101,186 +94,30 @@ public class Tim extends PircBot {
 
 		}
 	}
-	private static String[] colours = {
-		"avocado green", "powder blue", "pale yellow", "sienna", "crimson", "lime green", "fushia",
-		"orangeish yellow", "neon pink", "topaz", "taupe", "silver", "anguish", "teal", "aqua", "purple",
-		"beige", "burgundy", "scarlet", "navy", "turquoise", "cerulean", "olive", "black", "chocolate", "beige",
-		"invisible", "witchling", "maroon", "#BBC401", "oxide of chromium", "aubergine", "harvest gold",
-		"sparkly vampire", "denim", "dirty yellow", "desert", "dessert", "dirt", "#8F223B", "cinnamon",
-		"chrome", "leopard", "forest pink", "black", "blacker", "blackest", "poison", "Japan",};
-	private static String[] eightballResponses = {
-		"Direction unclear", "Yes", "No", "Maybe, if you wiggle it a bit", "It depends", "Sometimes",
-		"Ask later", "Absolutely", "Porcupine", "Captain Picard is not aboard the Enterprise", "Probably",
-		"I think so", "It may be difficult", "No problem", "You have nothing to fear", "It is assured",
-		"Have you tried hitting it?", "Maybe", "Yes", "Absolutely", "No", "Never", "Not in a million years",
-		"I'm sure of it", "Answer unclear", "Try again later", "Ask me again tomorrow", "No, you!",
-		"That's what she said", "Only if you hop on one foot and sing a song", "Have a drink and ask again",
-		"Get me a drink and ask again", "Indubidably", "What, you never just want to say hi?", "Never in your wildest dreams",
-		"Only in your wildest dreams", "HAHAHAHAHAHAHAHAhahahaaa...  haahaaa...  phew...  Oh yeah, totally do it.",
-		"You're joking!", "What even is that?", "Penguins", "Ninjas", "Zombies", "Pirates", "Robots",
-		"Throw a fridge at something", "The power of Baty compels you!", "Chris T. Baty wills it.", "Stop shaking me!",
-		"Don't touch me there!", "I need a RESPONSIBLE adult!", "As I see it, yes", "It is certain", "It is decidedly so",
-		"Most likely", "Outlook good", "Signs point to yes", "Without a doubt", "You may rely on it", "Better not tell you now",
-		"Concetrate, and ask again", "Very doubtful", "Of course! Wait... what did I just agree to?", "Ye... er, I mean no",
-		"Absolutely! Not.", "Why would you even ASK that?", "All your base are belong to me", "No. I mean Yes. Yes!",
-		"The answer to your question lies in your heart. Please tell it to stop - lying is bad for your cholesterol.",
-		"Have you tried sidling up to your problem?", "I didn't understand the question.", "YA RLY",};
-	private static String[] greetings = {
-		"Welcome to the Congregation of Chris T. Baty!", "Have you backed up your writing today?",
-		"Have you thanked an ML or Staff member recently?", "Have you donated yet this year?",
-		"Fact: Donators are more likely to win.",};
-	private static String[] commandments = {
-		"1. Thou shalt not edit during the Holy Months.", "2. Thou shalt daily offer up at least 1,667 words to the altar of Chris T. Baty.",
-		"3. Keep thou holy the first and last days of the Holy Months, which are April and November.",
-		"4. Take not the name of Chris T. Baty in vain, unless it doth provide thee with greater word count, which is good.",
-		"5. Worry not about the quality of thy words, for Chris T. Baty cares not. Quantity is that which pleases Baty.",
-		"6. Thou must tell others of the way of the truth, by leading by example in your region.",
-		"7. Honor thou those who sacrifice their time. They are known as MLs and Staff members, and they are blessed.",
-		"8. Once in your life, ye shall make a pilgrimage to NOWD to honor thine Chris T. Baty",
-		"9. Those that sacrifice their money shall be blessed with gold, which shall be a sign unto others.", "10. <<WRITE THIS LATER>>",
-		"11. Thou shalt back up thy writing often, for it is displeasing in the eyes of Baty that you should lose it.",
-		"12. No narrative? No botheration!",};
-	private static String[] aypwips = {
-		"Sure, %s, but how are we going to find chaps our size?",
-		"I think so, %s, but where we going to find a duck and a hose at this hour?",
-		"Well, I think so %s, but burlap chafes me so.",
-		"I think so %s, but this time you put the trousers on the chimp.",
-		"I think so %s, but this time you wear the tutu.",
-		"I think so %s, but me and Pipi Longstocking, I mean, what would the children look like?",
-		"Well, I think so %s, but if we didn't have ears, we'd look like weasels.",
-		"Wuh, I think so %s, but isn't Regis Philbin already married?",
-		"Uh ... yeah, %s, but where are we going to find rubber pants our size?",
-		"I think so, but where will we find an open tattoo parlor at this time of night?",
-		"I think so %s, but culottes have a tendency to ride up so.",
-		"Wuh, I think so, but we'll never get a monkey to use dental floss.",
-		"I think so %s, but if they called them 'sad meals', kids wouldn't buy them.",
-		"Well, I think so %s, but I can't memorize a whole opera in Yiddish.",
-		"Aww, I think so, %s, but balancing a family and a career ... uh, it's all too much for me.",
-		"I think so %s, but there's still a bug in there from last time.",
-		"I think so %s, but I get all clammy inside the tent. ",
-		"I think so %s, but I don't think Kay Ballard is in the union?",
-		"I think so %s, but the Rockettes? I mean, it's mostly girls, isn't it?",
-		"I think so %s, but pants with horizontal stripes makes me look chubby.",
-		"Well, I think so %s, but pantyhose are so uncomfortable in the summertime.",
-		"I think so %s, but it's a miracle this one grew back.",
-		"Well, I think so %s but first you'd have to take that whole bridge apart wouldn't you?",
-		"I think so, %s, but 'Snowball for Windows'?",
-		"Well, I think so %s, but 'apply North Pole' to what?",
-		"I think so %s, but, snort, no, no, it's too stupid.",
-		"Umm, I think so %s, but umm, why would Sophia Loren do a musical?",
-		"Umm, I think so %s, but what if the chicken won't wear the nylons?",
-		"I think so %s, but isn't that why they invented tube socks?",
-		"I think so %s but what if we stick to the seat covers?",
-		"Ewww, I think so %s, but I think I'd rather eat the Macarena.",
-		"I think so %s, but don't we need a pool to play Marco Polo?",
-		"Well, I think so, but Kevin Costner with an English accent?",
-		"Well, I think so %s, but do I really need two tongues?",
-		"We eat the box?",
-		"I think so %s, but don't camels spit a lot?",
-		"I think so %s, but Pete Rose? I mean, can we trust him?",
-		"I think so %s, but how do we get a pair of Abe Vegoda's pants?",
-		"I think so %s, but why would Peter Bogdanovich?",
-		"Well, I think so %s, but if Jimmy cracks corn and no one cares, why does he keep doing it?",
-		"I think so %s, but isn't a cucumber that small called a gerkin?",
-		"I think so %s, but if we had a snowmobile, wouldn't it melt before summer?",
-		"I think so %s, but how we will get all seven dwarves to shave their legs?",
-		"I think so %s, but how do we get the Spice Girls into the paella?",
-		"I think so %s, but if we get Sam spayed, he'll never have any puppies.",
-		"Well, I think so %s, but wouldn't anything lose its flavor on the bedpost overnight?",
-		"I think so %s, but three round meals a day wouldn't be as hard to swallow.",
-		"But calling it Pu-Pu platter? What were they thinking?",
-		"I think so %s, but if we give peas a chance, won't the lima beans feel left out?",
-		"I think so %s, but if the plural of mouse is mice, wouldn't the plural of spouse be spice?",
-		"I think so %s, but can the gummi worms really live in peace with the Marshmellow Chicks?",
-		"Yes %s, but if our knees bent the other way, how would we ride a bicycle?",
-		"Yes, but why does the chicken cross the road, huh, if not for love? Oh, I don't know.",
-		"I think so %s, but I prefer space jelly.",
-		"I think so %s, but why would anyone want a depressed tongue?",
-		"I think so %s, but who wants to see Snow White and the Seven Samuri?",
-		"I think so %s, but then my name would be 'thumby'.",
-		"I think so %s, but I find scratching just makes it worse.",
-		"I think so %s, but shouldn't the bat boy be wearing a cape.",
-		"Umm, I think so %s, but why would anyone want to Pierce Brosnan?",
-		"Me thinks so %s, verily, but doest thou think Pete Rose by any other name would still smell as sweaty?",
-		"I think so %s, but will they let the Cranberry Duchess stay in the Lincoln Bedroon?",
-		"I think so %s, but why does a forklift have to be so big if all it does is lift forks?",
-		"I think so %s, but wouldn't his movies be more suitable for children if he was named 'Jean Claude Van Darn'?",
-		"I think so %s, but what if the hippopotimus won't wear the beach thong?",
-		"Whew! I'd say the odds of that are terribly slim.",
-		"I think so %s, but if was only supposed to be a three hour tour, why did Howells bring all his money?",
-		"I think so %s, but Zero Mostel times anything is still Zero Mostel.",
-		"I think so %s, but if we have nothing to fear but fear itself, then why does Elenor Roosevelt wear that spooky mask?",
-		"Umm, I think so Big %s Fish Face Stove Pipe Wiggle Room Eileen. but if you get a long little doggie, wouldn't you just call it a dachshund?",
-		"I think so %s, but then I'd have to know what pondering is, wouldn't I?",
-		"I think so %s, but 'instant karma' always gets so lumpy.",
-		"Umm, I think so %s, but a show about two talking lab mice? It'll never get on the air!",};
-	private static String[] flavours = {
-		"peach fudge", "juniper", "vanilla", "blue", "angry buffalo", "coffe", "insanity-covered squid", "white pen",
-		"fried chicken", "peppermint chocolate", "crab apple", "pine needles", "mashed porkchops", "torment", "lightbulb",
-		"silicon dioxide", "arsenic", "almonds", "strontium-237", "Popplers", "a little-endian unsigned 42", "pudding",
-		"Nanaimo bars", "toffee", "farts", "rubber bands", "hilarity", "mould... have you gone bad?", "MattKinsi",
-		"dasies", "squid-covered insanity", "GLaDOS... I should call her sometime", "inspiration", "stagnation",
-		"word-padding", "lemon", "a slice of lemon wrapped 'round a large gold brick",
-		"almost, but not quite, entirely unlike tea", "tea. Earl Grey. Hot.", "orange serbet", "orange pekoe",
-		"licorice", "cherry chocolate lemons",};
-    private static String[] deities = {
-        "Agdistis", "Ah Puch", "Ahura Mazda", "Alberich", "Allah", "Amaterasu", "An", "Anansi", "Anat", "Andvari", 
-        "Anshar", "Anu", "Aphrodite", "Apollo", "Apsu", "Ares", "Artemis", "Asclepius", "Athena", "Athirat", "Athtart", 
-        "Atlas", "Baal", "Ba Xian", "Bacchus", "Balder", "Bast", "Bellona", "Bergelmir", "Bes", "Bixia Yuanjin", "Bragi", 
-        "Brahma", "Brigit", "Camaxtli", "Ceres", "Ceridwen", "Cernunnos", "Chac", "Chalchiuhtlicue", "Charun", "Chemosh", 
-        "Cheng-huang", "Cybele", "Dagon", "Damkina", "Davlin", "Dawn", "Demeter", "Diana", "Di Cang", "Dionysus", "Ea", 
-        "El", "Enki", "Enlil", "Eos", "Epona", "Ereskigal", "Farbauti", "Fenrir", "Forseti", "Fortuna", "Freya", "Freyr", 
-        "Frigg", "Gaia", "Ganesha", "Ganga", "Garuda", "Gauri", "Geb", "Geong Si", "Guanyin", "Hades", "Hanuman", "Hathor", 
-        "Hecate", "Helios", "Heng-o", "Hephaestus", "Hera", "Hermes", "Hestia", "Hod", "Hoderi", "Hoori", "Horus", "Hotei", 
-        "Huitzilopochtli", "Hsi-Wang-Mu", "Hygeia", "Inanna", "Inti", "Iris", "Ishtar", "Isis", "Ixtab", "Izanaki", 
-        "Izanami", "Jesus", "Juno", "Jupiter", "Juturna", "Kagutsuchi", "Kartikeya", "Khepri", "Ki", "Kingu", "Kinich Ahau",
-        "Kishar", "Krishna", "Kuan-yin", "Kukulcan", "Kvasir", "Lakshmi", "Leto", "Liza", "Loki", "Lugh", "Luna", "Magna Mater", 
-        "Maia", "Marduk", "Mars", "Mazu", "Medb", "Mercury", "Mimir", "Min", "Minerva", "Mithras", "Morrigan", "Mot", "Mummu", 
-        "Muses", "Nammu", "Nanna", "Nanse", "Neith", "Nemesis", "Nephthys", "Neptune", "Nergal", "Ninazu", "Ninhurzag", "Nintu", 
-        "Ninurta", "Njord", "Nugua", "Nut", "Odin", "Ohkuninushi", "Ohyamatsumi", "Orgelmir", "Osiris", "Ostara", "Pan", 
-        "Parvati", "Phaethon", "Phoebe", "Phoebus Apollo", "Pilumnus", "Poseidon", "Quetzalcoatl", "Rama", "Re", "Rhea", 
-        "Sabazius", "Sarasvati", "Selene", "Shiva", "Seshat", "Set", "Shamash", "Shapsu", "Shen Yi", "Shiva", "Shu", "Si-Wang-Mu", 
-        "Sin", "Sirona", "Sol", "Surya", "Susanoh", "Tawaret", "Tefnut", "Tezcatlipoca", "Thanatos", "Thor", "Thoth", "Tiamat", 
-        "Tianhou", "Tlaloc", "Tonatiuh", "Toyo-Uke-Bime", "Tyche", "Tyr", "Utu", "Uzume", "Vediovis", "Venus", "Vesta", "Vishnu", 
-        "Volturnus", "Vulcan", "Xipe", "Xi Wang-mu", "Xochipilli", "Xochiquetzal", "Yam", "Yarikh", "Yhwh", "Ymir", "Yu-huang", 
-        "Yum Kimil", "Zeus", "Chris T. Baty", "Cthulu", "Barney", "himself", "Utoxin",};
+	private Set<String> admin_list = new HashSet<String>(16);
+	private Set<String> ignore_list = new HashSet<String>(16);
+	private Set<String> adult_channels = new HashSet<String>(128);
+	private List<String> colours = new ArrayList<String>();
+	private List<String> eightballs = new ArrayList<String>();
+	private List<String> greetings = new ArrayList<String>();
+	private List<String> commandments = new ArrayList<String>();
+	private List<String> aypwips = new ArrayList<String>();
+	private List<String> flavours = new ArrayList<String>();
+	private List<String> deities = new ArrayList<String>();
 	private Map<String, WordWar> wars;
 	private WarClockThread warticker;
 	private Timer ticker;
 	private Semaphore wars_lock;
 	private Random rand;
 	private boolean shutdown;
-	private Collection ignore_list;
-	private Collection admin_list;
-	private Collection adult_channels;
 	private String password;
-    private long chatterTimer;
+	private long chatterTimer;
 	private Connection mysql;
 
 	public Tim() {
-        Object nicks = Tim.config.getProperty("nicks.nick");
-		if (nicks instanceof Collection) {
-			this.setName((String) Tim.config.getProperty("nicks.nick(0).name"));
-			this.password = (String) Tim.config.getProperty("nicks.nick(0).pass");
-		} else {
-			this.setName((String) Tim.config.getProperty("nicks.nick.name"));
-			this.password = (String) Tim.config.getProperty("nicks.nick.pass");
-		}
-
-		this.ignore_list = (Collection) Tim.config.getProperty("ignore.nick");
-		this.admin_list = (Collection) Tim.config.getProperty("admins.admin");
-		this.adult_channels = (Collection) Tim.config.getProperty("adultchannels.channel");
-
-		wars = Collections.synchronizedMap(new HashMap<String, WordWar>());
-
-		warticker = new WarClockThread(this);
-		ticker = new Timer(true);
-		ticker.scheduleAtFixedRate(warticker, 0, 1000);
-		wars_lock = new Semaphore(1, true);
-        chatterTimer = System.currentTimeMillis()/1000;
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-			String url = "jdbc:mysql://"+Tim.config.getString("sql_server")+":3306/"+Tim.config.getString("sql_database");
+			String url = "jdbc:mysql://" + Tim.config.getString("sql_server") + ":3306/" + Tim.config.getString("sql_database");
 			try {
 				this.mysql = DriverManager.getConnection(url, Tim.config.getString("sql_user"), Tim.config.getString("sql_password"));
 			} catch (SQLException ex) {
@@ -289,6 +126,19 @@ public class Tim extends PircBot {
 		} catch (ClassNotFoundException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
+
+		this.setName(getSetting("nickname"));
+		this.password = getSetting("password");
+
+		refreshDbLists();
+
+		wars = Collections.synchronizedMap(new HashMap<String, WordWar>());
+
+		warticker = new WarClockThread(this);
+		ticker = new Timer(true);
+		ticker.scheduleAtFixedRate(warticker, 0, 1000);
+		wars_lock = new Semaphore(1, true);
+		chatterTimer = System.currentTimeMillis() / 1000;
 
 		rand = new Random();
 		this.shutdown = false;
@@ -359,68 +209,68 @@ public class Tim extends PircBot {
 			// Find all messages that start with ! and pass them to a method for further processing.
 			if (message.charAt(0) == '!') {
 				this.doCommand(channel, sender, "!", message);
-                return;
+				return;
 			} // Notation for wordcounts
 			else if (message.charAt(0) == '@') {
 				this.doCommand(channel, sender, "@", message);
-                return;
+				return;
 			}
 			// Other fun stuff we can make him do
 			if (message.toLowerCase().contains("hello") && message.toLowerCase().contains(this.getNick().toLowerCase())) {
 				this.sendMessage(channel, "Hi, " + sender + "!");
-                return;
+				return;
 			} else if (message.toLowerCase().contains("how many lights")) {
 				this.sendMessage(channel, "There are FOUR LIGHTS!");
-                return;
+				return;
 			} else if (message.contains(":(")) {
 				this.sendAction(channel, "gives " + sender + " a hug");
-                return;
+				return;
 			} else if (message.contains(":'())")) {
 				this.sendAction(channel, "passes " + sender + " a tissue");
-                return;
+				return;
 			} else if (message.toLowerCase().contains("are you thinking what i'm thinking")
-				|| message.toLowerCase().contains("are you pondering what i'm pondering")) {
-				int i = this.rand.nextInt(Tim.aypwips.length - 1);
-				this.sendMessage(channel, String.format(Tim.aypwips[i], sender));
-                return;
+					   || message.toLowerCase().contains("are you pondering what i'm pondering")) {
+				int i = this.rand.nextInt(aypwips.size());
+				this.sendMessage(channel, String.format(aypwips.get(i), sender));
+				return;
 			} else {
 				if (Pattern.matches("(?i).*how do i (change|set) my (nick|name).*", message)) {
 					this.sendMessage(channel, String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", sender));
-                    return;
-                } else if (Pattern.matches("(?i)Timmy.*[?]", message)) {
-                    int r = this.rand.nextInt(100);
+					return;
+				} else if (Pattern.matches("(?i)Timmy.*[?]", message)) {
+					int r = this.rand.nextInt(100);
 
-                    if (r < 50) {
-                        this.eightball(channel, sender, null);
-                        return;
-                    }
-                }
+					if (r < 50) {
+						this.eightball(channel, sender, null);
+						return;
+					}
+				}
 			}
-			
+
 			if (!sender.equals(this.getNick()) && !"".equals(channel)) {
 				this.interact(sender, channel, message);
 			}
 		}
-    }
+	}
 
 	private void interact(String sender, String channel, String message) {
-		long elapsed = (System.currentTimeMillis()/1000) - this.chatterTimer;
+		long elapsed = ( System.currentTimeMillis() / 1000 ) - this.chatterTimer;
 		long odds = (long) Math.sqrt(elapsed / 10);
 		if (odds > 25) {
 			odds = 25;
 		}
 
-		if (message.toLowerCase().contains("timmy")) {
+		if (message.toLowerCase().contains(this.getNick().toLowerCase())) {
 			odds = odds * 4;
 		}
 
 		int i = rand.nextInt(100);
 		if (i < odds) {
-			int j = rand.nextInt(100);                
+			int j = rand.nextInt(100);
 
 			if (j > 20) {
-				int r = this.rand.nextInt(Tim.eightballResponses.length);
-				this.sendDelayedAction(channel, "mutters under his breath, \"" + Tim.eightballResponses[r] + "\"", rand.nextInt(1500));
+				int r = this.rand.nextInt(eightballs.size());
+				this.sendDelayedAction(channel, "mutters under his breath, \"" + eightballs.get(r) + "\"", rand.nextInt(1500));
 			} else if (j > 10) {
 				this.throwFridge(channel, sender, sender.split(" ", 0), false);
 			} else if (j > 7) {
@@ -431,12 +281,12 @@ public class Tim extends PircBot {
 				this.foof(channel, sender, sender.split(" "), false);
 			}
 
-			this.sendMessage("#timmydebug", "Elapsed Time: "+Long.toString(elapsed)+"  Odds: "+Long.toString(odds)+"  Chatter Timer: "+Long.toString(this.chatterTimer));
-			this.chatterTimer = this.chatterTimer + rand.nextInt((int) elapsed/5);
-			this.sendMessage("#timmydebug", "Updated Chatter Timer: "+Long.toString(this.chatterTimer));
+			this.sendMessage("#timmydebug", "Elapsed Time: " + Long.toString(elapsed) + "  Odds: " + Long.toString(odds) + "  Chatter Timer: " + Long.toString(this.chatterTimer));
+			this.chatterTimer = this.chatterTimer + rand.nextInt((int) elapsed / 5);
+			this.sendMessage("#timmydebug", "Updated Chatter Timer: " + Long.toString(this.chatterTimer));
 		}
 	}
-	
+
 	@Override
 	protected void onPrivateMessage(String sender, String login, String hostname, String message) {
 		if (this.admin_list.contains(sender)) {
@@ -468,6 +318,7 @@ public class Tim extends PircBot {
 			}
 			if (!isIn) {
 				this.joinChannel(channel);
+				saveChannel(channel);
 			}
 		}
 	}
@@ -478,6 +329,7 @@ public class Tim extends PircBot {
 			User[] userlist = this.getUsers(channel);
 			if (userlist.length <= 1) {
 				this.partChannel(channel);
+				deleteChannel(channel);
 			}
 		}
 	}
@@ -522,15 +374,15 @@ public class Tim extends PircBot {
 			}
 			this.sendDelayedMessage(channel, message, 1600);
 
-			if (Pattern.matches("(?i)mib_......", sender)) {
+			if (Pattern.matches("(?i)mib_......", sender) || Pattern.matches("(?i)guest.*", sender)) {
 				this.sendDelayedMessage(channel, String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", sender), 2400);
 			}
 
 			int r = this.rand.nextInt(100);
 
 			if (r < 4) {
-				r = this.rand.nextInt(Tim.greetings.length);
-				this.sendDelayedMessage(channel, Tim.greetings[r], 2400);
+				r = this.rand.nextInt(greetings.size());
+				this.sendDelayedMessage(channel, greetings.get(r), 2400);
 			}
 		}
 	}
@@ -648,6 +500,26 @@ public class Tim extends PircBot {
 				this.summon(channel, sender, args, true);
 			} else if (command.equals("foof")) {
 				this.foof(channel, sender, args, true);
+			} else if (command.equals("setadultflag")) {
+				if (this.admin_list.contains(sender) || this.admin_list.contains(channel)) {
+					if (args != null && args.length == 2) {
+						this.setChannelAdultFlagParse(channel, sender, args);
+					} else {
+						this.sendMessage(channel, "Use: !setadultflag <#channel> <0/1> (Admin Only)");
+					}
+				} else {
+					this.sendAction(channel, "sticks out his tounge");
+					this.sendMessage(channel, "You can't make me, " + sender);
+				}
+			} else if (command.equals("reload")) {
+				if (this.admin_list.contains(sender) || this.admin_list.contains(channel)) {
+					this.sendMessage(channel, "Reading database tables ...");
+					refreshDbLists();
+					this.sendDelayedMessage(channel, "Tables reloaded.", 1000);
+				} else {
+					this.sendAction(channel, "sticks out his tounge");
+					this.sendMessage(channel, "You can't make me, " + sender);
+				}
 			} else if (command.equals("reset")) {
 				if (this.admin_list.contains(sender) || this.admin_list.contains(channel)) {
 					this.sendMessage(channel, "Rebooting ...");
@@ -664,6 +536,7 @@ public class Tim extends PircBot {
 					warticker = new WarClockThread(this);
 					ticker = new Timer(true);
 					ticker.scheduleAtFixedRate(warticker, 0, 1000);
+					refreshDbLists();
 
 					this.sendDelayedMessage(channel, "Can you hear me now?", 2000);
 				} else {
@@ -700,10 +573,10 @@ public class Tim extends PircBot {
 				} else if (this.admin_list.contains(args[0])) {
 					this.sendAction(channel, "licks " + argStr + ". Tastes like perfection, pure and simple.");
 				} else {
-					this.sendAction(channel, "licks " + argStr + ". Tastes like " + Tim.flavours[this.rand.nextInt(Tim.flavours.length)]);
+					this.sendAction(channel, "licks " + argStr + ". Tastes like " + flavours.get(this.rand.nextInt(flavours.size())));
 				}
 			} else {
-				this.sendAction(channel, "licks " + sender + "! Tastes like " + Tim.flavours[this.rand.nextInt(Tim.flavours.length)]);
+				this.sendAction(channel, "licks " + sender + "! Tastes like " + flavours.get(this.rand.nextInt(flavours.size())));
 			}
 		} else {
 			this.sendMessage(channel, "Sorry, I don't do that here.");
@@ -711,8 +584,8 @@ public class Tim extends PircBot {
 	}
 
 	private void eightball(String channel, String sender, String[] args) {
-		int r = this.rand.nextInt(Tim.eightballResponses.length);
-		this.sendMessage(channel, Tim.eightballResponses[r]);
+		int r = this.rand.nextInt(eightballs.size());
+		this.sendMessage(channel, eightballs.get(r));
 	}
 
 	private void sing(String channel) {
@@ -731,11 +604,11 @@ public class Tim extends PircBot {
 	}
 
 	private void commandment(String channel, String sender, String[] args) {
-		int r = this.rand.nextInt(Tim.commandments.length);
-		if (args != null && args.length == 1 && Double.parseDouble(args[0]) > 0 && Double.parseDouble(args[0]) <= Tim.commandments.length) {
+		int r = this.rand.nextInt(commandments.size());
+		if (args != null && args.length == 1 && Double.parseDouble(args[0]) > 0 && Double.parseDouble(args[0]) <= commandments.size()) {
 			r = (int) Double.parseDouble(args[0]) - 1;
 		}
-		this.sendMessage(channel, Tim.commandments[r]);
+		this.sendMessage(channel, commandments.get(r));
 	}
 
 	private void throwFridge(String channel, String sender, String[] args, Boolean righto) {
@@ -756,7 +629,7 @@ public class Tim extends PircBot {
 		time *= 1000;
 		this.sendDelayedAction(channel, "looks back and forth, then slinks off...", time);
 		time += rand.nextInt(10) * 500 + 1500;
-		String colour = Tim.colours[rand.nextInt(Tim.colours.length - 1)];
+		String colour = colours.get(rand.nextInt(colours.size()));
 		switch (colour.charAt(0)) {
 			case 'a':
 			case 'e':
@@ -801,7 +674,7 @@ public class Tim extends PircBot {
 
 		int i = rand.nextInt(100);
 		String act = "";
-		String colour = Tim.colours[rand.nextInt(Tim.colours.length)];
+		String colour = colours.get(rand.nextInt(colours.size()));
 
 		if (i > 20) {
 			act = "throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
@@ -817,10 +690,10 @@ public class Tim extends PircBot {
 	private void summon(String channel, String sender, String[] args, Boolean righto) {
 		String target = "";
 		if (args == null || args.length == 0) {
-            target = Tim.deities[rand.nextInt(Tim.deities.length)];
+			target = deities.get(rand.nextInt(deities.size()));
 		} else {
-            target = implodeArray(args);
-        }
+			target = implodeArray(args);
+		}
 
 		if (righto) {
 			this.sendMessage(channel, "Righto...");
@@ -828,20 +701,20 @@ public class Tim extends PircBot {
 
 		int time = 2 + rand.nextInt(15);
 		time *= 1000;
-		this.sendDelayedAction(channel, "prepares the summoning circle required to bring "+target+" into the world...", time);
+		this.sendDelayedAction(channel, "prepares the summoning circle required to bring " + target + " into the world...", time);
 		time += rand.nextInt(10) * 500 + 1500;
 
 		int i = rand.nextInt(100);
 		String act = "";
 
 		if (i > 50) {
-            act = "completes the ritual successfully, drawing "+target+" through, and binding them into the summoning circle!";
-        } else if (i > 30) {
-            act = "completes the ritual, drawing "+target+" through, but something goes wrong and they fade away after just a few moments.";
+			act = "completes the ritual successfully, drawing " + target + " through, and binding them into the summoning circle!";
+		} else if (i > 30) {
+			act = "completes the ritual, drawing " + target + " through, but something goes wrong and they fade away after just a few moments.";
 		} else {
-            String target2 = Tim.deities[rand.nextInt(Tim.deities.length)];
-            act = "attempts to summon "+target+", but something goes horribly wrong. After the smoke clears, "+target2+" is left standing on the smoldering remains of the summoning circle.";
-        }
+			String target2 = deities.get(rand.nextInt(deities.size()));
+			act = "attempts to summon " + target + ", but something goes horribly wrong. After the smoke clears, " + target2 + " is left standing on the smoldering remains of the summoning circle.";
+		}
 		this.sendDelayedAction(channel, act, time);
 	}
 
@@ -865,7 +738,7 @@ public class Tim extends PircBot {
 
 		int i = rand.nextInt(100);
 		String act = "";
-		String colour = Tim.colours[rand.nextInt(Tim.colours.length)];
+		String colour = colours.get(rand.nextInt(colours.size()));
 
 		if (i > 20) {
 			act = "grabs a " + colour + " pillow, and throws it at " + target + ", hitting them squarely in the back of the head.";
@@ -924,6 +797,19 @@ public class Tim extends PircBot {
 		} else {
 			this.sendMessage(channel, sender + ": I need a war name to end.");
 		}
+	}
+
+	private void setChannelAdultFlagParse(String channel, String sender, String[] args) {
+		boolean flag;
+
+		if (!"0".equals(args[1])) {
+			flag = true;
+		} else {
+			flag = false;
+		}
+
+		setChannelAdultFlag(args[0], flag);
+		this.sendMessage(channel, sender + ": Channel adult flag updated.");
 	}
 
 	private void startWar(String channel, String sender, String[] args) {
@@ -992,7 +878,7 @@ public class Tim extends PircBot {
 
 	private void _tick() {
 		this._warsUpdate();
-    }
+	}
 
 	private void _warsUpdate() {
 		if (this.wars != null && this.wars.size() > 0) {
@@ -1089,34 +975,36 @@ public class Tim extends PircBot {
 	}
 
 	private void useBackupNick() {
-		this.setName("ThereAreSomeWhoCallMeTim");
+		this.setName(getSetting("backup_nickname"));
 	}
 
 	private void connectToServer() {
 		try {
-			this.connect(Tim.config.getString("server"));
+			this.connect(getSetting("server"));
 		} catch (Exception e) {
 			this.useBackupNick();
 			try {
-				this.connect(Tim.config.getString("server"));
+				this.connect(getSetting("server"));
 			} catch (Exception ex) {
 				System.err.print("Could not connect - name & backup in use");
 				System.exit(1);
 			}
 		}
 
-		Object channels = Tim.config.getProperty("channels.channel");
-		if (channels instanceof Collection) {
-			int size = ( (Collection) channels ).size();
-			for (int i = 0; i < size; i++) {
-				this.joinChannel((String) Tim.config.getProperty("channels.channel(" + i + ")"));
+		try {
+			Statement s = this.mysql.createStatement();
+			s.executeQuery("SELECT * FROM `channels`");
+
+			ResultSet rs = s.getResultSet();
+			while (rs.next()) {
+				this.joinChannel(rs.getString("channel"));
 			}
-		} else if (channels instanceof String) {
-			this.joinChannel((String) Tim.config.getProperty("channels.channel"));
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
-        this.joinChannel("#timmydebug");
-    }
+		this.joinChannel("#timmydebug");
+	}
 
 	public static void main(String[] args) {
 		Tim bot = new Tim();
@@ -1142,5 +1030,218 @@ public class Tim extends PircBot {
 		}
 
 		return AsImplodedString;
+	}
+
+	private String getSetting(String key) {
+		String value = "";
+		try {
+			PreparedStatement s = this.mysql.prepareStatement("SELECT `value` FROM `settings` WHERE `key` = ?");
+			s.setString(1, key);
+			s.executeQuery();
+
+			ResultSet rs = s.getResultSet();
+			while (rs.next()) {
+				value = rs.getString("value");
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+		return value;
+	}
+
+	private void refreshDbLists() {
+		getAdminList();
+		getIgnoreList();
+		getAdultChannelList();
+		getAypwipList();
+		getColourList();
+		getCommandmentList();
+		getDeityList();
+		getEightballList();
+		getFlavourList();
+		getGreetingList();
+	}
+
+	private void getAdminList() {
+		try {
+			Statement s = this.mysql.createStatement();
+			s.executeQuery("SELECT `name` FROM `admins`");
+
+			ResultSet rs = s.getResultSet();
+
+			this.admin_list.clear();
+			while (rs.next()) {
+				this.admin_list.add(rs.getString("name"));
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getIgnoreList() {
+		try {
+			Statement s = this.mysql.createStatement();
+			s.executeQuery("SELECT `name` FROM `ignores`");
+
+			ResultSet rs = s.getResultSet();
+			this.ignore_list.clear();
+			while (rs.next()) {
+				this.ignore_list.add(rs.getString("name"));
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getAdultChannelList() {
+		try {
+			Statement s = this.mysql.createStatement();
+			s.executeQuery("SELECT `channel` FROM `channels` WHERE `adult`=1");
+
+			ResultSet rs = s.getResultSet();
+			this.adult_channels.clear();
+			while (rs.next()) {
+				this.adult_channels.add(rs.getString("channel"));
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getAypwipList() {
+		try {
+			Statement s = this.mysql.createStatement();
+			s.executeQuery("SELECT `string` FROM `aypwips`");
+
+			ResultSet rs = s.getResultSet();
+			this.aypwips.clear();
+			while (rs.next()) {
+				this.aypwips.add(rs.getString("string"));
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getColourList() {
+		try {
+			Statement s = this.mysql.createStatement();
+			s.executeQuery("SELECT `string` FROM `colours`");
+
+			ResultSet rs = s.getResultSet();
+			this.colours.clear();
+			while (rs.next()) {
+				this.colours.add(rs.getString("string"));
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getCommandmentList() {
+		try {
+			Statement s = this.mysql.createStatement();
+			s.executeQuery("SELECT `string` FROM `commandments`");
+
+			ResultSet rs = s.getResultSet();
+			this.commandments.clear();
+			while (rs.next()) {
+				this.commandments.add(rs.getString("string"));
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getDeityList() {
+		try {
+			Statement s = this.mysql.createStatement();
+			s.executeQuery("SELECT `string` FROM `deities`");
+
+			ResultSet rs = s.getResultSet();
+			this.deities.clear();
+			while (rs.next()) {
+				this.deities.add(rs.getString("string"));
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getEightballList() {
+		try {
+			Statement s = this.mysql.createStatement();
+			s.executeQuery("SELECT `string` FROM `eightballs`");
+
+			ResultSet rs = s.getResultSet();
+			this.eightballs.clear();
+			while (rs.next()) {
+				this.eightballs.add(rs.getString("string"));
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getFlavourList() {
+		try {
+			Statement s = this.mysql.createStatement();
+			s.executeQuery("SELECT `string` FROM `flavours`");
+
+			ResultSet rs = s.getResultSet();
+			this.flavours.clear();
+			while (rs.next()) {
+				this.flavours.add(rs.getString("string"));
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getGreetingList() {
+		try {
+			Statement s = this.mysql.createStatement();
+			s.executeQuery("SELECT `string` FROM `greetings`");
+
+			ResultSet rs = s.getResultSet();
+			this.greetings.clear();
+			while (rs.next()) {
+				this.greetings.add(rs.getString("string"));
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void saveChannel(String channel) {
+		try {
+			PreparedStatement s = this.mysql.prepareStatement("INSERT INTO `channels` (`channel`, `adult`) VALUES (?, 0)");
+			s.setString(1, channel);
+			s.executeQuery();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void deleteChannel(String channel) {
+		try {
+			PreparedStatement s = this.mysql.prepareStatement("DELETE FROM `channels` WHERE `channel` = ?");
+			s.setString(1, channel);
+			s.executeQuery();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void setChannelAdultFlag(String channel, boolean adult) {
+		try {
+			PreparedStatement s = this.mysql.prepareStatement("UPDATE `channels` SET adult = ? WHERE `channel` = ?");
+			s.setBoolean(1, adult);
+			s.setString(2, channel);
+			s.executeQuery();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 }
