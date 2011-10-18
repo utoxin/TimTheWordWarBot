@@ -404,7 +404,8 @@ INSERT INTO `deities` (`id`, `string`) VALUES
 (226, 'The Nothing'),
 (227, 'Arhu'),
 (228, 'Falcor'),
-(228, '... You don\'t want to know.');
+(229, '... You don\'t want to know.'),
+(230, 'MysteriousAges');
 
 CREATE TABLE IF NOT EXISTS `eightballs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -532,11 +533,10 @@ INSERT INTO `flavours` (`id`, `string`) VALUES
 (36, 'lemon'),
 (37, 'a slice of lemon wrapped ''round a large gold brick'),
 (38, 'almost, but not quite, entirely unlike tea'),
-(39, 'tea. Earl Grey. Hot.'),
-(40, 'orange serbet'),
-(41, 'orange pekoe'),
-(42, 'licorice'),
-(43, 'cherry chocolate lemons');
+(39, 'orange sorbet'),
+(40, 'orange pekoe'),
+(41, 'licorice'),
+(42, 'cherry chocolate lemons');
 
 CREATE TABLE IF NOT EXISTS `greetings` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -556,6 +556,25 @@ CREATE TABLE IF NOT EXISTS `ignores` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
 ) DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `items` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `item` varchar(300) NOT NULL,
+  `approved` tinyint(1) NOT NULL,
+  PRIMARY KEY  (`id`)
+) DEFAULT CHARSET=latin1;
+
+INSERT INTO `items` (`id`, `item`, `approved`) VALUES
+(1, 'a spork', 1),
+(2, 'a freshly brewed cup of coffee', 1),
+(3, 'a double chocolate cookie', 1),
+(4, 'a fresh cup of confetti', 1),
+(5, 'a mini-bar fridge', 1),
+(6, 'an apple', 1),
+(7, 'a banana peel', 1),
+(8, 'tea. Earl Grey. Hot.', 1),
+(9, 'androids with plungers', 1),
+(10, 'a box that is bigger on the inside', 1);
 
 CREATE TABLE IF NOT EXISTS `settings` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
