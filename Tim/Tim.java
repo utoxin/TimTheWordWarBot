@@ -883,6 +883,10 @@ public class Tim extends PircBot
 			{
 				this.eightball(channel, sender, args);
 			}
+			else if (command.charAt(0) == 'd' && Pattern.matches("d\\d+", command))
+			{
+				this.dice(command.substring(1), channel, sender, args);
+			}
 			else if (command.equals("woot"))
 			{
 				this.sendAction(channel, "cheers! Hooray!");
@@ -1029,6 +1033,21 @@ public class Tim extends PircBot
 			{
 			}
 
+		}
+	}
+
+	private void dice(String number, String channel, String sender, String[] args)
+	{
+		int max = 0;
+		try
+		{
+			max = Integer.parseInt(number);
+			int rand = this.rand.nextInt(max);
+			this.sendMessage(channel, sender + ": Your result is " + rand);
+		}
+		catch (NumberFormatException ex)
+		{
+			this.sendMessage(channel, number + " is not a number I could understand.");
 		}
 	}
 
