@@ -410,6 +410,8 @@ public class Tim extends PircBot {
 				} else {
 					this.sendMessage(channel, "Use: !startwar <duration in min> [<time to start in min> [<name>]]");
 				}
+            } else if (command.equals("boxodoom")) {
+                this.boxodoom(channel, sender, args);
 			} else if (command.equals("startjudgedwar")) {
 				this.sendMessage(channel, "Not done yet, sorry!");
 			} else if (command.equals("joinwar")) {
@@ -467,6 +469,8 @@ public class Tim extends PircBot {
 				str = "!startwar <duration> <time to start> <an optional name> - Starts a word war";
 				this.sendMessage(channel, str);
 				str = "!listwars - I will tell you about the wars currently in progress.";
+				this.sendMessage(channel, str);
+				str = "!boxodoom <difficulty> <duration> - Difficulty is easy/average/hard, duration in minutes.";
 				this.sendMessage(channel, str);
 				str = "!eggtimer <time> - I will send you a message after <time> minutes.";
 				this.sendMessage(channel, str);
@@ -979,6 +983,50 @@ public class Tim extends PircBot {
 		this.wars.remove(war.getName().toLowerCase());
 	}
 
+    private void boxodoom(String channel, String sender, String[] args) {
+        long duration;
+        long base_wpm;
+        double modifier;
+        int goal;
+
+        if (args.length != 2) {
+            this.sendMessage(channel, sender + ": !boxodoom requires two parameters.");
+            return;
+		}
+
+        if (! Pattern.matches("(?i)easy|average|hard", args[0])) {
+            this.sendMessage(channel, sender + ": Difficulty must be one of: easy, average, hard");
+            return;
+        }
+
+        duration = (long) ( Double.parseDouble(args[1]));
+
+        if (duration < 1) {
+            this.sendMessage(channel, sender + ": Duration must be greater than or equal to 1.");
+            return;
+        }
+
+        String value = "";
+		try {
+			PreparedStatement s = this.mysql.prepareStatement("SELECT `challenge` FROM `box_of_doom` WHERE `difficulty` = ? ORDER BY rand() LIMIT 1");
+			s.setString(1, args[0]);
+			s.executeQuery();
+
+			ResultSet rs = s.getResultSet();
+			while (rs.next()) {
+				value = rs.getString("challenge");
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+        base_wpm = (long) Double.parseDouble(value);
+        modifier = (((1.0/Math.log(duration + 1.0))/1.5) + 0.68 );
+        goal = ((int) ((duration * base_wpm * modifier) / 10)) * 10;
+
+        this.sendMessage(channel, sender + ": Your goal is "+ String.valueOf(goal));
+    }
+
 	private void useBackupNick() {
 		this.setName(getSetting("backup_nickname"));
 	}
@@ -1080,8 +1128,6 @@ public class Tim extends PircBot {
 		getFlavourList();
 		getGreetingList();
 
-		this.settings.put("chatterMaxBaseOdds", Integer.parseInt(getSetting("chatterMaxBaseOdds")) > 0 ? Integer.parseInt(getSetting("chatterMaxBaseOdds")) : 20);
-		
 		this.chatterMaxBaseOdds = Integer.parseInt(getSetting("chatterMaxBaseOdds"));
 		this.chatterNameMultiplier = Integer.parseInt(getSetting("chatterNameMultiplier"));
 		this.chatterTimeMultiplier = Integer.parseInt(getSetting("chatterTimeMultiplier"));
@@ -1102,7 +1148,13 @@ public class Tim extends PircBot {
 		if (this.chatterTimeDivisor == 0) {
 			this.chatterTimeDivisor = 2;
 		}
-	}
+
+        this.sendMessage("#timmydebug", "Max Base Odds: " + Integer.toString(this.chatterMaxBaseOdds));
+        this.sendMessage("#timmydebug", "Name Multiplier: " + Integer.toString(this.chatterNameMultiplier));
+        this.sendMessage("#timmydebug", "Time Multiplier: " + Integer.toString(this.chatterTimeMultiplier));
+        this.sendMessage("#timmydebug", "Time Divisor: " + Integer.toString(this.chatterTimeDivisor));
+
+    }
 
 	private void getAdminList() {
 		try {
