@@ -105,6 +105,7 @@ public class Tim extends PircBot {
 	private List<String> flavours = new ArrayList<String>();
 	private List<String> deities = new ArrayList<String>();
 	private Map<String, WordWar> wars;
+	private Map<String, Object> settings;
 	private WarClockThread warticker;
 	private Timer ticker;
 	private Semaphore wars_lock;
@@ -113,6 +114,10 @@ public class Tim extends PircBot {
 	private String password;
 	private long chatterTimer;
 	private Connection mysql;
+	private int chatterMaxBaseOdds;
+	private int chatterNameMultiplier;
+	private int chatterTimeMultiplier;
+	private int chatterTimeDivisor;
 
 	public Tim() {
 		try {
@@ -237,7 +242,7 @@ public class Tim extends PircBot {
 				if (Pattern.matches("(?i).*how do i (change|set) my (nick|name).*", message)) {
 					this.sendMessage(channel, String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", sender));
 					return;
-				} else if (Pattern.matches("(?i)Timmy.*[?]", message)) {
+				} else if (Pattern.matches("(?i)"+this.getNick()+".*[?]", message)) {
 					int r = this.rand.nextInt(100);
 
 					if (r < 50) {
@@ -255,13 +260,13 @@ public class Tim extends PircBot {
 
 	private void interact(String sender, String channel, String message) {
 		long elapsed = ( System.currentTimeMillis() / 1000 ) - this.chatterTimer;
-		long odds = (long) Math.sqrt(elapsed / 15);
-		if (odds > 20) {
-			odds = 20;
+		long odds = (long) Math.log(elapsed) * this.chatterTimeMultiplier;
+		if (odds > this.chatterMaxBaseOdds) {
+			odds = this.chatterMaxBaseOdds;
 		}
 
 		if (message.toLowerCase().contains(this.getNick().toLowerCase())) {
-			odds = odds * 4;
+			odds = odds * this.chatterNameMultiplier;
 		}
 
 		int i = rand.nextInt(100);
@@ -282,7 +287,7 @@ public class Tim extends PircBot {
 			}
 
 			this.sendMessage("#timmydebug", "Elapsed Time: " + Long.toString(elapsed) + "  Odds: " + Long.toString(odds) + "  Chatter Timer: " + Long.toString(this.chatterTimer));
-			this.chatterTimer = this.chatterTimer + rand.nextInt((int) elapsed / 2);
+			this.chatterTimer = this.chatterTimer + rand.nextInt((int) elapsed / this.chatterTimeDivisor);
 			this.sendMessage("#timmydebug", "Updated Chatter Timer: " + Long.toString(this.chatterTimer));
 		}
 	}
@@ -1050,6 +1055,19 @@ public class Tim extends PircBot {
 		return value;
 	}
 
+	private void updateSetting(String setting, String value) {
+		try {
+			PreparedStatement s = this.mysql.prepareStatement("UPDATE `settings` SET value = ? WHERE `key` = ?");
+			s.setString(1, value);
+			s.setString(2, setting);
+			s.executeUpdate();
+
+			this.settings.put(setting, value);
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
 	private void refreshDbLists() {
 		getAdminList();
 		getIgnoreList();
@@ -1061,6 +1079,29 @@ public class Tim extends PircBot {
 		getEightballList();
 		getFlavourList();
 		getGreetingList();
+
+		this.settings.put("chatterMaxBaseOdds", Integer.parseInt(getSetting("chatterMaxBaseOdds")) > 0 ? Integer.parseInt(getSetting("chatterMaxBaseOdds")) : 20);
+		
+		this.chatterMaxBaseOdds = Integer.parseInt(getSetting("chatterMaxBaseOdds"));
+		this.chatterNameMultiplier = Integer.parseInt(getSetting("chatterNameMultiplier"));
+		this.chatterTimeMultiplier = Integer.parseInt(getSetting("chatterTimeMultiplier"));
+		this.chatterTimeDivisor = Integer.parseInt(getSetting("chatterTimeDivisor"));
+		
+		if (this.chatterMaxBaseOdds == 0) {
+			this.chatterMaxBaseOdds = 20;
+		}
+		
+		if (this.chatterNameMultiplier == 0) {
+			this.chatterNameMultiplier = 4;
+		}
+
+		if (this.chatterTimeMultiplier == 0) {
+			this.chatterTimeMultiplier = 4;
+		}
+		
+		if (this.chatterTimeDivisor == 0) {
+			this.chatterTimeDivisor = 2;
+		}
 	}
 
 	private void getAdminList() {
