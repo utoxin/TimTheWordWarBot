@@ -125,14 +125,20 @@ public class Tim extends PircBot
 	private List<String> approved_items = new ArrayList<String>();
 	private List<String> pending_items = new ArrayList<String>();
 	private Map<String, WordWar> wars;
+	private Map<String, Object> settings;
 	private WarClockThread warticker;
 	private Timer ticker;
 	private Semaphore wars_lock;
 	private Random rand;
 	private boolean shutdown;
 	private String password;
+	private String debugChannel;
 	private long chatterTimer;
 	private Connection mysql;
+	private int chatterMaxBaseOdds;
+	private int chatterNameMultiplier;
+	private int chatterTimeMultiplier;
+	private int chatterTimeDivisor;
 
 	public Tim()
 	{
@@ -160,6 +166,12 @@ public class Tim extends PircBot
 
 		this.setName(getSetting("nickname"));
 		this.password = getSetting("password");
+		this.debugChannel = getSetting("debug_channel");
+		if (this.debugChannel.equals(""))
+		{
+			// Ideally, we should fail here...
+			this.debugChannel = "#timmydebug";
+		}
 
 		refreshDbLists();
 
@@ -327,9 +339,7 @@ public class Tim extends PircBot
 									"%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere",
 									sender));
 					return;
-				}
-				else if (Pattern.matches("(?i)Timmy.*[?]", message))
-				{
+				} else if (Pattern.matches("(?i)"+this.getNick()+".*[?]", message)) {
 					int r = this.rand.nextInt(100);
 
 					if (r < 50)
@@ -377,6 +387,13 @@ public class Tim extends PircBot
 						this.sendMessage(channel,
 								"Use: $setadultflag <#channel> <0/1>");
 					}
+			}
+			else if (command.equals("shutdown"))
+			{
+				this.sendMessage(channel, "Shutting down...");
+				this.shutdown = true;
+				this.quitServer("I am shutting down! Bye!");
+				System.exit(0);
 			}
 			else if (command.equals("reload") || command.equals("refreshdb"))
 			{
@@ -581,11 +598,57 @@ public class Tim extends PircBot
 					}
 				}
 			}
+			else if (command.equals("ignore"))
+			{
+				if (args != null && args.length > 0)
+				{
+					String users = "";
+					for (int i = 0; i < args.length; ++i)
+					{
+						users += " " + args[i];
+						this.ignore_list.add(args[i]);
+						this.setIgnore(args[i]);
+					}
+					this.sendMessage(channel, "The following users have been ignored:" + users);
+				}
+				else
+				{
+					this.sendMessage(channel, "Usage: $ignore <user 1> [ <user 2> [<user 3> [...] ] ]");
+				}
+			}
+			else if (command.equals("unignore"))
+			{
+				if (args != null && args.length > 0)
+				{
+					String users = "";
+					for (int i = 0; i < args.length; ++i)
+					{
+						users += " " + args[i];
+						this.ignore_list.remove(args[i]);
+						this.removeIgnore(args[i]);
+					}
+					this.sendMessage(channel, "The following users have been unignored:" + users);
+				}
+				else
+				{
+					this.sendMessage(channel, "Usage: $unignore <user 1> [ <user 2> [<user 3> [...] ] ]");
+				}
+			}
+			else if (command.equals("listignores"))
+			{
+				this.sendMessage(channel, "There are " + this.ignore_list.size() + " users ignored.");
+				Iterator<String> iter = this.ignore_list.iterator();
+				while (iter.hasNext())
+				{
+					this.sendMessage(channel, iter.next());
+				}
+			}
 		}
 		else
 		{
+			// The sender is NOT an admin
 			this.sendMessage(
-					"#timmydebug",
+					this.debugChannel,
 					String.format(
 							"User %s in channel %s attempted to use an admin command (%s)!",
 							sender, channel, message));
@@ -600,15 +663,14 @@ public class Tim extends PircBot
 	private void interact(String sender, String channel, String message)
 	{
 		long elapsed = (System.currentTimeMillis() / 1000) - this.chatterTimer;
-		long odds = (long) Math.sqrt(elapsed / 15);
-		if (odds > 20)
-		{
-			odds = 20;
+		long odds = (long) Math.log(elapsed) * this.chatterTimeMultiplier;
+		if (odds > this.chatterMaxBaseOdds) {
+			odds = this.chatterMaxBaseOdds;
 		}
 
 		if (message.toLowerCase().contains(this.getNick().toLowerCase()))
 		{
-			odds = odds * 4;
+			odds = odds * this.chatterNameMultiplier;
 		}
 
 		int i = rand.nextInt(200);
@@ -643,17 +705,9 @@ public class Tim extends PircBot
 				this.foof(channel, sender, sender.split(" "), false);
 			}
 
-			this.sendMessage(
-					"#timmydebug",
-					"Elapsed Time: " + Long.toString(elapsed) + "  Odds: "
-							+ Long.toString(odds) + "  Chatter Timer: "
-							+ Long.toString(this.chatterTimer));
-			this.chatterTimer = this.chatterTimer
-					+ rand.nextInt((int) elapsed / 2);
-			this.sendMessage(
-					"#timmydebug",
-					"Updated Chatter Timer: "
-							+ Long.toString(this.chatterTimer));
+			this.sendMessage(this.debugChannel, "Elapsed Time: " + Long.toString(elapsed) + "  Odds: " + Long.toString(odds) + "  Chatter Timer: " + Long.toString(this.chatterTimer));
+			this.chatterTimer = this.chatterTimer + rand.nextInt((int) elapsed / this.chatterTimeDivisor);
+			this.sendMessage(this.debugChannel, "Updated Chatter Timer: " + Long.toString(this.chatterTimer));
 		}
 	}
 
@@ -826,9 +880,9 @@ public class Tim extends PircBot
 					this.sendMessage(channel,
 							"Use: !startwar <duration in min> [<time to start in min> [<name>]]");
 				}
-			}
-			else if (command.equals("startjudgedwar") || command.equals("joinwar"))
-			{
+            } else if (command.equals("boxodoom")) {
+                this.boxodoom(channel, sender, args);
+			} else if (command.equals("startjudgedwar")) {
 				this.sendMessage(channel, "Not done yet, sorry!");
 			}
 			else if (command.equals("endwar"))
@@ -897,9 +951,9 @@ public class Tim extends PircBot
 			}
 			else if (command.equals("getfor"))
 			{
-				if (args != null && args.length > 1)
+				if (args != null && args.length > 0)
 				{
-					if (args.length > 2)
+					if (args.length > 1)
 					{
 						// Want a new args array less the first old element.
 						String[] newargs = new String[args.length - 1];
@@ -942,7 +996,9 @@ public class Tim extends PircBot
 				str = "!startwar <duration> <time to start> <an optional name> - Starts a word war";
 				this.sendDelayedMessage(channel, str, delay += msgdelay);
 				str = "!listwars - I will tell you about the wars currently in progress.";
-				this.sendDelayedMessage(channel, str, delay += msgdelay);
+				this.sendMessage(channel, str);
+				str = "!boxodoom <difficulty> <duration> - Difficulty is easy/average/hard, duration in minutes.";
+				this.sendMessage(channel, str);
 				str = "!eggtimer <time> - I will send you a message after <time> minutes.";
 				this.sendDelayedMessage(channel, str, delay += msgdelay);
 				str = "!get <anything> - I will fetch you whatever you like.";
@@ -959,22 +1015,6 @@ public class Tim extends PircBot
 				this.sendDelayedMessage(channel, str, delay += msgdelay);
 				str = "I will also respond to the /invite command if you would like to see me in another channel.";
 				this.sendDelayedMessage(channel, str, delay += msgdelay);
-			}
-			else if (command.equals("shutdown"))
-			{
-				if (this.admin_list.contains(sender)
-						|| this.admin_list.contains(channel))
-				{
-					this.sendMessage(channel, "Shutting down...");
-					this.shutdown = true;
-					this.quitServer("I am shutting down! Bye!");
-					System.exit(0);
-				}
-				else
-				{
-					this.sendAction(channel, "sticks out his tounge");
-					this.sendMessage(channel, "You can't make me, " + sender);
-				}
 			}
 			else if (command.equals("credits"))
 			{
@@ -1068,7 +1108,7 @@ public class Tim extends PircBot
 			}
 		}
 		
-		if (item.equals(""))
+		if (item.isEmpty())
 		{
 			// Find a random item.
 			int i = this.rand.nextInt(approved_items.size());
@@ -1380,6 +1420,7 @@ public class Tim extends PircBot
 		this.sendDelayedAction(channel, act, time);
 	}
 
+
 	// !endwar <name>
 	private void endWar(String channel, String sender, String[] args)
 	{
@@ -1662,8 +1703,51 @@ public class Tim extends PircBot
 		this.wars.remove(war.getName().toLowerCase());
 	}
 
-	private void useBackupNick()
-	{
+    private void boxodoom(String channel, String sender, String[] args) {
+        long duration;
+        long base_wpm;
+        double modifier;
+        int goal;
+
+        if (args.length != 2) {
+            this.sendMessage(channel, sender + ": !boxodoom requires two parameters.");
+            return;
+		}
+
+        if (! Pattern.matches("(?i)easy|average|hard", args[0])) {
+            this.sendMessage(channel, sender + ": Difficulty must be one of: easy, average, hard");
+            return;
+        }
+
+        duration = (long) ( Double.parseDouble(args[1]));
+
+        if (duration < 1) {
+            this.sendMessage(channel, sender + ": Duration must be greater than or equal to 1.");
+            return;
+        }
+
+        String value = "";
+		try {
+			PreparedStatement s = this.mysql.prepareStatement("SELECT `challenge` FROM `box_of_doom` WHERE `difficulty` = ? ORDER BY rand() LIMIT 1");
+			s.setString(1, args[0]);
+			s.executeQuery();
+
+			ResultSet rs = s.getResultSet();
+			while (rs.next()) {
+				value = rs.getString("challenge");
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+        base_wpm = (long) Double.parseDouble(value);
+        modifier = (((1.0/Math.log(duration + 1.0))/1.5) + 0.68 );
+        goal = ((int) ((duration * base_wpm * modifier) / 10)) * 10;
+
+        this.sendMessage(channel, sender + ": Your goal is "+ String.valueOf(goal));
+    }
+
+	private void useBackupNick() {
 		this.setName(getSetting("backup_nickname"));
 	}
 
@@ -1703,7 +1787,7 @@ public class Tim extends PircBot
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
-		this.joinChannel("#timmydebug");
+		this.joinChannel(this.debugChannel);
 	}
 
 	public static void main(String[] args)
@@ -1761,6 +1845,20 @@ public class Tim extends PircBot
 
 		return value;
 	}
+
+	private void updateSetting(String setting, String value) {
+		try {
+			PreparedStatement s = this.mysql.prepareStatement("UPDATE `settings` SET value = ? WHERE `key` = ?");
+			s.setString(1, value);
+			s.setString(2, setting);
+			s.executeUpdate();
+
+			this.settings.put(setting, value);
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
 
 	private void getApprovedItems()
 	{
@@ -1870,12 +1968,37 @@ public class Tim extends PircBot
 		getGreetingList();
 		this.getApprovedItems();
 		this.getPendingItems();
-	}
 
-	private void getAdminList()
-	{
-		try
-		{
+		this.chatterMaxBaseOdds = Integer.parseInt(getSetting("chatterMaxBaseOdds"));
+		this.chatterNameMultiplier = Integer.parseInt(getSetting("chatterNameMultiplier"));
+		this.chatterTimeMultiplier = Integer.parseInt(getSetting("chatterTimeMultiplier"));
+		this.chatterTimeDivisor = Integer.parseInt(getSetting("chatterTimeDivisor"));
+		
+		if (this.chatterMaxBaseOdds == 0) {
+			this.chatterMaxBaseOdds = 20;
+		}
+		
+		if (this.chatterNameMultiplier == 0) {
+			this.chatterNameMultiplier = 4;
+		}
+
+		if (this.chatterTimeMultiplier == 0) {
+			this.chatterTimeMultiplier = 4;
+		}
+		
+		if (this.chatterTimeDivisor == 0) {
+			this.chatterTimeDivisor = 2;
+		}
+
+        this.sendMessage(this.debugChannel, "Max Base Odds: " + Integer.toString(this.chatterMaxBaseOdds));
+        this.sendMessage(this.debugChannel, "Name Multiplier: " + Integer.toString(this.chatterNameMultiplier));
+        this.sendMessage(this.debugChannel, "Time Multiplier: " + Integer.toString(this.chatterTimeMultiplier));
+        this.sendMessage(this.debugChannel, "Time Divisor: " + Integer.toString(this.chatterTimeDivisor));
+
+    }
+
+	private void getAdminList() {
+		try {
 			Statement s = this.mysql.createStatement();
 			s.executeQuery("SELECT `name` FROM `admins`");
 
@@ -1912,7 +2035,34 @@ public class Tim extends PircBot
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-
+	
+	private void setIgnore(String username)
+	{
+		try
+		{
+			PreparedStatement s = this.mysql.prepareStatement("INSERT INTO `ignores` (`name`) VALUES (?);");
+			s.setString(1, username);
+			s.executeUpdate();
+		}
+		catch (SQLException ex)
+		{
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+	
+	private void removeIgnore(String username)
+	{
+		try
+		{
+			PreparedStatement s = this.mysql.prepareStatement("DELETE FROM `ignores` WHERE `name` = ?;");
+			s.setString(1, username);
+			s.executeUpdate();
+		}
+		catch (SQLException ex)
+		{
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
 	private void getAdultChannelList()
 	{
 		try
