@@ -17,7 +17,8 @@
 package Tim;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
@@ -99,10 +100,30 @@ public class Tim extends PircBot {
 
 		}
 	}
+	
+	/**
+	 * Helps keep track of channel information.
+	 */
+	private class ChannelInfo {
+		public String Name;
+		public boolean IsAdult;
+		public boolean IsMuzzled;
+		
+		public ChannelInfo(String name) {
+			this.Name = name;
+			this.IsAdult = this.IsMuzzled = false;
+		}
+		
+		public ChannelInfo(String name, boolean adult, boolean muzzled) {
+			this.Name = name;
+			this.IsAdult = adult;
+			this.IsMuzzled = muzzled;
+		}
+	}
 
 	private Set<String> admin_list = new HashSet<String>(16);
 	private Set<String> ignore_list = new HashSet<String>(16);
-	private Set<String> adult_channels = new HashSet<String>(128);
+	private Hashtable<String, ChannelInfo> channel_data = new Hashtable<String, ChannelInfo>(62);
 	private List<String> colours = new ArrayList<String>();
 	private List<String> eightballs = new ArrayList<String>();
 	private List<String> greetings = new ArrayList<String>();
@@ -157,7 +178,7 @@ public class Tim extends PircBot {
 
 		this.refreshDbLists();
 
-		this.wars = Collections.synchronizedMap(new HashMap<String, WordWar>());
+		this.wars = Collections.synchronizedMap(new Hashtable<String, WordWar>());
 
 		this.warticker = new WarClockThread(this);
 		this.ticker = new Timer(true);
@@ -336,11 +357,44 @@ public class Tim extends PircBot {
 
 			if (command.equals("setadultflag")) {
 				if (args != null && args.length == 2) {
-					this.setChannelAdultFlagParse(channel, sender, args);
+					String target = args[0].toLowerCase();
+					if (this.channel_data.containsKey(target)) {
+						boolean flag = false;
+						if (!"0".equals(args[1])) {
+							flag = true;
+						}
+	
+						this.setChannelAdultFlag(target, flag);
+						this.sendMessage(channel, sender + ": Channel adult flag updated for " + target);
+					}
+					else {
+						this.sendMessage(channel, "I don't know about " + target);
+					}
 				}
 				else {
 					this.sendMessage(channel,
 							"Use: $setadultflag <#channel> <0/1>");
+				}
+			}
+			else if (command.equals("setmuzzleflag")) {
+				if (args != null && args.length == 2) {
+					String target = args[0].toLowerCase();
+					if (this.channel_data.containsKey(target)) {
+						boolean flag = false;
+						if (!"0".equals(args[1])) {
+							flag = true;
+						}
+	
+						this.setChannelMuzzledFlag(target, flag);
+						this.sendMessage(channel, sender + ": Channel muzzle flag updated for " + target);
+					}
+					else {
+						this.sendMessage(channel, "I don't know about " + target);
+					}
+				}
+				else
+				{
+					this.sendMessage(channel, "Usage: $setmuzzleflag <#channel> <0/1>");
 				}
 			}
 			else if (command.equals("shutdown")) {
@@ -551,6 +605,12 @@ public class Tim extends PircBot {
 					this.sendMessage(channel, iter.next());
 				}
 			}
+			else if (command.equals("help")) {
+				this.printAdminCommandList(channel);
+			}
+			else {
+				this.sendMessage(channel, "$" + command + " is not a valid admin command - try $help");
+			}
 		}
 		else {
 			// The sender is NOT an admin
@@ -568,52 +628,55 @@ public class Tim extends PircBot {
 	}
 
 	private void interact(String sender, String channel, String message) {
-		long elapsed = System.currentTimeMillis() / 1000 - this.chatterTimer;
-		long odds = (long) Math.log(elapsed) * this.chatterTimeMultiplier;
-		if (odds > this.chatterMaxBaseOdds) {
-			odds = this.chatterMaxBaseOdds;
-		}
-
-		if (message.toLowerCase().contains(this.getNick().toLowerCase())) {
-			odds = odds * this.chatterNameMultiplier;
-		}
-
-		int i = this.rand.nextInt(200);
-		if (i < odds) {
-			int j = this.rand.nextInt(200);
-
-			if (j > 90) {
-				this.getItem(channel, sender, null);
-			}
-			else if (j > 40) {
-				int r = this.rand.nextInt(this.eightballs.size());
-				this.sendDelayedAction(channel, "mutters under his breath, \""
-						+ this.eightballs.get(r) + "\"",
-						this.rand.nextInt(1500));
-			}
-			else if (j > 20) {
-				this.throwFridge(channel, sender, sender.split(" ", 0), false);
-			}
-			else if (j > 14) {
-				this.defenestrate(channel, sender, sender.split(" "), false);
-			}
-			else if (j > 6) {
-				this.sing(channel);
-			}
-			else {
-				this.foof(channel, sender, sender.split(" "), false);
+		// Some channels don't want chatter. Is this one of them?
+		if (!this.isChannelMuzzled(channel)) {
+			long elapsed = System.currentTimeMillis() / 1000 - this.chatterTimer;
+			long odds = (long) Math.log(elapsed) * this.chatterTimeMultiplier;
+			if (odds > this.chatterMaxBaseOdds) {
+				odds = this.chatterMaxBaseOdds;
 			}
 
-			this.sendMessage(
-					this.debugChannel,
-					"Elapsed Time: " + Long.toString(elapsed) + "  Odds: "
-							+ Long.toString(odds) + "  Chatter Timer: "
-							+ Long.toString(this.chatterTimer));
-			this.chatterTimer = this.chatterTimer
-					+ this.rand
-							.nextInt((int) elapsed / this.chatterTimeDivisor);
-			this.sendMessage(this.debugChannel, "Updated Chatter Timer: "
-					+ Long.toString(this.chatterTimer));
+			if (message.toLowerCase().contains(this.getNick().toLowerCase())) {
+				odds = odds * this.chatterNameMultiplier;
+			}
+
+			int i = this.rand.nextInt(200);
+			if (i < odds) {
+				int j = this.rand.nextInt(200);
+
+				if (j > 160) {
+					this.getItem(channel, sender, null);
+				}
+				else if (j > 120) {
+					int r = this.rand.nextInt(this.eightballs.size());
+					this.sendDelayedAction(channel, "mutters under his breath, \""
+							+ this.eightballs.get(r) + "\"",
+							this.rand.nextInt(1500));
+				}
+				else if (j > 95) {
+					this.throwFridge(channel, sender, sender.split(" ", 0), false);
+				}
+				else if (j > 45) {
+					this.defenestrate(channel, sender, sender.split(" "), false);
+				}
+				else if (j > 20) {
+					this.sing(channel);
+				}
+				else {
+					this.foof(channel, sender, sender.split(" "), false);
+				}
+
+				this.sendMessage(
+						this.debugChannel,
+						"Elapsed Time: " + Long.toString(elapsed) + "  Odds: "
+								+ Long.toString(odds) + "  Chatter Timer: "
+								+ Long.toString(this.chatterTimer));
+				this.chatterTimer = this.chatterTimer
+						+ this.rand
+								.nextInt((int) elapsed / this.chatterTimeDivisor);
+				this.sendMessage(this.debugChannel, "Updated Chatter Timer: "
+						+ Long.toString(this.chatterTimer));
+			}
 		}
 	}
 
@@ -642,21 +705,22 @@ public class Tim extends PircBot {
 			String sourceLogin, String sourceHostname, String channel) {
 		if (!this.ignore_list.contains(sourceNick)
 				&& targetNick.equals(this.getNick())) {
-			String[] chanlist = this.getChannels();
-			boolean isIn = false;
-			for (int i = 0; i < chanlist.length; i++) {
-				if (chanlist[i].equalsIgnoreCase(channel)) {
-					isIn = true;
-					break;
-				}
-			}
-			if (!isIn) {
+			if (!this.channel_data.containsKey(channel.toLowerCase())) {
 				this.joinChannel(channel);
-				this.saveChannel(channel);
+				this.saveChannel(channel.toLowerCase());
 			}
 		}
 	}
 
+	@Override
+	protected void onKick(String channel, String kickerNick, String kickerLogin,
+			String kickerHostname, String recipientNick, String reason) {
+		if (!kickerNick.equals(this.getNick()))
+		{
+			this.deleteChannel(channel.toLowerCase());
+		}
+	}
+	
 	@Override
 	protected void onPart(String channel, String sender, String login,
 			String hostname) {
@@ -664,7 +728,7 @@ public class Tim extends PircBot {
 			User[] userlist = this.getUsers(channel);
 			if (userlist.length <= 1) {
 				this.partChannel(channel);
-				this.deleteChannel(channel);
+				this.deleteChannel(channel.toLowerCase());
 			}
 		}
 	}
@@ -673,7 +737,7 @@ public class Tim extends PircBot {
 	public void onNotice(String sender, String nick, String hostname,
 			String target, String notice) {
 		if (sender.equals("NickServ") && notice.contains("This nick")) {
-			this.sendMessage("NickServ", "identify \"" + this.password + "\"");
+			this.sendMessage("NickServ", "identify " + this.password);
 		}
 	}
 
@@ -837,34 +901,7 @@ public class Tim extends PircBot {
 				this.commandment(channel, sender, args);
 			} // add additional commands above here!!
 			else if (command.equals("help")) {
-				int delay = 0;
-				int msgdelay = 9;
-				String str = "I am a robot trained by the WordWar Monks of Honolulu. You have "
-						+ "never heard of them. It is because they are awesome. I am capable "
-						+ "of running the following commands:";
-				this.sendMessage(channel, str);
-				str = "!startwar <duration> <time to start> <an optional name> - Starts a word war";
-				this.sendDelayedMessage(channel, str, delay += msgdelay);
-				str = "!listwars - I will tell you about the wars currently in progress.";
-				this.sendMessage(channel, str);
-				str = "!boxodoom <difficulty> <duration> - Difficulty is easy/average/hard, duration in minutes.";
-				this.sendMessage(channel, str);
-				str = "!eggtimer <time> - I will send you a message after <time> minutes.";
-				this.sendDelayedMessage(channel, str, delay += msgdelay);
-				str = "!get <anything> - I will fetch you whatever you like.";
-				this.sendDelayedMessage(channel, str, delay += msgdelay);
-				str = "!getfor <someone> <anything> - I will give someone whatever you like.";
-				this.sendDelayedMessage(channel, str, delay += msgdelay);
-				str = "!eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.";
-				this.sendDelayedMessage(channel, str, delay += msgdelay);
-				str = "!settopic <topic> - If able, I will try to set the channel's topic.";
-				this.sendDelayedMessage(channel, str, delay += msgdelay);
-				str = "!credits - Details of my creators, and where to find my source code.";
-				this.sendDelayedMessage(channel, str, delay += msgdelay);
-				str = "I... I think there might be other tricks I know... You'll have to find them!";
-				this.sendDelayedMessage(channel, str, delay += msgdelay);
-				str = "I will also respond to the /invite command if you would like to see me in another channel.";
-				this.sendDelayedMessage(channel, str, delay += msgdelay);
+				this.printCommandList(channel);
 			}
 			else if (command.equals("credits")) {
 				this.sendMessage(
@@ -914,6 +951,51 @@ public class Tim extends PircBot {
 		}
 	}
 
+	private void printCommandList(String channel) {
+		int msgdelay = 9;
+		String[] strs = { "I am a robot trained by the WordWar Monks of Honolulu. You have "
+				+ "never heard of them. It is because they are awesome. I am capable "
+				+ "of running the following commands:",
+				"!startwar <duration> <time to start> <an optional name> - Starts a word war",
+				"!listwars - I will tell you about the wars currently in progress.",
+				"!boxodoom <difficulty> <duration> - Difficulty is easy/average/hard, duration in minutes.",
+				"!eggtimer <time> - I will send you a message after <time> minutes.",
+				"!get <anything> - I will fetch you whatever you like.",
+				"!getfor <someone> <anything> - I will give someone whatever you like.",
+				"!eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.",
+				"!settopic <topic> - If able, I will try to set the channel's topic.",
+				"!credits - Details of my creators, and where to find my source code.",
+				"I... I think there might be other tricks I know... You'll have to find them!",
+				"I will also respond to the /invite command if you would like to see me in another channel."
+		};
+		for (int i = 0; i < strs.length; ++i) {
+			this.sendDelayedMessage(channel, strs[i], msgdelay * i);
+		}
+	}
+
+	private void printAdminCommandList(String channel) {
+		int msgdelay = 9;
+		String[] helplines = { "All admin commands:",
+				"$setadultflag <#channel> <0/1> - clears/sets adult flag on channel",
+				"$setmuzzleflag <#channel> <0/1> - clears/sets muzzle flag on channel",
+				"$shutdown - Forces bot to exit",
+				"$reload - Reloads data from MySQL (also $refreshdb)",
+				"$reset - Resets internal timer for wars, and reloads data from MySQL",
+				"$listitems [ <page #> ] - lists all currently approved !get/!getfor items",
+				"$listpending [ <page #> ] - lists all unapproved !get/!getfor items",
+				"$approveitem <item # from $listpending> - removes item from pending list and marks as approved for !get/!getfor",
+				"$disapproveitem <item # from $listitems> - removes item from approved list and marks as pending for !get/!getfor",
+				"$deleteitem <item # from $listpending> - permanently removes an item from the pending list for !get/!getfor",
+				"$ignore <username> - Places user on the bot's ignore list",
+				"$unignore <username> - Removes user from bot's ignore list",
+				"$listignores - Prints the list of ignored users"
+		};
+		for (int i = 0; i < helplines.length; ++i) {
+			this.sendDelayedMessage(channel, helplines[i], msgdelay * i);
+		}
+	}
+
+
 	private void dice(String number, String channel, String sender,
 			String[] args) {
 		int max = 0;
@@ -952,7 +1034,7 @@ public class Tim extends PircBot {
 	}
 
 	private void lick(String channel, String sender, String[] args) {
-		if (this.adult_channels.contains(channel)) {
+		if (this.isChannelAdult(channel)) {
 			if (args.length >= 1) {
 				String argStr = this.implodeArray(args);
 
@@ -1244,21 +1326,6 @@ public class Tim extends PircBot {
 		}
 	}
 
-	private void setChannelAdultFlagParse(String channel, String sender,
-			String[] args) {
-		boolean flag;
-
-		if (!"0".equals(args[1])) {
-			flag = true;
-		}
-		else {
-			flag = false;
-		}
-
-		this.setChannelAdultFlag(args[0], flag);
-		this.sendMessage(channel, sender + ": Channel adult flag updated.");
-	}
-
 	private void startWar(String channel, String sender, String[] args) {
 		long time;
 		long to_start = 5000;
@@ -1365,6 +1432,9 @@ public class Tim extends PircBot {
 							case 2:
 							case 1:
 								this.warStartCount(war);
+								break;
+							case 0:
+								// 0 seconds until start. Don't say a damn thing.
 								break;
 							default:
 								if ((int) war.time_to_start % 300 == 0) {
@@ -1514,18 +1584,10 @@ public class Tim extends PircBot {
 				System.exit(1);
 			}
 		}
-
-		try {
-			Statement s = this.mysql.createStatement();
-			s.executeQuery("SELECT * FROM `channels`");
-
-			ResultSet rs = s.getResultSet();
-			while (rs.next()) {
-				this.joinChannel(rs.getString("channel"));
-			}
-		}
-		catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		
+		// Join our channels
+		for (Enumeration<ChannelInfo> e = this.channel_data.elements(); e.hasMoreElements(); ) {
+			this.joinChannel(e.nextElement().Name);
 		}
 
 		this.joinChannel(this.debugChannel);
@@ -1673,8 +1735,8 @@ public class Tim extends PircBot {
 
 	private void refreshDbLists() {
 		this.getAdminList();
+		this.getChannelList();
 		this.getIgnoreList();
-		this.getAdultChannelList();
 		this.getAypwipList();
 		this.getColourList();
 		this.getCommandmentList();
@@ -1776,22 +1838,6 @@ public class Tim extends PircBot {
 					.prepareStatement("DELETE FROM `ignores` WHERE `name` = ?;");
 			s.setString(1, username);
 			s.executeUpdate();
-		}
-		catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void getAdultChannelList() {
-		try {
-			Statement s = this.mysql.createStatement();
-			s.executeQuery("SELECT `channel` FROM `channels` WHERE `adult`=1");
-
-			ResultSet rs = s.getResultSet();
-			this.adult_channels.clear();
-			while (rs.next()) {
-				this.adult_channels.add(rs.getString("channel"));
-			}
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1909,13 +1955,37 @@ public class Tim extends PircBot {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
+	
+	private void getChannelList() {
+		try {
+			Statement s = this.mysql.createStatement();
+			ResultSet rs = s.executeQuery("SELECT * FROM `channels`");
+			
+			this.channel_data.clear();
+			ChannelInfo ci = null;
+			String channel = "";
+			
+			while (rs.next()) {
+				channel = rs.getString("channel");
+				ci = new ChannelInfo(channel, rs.getBoolean("adult"), rs.getBoolean("muzzled"));
+				this.channel_data.put(channel, ci);
+			}
+		}
+		catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
 
 	private void saveChannel(String channel) {
 		try {
 			PreparedStatement s = this.mysql
-					.prepareStatement("INSERT INTO `channels` (`channel`, `adult`) VALUES (?, 0)");
+					.prepareStatement("INSERT INTO `channels` (`channel`, `adult`, `muzzled`) VALUES (?, 0, 0)");
 			s.setString(1, channel);
 			s.executeUpdate();
+			
+			if (!this.channel_data.containsKey(channel)) {
+				this.channel_data.put(channel, new ChannelInfo(channel));
+			}
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1928,6 +1998,9 @@ public class Tim extends PircBot {
 					.prepareStatement("DELETE FROM `channels` WHERE `channel` = ?");
 			s.setString(1, channel);
 			s.executeUpdate();
+			
+			// Will do nothing if the channel is not in the list.
+			this.channel_data.remove(channel);
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1943,14 +2016,74 @@ public class Tim extends PircBot {
 			s.executeUpdate();
 
 			if (adult) {
-				this.adult_channels.add(channel);
+				this.channel_data.get(channel).IsAdult = true;
 			}
 			else {
-				this.adult_channels.remove(channel);
+				this.channel_data.get(channel).IsAdult = false;
 			}
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
+	}
+	
+	private void setChannelMuzzledFlag(String channel, boolean muzzled) {
+		try {
+			PreparedStatement s = this.mysql
+					.prepareStatement("UPDATE `channels` SET `muzzled` = ? WHERE `channel` = ?");
+			s.setBoolean(1, muzzled);
+			s.setString(2, channel);
+			s.executeUpdate();
+			
+			if (muzzled) {
+				this.channel_data.get(channel).IsMuzzled = true;
+			}
+			else {
+				this.channel_data.get(channel).IsMuzzled = false;
+			}
+		}
+		catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+	
+	private boolean isChannelAdult(String channel) {
+		boolean val = false;
+		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
+		if (cdata != null)
+		{
+			val = cdata.IsAdult;
+		}
+		return val;
+	}
+	
+	private boolean isChannelMuzzled(String channel) {
+		boolean val = false;
+		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
+		if (cdata != null && cdata.IsMuzzled)
+		{
+			val = cdata.IsMuzzled;
+		}
+		else {
+			try {
+				this.wars_lock.acquire();
+				if (this.wars != null && this.wars.size() > 0) {
+					for	(Map.Entry<String, WordWar> wm : this.wars.entrySet()) {
+						if (wm.getValue().getChannel().equalsIgnoreCase(channel) 
+								&& wm.getValue().time_to_start <= 0) {
+							val = true;
+							break;
+						}
+					}
+				}
+			}
+			catch (InterruptedException ex) {
+				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			}
+			finally {
+				this.wars_lock.release();
+			}
+		}
+		return val;
 	}
 }
