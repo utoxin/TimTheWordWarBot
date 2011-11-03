@@ -985,7 +985,7 @@ public class Tim extends PircBot {
 		int max = 0;
 		try {
 			max = Integer.parseInt(number);
-			int rand = this.rand.nextInt(max);
+			int rand = this.rand.nextInt(max) + 1;
 			this.sendMessage(channel, sender + ": Your result is " + rand);
 		}
 		catch (NumberFormatException ex) {
