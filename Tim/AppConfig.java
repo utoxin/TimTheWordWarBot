@@ -24,7 +24,9 @@ import java.util.Collection;
 public class AppConfig extends XMLConfiguration
 {
 
-    private static AppConfig instance;
+    // Need this to make warnings shut up more.
+	private static final long serialVersionUID = -4534296896412602302L;
+	private static AppConfig instance;
     private static final String configFile = "BotConfig.xml";
 
     // Singleton initialiser
