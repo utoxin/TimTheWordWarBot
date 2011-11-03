@@ -120,17 +120,7 @@ public class Tim extends PircBot {
 	private int chatterTimeDivisor;
 
 	public Tim() {
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			String url = "jdbc:mysql://" + Tim.config.getString("sql_server") + ":3306/" + Tim.config.getString("sql_database");
-			try {
-				this.mysql = DriverManager.getConnection(url, Tim.config.getString("sql_user"), Tim.config.getString("sql_password"));
-			} catch (SQLException ex) {
-				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		} catch (ClassNotFoundException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
+		this.mysqlConnect();
 
 		this.setName(getSetting("nickname"));
 		this.password = getSetting("password");
@@ -1148,16 +1138,14 @@ public class Tim extends PircBot {
 		if (this.chatterTimeDivisor == 0) {
 			this.chatterTimeDivisor = 2;
 		}
-
-        this.sendMessage("#timmydebug", "Max Base Odds: " + Integer.toString(this.chatterMaxBaseOdds));
-        this.sendMessage("#timmydebug", "Name Multiplier: " + Integer.toString(this.chatterNameMultiplier));
-        this.sendMessage("#timmydebug", "Time Multiplier: " + Integer.toString(this.chatterTimeMultiplier));
-        this.sendMessage("#timmydebug", "Time Divisor: " + Integer.toString(this.chatterTimeDivisor));
-
     }
 
 	private void getAdminList() {
 		try {
+			if (this.mysql.isClosed()) {
+				this.mysqlConnect();
+			}
+
 			Statement s = this.mysql.createStatement();
 			s.executeQuery("SELECT `name` FROM `admins`");
 
@@ -1174,6 +1162,10 @@ public class Tim extends PircBot {
 
 	private void getIgnoreList() {
 		try {
+			if (this.mysql.isClosed()) {
+				this.mysqlConnect();
+			}
+
 			Statement s = this.mysql.createStatement();
 			s.executeQuery("SELECT `name` FROM `ignores`");
 
@@ -1189,6 +1181,10 @@ public class Tim extends PircBot {
 
 	private void getAdultChannelList() {
 		try {
+			if (this.mysql.isClosed()) {
+				this.mysqlConnect();
+			}
+
 			Statement s = this.mysql.createStatement();
 			s.executeQuery("SELECT `channel` FROM `channels` WHERE `adult`=1");
 
@@ -1204,6 +1200,10 @@ public class Tim extends PircBot {
 
 	private void getAypwipList() {
 		try {
+			if (this.mysql.isClosed()) {
+				this.mysqlConnect();
+			}
+
 			Statement s = this.mysql.createStatement();
 			s.executeQuery("SELECT `string` FROM `aypwips`");
 
@@ -1219,6 +1219,10 @@ public class Tim extends PircBot {
 
 	private void getColourList() {
 		try {
+			if (this.mysql.isClosed()) {
+				this.mysqlConnect();
+			}
+
 			Statement s = this.mysql.createStatement();
 			s.executeQuery("SELECT `string` FROM `colours`");
 
@@ -1234,6 +1238,10 @@ public class Tim extends PircBot {
 
 	private void getCommandmentList() {
 		try {
+			if (this.mysql.isClosed()) {
+				this.mysqlConnect();
+			}
+
 			Statement s = this.mysql.createStatement();
 			s.executeQuery("SELECT `string` FROM `commandments`");
 
@@ -1249,6 +1257,10 @@ public class Tim extends PircBot {
 
 	private void getDeityList() {
 		try {
+			if (this.mysql.isClosed()) {
+				this.mysqlConnect();
+			}
+
 			Statement s = this.mysql.createStatement();
 			s.executeQuery("SELECT `string` FROM `deities`");
 
@@ -1264,6 +1276,10 @@ public class Tim extends PircBot {
 
 	private void getEightballList() {
 		try {
+			if (this.mysql.isClosed()) {
+				this.mysqlConnect();
+			}
+
 			Statement s = this.mysql.createStatement();
 			s.executeQuery("SELECT `string` FROM `eightballs`");
 
@@ -1279,6 +1295,10 @@ public class Tim extends PircBot {
 
 	private void getFlavourList() {
 		try {
+			if (this.mysql.isClosed()) {
+				this.mysqlConnect();
+			}
+
 			Statement s = this.mysql.createStatement();
 			s.executeQuery("SELECT `string` FROM `flavours`");
 
@@ -1294,6 +1314,10 @@ public class Tim extends PircBot {
 
 	private void getGreetingList() {
 		try {
+			if (this.mysql.isClosed()) {
+				this.mysqlConnect();
+			}
+
 			Statement s = this.mysql.createStatement();
 			s.executeQuery("SELECT `string` FROM `greetings`");
 
@@ -1309,6 +1333,10 @@ public class Tim extends PircBot {
 
 	private void saveChannel(String channel) {
 		try {
+			if (this.mysql.isClosed()) {
+				this.mysqlConnect();
+			}
+
 			PreparedStatement s = this.mysql.prepareStatement("INSERT INTO `channels` (`channel`, `adult`) VALUES (?, 0)");
 			s.setString(1, channel);
 			s.executeUpdate();
@@ -1319,6 +1347,10 @@ public class Tim extends PircBot {
 
 	private void deleteChannel(String channel) {
 		try {
+			if (this.mysql.isClosed()) {
+				this.mysqlConnect();
+			}
+
 			PreparedStatement s = this.mysql.prepareStatement("DELETE FROM `channels` WHERE `channel` = ?");
 			s.setString(1, channel);
 			s.executeUpdate();
@@ -1329,6 +1361,10 @@ public class Tim extends PircBot {
 
 	private void setChannelAdultFlag(String channel, boolean adult) {
 		try {
+			if (this.mysql.isClosed()) {
+				this.mysqlConnect();
+			}
+
 			PreparedStatement s = this.mysql.prepareStatement("UPDATE `channels` SET adult = ? WHERE `channel` = ?");
 			s.setBoolean(1, adult);
 			s.setString(2, channel);
@@ -1340,6 +1376,20 @@ public class Tim extends PircBot {
 				this.adult_channels.remove(channel);
 			}
 		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void mysqlConnect() {
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			String url = "jdbc:mysql://" + Tim.config.getString("sql_server") + ":3306/" + Tim.config.getString("sql_database");
+			try {
+				this.mysql = DriverManager.getConnection(url, Tim.config.getString("sql_user"), Tim.config.getString("sql_password"));
+			} catch (SQLException ex) {
+				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		} catch (ClassNotFoundException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
