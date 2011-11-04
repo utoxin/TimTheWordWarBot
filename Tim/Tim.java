@@ -18,7 +18,6 @@ package Tim;
 
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
@@ -31,6 +30,7 @@ import java.util.concurrent.Semaphore;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import org.jibble.pircbot.*;
@@ -126,7 +126,6 @@ public class Tim extends PircBot {
 	}
 	private Set<String> admin_list = new HashSet<String>(16);
 	private Set<String> ignore_list = new HashSet<String>(16);
-	private Hashtable<String, ChannelInfo> channel_data = new Hashtable<String, ChannelInfo>(62);
 	private List<String> colours = new ArrayList<String>();
 	private List<String> eightballs = new ArrayList<String>();
 	private List<String> greetings = new ArrayList<String>();
@@ -138,6 +137,7 @@ public class Tim extends PircBot {
 	private List<String> pending_items = new ArrayList<String>();
 	private Map<String, WordWar> wars;
 	private Map<String, Object> settings;
+	private Map<String, ChannelInfo> channel_data;
 	private WarClockThread warticker;
 	private Timer ticker;
 	private Semaphore wars_lock;
@@ -1557,8 +1557,8 @@ public class Tim extends PircBot {
 		}
 
 		// Join our channels
-		for (Enumeration<ChannelInfo> e = this.channel_data.elements(); e.hasMoreElements();) {
-			this.joinChannel(e.nextElement().Name);
+		for (Map.Entry<String, ChannelInfo> channel : this.channel_data.entrySet()) {
+			this.joinChannel(channel.getValue().Name);
 		}
 
 		this.joinChannel(this.debugChannel);
