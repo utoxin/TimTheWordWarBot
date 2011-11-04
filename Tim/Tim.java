@@ -1280,7 +1280,7 @@ public class Tim extends PircBot {
 			if (this.wars.containsKey(name.toLowerCase())) {
 				if (sender.equalsIgnoreCase(this.wars.get(name.toLowerCase()).getStarter())
 					|| this.admin_list.contains(sender)
-					|| this.admin_list.contains(channel)) {
+					|| this.admin_list.contains(channel.toLowerCase())) {
 					WordWar war = this.wars.remove(name.toLowerCase());
 					this.sendMessage(channel, "The war '" + war.getName()
 											  + "' has been ended.");
