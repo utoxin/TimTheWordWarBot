@@ -175,6 +175,11 @@ public class Tim extends PircBot {
 			// Ideally, we should fail here...
 			this.debugChannel = "#timmydebug";
 		}
+		
+		// Read message delay from DB, but never go below 100ms.
+		long delay = Long.parseLong(this.getSetting("max_rate"));
+		delay = Math.max(delay, 100);
+		this.setMessageDelay(delay);
 
 		this.refreshDbLists();
 
@@ -606,7 +611,7 @@ public class Tim extends PircBot {
 				}
 			}
 			else if (command.equals("help")) {
-				this.printAdminCommandList(channel);
+				this.printAdminCommandList(sender);
 			}
 			else {
 				this.sendMessage(channel, "$" + command + " is not a valid admin command - try $help");
@@ -901,27 +906,12 @@ public class Tim extends PircBot {
 				this.commandment(channel, sender, args);
 			} // add additional commands above here!!
 			else if (command.equals("help")) {
-				this.printCommandList(channel);
+				this.printCommandList(sender);
 			}
 			else if (command.equals("credits")) {
 				this.sendMessage(
 						channel,
 						"I was created by MysteriousAges in 2008 using PHP, and ported to the Java PircBot library in 2009. Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: https://github.com/MysteriousAges/TimTheWordWarBot");
-			}
-			else if (command.equals("anything") || command.equals("jack")
-					|| command.equals("squat") || command.equals("much")) {
-				this.sendMessage(channel, "Nice try, " + sender
-						+ ", trying to get me to look stupid.");
-
-				int r = this.rand.nextInt(100);
-				if (r < 10) {
-					this.defenestrate(channel, sender, sender.split(" ", 0),
-							false);
-				}
-				else if (r < 20) {
-					this.throwFridge(channel, sender, sender.split(" ", 0),
-							false);
-				}
 			}
 			else if (command.equals("defenestrate")) {
 				this.defenestrate(channel, sender, args, true);
@@ -933,8 +923,7 @@ public class Tim extends PircBot {
 				this.foof(channel, sender, args, true);
 			}
 			else {
-				this.sendMessage(channel, sender + ": I don't know !" + command
-						+ ".");
+				this.sendMessage(channel, "!" + command + " was not part of my training.");
 			}
 		}
 		else if (prefix.equals("@")) {
@@ -951,7 +940,7 @@ public class Tim extends PircBot {
 		}
 	}
 
-	private void printCommandList(String channel) {
+	private void printCommandList(String target) {
 		int msgdelay = 9;
 		String[] strs = { "I am a robot trained by the WordWar Monks of Honolulu. You have "
 				+ "never heard of them. It is because they are awesome. I am capable "
@@ -969,11 +958,11 @@ public class Tim extends PircBot {
 				"I will also respond to the /invite command if you would like to see me in another channel."
 		};
 		for (int i = 0; i < strs.length; ++i) {
-			this.sendDelayedMessage(channel, strs[i], msgdelay * i);
+			this.sendDelayedMessage(target, strs[i], msgdelay * i);
 		}
 	}
 
-	private void printAdminCommandList(String channel) {
+	private void printAdminCommandList(String target) {
 		int msgdelay = 9;
 		String[] helplines = { "All admin commands:",
 				"$setadultflag <#channel> <0/1> - clears/sets adult flag on channel",
@@ -991,7 +980,7 @@ public class Tim extends PircBot {
 				"$listignores - Prints the list of ignored users"
 		};
 		for (int i = 0; i < helplines.length; ++i) {
-			this.sendDelayedMessage(channel, helplines[i], msgdelay * i);
+			this.sendDelayedMessage(target, helplines[i], msgdelay * i);
 		}
 	}
 
@@ -1598,7 +1587,6 @@ public class Tim extends PircBot {
 
 		bot.setLogin("ThereAreSomeWhoCallMeTim_Bot");
 		bot.setVerbose(true);
-		bot.setMessageDelay(350);
 		bot.connectToServer();
 	}
 
