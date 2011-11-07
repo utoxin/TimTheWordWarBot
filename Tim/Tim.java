@@ -923,7 +923,7 @@ public class Tim extends PircBot {
 			else if (command.equals("credits")) {
 				this.sendMessage(
 						channel,
-						"I was created by MysteriousAges in 2008 using PHP, and ported to the Java PircBot library in 2009. Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: https://github.com/MysteriousAges/TimTheWordWarBot");
+						"I was created by MysteriousAges in 2008 using PHP, and ported to the Java PircBot library in 2009. Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: https://github.com/MysteriousAges/TimTheWordWarBot, and my NaNoWriMo profile page is here: http://www.nanowrimo.org/en/participants/timmybot");
 			}
 			else if (command.equals("anything") || command.equals("jack")
 					|| command.equals("squat") || command.equals("much")) {
@@ -984,6 +984,8 @@ public class Tim extends PircBot {
 						  "!eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.",
 						  "!settopic <topic> - If able, I will try to set the channel's topic.",
 						  "!credits - Details of my creators, and where to find my source code.",
+						  "!chainlast - The last line of my novel, so you have something to base the next one one.",
+						  "!chainnew <new line for novel> - Provide the next line of my great cyberspace novel!",
 						  "I... I think there might be other tricks I know... You'll have to find them!",
 						  "I will also respond to the /invite command if you would like to see me in another channel."
 		};
@@ -1384,7 +1386,7 @@ public class Tim extends PircBot {
 		if (!this.wars.containsKey(warname.toLowerCase())) {
 			WordWar war = new WordWar(time, to_start, warname, sender, channel);
 			this.wars.put(war.getName().toLowerCase(), war);
-			this.sendMessage(this.debugChannel, "War started by " + sender + " in channel " + channel);
+			this.sendMessage(this.debugChannel, "War scheduled by " + sender + " in channel " + channel);
 			if (to_start > 0) {
 				this.sendMessage(channel, sender
 										  + ": your wordwar will start in " + to_start / 60.0
@@ -1519,6 +1521,7 @@ public class Tim extends PircBot {
 	private void beginWar(WordWar war) {
 		this.sendNotice(war.getChannel(), "WordWar: '" + war.getName()
 										  + " 'starts now! (" + war.getDuration() / 60 + " minutes)");
+		this.sendMessage(this.debugChannel, "War " + war.getName() + " started in channel " + war.getChannel());
 	}
 
 	private void endWar(WordWar war) {
