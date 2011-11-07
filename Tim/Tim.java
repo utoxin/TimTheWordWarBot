@@ -151,7 +151,7 @@ public class Tim extends PircBot {
 	private int chatterNameMultiplier;
 	private int chatterTimeMultiplier;
 	private int chatterTimeDivisor;
-	private ConnectionPool pool;
+	protected ConnectionPool pool;
 	private ChainStory story;
 
 	public Tim() {
@@ -688,13 +688,11 @@ public class Tim extends PircBot {
 
 				this.sendMessage(
 						this.debugChannel,
-						"Elapsed Time: " + Long.toString(elapsed) + "  Odds: "
-						+ Long.toString(odds) + "  Chatter Timer: "
-						+ Long.toString(this.chatterTimer));
+						"Chattered On: " + channel + "  Odds: "
+						+ Long.toString(odds));
+
 				this.chatterTimer = this.chatterTimer
 									+ this.rand.nextInt((int) elapsed / this.chatterTimeDivisor);
-				this.sendMessage(this.debugChannel, "Updated Chatter Timer: "
-													+ Long.toString(this.chatterTimer));
 			}
 		}
 	}
@@ -1323,6 +1321,7 @@ public class Tim extends PircBot {
 					WordWar war = this.wars.remove(name.toLowerCase());
 					this.sendMessage(channel, "The war '" + war.getName()
 											  + "' has been ended.");
+					this.sendMessage(this.debugChannel, "War '" + war.getName() + "' killed by " + sender + " in channel " + war.getChannel());
 				}
 				else {
 					this.sendMessage(channel, sender
@@ -1385,6 +1384,7 @@ public class Tim extends PircBot {
 		if (!this.wars.containsKey(warname.toLowerCase())) {
 			WordWar war = new WordWar(time, to_start, warname, sender, channel);
 			this.wars.put(war.getName().toLowerCase(), war);
+			this.sendMessage(this.debugChannel, "War started by " + sender + " in channel " + channel);
 			if (to_start > 0) {
 				this.sendMessage(channel, sender
 										  + ": your wordwar will start in " + to_start / 60.0
@@ -1525,6 +1525,7 @@ public class Tim extends PircBot {
 		this.sendNotice(war.getChannel(), "WordWar: '" + war.getName()
 										  + "' is over!");
 		this.wars.remove(war.getName().toLowerCase());
+		this.sendMessage(this.debugChannel, "War '" + war.getName() + "' finished in channel " + war.getChannel());
 	}
 
 	private void boxodoom(String channel, String sender, String[] args) {
@@ -1639,6 +1640,7 @@ public class Tim extends PircBot {
 		long timeout = 3000;
 		Connection con = null;
 		String value = "";
+
 		try {
 			con = pool.getConnection(timeout);
 
