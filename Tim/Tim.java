@@ -180,7 +180,7 @@ public class Tim extends PircBot {
 
 		// Initialize the connection pool, to prevent SQL timeout issues
 		String url = "jdbc:mysql://" + Tim.config.getString("sql_server") + ":3306/" + Tim.config.getString("sql_database");
-		pool = new ConnectionPool("local", 2, 5, 10, 3600, url, Tim.config.getString("sql_user"), Tim.config.getString("sql_password"));
+		pool = new ConnectionPool("local", 2, 5, 10, 180000, url, Tim.config.getString("sql_user"), Tim.config.getString("sql_password"));
 
 		this.setName(this.getSetting("nickname"));
 		this.password = this.getSetting("password");
