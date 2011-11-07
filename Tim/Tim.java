@@ -139,7 +139,6 @@ public class Tim extends PircBot {
 	private List<String> approved_items = new ArrayList<String>();
 	private List<String> pending_items = new ArrayList<String>();
 	private Map<String, WordWar> wars;
-	private Map<String, Object> settings;
 	private WarClockThread warticker;
 	private Timer ticker;
 	private Semaphore wars_lock;
@@ -153,19 +152,21 @@ public class Tim extends PircBot {
 	private int chatterTimeMultiplier;
 	private int chatterTimeDivisor;
 	private ConnectionPool pool;
+	private ChainStory story;
 
 	public Tim() {
+		Class c;
+		Driver driver;
+
 		/**
 		 * Make sure the JDBC driver is initialized. Used by the connection
 		 * pool.
 		 * 
-		 * This try/catch block seem excessive to me, but it's what NetBeans
+		 * This try/catch block seems excessive to me, but it's what NetBeans
 		 * suggested, and I'm not very experienced with java, so... here it is.
 		 */
-		Class c;
 		try {
 			c = Class.forName("com.mysql.jdbc.Driver");
-			Driver driver;
 			driver = (Driver) c.newInstance();
 			DriverManager.registerDriver(driver);
 		} catch (ClassNotFoundException ex) {
@@ -205,6 +206,8 @@ public class Tim extends PircBot {
 		this.wars_lock = new Semaphore(1, true);
 		this.chatterTimer = System.currentTimeMillis() / 1000;
 
+		this.story = new ChainStory(this);
+		
 		this.rand = new Random();
 		this.shutdown = false;
 	}
@@ -822,6 +825,7 @@ public class Tim extends PircBot {
 		else {
 			command = message.substring(1).toLowerCase();
 		}
+
 		if (prefix.equals("!")) {
 			if (command.equals("startwar")) {
 				if (args != null && args.length > 1) {
@@ -946,6 +950,9 @@ public class Tim extends PircBot {
 			}
 			else if (command.equals("foof")) {
 				this.foof(channel, sender, args, true);
+			}
+			else if (this.story.parseUserCommand(channel, sender, prefix, message)) {
+				return;
 			}
 			else {
 				this.sendMessage(channel, "!" + command + " was not part of my training.");
