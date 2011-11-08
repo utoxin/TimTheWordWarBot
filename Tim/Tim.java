@@ -626,7 +626,7 @@ public class Tim extends PircBot {
 				}
 			}
 			else if (command.equals("help")) {
-				this.printAdminCommandList(sender);
+				this.printAdminCommandList(sender, channel);
 			}
 			else {
 				this.sendMessage(channel, "$" + command + " is not a valid admin command - try $help");
@@ -918,7 +918,7 @@ public class Tim extends PircBot {
 				this.commandment(channel, sender, args);
 			} // add additional commands above here!!
 			else if (command.equals("help")) {
-				this.printCommandList(sender);
+				this.printCommandList(sender, channel);
 			}
 			else if (command.equals("credits")) {
 				this.sendMessage(
@@ -970,7 +970,7 @@ public class Tim extends PircBot {
 		}
 	}
 
-	private void printCommandList(String target) {
+	private void printCommandList(String target, String channel) {
 		int msgdelay = 9;
 		String[] strs = { "I am a robot trained by the WordWar Monks of Honolulu. You have "
 						  + "never heard of them. It is because they are awesome. I am capable "
@@ -984,17 +984,18 @@ public class Tim extends PircBot {
 						  "!eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.",
 						  "!settopic <topic> - If able, I will try to set the channel's topic.",
 						  "!credits - Details of my creators, and where to find my source code.",
-						  "!chainlast - The last line of my novel, so you have something to base the next one one.",
-						  "!chainnew <new line for novel> - Provide the next line of my great cyberspace novel!",
+						  "!chainhelp - Get help on my chain story commands",
 						  "I... I think there might be other tricks I know... You'll have to find them!",
-						  "I will also respond to the /invite command if you would like to see me in another channel."
+						  "I will also respond to the /invite command if you would like to see me in another channel. "
 		};
+
+		this.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new windor or tab with the help text.)");
 		for (int i = 0; i < strs.length; ++i) {
 			this.sendDelayedMessage(target, strs[i], msgdelay * i);
 		}
 	}
 
-	private void printAdminCommandList(String target) {
+	private void printAdminCommandList(String target, String channel) {
 		int msgdelay = 9;
 		String[] helplines = { "All admin commands:",
 							   "$setadultflag <#channel> <0/1> - clears/sets adult flag on channel",
@@ -1011,6 +1012,8 @@ public class Tim extends PircBot {
 							   "$unignore <username> - Removes user from bot's ignore list",
 							   "$listignores - Prints the list of ignored users"
 		};
+
+		this.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new windor or tab with the help text.)");
 		for (int i = 0; i < helplines.length; ++i) {
 			this.sendDelayedMessage(target, helplines[i], msgdelay * i);
 		}

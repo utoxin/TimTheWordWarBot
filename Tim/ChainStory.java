@@ -53,11 +53,77 @@ public class ChainStory {
 				addNew(channel, sender, argsString);
 				return true;
 			}
+			else if (command.equals("chaininfo")) {
+				info(channel);
+				return true;
+			}
+			else if (command.equals("chainhelp")) {
+				help(sender, channel);
+				return true;
+			}
 		}
 		
 		return false;
 	}
 
+	private void help(String target, String channel) {
+		int msgdelay = 9;
+		String[] strs = { 
+						  "!chaininfo - General info about the current status of my navel.",
+						  "!chainlast - The last line of my novel, so you have something to base the next one one.",
+						  "!chainnew <new line for novel> - Provide the next line of my great cyberspace novel!",
+						  "!chainhelp - Get help on my chain story commands",
+		};
+
+		this.ircclient.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new windor or tab with the help text.)");
+		for (int i = 0; i < strs.length; ++i) {
+			this.ircclient.sendDelayedMessage(target, strs[i], msgdelay * i);
+		}
+	}
+
+	public void info(String channel) {
+		long timeout = 3000;
+		Connection con = null;
+		String word_count = "", last_line = "", author_count = "";
+		ResultSet rs;
+		PreparedStatement s;
+		
+		try {
+			con = ircclient.pool.getConnection(timeout);
+
+			s = con.prepareStatement("SELECT SUM( LENGTH( STRING ) - LENGTH( REPLACE( STRING ,  ' ',  '' ) ) +1 ) AS word_count FROM story");
+			s.executeQuery();
+			rs = s.getResultSet();
+			while (rs.next()) {
+				word_count = rs.getString("word_count");
+			}
+			
+			s = con.prepareStatement("SELECT COUNT(DISTINCT author) AS author_count FROM story");
+			s.executeQuery();
+			rs = s.getResultSet();
+			while (rs.next()) {
+				author_count = rs.getString("author_count");
+			}
+			
+			s = con.prepareStatement("SELECT * FROM `story` ORDER BY id DESC LIMIT 1");
+			s.executeQuery();
+
+			rs = s.getResultSet();
+			while (rs.next()) {
+				last_line = rs.getString("string");
+			}
+
+			this.ircclient.sendMessage(channel, "My novel is currently " + word_count + " words long, with sections written by " + author_count + " different people, and the last line is:");
+			this.ircclient.sendMessage(channel, last_line);
+			this.ircclient.sendMessage(channel, "You can read an excerpt in my profile here: http://www.nanowrimo.org/en/participants/timmybot");
+			
+			con.close();
+		}
+		catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+	
 	public void showLast(String channel) {
 		long timeout = 3000;
 		Connection con = null;
