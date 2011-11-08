@@ -128,6 +128,7 @@ public class Tim extends PircBot {
 
 	private Set<String> admin_list = new HashSet<String>(16);
 	private Set<String> ignore_list = new HashSet<String>(16);
+	private Hashtable<String, ChannelInfo> channel_data = new Hashtable<String, ChannelInfo>(62);
 	private List<String> colours = new ArrayList<String>();
 	private List<String> eightballs = new ArrayList<String>();
 	private List<String> greetings = new ArrayList<String>();
