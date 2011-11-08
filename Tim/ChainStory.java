@@ -151,27 +151,32 @@ public class ChainStory {
 		long timeout = 3000;
 		Connection con = null;
 
-		try {
-			con = ircclient.pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("INSERT INTO story SET string = ?, author = ?, created = NOW()");
-			s.setString(1, message);
-			s.setString(2, sender);
-			s.executeUpdate();
-
-			this.ircclient.sendAction(channel, "quickly copies down what " + sender + " said. \"Thanks!\"");
-
-			s = con.prepareStatement("SELECT SUM( LENGTH( STRING ) - LENGTH( REPLACE( STRING ,  ' ',  '' ) ) +1 ) AS word_count FROM story");
-			s.executeQuery();
-			ResultSet rs = s.getResultSet();
-			while (rs.next()) {
-				this.ircclient.sendMessage(channel, "My novel is now " + rs.getString("word_count") + " words long!");
-			}
-						
-			con.close();
+		if ("".equals(message)) {
+			this.ircclient.sendAction(channel, "blinks, and looks confused. \"But there's nothing there. That won't help my wordcount!\"");
 		}
-		catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		else {
+			try {
+				con = ircclient.pool.getConnection(timeout);
+
+				PreparedStatement s = con.prepareStatement("INSERT INTO story SET string = ?, author = ?, created = NOW()");
+				s.setString(1, message);
+				s.setString(2, sender);
+				s.executeUpdate();
+
+				this.ircclient.sendAction(channel, "quickly copies down what " + sender + " said. \"Thanks!\"");
+
+				s = con.prepareStatement("SELECT SUM( LENGTH( STRING ) - LENGTH( REPLACE( STRING ,  ' ',  '' ) ) +1 ) AS word_count FROM story");
+				s.executeQuery();
+				ResultSet rs = s.getResultSet();
+				while (rs.next()) {
+					this.ircclient.sendMessage(channel, "My novel is now " + rs.getString("word_count") + " words long!");
+				}
+
+				con.close();
+			}
+			catch (SQLException ex) {
+				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 }
