@@ -31,10 +31,10 @@ import java.util.concurrent.Semaphore;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import org.jibble.pircbot.*;
+import snaq.db.ConnectionPool;
 
 public class Tim extends PircBot {
 
@@ -138,8 +138,6 @@ public class Tim extends PircBot {
 	private List<String> approved_items = new ArrayList<String>();
 	private List<String> pending_items = new ArrayList<String>();
 	private Map<String, WordWar> wars;
-	private Map<String, Object> settings;
-	private Map<String, ChannelInfo> channel_data;
 	private WarClockThread warticker;
 	private Timer ticker;
 	private Semaphore wars_lock;
@@ -148,14 +146,41 @@ public class Tim extends PircBot {
 	private String password;
 	private String debugChannel;
 	private long chatterTimer;
-	private Connection mysql;
 	private int chatterMaxBaseOdds;
 	private int chatterNameMultiplier;
 	private int chatterTimeMultiplier;
 	private int chatterTimeDivisor;
+	protected ConnectionPool pool;
+	private ChainStory story;
 
 	public Tim() {
-		this.mysqlConnect();
+		Class c;
+		Driver driver;
+
+		/**
+		 * Make sure the JDBC driver is initialized. Used by the connection
+		 * pool.
+		 * 
+		 * This try/catch block seems excessive to me, but it's what NetBeans
+		 * suggested, and I'm not very experienced with java, so... here it is.
+		 */
+		try {
+			c = Class.forName("com.mysql.jdbc.Driver");
+			driver = (Driver) c.newInstance();
+			DriverManager.registerDriver(driver);
+		} catch (ClassNotFoundException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (InstantiationException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (IllegalAccessException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+		// Initialize the connection pool, to prevent SQL timeout issues
+		String url = "jdbc:mysql://" + Tim.config.getString("sql_server") + ":3306/" + Tim.config.getString("sql_database");
+		pool = new ConnectionPool("local", 2, 5, 10, 180000, url, Tim.config.getString("sql_user"), Tim.config.getString("sql_password"));
 
 		this.setName(this.getSetting("nickname"));
 		this.password = this.getSetting("password");
@@ -180,6 +205,8 @@ public class Tim extends PircBot {
 		this.wars_lock = new Semaphore(1, true);
 		this.chatterTimer = System.currentTimeMillis() / 1000;
 
+		this.story = new ChainStory(this);
+		
 		this.rand = new Random();
 		this.shutdown = false;
 	}
@@ -660,13 +687,11 @@ public class Tim extends PircBot {
 
 				this.sendMessage(
 						this.debugChannel,
-						"Elapsed Time: " + Long.toString(elapsed) + "  Odds: "
-						+ Long.toString(odds) + "  Chatter Timer: "
-						+ Long.toString(this.chatterTimer));
+						"Chattered On: " + channel + "  Odds: "
+						+ Long.toString(odds));
+
 				this.chatterTimer = this.chatterTimer
 									+ this.rand.nextInt((int) elapsed / this.chatterTimeDivisor);
-				this.sendMessage(this.debugChannel, "Updated Chatter Timer: "
-													+ Long.toString(this.chatterTimer));
 			}
 		}
 	}
@@ -797,6 +822,7 @@ public class Tim extends PircBot {
 		else {
 			command = message.substring(1).toLowerCase();
 		}
+
 		if (prefix.equals("!")) {
 			if (command.equals("startwar")) {
 				if (args != null && args.length > 1) {
@@ -896,7 +922,7 @@ public class Tim extends PircBot {
 			else if (command.equals("credits")) {
 				this.sendMessage(
 						channel,
-						"I was created by MysteriousAges in 2008 using PHP, and ported to the Java PircBot library in 2009. Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: https://github.com/MysteriousAges/TimTheWordWarBot");
+						"I was created by MysteriousAges in 2008 using PHP, and ported to the Java PircBot library in 2009. Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: https://github.com/MysteriousAges/TimTheWordWarBot, and my NaNoWriMo profile page is here: http://www.nanowrimo.org/en/participants/timmybot");
 			}
 			else if (command.equals("anything") || command.equals("jack")
 					|| command.equals("squat") || command.equals("much")) {
@@ -921,6 +947,9 @@ public class Tim extends PircBot {
 			}
 			else if (command.equals("foof")) {
 				this.foof(channel, sender, args, true);
+			}
+			else if (this.story.parseUserCommand(channel, sender, prefix, message)) {
+				return;
 			}
 			else {
 				this.sendMessage(channel, "!" + command + " was not part of my training.");
@@ -954,6 +983,8 @@ public class Tim extends PircBot {
 						  "!eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.",
 						  "!settopic <topic> - If able, I will try to set the channel's topic.",
 						  "!credits - Details of my creators, and where to find my source code.",
+						  "!chainlast - The last line of my novel, so you have something to base the next one one.",
+						  "!chainnew <new line for novel> - Provide the next line of my great cyberspace novel!",
 						  "I... I think there might be other tricks I know... You'll have to find them!",
 						  "I will also respond to the /invite command if you would like to see me in another channel."
 		};
@@ -1291,6 +1322,7 @@ public class Tim extends PircBot {
 					WordWar war = this.wars.remove(name.toLowerCase());
 					this.sendMessage(channel, "The war '" + war.getName()
 											  + "' has been ended.");
+					this.sendMessage(this.debugChannel, "War '" + war.getName() + "' killed by " + sender + " in channel " + war.getChannel());
 				}
 				else {
 					this.sendMessage(channel, sender
@@ -1353,6 +1385,7 @@ public class Tim extends PircBot {
 		if (!this.wars.containsKey(warname.toLowerCase())) {
 			WordWar war = new WordWar(time, to_start, warname, sender, channel);
 			this.wars.put(war.getName().toLowerCase(), war);
+			this.sendMessage(this.debugChannel, "War scheduled by " + sender + " in channel " + channel);
 			if (to_start > 0) {
 				this.sendMessage(channel, sender
 										  + ": your wordwar will start in " + to_start / 60.0
@@ -1487,12 +1520,14 @@ public class Tim extends PircBot {
 	private void beginWar(WordWar war) {
 		this.sendNotice(war.getChannel(), "WordWar: '" + war.getName()
 										  + " 'starts now! (" + war.getDuration() / 60 + " minutes)");
+		this.sendMessage(this.debugChannel, "War " + war.getName() + " started in channel " + war.getChannel());
 	}
 
 	private void endWar(WordWar war) {
 		this.sendNotice(war.getChannel(), "WordWar: '" + war.getName()
 										  + "' is over!");
 		this.wars.remove(war.getName().toLowerCase());
+		this.sendMessage(this.debugChannel, "War '" + war.getName() + "' finished in channel " + war.getChannel());
 	}
 
 	private void boxodoom(String channel, String sender, String[] args) {
@@ -1500,6 +1535,8 @@ public class Tim extends PircBot {
 		long base_wpm;
 		double modifier;
 		int goal;
+		long timeout = 3000;
+		Connection con = null;
 
 		if (args.length != 2) {
 			this.sendMessage(channel, sender
@@ -1523,7 +1560,8 @@ public class Tim extends PircBot {
 
 		String value = "";
 		try {
-			PreparedStatement s = this.mysql.prepareStatement("SELECT `challenge` FROM `box_of_doom` WHERE `difficulty` = ? ORDER BY rand() LIMIT 1");
+			con = pool.getConnection(timeout);
+			PreparedStatement s = con.prepareStatement("SELECT `challenge` FROM `box_of_doom` WHERE `difficulty` = ? ORDER BY rand() LIMIT 1");
 			s.setString(1, args[0]);
 			s.executeQuery();
 
@@ -1531,6 +1569,8 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				value = rs.getString("challenge");
 			}
+
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1564,8 +1604,8 @@ public class Tim extends PircBot {
 		}
 
 		// Join our channels
-		for (Map.Entry<String, ChannelInfo> channel : this.channel_data.entrySet()) {
-			this.joinChannel(channel.getValue().Name);
+		for (Enumeration<ChannelInfo> e = this.channel_data.elements(); e.hasMoreElements();) {
+			this.joinChannel(e.nextElement().Name);
 		}
 
 		this.joinChannel(this.debugChannel);
@@ -1599,9 +1639,14 @@ public class Tim extends PircBot {
 	}
 
 	private String getSetting(String key) {
+		long timeout = 3000;
+		Connection con = null;
 		String value = "";
+
 		try {
-			PreparedStatement s = this.mysql.prepareStatement("SELECT `value` FROM `settings` WHERE `key` = ?");
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("SELECT `value` FROM `settings` WHERE `key` = ?");
 			s.setString(1, key);
 			s.executeQuery();
 
@@ -1609,6 +1654,8 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				value = rs.getString("value");
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1617,31 +1664,23 @@ public class Tim extends PircBot {
 		return value;
 	}
 
-	private void updateSetting(String setting, String value) {
-		try {
-			PreparedStatement s = this.mysql.prepareStatement("UPDATE `settings` SET value = ? WHERE `key` = ?");
-			s.setString(1, value);
-			s.setString(2, setting);
-			s.executeUpdate();
-
-			this.settings.put(setting, value);
-		}
-		catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
 	private void getApprovedItems() {
+		long timeout = 3000;
+		Connection con = null;
+
 		try {
 			String value = "";
 			this.approved_items.clear();
 
-			PreparedStatement s = this.mysql.prepareStatement("SELECT `item` FROM `items` WHERE `approved` = TRUE");
+			con = pool.getConnection(timeout);
+			PreparedStatement s = con.prepareStatement("SELECT `item` FROM `items` WHERE `approved` = TRUE");
 			ResultSet rs = s.executeQuery();
 			while (rs.next()) {
 				value = rs.getString("item");
 				this.approved_items.add(value);
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1650,16 +1689,22 @@ public class Tim extends PircBot {
 	}
 
 	private void getPendingItems() {
-		try {
-			String value = "";
-			this.pending_items.clear();
+		long timeout = 3000;
+		Connection con = null;
+		String value = "";
+		this.pending_items.clear();
 
-			PreparedStatement s = this.mysql.prepareStatement("SELECT `item` FROM `items` WHERE `approved` = FALSE");
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("SELECT `item` FROM `items` WHERE `approved` = FALSE");
 			ResultSet rs = s.executeQuery();
 			while (rs.next()) {
 				value = rs.getString("item");
 				this.pending_items.add(value);
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1668,10 +1713,16 @@ public class Tim extends PircBot {
 	}
 
 	private void insertPendingItem(String item) {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			PreparedStatement s = this.mysql.prepareStatement("INSERT INTO `items` (`item`, `approved`) VALUES (?, FALSE)");
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("INSERT INTO `items` (`item`, `approved`) VALUES (?, FALSE)");
 			s.setString(1, item);
 			s.executeUpdate();
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1680,11 +1731,17 @@ public class Tim extends PircBot {
 	}
 
 	private void setItemApproved(String item, Boolean approved) {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			PreparedStatement s = this.mysql.prepareStatement("UPDATE `items` SET `approved` = ? WHERE `item` = ?");
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("UPDATE `items` SET `approved` = ? WHERE `item` = ?");
 			s.setBoolean(1, approved);
 			s.setString(2, item);
 			s.executeUpdate();
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1693,10 +1750,16 @@ public class Tim extends PircBot {
 	}
 
 	private void removeItem(String item) {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			PreparedStatement s = this.mysql.prepareStatement("DELETE FROM `items` WHERE `item` = ?");
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("DELETE FROM `items` WHERE `item` = ?");
 			s.setString(1, item);
 			s.executeUpdate();
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1755,12 +1818,12 @@ public class Tim extends PircBot {
 	}
 
 	private void getAdminList() {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			if (this.mysql.isClosed()) {
-				this.mysqlConnect();
-			}
+			con = pool.getConnection(timeout);
 
-			Statement s = this.mysql.createStatement();
+			Statement s = con.createStatement();
 			s.executeQuery("SELECT `name` FROM `admins`");
 
 			ResultSet rs = s.getResultSet();
@@ -1769,6 +1832,8 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.admin_list.add(rs.getString("name"));
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1776,12 +1841,12 @@ public class Tim extends PircBot {
 	}
 
 	private void getIgnoreList() {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			if (this.mysql.isClosed()) {
-				this.mysqlConnect();
-			}
+			con = pool.getConnection(timeout);
 
-			Statement s = this.mysql.createStatement();
+			Statement s = con.createStatement();
 			s.executeQuery("SELECT `name` FROM `ignores`");
 
 			ResultSet rs = s.getResultSet();
@@ -1789,6 +1854,8 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.ignore_list.add(rs.getString("name"));
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1796,14 +1863,16 @@ public class Tim extends PircBot {
 	}
 
 	private void setIgnore(String username) {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			if (this.mysql.isClosed()) {
-				this.mysqlConnect();
-			}
+			con = pool.getConnection(timeout);
 
-			PreparedStatement s = this.mysql.prepareStatement("INSERT INTO `ignores` (`name`) VALUES (?);");
+			PreparedStatement s = con.prepareStatement("INSERT INTO `ignores` (`name`) VALUES (?);");
 			s.setString(1, username);
 			s.executeUpdate();
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1811,10 +1880,16 @@ public class Tim extends PircBot {
 	}
 
 	private void removeIgnore(String username) {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			PreparedStatement s = this.mysql.prepareStatement("DELETE FROM `ignores` WHERE `name` = ?;");
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("DELETE FROM `ignores` WHERE `name` = ?;");
 			s.setString(1, username);
 			s.executeUpdate();
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1822,12 +1897,12 @@ public class Tim extends PircBot {
 	}
 
 	private void getAypwipList() {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			if (this.mysql.isClosed()) {
-				this.mysqlConnect();
-			}
+			con = pool.getConnection(timeout);
 
-			Statement s = this.mysql.createStatement();
+			Statement s = con.createStatement();
 			s.executeQuery("SELECT `string` FROM `aypwips`");
 
 			ResultSet rs = s.getResultSet();
@@ -1835,6 +1910,8 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.aypwips.add(rs.getString("string"));
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1842,12 +1919,12 @@ public class Tim extends PircBot {
 	}
 
 	private void getColourList() {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			if (this.mysql.isClosed()) {
-				this.mysqlConnect();
-			}
+			con = pool.getConnection(timeout);
 
-			Statement s = this.mysql.createStatement();
+			Statement s = con.createStatement();
 			s.executeQuery("SELECT `string` FROM `colours`");
 
 			ResultSet rs = s.getResultSet();
@@ -1855,6 +1932,8 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.colours.add(rs.getString("string"));
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1862,12 +1941,12 @@ public class Tim extends PircBot {
 	}
 
 	private void getCommandmentList() {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			if (this.mysql.isClosed()) {
-				this.mysqlConnect();
-			}
+			con = pool.getConnection(timeout);
 
-			Statement s = this.mysql.createStatement();
+			Statement s = con.createStatement();
 			s.executeQuery("SELECT `string` FROM `commandments`");
 
 			ResultSet rs = s.getResultSet();
@@ -1875,6 +1954,8 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.commandments.add(rs.getString("string"));
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1882,12 +1963,12 @@ public class Tim extends PircBot {
 	}
 
 	private void getDeityList() {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			if (this.mysql.isClosed()) {
-				this.mysqlConnect();
-			}
+			con = pool.getConnection(timeout);
 
-			Statement s = this.mysql.createStatement();
+			Statement s = con.createStatement();
 			s.executeQuery("SELECT `string` FROM `deities`");
 
 			ResultSet rs = s.getResultSet();
@@ -1895,6 +1976,8 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.deities.add(rs.getString("string"));
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1902,12 +1985,12 @@ public class Tim extends PircBot {
 	}
 
 	private void getEightballList() {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			if (this.mysql.isClosed()) {
-				this.mysqlConnect();
-			}
+			con = pool.getConnection(timeout);
 
-			Statement s = this.mysql.createStatement();
+			Statement s = con.createStatement();
 			s.executeQuery("SELECT `string` FROM `eightballs`");
 
 			ResultSet rs = s.getResultSet();
@@ -1915,6 +1998,8 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.eightballs.add(rs.getString("string"));
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1922,12 +2007,12 @@ public class Tim extends PircBot {
 	}
 
 	private void getFlavourList() {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			if (this.mysql.isClosed()) {
-				this.mysqlConnect();
-			}
+			con = pool.getConnection(timeout);
 
-			Statement s = this.mysql.createStatement();
+			Statement s = con.createStatement();
 			s.executeQuery("SELECT `string` FROM `flavours`");
 
 			ResultSet rs = s.getResultSet();
@@ -1935,6 +2020,8 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.flavours.add(rs.getString("string"));
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1942,12 +2029,12 @@ public class Tim extends PircBot {
 	}
 
 	private void getGreetingList() {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			if (this.mysql.isClosed()) {
-				this.mysqlConnect();
-			}
+			con = pool.getConnection(timeout);
 
-			Statement s = this.mysql.createStatement();
+			Statement s = con.createStatement();
 			s.executeQuery("SELECT `string` FROM `greetings`");
 
 			ResultSet rs = s.getResultSet();
@@ -1955,6 +2042,8 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.greetings.add(rs.getString("string"));
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1962,8 +2051,12 @@ public class Tim extends PircBot {
 	}
 
 	private void getChannelList() {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			Statement s = this.mysql.createStatement();
+			con = pool.getConnection(timeout);
+
+			Statement s = con.createStatement();
 			ResultSet rs = s.executeQuery("SELECT * FROM `channels`");
 
 			this.channel_data.clear();
@@ -1975,6 +2068,8 @@ public class Tim extends PircBot {
 				ci = new ChannelInfo(channel, rs.getBoolean("adult"), rs.getBoolean("muzzled"));
 				this.channel_data.put(channel, ci);
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -1982,18 +2077,20 @@ public class Tim extends PircBot {
 	}
 
 	private void saveChannel(String channel) {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			if (this.mysql.isClosed()) {
-				this.mysqlConnect();
-			}
+			con = pool.getConnection(timeout);
 
-			PreparedStatement s = this.mysql.prepareStatement("INSERT INTO `channels` (`channel`, `adult`, `muzzled`) VALUES (?, 0, 0)");
+			PreparedStatement s = con.prepareStatement("INSERT INTO `channels` (`channel`, `adult`, `muzzled`) VALUES (?, 0, 0)");
 			s.setString(1, channel);
 			s.executeUpdate();
 
 			if (!this.channel_data.containsKey(channel)) {
 				this.channel_data.put(channel, new ChannelInfo(channel));
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -2001,17 +2098,19 @@ public class Tim extends PircBot {
 	}
 
 	private void deleteChannel(String channel) {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			if (this.mysql.isClosed()) {
-				this.mysqlConnect();
-			}
+			con = pool.getConnection(timeout);
 
-			PreparedStatement s = this.mysql.prepareStatement("DELETE FROM `channels` WHERE `channel` = ?");
+			PreparedStatement s = con.prepareStatement("DELETE FROM `channels` WHERE `channel` = ?");
 			s.setString(1, channel);
 			s.executeUpdate();
 
 			// Will do nothing if the channel is not in the list.
 			this.channel_data.remove(channel);
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -2019,12 +2118,12 @@ public class Tim extends PircBot {
 	}
 
 	private void setChannelAdultFlag(String channel, boolean adult) {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			if (this.mysql.isClosed()) {
-				this.mysqlConnect();
-			}
+			con = pool.getConnection(timeout);
 
-			PreparedStatement s = this.mysql.prepareStatement("UPDATE `channels` SET adult = ? WHERE `channel` = ?");
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET adult = ? WHERE `channel` = ?");
 			s.setBoolean(1, adult);
 			s.setString(2, channel);
 			s.executeUpdate();
@@ -2035,6 +2134,8 @@ public class Tim extends PircBot {
 			else {
 				this.channel_data.get(channel).IsAdult = false;
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -2042,8 +2143,12 @@ public class Tim extends PircBot {
 	}
 
 	private void setChannelMuzzledFlag(String channel, boolean muzzled) {
+		long timeout = 3000;
+		Connection con = null;
 		try {
-			PreparedStatement s = this.mysql.prepareStatement("UPDATE `channels` SET `muzzled` = ? WHERE `channel` = ?");
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `muzzled` = ? WHERE `channel` = ?");
 			s.setBoolean(1, muzzled);
 			s.setString(2, channel);
 			s.executeUpdate();
@@ -2054,24 +2159,10 @@ public class Tim extends PircBot {
 			else {
 				this.channel_data.get(channel).IsMuzzled = false;
 			}
+			
+			con.close();
 		}
 		catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void mysqlConnect() {
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			String url = "jdbc:mysql://" + Tim.config.getString("sql_server") + ":3306/" + Tim.config.getString("sql_database");
-			try {
-				this.mysql = DriverManager.getConnection(url, Tim.config.getString("sql_user"), Tim.config.getString("sql_password"));
-			}
-			catch (SQLException ex) {
-				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
-		catch (ClassNotFoundException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
