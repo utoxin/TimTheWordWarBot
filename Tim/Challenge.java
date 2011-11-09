@@ -16,8 +16,8 @@ import java.util.List;
  */
 public class Challenge {
 	Tim ircclient;
-	private List<String> approved_challenges = new ArrayList<String>();
-	private List<String> pending_challenges = new ArrayList<String>();
+	private List<String> approved = new ArrayList<String>();
+	private List<String> pending = new ArrayList<String>();
 
 	public Challenge(Tim ircclient) {
 		this.ircclient = ircclient;
@@ -91,7 +91,7 @@ public class Challenge {
 			return true;
 		}
 		else if (command.equals("listchallenges")) {
-			int pages = ( this.approved_challenges.size() + 9 ) / 10;
+			int pages = ( this.approved.size() + 9 ) / 10;
 			int wantPage = 0;
 			if (args != null && args.length > 0) {
 				try {
@@ -110,16 +110,17 @@ public class Challenge {
 
 			int list_idx = wantPage * 10;
 			this.ircclient.sendMessage(channel, String.format(
-					"Showing page %d of %d (%d items total)", wantPage + 1,
-					pages, this.approved_challenges.size()));
-			for (int i = 0; i < 10 && list_idx < this.approved_challenges.size(); ++i, list_idx = wantPage
+					"Showing page %d of %d (%d challenges total)", wantPage + 1,
+					pages, this.approved.size()));
+			for (int i = 0; i < 10 && list_idx < this.approved.size(); ++i, list_idx = wantPage
 																							 * 10 + i) {
-				this.sendMessage(channel, String.format("%d: %s", list_idx,
-														this.approved_challenges.get(list_idx)));
+				this.ircclient.sendMessage(channel, String.format("%d: %s", list_idx,
+														this.approved.get(list_idx)));
 			}
+			return true;
 		}
 		else if (command.equals("listpending")) {
-			int pages = ( this.pending_challenges.size() + 9 ) / 10;
+			int pages = ( this.pending.size() + 9 ) / 10;
 			int wantPage = 0;
 			if (args != null && args.length > 0) {
 				try {
@@ -128,7 +129,7 @@ public class Challenge {
 				catch (NumberFormatException ex) {
 					this.ircclient.sendMessage(channel,
 									 "Page number was not numeric.");
-					return;
+					return true;
 				}
 			}
 
@@ -137,92 +138,95 @@ public class Challenge {
 			}
 
 			int list_idx = wantPage * 10;
-			this.sendMessage(channel, String.format(
-					"Showing page %d of %d (%d items total)", wantPage + 1,
-					pages, this.pending_items.size()));
-			for (int i = 0; i < 10 && list_idx < this.pending_items.size(); ++i, list_idx = wantPage
+			this.ircclient.sendMessage(channel, String.format(
+					"Showing page %d of %d (%d challenges total)", wantPage + 1,
+					pages, this.pending.size()));
+			for (int i = 0; i < 10 && list_idx < this.pending.size(); ++i, list_idx = wantPage
 																							* 10 + i) {
-				this.sendMessage(channel, String.format("%d: %s", list_idx,
-														this.pending_items.get(list_idx)));
+				this.ircclient.sendMessage(channel, String.format("%d: %s", list_idx,
+														this.pending.get(list_idx)));
 			}
+			return true;
 		}
 		else if (command.equals("approveitem")) {
 			if (args != null && args.length > 0) {
 				int idx = 0;
-				String item = "";
+				String challenge = "";
 				try {
 					idx = Integer.parseInt(args[0]);
-					item = this.pending_items.get(idx);
+					challenge = this.pending.get(idx);
 				}
 				catch (NumberFormatException ex) {
 					// Must be a string
-					item = args[0];
+					challenge = args[0];
 					for (int i = 1; i < args.length; ++i) {
-						item = item + " " + args[i];
+						challenge = challenge + " " + args[i];
 					}
-					idx = this.pending_items.indexOf(item);
+					idx = this.pending.indexOf(challenge);
 				}
 				if (idx >= 0) {
-					this.setItemApproved(item, true);
-					this.pending_items.remove(idx);
-					this.approved_items.add(item);
+					this.setChallengeApproved(challenge, true);
+					this.pending.remove(idx);
+					this.approved.add(challenge);
 				}
 				else {
-					this.sendMessage(channel, String.format(
-							"Item %s is not pending approval.", args[0]));
+					this.ircclient.sendMessage(channel, String.format(
+							"Challenge %s is not pending approval.", args[0]));
 				}
 			}
+			return true;
 		}
 		else if (command.equals("disapproveitem")) {
 			if (args != null && args.length > 0) {
 				int idx = 0;
-				String item = "";
+				String challenge = "";
 				try {
 					idx = Integer.parseInt(args[0]);
-					item = this.approved_items.get(idx);
+					challenge = this.approved.get(idx);
 				}
 				catch (NumberFormatException ex) {
 					// Must be a string
-					item = args[0];
+					challenge = args[0];
 					for (int i = 1; i < args.length; ++i) {
-						item = item + " " + args[i];
+						challenge = challenge + " " + args[i];
 					}
-					idx = this.approved_items.indexOf(item);
+					idx = this.approved.indexOf(challenge);
 				}
 				if (idx >= 0) {
-					this.setItemApproved(item, false);
-					this.pending_items.add(item);
-					this.approved_items.remove(idx);
+					this.setChallengeApproved(challenge, false);
+					this.pending.add(challenge);
+					this.approved.remove(idx);
 				}
 				else {
-					this.sendMessage(channel, String.format(
-							"Item %s is not pending approval.", args[0]));
+					this.ircclient.sendMessage(channel, String.format(
+							"Challenge %s is not pending approval.", args[0]));
 				}
+				return true;
 			}
 		}
 		else if (command.equals("deleteitem")) {
 			if (args != null && args.length > 0) {
 				int idx = 0;
-				String item = "";
+				String challenge = "";
 				try {
 					idx = Integer.parseInt(args[0]);
-					item = this.pending_items.get(idx);
+					challenge = this.pending.get(idx);
 				}
 				catch (NumberFormatException ex) {
 					// Must be a string
-					item = args[0];
+					challenge = args[0];
 					for (int i = 1; i < args.length; ++i) {
-						item = item + " " + args[i];
+						challenge = challenge + " " + args[i];
 					}
-					idx = this.pending_items.indexOf(item);
+					idx = this.pending.indexOf(challenge);
 				}
 				if (idx >= 0) {
-					this.removeItem(item);
-					this.pending_items.remove(item);
+					this.removeChallenge(challenge);
+					this.pending.remove(challenge);
 				}
 				else {
-					this.sendMessage(channel, String.format(
-							"Item %s is not pending approval.", args[0]));
+					this.ircclient.sendMessage(channel, String.format(
+							"Challenge %s is not pending approval.", args[0]));
 				}
 			}
 		}
@@ -268,14 +272,14 @@ public class Challenge {
 	
 	private void issueChallenge(String channel, String target, String challenge) {
 		if (challenge != null) {
-			if (!( this.approved_challenges.contains(challenge) || this.pending_challenges.contains(challenge) ) && challenge.length() < 300) {
+			if (!( this.approved.contains(challenge) || this.pending.contains(challenge) ) && challenge.length() < 300) {
 				this.insertPendingChallenge(challenge);
-				this.pending_challenges.add(challenge);
+				this.pending.add(challenge);
 			}
 		} else {
 			// Find a random challenge.
-			int i = this.ircclient.rand.nextInt(this.approved_challenges.size());
-			challenge = this.approved_challenges.get(i);
+			int i = this.ircclient.rand.nextInt(this.approved.size());
+			challenge = this.approved.get(i);
 		}
 
 		this.ircclient.sendAction(channel, String.format("challenges %s: %s", target, challenge));
@@ -287,14 +291,14 @@ public class Challenge {
 
 		try {
 			String value = "";
-			this.approved_challenges.clear();
+			this.approved.clear();
 
 			con = ircclient.pool.getConnection(timeout);
 			PreparedStatement s = con.prepareStatement("SELECT `challenge` FROM `challenges` WHERE `approved` = TRUE");
 			ResultSet rs = s.executeQuery();
 			while (rs.next()) {
 				value = rs.getString("challenge");
-				this.approved_challenges.add(value);
+				this.approved.add(value);
 			}
 			
 			con.close();
@@ -309,7 +313,7 @@ public class Challenge {
 		long timeout = 3000;
 		Connection con = null;
 		String value = "";
-		this.pending_challenges.clear();
+		this.pending.clear();
 
 		try {
 			con = ircclient.pool.getConnection(timeout);
@@ -318,7 +322,7 @@ public class Challenge {
 			ResultSet rs = s.executeQuery();
 			while (rs.next()) {
 				value = rs.getString("challenge");
-				this.pending_challenges.add(value);
+				this.pending.add(value);
 			}
 			
 			con.close();
