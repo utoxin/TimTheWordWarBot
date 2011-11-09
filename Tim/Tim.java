@@ -1000,6 +1000,7 @@ public class Tim extends PircBot {
 						  "!settopic <topic> - If able, I will try to set the channel's topic.",
 						  "!credits - Details of my creators, and where to find my source code.",
 						  "!chainhelp - Get help on my chain story commands",
+						  "!challengehelp - Get help on my challenge commands",
 						  "I... I think there might be other tricks I know... You'll have to find them!",
 						  "I will also respond to the /invite command if you would like to see me in another channel. "
 		};
