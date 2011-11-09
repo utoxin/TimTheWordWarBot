@@ -57,6 +57,21 @@ public class Challenge {
 				issueChallenge(channel, sender, argsString);
 				return true;
 			}
+			else if (command.equals("challengefor")) {
+				String target;
+				space = argsString.indexOf(" ");
+				if (space > 0) {
+					target = argsString.substring(0, space);
+					argsString = argsString.substring(space + 1);
+				}
+				else {
+					target = argsString;
+					argsString = "";
+				}
+
+				issueChallenge(channel, target, argsString);
+				return true;
+			}
 		}
 		
 		return false;
@@ -243,6 +258,8 @@ public class Challenge {
 		String[] strs = { 
 						  "!challenge - Request a challenge",
 						  "!challenge <challenge> - Add a challenge",
+						  "!challengefor <name> - Challenge someone else",
+						  "!challengefor <name> <challenge> - Challenge someone else, and store it for approval",
 						  "!challengehelp - Get help on my challenge commands",
 		};
 
