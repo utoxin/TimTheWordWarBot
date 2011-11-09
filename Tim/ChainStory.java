@@ -81,6 +81,10 @@ public class ChainStory {
 		}
 	}
 
+	public void refreshDbLists() {
+
+	}
+		
 	public void info(String channel) {
 		long timeout = 3000;
 		Connection con = null;

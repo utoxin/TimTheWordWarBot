@@ -142,7 +142,7 @@ public class Tim extends PircBot {
 	private WarClockThread warticker;
 	private Timer ticker;
 	private Semaphore wars_lock;
-	private Random rand;
+	protected Random rand;
 	private boolean shutdown;
 	private String password;
 	private String debugChannel;
@@ -153,6 +153,7 @@ public class Tim extends PircBot {
 	private int chatterTimeDivisor;
 	protected ConnectionPool pool;
 	private ChainStory story;
+	private Challenge challenge;
 
 	public Tim() {
 		Class c;
@@ -207,6 +208,7 @@ public class Tim extends PircBot {
 		this.chatterTimer = System.currentTimeMillis() / 1000;
 
 		this.story = new ChainStory(this);
+		this.challenge = new Challenge(this);
 		
 		this.rand = new Random();
 		this.shutdown = false;
@@ -316,7 +318,7 @@ public class Tim extends PircBot {
 				this.sendMessage(channel, "There are FOUR LIGHTS!");
 				return;
 			}
-			else if (message.contains(":(")) {
+			else if (message.contains(":(") || message.contains("):")) {
 				this.sendAction(channel, "gives " + sender + " a hug");
 				return;
 			}
@@ -363,7 +365,7 @@ public class Tim extends PircBot {
 
 	private void doAdmin(String channel, String sender, char c, String message) {
 		// Method for processing admin commands.
-		if (this.admin_list.contains(sender)) {
+		if (this.admin_list.contains(sender.toLowerCase()) || this.admin_list.contains(channel.toLowerCase())) {
 			String command;
 			String[] args = null;
 
@@ -627,6 +629,9 @@ public class Tim extends PircBot {
 			}
 			else if (command.equals("help")) {
 				this.printAdminCommandList(sender, channel);
+			}
+			else if (this.challenge.parseAdminCommand(channel, sender, message)) {
+				return;
 			}
 			else {
 				this.sendMessage(channel, "$" + command + " is not a valid admin command - try $help");
@@ -950,6 +955,9 @@ public class Tim extends PircBot {
 				this.foof(channel, sender, args, true);
 			}
 			else if (this.story.parseUserCommand(channel, sender, prefix, message)) {
+				return;
+			}
+			else if (this.challenge.parseUserCommand(channel, sender, prefix, message)) {
 				return;
 			}
 			else {
@@ -1818,7 +1826,9 @@ public class Tim extends PircBot {
 				+ Integer.toString(this.chatterTimeMultiplier));
 		this.sendMessage(this.debugChannel,
 						 "Time Divisor: " + Integer.toString(this.chatterTimeDivisor));
-
+		
+		this.story.refreshDbLists();
+		this.challenge.refreshDbLists();
 	}
 
 	private void getAdminList() {
@@ -1834,7 +1844,7 @@ public class Tim extends PircBot {
 
 			this.admin_list.clear();
 			while (rs.next()) {
-				this.admin_list.add(rs.getString("name"));
+				this.admin_list.add(rs.getString("name").toLowerCase());
 			}
 			
 			con.close();
@@ -1856,7 +1866,7 @@ public class Tim extends PircBot {
 			ResultSet rs = s.getResultSet();
 			this.ignore_list.clear();
 			while (rs.next()) {
-				this.ignore_list.add(rs.getString("name"));
+				this.ignore_list.add(rs.getString("name").toLowerCase());
 			}
 			
 			con.close();
@@ -1873,7 +1883,7 @@ public class Tim extends PircBot {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("INSERT INTO `ignores` (`name`) VALUES (?);");
-			s.setString(1, username);
+			s.setString(1, username.toLowerCase());
 			s.executeUpdate();
 			
 			con.close();
@@ -1890,7 +1900,7 @@ public class Tim extends PircBot {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("DELETE FROM `ignores` WHERE `name` = ?;");
-			s.setString(1, username);
+			s.setString(1, username.toLowerCase());
 			s.executeUpdate();
 			
 			con.close();
@@ -2068,7 +2078,7 @@ public class Tim extends PircBot {
 			String channel = "";
 
 			while (rs.next()) {
-				channel = rs.getString("channel");
+				channel = rs.getString("channel").toLowerCase();
 				ci = new ChannelInfo(channel, rs.getBoolean("adult"), rs.getBoolean("muzzled"));
 				this.channel_data.put(channel, ci);
 			}
@@ -2087,11 +2097,11 @@ public class Tim extends PircBot {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("INSERT INTO `channels` (`channel`, `adult`, `muzzled`) VALUES (?, 0, 0)");
-			s.setString(1, channel);
+			s.setString(1, channel.toLowerCase());
 			s.executeUpdate();
 
-			if (!this.channel_data.containsKey(channel)) {
-				this.channel_data.put(channel, new ChannelInfo(channel));
+			if (!this.channel_data.containsKey(channel.toLowerCase())) {
+				this.channel_data.put(channel.toLowerCase(), new ChannelInfo(channel.toLowerCase()));
 			}
 			
 			con.close();
@@ -2108,11 +2118,11 @@ public class Tim extends PircBot {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("DELETE FROM `channels` WHERE `channel` = ?");
-			s.setString(1, channel);
+			s.setString(1, channel.toLowerCase());
 			s.executeUpdate();
 
 			// Will do nothing if the channel is not in the list.
-			this.channel_data.remove(channel);
+			this.channel_data.remove(channel.toLowerCase());
 			
 			con.close();
 		}
@@ -2129,14 +2139,14 @@ public class Tim extends PircBot {
 
 			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET adult = ? WHERE `channel` = ?");
 			s.setBoolean(1, adult);
-			s.setString(2, channel);
+			s.setString(2, channel.toLowerCase());
 			s.executeUpdate();
 
 			if (adult) {
-				this.channel_data.get(channel).IsAdult = true;
+				this.channel_data.get(channel.toLowerCase()).IsAdult = true;
 			}
 			else {
-				this.channel_data.get(channel).IsAdult = false;
+				this.channel_data.get(channel.toLowerCase()).IsAdult = false;
 			}
 			
 			con.close();
@@ -2154,14 +2164,14 @@ public class Tim extends PircBot {
 
 			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `muzzled` = ? WHERE `channel` = ?");
 			s.setBoolean(1, muzzled);
-			s.setString(2, channel);
+			s.setString(2, channel.toLowerCase());
 			s.executeUpdate();
 
 			if (muzzled) {
-				this.channel_data.get(channel).IsMuzzled = true;
+				this.channel_data.get(channel.toLowerCase()).IsMuzzled = true;
 			}
 			else {
-				this.channel_data.get(channel).IsMuzzled = false;
+				this.channel_data.get(channel.toLowerCase()).IsMuzzled = false;
 			}
 			
 			con.close();
