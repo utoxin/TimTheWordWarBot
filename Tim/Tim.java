@@ -145,7 +145,7 @@ public class Tim extends PircBot {
 	protected Random rand;
 	private boolean shutdown;
 	private String password;
-	private String debugChannel;
+	protected String debugChannel;
 	private long chatterTimer;
 	private int chatterMaxBaseOdds;
 	private int chatterNameMultiplier;
@@ -197,6 +197,9 @@ public class Tim extends PircBot {
 		delay = Math.max(delay, 100);
 		this.setMessageDelay(delay);
 
+		this.story = new ChainStory(this);
+		this.challenge = new Challenge(this);
+
 		this.refreshDbLists();
 
 		this.wars = Collections.synchronizedMap(new Hashtable<String, WordWar>());
@@ -206,9 +209,6 @@ public class Tim extends PircBot {
 		this.ticker.scheduleAtFixedRate(this.warticker, 0, 1000);
 		this.wars_lock = new Semaphore(1, true);
 		this.chatterTimer = System.currentTimeMillis() / 1000;
-
-		this.story = new ChainStory(this);
-		this.challenge = new Challenge(this);
 		
 		this.rand = new Random();
 		this.shutdown = false;
@@ -630,6 +630,9 @@ public class Tim extends PircBot {
 			else if (command.equals("help")) {
 				this.printAdminCommandList(sender, channel);
 			}
+			else if (this.story.parseAdminCommand(channel, sender, message)) {
+				return;
+			}
 			else if (this.challenge.parseAdminCommand(channel, sender, message)) {
 				return;
 			}
@@ -665,12 +668,16 @@ public class Tim extends PircBot {
 				odds = odds * this.chatterNameMultiplier;
 			}
 
-			int i = this.rand.nextInt(200);
+			// Odds are percentage based, so this needs to be 100.
+			int i = this.rand.nextInt(100);
 			if (i < odds) {
-				int j = this.rand.nextInt(200);
+				int j = this.rand.nextInt(220);
 
-				if (j > 160) {
+				if (j > 180) {
 					this.getItem(channel, sender, null);
+				}
+				else if (j > 160) {
+					this.challenge.issueChallenge(channel, sender, null);
 				}
 				else if (j > 120) {
 					int r = this.rand.nextInt(this.eightballs.size());

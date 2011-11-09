@@ -66,6 +66,21 @@ public class ChainStory {
 		return false;
 	}
 
+
+	/**
+	 * Parses admin-level commands passed from the main class. Returns true if 
+	 * the message was handled, false if it was not.
+	 * 
+	 * @param channel
+	 * @param sender
+	 * @param prefix
+	 * @param message
+	 * @return 
+	 */
+	public boolean parseAdminCommand(String channel, String sender, String message) {
+		return false;
+	}
+	
 	private void help(String target, String channel) {
 		int msgdelay = 9;
 		String[] strs = { 
@@ -82,7 +97,7 @@ public class ChainStory {
 	}
 
 	public void refreshDbLists() {
-
+		return;
 	}
 		
 	public void info(String channel) {
