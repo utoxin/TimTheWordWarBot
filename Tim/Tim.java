@@ -1378,11 +1378,16 @@ public class Tim extends PircBot {
 				to_start = (long) ( Double.parseDouble(args[1]) * 60 );
 			}
 			catch (Exception e) {
-				this.sendMessage(
-						channel,
-						sender
-						+ ": could not understand the time to start parameter. Was it numeric?");
-				return;
+				if (args[1].equalsIgnoreCase("now")) {
+					to_start = 0;
+				}
+				else {
+					this.sendMessage(
+							channel,
+							sender
+							+ ": could not understand the time to start parameter. Was it numeric?");
+					return;
+				}
 			}
 
 		}
@@ -1396,9 +1401,9 @@ public class Tim extends PircBot {
 			warname = sender + "'s war";
 		}
 
-		if (Double.parseDouble(args[0]) < 1 || Double.parseDouble(args[1]) < 1) {
+		if (time < 60) {
 			this.sendMessage(channel, sender
-									  + ": Start delay and duration most both be at least 1.");
+									  + ": Duration must be at least 1 minute.");
 			return;
 		}
 
