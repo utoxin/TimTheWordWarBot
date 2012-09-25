@@ -283,6 +283,8 @@ public class Tim extends PircBot {
 		if (!sender.equals(this.getNick()) && !"".equals(target)) {
 			this.interact(sender, target, action);
 		}
+		
+		this.process_markhov(action, "emote");
 	}
 
 	@Override
@@ -360,6 +362,8 @@ public class Tim extends PircBot {
 			if (!sender.equals(this.getNick()) && !"".equals(channel)) {
 				this.interact(sender, channel, message);
 			}
+		
+			this.process_markhov(message, "say");
 		}
 	}
 
@@ -2229,5 +2233,23 @@ public class Tim extends PircBot {
 			}
 		}
 		return val;
+	}
+
+	private void process_markhov(String message, String type) {
+		String[] words = message.split(" ");
+		long timeout = 3000;
+		Connection con = null;
+		try {
+			con = pool.getConnection(timeout);
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `muzzled` = ? WHERE `channel` = ?");
+
+			for (int i = 0; i < (words.length - 1); i++) {
+
+			}			
+			con.close();
+		}
+		catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 }
