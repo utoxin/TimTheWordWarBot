@@ -282,9 +282,8 @@ public class Tim extends PircBot {
 
 		if (!sender.equals(this.getNick()) && !"".equals(target)) {
 			this.interact(sender, target, action);
+			this.process_markhov(action, "emote");
 		}
-		
-		this.process_markhov(action, "emote");
 	}
 
 	@Override
@@ -357,13 +356,15 @@ public class Tim extends PircBot {
 						return;
 					}
 				}
+				else if (Pattern.matches("(?i).*markhov test.*", message)) {
+					this.sendMessage(channel, this.generate_markhov("say"));
+				}
 			}
 
 			if (!sender.equals(this.getNick()) && !"".equals(channel)) {
 				this.interact(sender, channel, message);
+				this.process_markhov(message, "say");
 			}
-		
-			this.process_markhov(message, "say");
 		}
 	}
 
@@ -2234,6 +2235,83 @@ public class Tim extends PircBot {
 		}
 		return val;
 	}
+	
+	private String generate_markhov(String type) {
+		String sentence = "";
+		long timeout = 3000;
+		Connection con = null;
+		try {
+			con = pool.getConnection(timeout);
+			PreparedStatement nextList, getTotal;
+			
+			if ("emote".equals(type)) {
+				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markhov_emote_data WHERE first = ? GROUP BY first");
+				nextList = con.prepareStatement("SELECT * FROM markhov_emote_data WHERE first = ? ORDER BY count ASC");
+			} else {
+				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markhov_say_data WHERE first = ? GROUP BY first");
+				nextList = con.prepareStatement("SELECT first, second, count FROM markhov_say_data WHERE first = ? ORDER BY count ASC");
+			}
+
+			getTotal.setString(1, "");
+			nextList.setString(1, "");
+
+			ResultSet totalRes = getTotal.executeQuery();
+			totalRes.next();
+			int total = totalRes.getInt("total");
+			int pick = this.rand.nextInt(total);
+
+			String lastWord = "";
+			int check = 0;
+			
+			ResultSet nextRes = nextList.executeQuery();
+			while (nextRes.next()) {
+				check += nextRes.getInt("count");
+				if (check > pick) {
+					break;
+				}
+				
+				sentence = nextRes.getString("second");
+				lastWord = nextRes.getString("second");
+			}
+
+			int maxLength = this.rand.nextInt(25) + 10;
+			int curWords = 1;
+			
+			while (curWords < maxLength) {
+				getTotal.setString(1, lastWord);
+				nextList.setString(1, lastWord);
+
+				totalRes = getTotal.executeQuery();
+				totalRes.next();
+				total = totalRes.getInt("total");
+				
+				if (total == 0) {
+					break;
+				}
+				
+				pick = this.rand.nextInt(total);
+
+				check = 0;
+
+				nextRes = nextList.executeQuery();
+				while (nextRes.next()) {
+					check += nextRes.getInt("count");
+					if (check > pick) {
+						sentence += " " + nextRes.getString("second");
+						lastWord = nextRes.getString("second");
+						break;
+					}
+				}
+
+				curWords++;
+			}
+		}
+		catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		
+		return sentence;
+	}
 
 	private void process_markhov(String message, String type) {
 		String first;
@@ -2252,6 +2330,16 @@ public class Tim extends PircBot {
 			}
 
 			for (int i = 0; i < (words.length - 1); i++) {
+				if (i == 0) {
+					first = "";
+					second = words[i];
+
+					addPair.setString(1, first);
+					addPair.setString(2, second);
+
+					addPair.executeUpdate();
+				}
+				
 				first = words[i];
 				second = words[i+1];
 
