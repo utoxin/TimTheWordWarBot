@@ -2236,16 +2236,30 @@ public class Tim extends PircBot {
 	}
 
 	private void process_markhov(String message, String type) {
+		String first;
+		String second;
+
 		String[] words = message.split(" ");
 		long timeout = 3000;
 		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
-			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `muzzled` = ? WHERE `channel` = ?");
+			PreparedStatement addPair;
+			if ("emote".equals(type)) {
+				addPair = con.prepareStatement("INSERT INTO markhov_emote_data (first, second, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
+			} else {
+				addPair = con.prepareStatement("INSERT INTO markhov_say_data (first, second, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
+			}
 
 			for (int i = 0; i < (words.length - 1); i++) {
+				first = words[i];
+				second = words[i+1];
 
-			}			
+				addPair.setString(1, first);
+				addPair.setString(2, second);
+				
+				addPair.executeUpdate();
+			}
 			con.close();
 		}
 		catch (SQLException ex) {
