@@ -16,24 +16,16 @@
  */
 package Tim;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.*;
-import org.jibble.pircbot.*;
+import java.util.regex.Pattern;
+import org.jibble.pircbot.PircBot;
+import org.jibble.pircbot.User;
 import snaq.db.ConnectionPool;
 
 public class Tim extends PircBot {
@@ -111,18 +103,69 @@ public class Tim extends PircBot {
 	private class ChannelInfo {
 
 		public String Name;
-		public boolean IsAdult;
-		public boolean IsMuzzled;
+		public boolean isAdult;
+		public boolean doMarkhov;
+		public boolean doRandomActions;
+		public boolean doCommandActions;
+		public long chatterTimer;
+		public int chatterMaxBaseOdds;
+		public int chatterNameMultiplier;
+		public int chatterTimeMultiplier;
+		public int chatterTimeDivisor;
 
+		/**
+		 * Construct channel with default flags.
+		 * 
+		 * @param name 
+		 */
 		public ChannelInfo(String name) {
 			this.Name = name;
-			this.IsAdult = this.IsMuzzled = false;
+			this.isAdult = false;
+			this.doCommandActions = true;
+			this.doRandomActions = true;
+			this.doMarkhov = true;
+			this.chatterTimer = System.currentTimeMillis() / 1000;
 		}
 
-		public ChannelInfo(String name, boolean adult, boolean muzzled) {
+		/**
+		 * Construct channel by specifying values for flags.
+		 * 
+		 * @param name
+		 * @param adult
+		 * @param markhov
+		 * @param random
+		 * @param command 
+		 */
+		public ChannelInfo(String name, boolean adult, boolean markhov, boolean random, boolean command) {
 			this.Name = name;
-			this.IsAdult = adult;
-			this.IsMuzzled = muzzled;
+			this.isAdult = adult;
+			this.doRandomActions = random;
+			this.doCommandActions = command;
+			this.doMarkhov = markhov;
+			this.chatterTimer = System.currentTimeMillis() / 1000;
+		}
+		
+		private void setChatterTimers() {
+			this.chatterMaxBaseOdds = Integer.parseInt(Tim.getSetting("chatterMaxBaseOdds"));
+			this.chatterNameMultiplier = Integer.parseInt(Tim.getSetting("chatterNameMultiplier"));
+			this.chatterTimeMultiplier = Integer.parseInt(Tim.getSetting("chatterTimeMultiplier"));
+			this.chatterTimeDivisor = Integer.parseInt(Tim.getSetting("chatterTimeDivisor"));
+
+			if (this.chatterMaxBaseOdds == 0) {
+				this.chatterMaxBaseOdds = 20;
+			}
+
+			if (this.chatterNameMultiplier == 0) {
+				this.chatterNameMultiplier = 4;
+			}
+
+			if (this.chatterTimeMultiplier == 0) {
+				this.chatterTimeMultiplier = 4;
+			}
+
+			if (this.chatterTimeDivisor == 0) {
+				this.chatterTimeDivisor = 2;
+			}
 		}
 	}
 
@@ -146,12 +189,7 @@ public class Tim extends PircBot {
 	private boolean shutdown;
 	private String password;
 	protected String debugChannel;
-	private long chatterTimer;
-	private int chatterMaxBaseOdds;
-	private int chatterNameMultiplier;
-	private int chatterTimeMultiplier;
-	private int chatterTimeDivisor;
-	protected ConnectionPool pool;
+	protected static ConnectionPool pool;
 	private ChainStory story;
 	private Challenge challenge;
 
@@ -184,16 +222,16 @@ public class Tim extends PircBot {
 		String url = "jdbc:mysql://" + Tim.config.getString("sql_server") + ":3306/" + Tim.config.getString("sql_database");
 		pool = new ConnectionPool("local", 2, 5, 10, 180000, url, Tim.config.getString("sql_user"), Tim.config.getString("sql_password"));
 
-		this.setName(this.getSetting("nickname"));
-		this.password = this.getSetting("password");
-		this.debugChannel = this.getSetting("debug_channel");
+		this.setName(Tim.getSetting("nickname"));
+		this.password = Tim.getSetting("password");
+		this.debugChannel = Tim.getSetting("debug_channel");
 		if (this.debugChannel.equals("")) {
 			// Ideally, we should fail here...
 			this.debugChannel = "#timmydebug";
 		}
 		
 		// Read message delay from DB, but never go below 100ms.
-		long delay = Long.parseLong(this.getSetting("max_rate"));
+		long delay = Long.parseLong(Tim.getSetting("max_rate"));
 		delay = Math.max(delay, 100);
 		this.setMessageDelay(delay);
 
@@ -208,8 +246,7 @@ public class Tim extends PircBot {
 		this.ticker = new Timer(true);
 		this.ticker.scheduleAtFixedRate(this.warticker, 0, 1000);
 		this.wars_lock = new Semaphore(1, true);
-		this.chatterTimer = System.currentTimeMillis() / 1000;
-		
+
 		this.rand = new Random();
 		this.shutdown = false;
 	}
@@ -354,6 +391,7 @@ public class Tim extends PircBot {
 					}
 				}
 				else if (Pattern.matches("(?i).*markhov test.*", message)) {
+					this.sendDelayedMessage(channel, this.generate_markhov("say"), this.rand.nextInt(1500));
 				}
 			}
 
@@ -655,59 +693,112 @@ public class Tim extends PircBot {
 	}
 
 	private void interact(String sender, String channel, String message, String type) {
-		// Some channels don't want chatter. Is this one of them?
-		if (!this.isChannelMuzzled(channel)) {
-			long elapsed = System.currentTimeMillis() / 1000 - this.chatterTimer;
-			long odds = (long) Math.log(elapsed) * this.chatterTimeMultiplier;
-			if (odds > this.chatterMaxBaseOdds) {
-				odds = this.chatterMaxBaseOdds;
+		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
+		boolean didChatter = false;
+
+		if (cdata.doMarkhov) {
+			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
+			long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
+			if (odds > cdata.chatterMaxBaseOdds) {
+				odds = cdata.chatterMaxBaseOdds;
 			}
 
 			if (message.toLowerCase().contains(this.getNick().toLowerCase())) {
-				odds = odds * this.chatterNameMultiplier;
+				odds = odds * cdata.chatterNameMultiplier;
 			}
 
 			// Odds are percentage based, so this needs to be 100.
 			int i = this.rand.nextInt(100);
 			if (i < odds) {
-				int j = this.rand.nextInt(260);
+				this.sendDelayedMessage(channel, this.generate_markhov(type), this.rand.nextInt(1500));
+				cdata.chatterTimer = cdata.chatterTimer
+									+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+				didChatter = true;
+			}
+		}
 
-				if (j > 220) {
-					this.sendDelayedMessage(channel, this.generate_markhov(type), this.rand.nextInt(1500));
-				}
-				else if (j > 180) {
+		// Random Actions
+		if (cdata.doRandomActions) {
+			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
+			long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
+			if (odds > cdata.chatterMaxBaseOdds) {
+				odds = cdata.chatterMaxBaseOdds;
+			}
+
+			if (message.toLowerCase().contains(this.getNick().toLowerCase())) {
+				odds = odds * cdata.chatterNameMultiplier;
+			}
+
+			// Odds are percentage based, so this needs to be 100.
+			int i = this.rand.nextInt(100);
+			if (i < odds) {
+				int base_odds = 20;
+			
+				if (this.rand.nextInt(100) < base_odds) {
 					this.getItem(channel, sender, null);
+					base_odds -= 5;
+					cdata.chatterTimer = cdata.chatterTimer
+										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+					didChatter = true;
 				}
-				else if (j > 160) {
+
+				if (this.rand.nextInt(100) < base_odds) {
 					this.challenge.issueChallenge(channel, sender, null);
+					base_odds -= 5;
+					cdata.chatterTimer = cdata.chatterTimer
+										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+					didChatter = true;
 				}
-				else if (j > 120) {
+
+				if (this.rand.nextInt(100) < base_odds) {
 					int r = this.rand.nextInt(this.eightballs.size());
 					this.sendDelayedAction(channel, "mutters under his breath, \""
 													+ this.eightballs.get(r) + "\"",
-										   this.rand.nextInt(1500));
+											this.rand.nextInt(1500));		
+					base_odds -= 5;
+					cdata.chatterTimer = cdata.chatterTimer
+										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+					didChatter = true;
 				}
-				else if (j > 95) {
+
+				if (this.rand.nextInt(100) < base_odds) {
 					this.throwFridge(channel, sender, sender.split(" ", 0), false);
+					base_odds -= 5;
+					cdata.chatterTimer = cdata.chatterTimer
+										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+					didChatter = true;
 				}
-				else if (j > 45) {
+
+				if (this.rand.nextInt(100) < base_odds) {
 					this.defenestrate(channel, sender, sender.split(" "), false);
+					base_odds -= 5;
+					cdata.chatterTimer = cdata.chatterTimer
+										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+					didChatter = true;
 				}
-				else if (j > 20) {
+
+				if (this.rand.nextInt(100) < base_odds) {
 					this.sing(channel);
+					base_odds -= 5;
+					cdata.chatterTimer = cdata.chatterTimer
+										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+					didChatter = true;
 				}
-				else {
+
+				if (this.rand.nextInt(100) < base_odds) {
 					this.foof(channel, sender, sender.split(" "), false);
+					base_odds -= 5;
+					cdata.chatterTimer = cdata.chatterTimer
+										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+					didChatter = true;
 				}
-
-				this.sendMessage(
-						this.debugChannel,
-						"Chattered On: " + channel + "  Odds: "
-						+ Long.toString(odds));
-
-				this.chatterTimer = this.chatterTimer
-									+ this.rand.nextInt((int) elapsed / this.chatterTimeDivisor);
 			}
+		}
+
+		if (didChatter) {
+			this.sendMessage(
+				this.debugChannel,
+				"Chattered On: " + channel);
 		}
 	}
 
@@ -1610,17 +1701,17 @@ public class Tim extends PircBot {
 	}
 
 	private void useBackupNick() {
-		this.setName(this.getSetting("backup_nickname"));
+		this.setName(Tim.getSetting("backup_nickname"));
 	}
 
 	private void connectToServer() {
 		try {
-			this.connect(this.getSetting("server"));
+			this.connect(Tim.getSetting("server"));
 		}
 		catch (Exception e) {
 			this.useBackupNick();
 			try {
-				this.connect(this.getSetting("server"));
+				this.connect(Tim.getSetting("server"));
 			}
 			catch (Exception ex) {
 				System.err.print("Could not connect - name & backup in use");
@@ -1663,7 +1754,7 @@ public class Tim extends PircBot {
 		return AsImplodedString;
 	}
 
-	private String getSetting(String key) {
+	public static String getSetting(String key) {
 		long timeout = 3000;
 		Connection con;
 		String value = "";
@@ -1801,40 +1892,6 @@ public class Tim extends PircBot {
 		this.getApprovedItems();
 		this.getPendingItems();
 
-		this.chatterMaxBaseOdds = Integer.parseInt(this.getSetting("chatterMaxBaseOdds"));
-		this.chatterNameMultiplier = Integer.parseInt(this.getSetting("chatterNameMultiplier"));
-		this.chatterTimeMultiplier = Integer.parseInt(this.getSetting("chatterTimeMultiplier"));
-		this.chatterTimeDivisor = Integer.parseInt(this.getSetting("chatterTimeDivisor"));
-
-		if (this.chatterMaxBaseOdds == 0) {
-			this.chatterMaxBaseOdds = 20;
-		}
-
-		if (this.chatterNameMultiplier == 0) {
-			this.chatterNameMultiplier = 4;
-		}
-
-		if (this.chatterTimeMultiplier == 0) {
-			this.chatterTimeMultiplier = 4;
-		}
-
-		if (this.chatterTimeDivisor == 0) {
-			this.chatterTimeDivisor = 2;
-		}
-
-		this.sendMessage(this.debugChannel,
-						 "Max Base Odds: " + Integer.toString(this.chatterMaxBaseOdds));
-		this.sendMessage(
-				this.debugChannel,
-				"Name Multiplier: "
-				+ Integer.toString(this.chatterNameMultiplier));
-		this.sendMessage(
-				this.debugChannel,
-				"Time Multiplier: "
-				+ Integer.toString(this.chatterTimeMultiplier));
-		this.sendMessage(this.debugChannel,
-						 "Time Divisor: " + Integer.toString(this.chatterTimeDivisor));
-		
 		this.story.refreshDbLists();
 		this.challenge.refreshDbLists();
 	}
@@ -2087,7 +2144,7 @@ public class Tim extends PircBot {
 
 			while (rs.next()) {
 				channel = rs.getString("channel").toLowerCase();
-				ci = new ChannelInfo(channel, rs.getBoolean("adult"), rs.getBoolean("muzzled"));
+				ci = new ChannelInfo(channel, rs.getBoolean("adult"), rs.getBoolean("markhov"), rs.getBoolean("random"), rs.getBoolean("command"));
 				this.channel_data.put(channel, ci);
 			}
 			
@@ -2151,10 +2208,10 @@ public class Tim extends PircBot {
 			s.executeUpdate();
 
 			if (adult) {
-				this.channel_data.get(channel.toLowerCase()).IsAdult = true;
+				this.channel_data.get(channel.toLowerCase()).isAdult = true;
 			}
 			else {
-				this.channel_data.get(channel.toLowerCase()).IsAdult = false;
+				this.channel_data.get(channel.toLowerCase()).isAdult = false;
 			}
 			
 			con.close();
@@ -2170,18 +2227,17 @@ public class Tim extends PircBot {
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `muzzled` = ? WHERE `channel` = ?");
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `markhov` = ?, `random` = ?, `command` = ? WHERE `channel` = ?");
 			s.setBoolean(1, muzzled);
+			s.setBoolean(2, muzzled);
+			s.setBoolean(3, muzzled);
 			s.setString(2, channel.toLowerCase());
 			s.executeUpdate();
 
-			if (muzzled) {
-				this.channel_data.get(channel.toLowerCase()).IsMuzzled = true;
-			}
-			else {
-				this.channel_data.get(channel.toLowerCase()).IsMuzzled = false;
-			}
-			
+			this.channel_data.get(channel.toLowerCase()).doMarkhov = muzzled;
+			this.channel_data.get(channel.toLowerCase()).doCommandActions = muzzled;
+			this.channel_data.get(channel.toLowerCase()).doRandomActions = muzzled;
+
 			con.close();
 		}
 		catch (SQLException ex) {
@@ -2193,39 +2249,11 @@ public class Tim extends PircBot {
 		boolean val = false;
 		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
 		if (cdata != null) {
-			val = cdata.IsAdult;
+			val = cdata.isAdult;
 		}
 		return val;
 	}
 
-	private boolean isChannelMuzzled(String channel) {
-		boolean val = false;
-		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
-		if (cdata != null && cdata.IsMuzzled) {
-			val = cdata.IsMuzzled;
-		}
-		else {
-			try {
-				this.wars_lock.acquire();
-				if (this.wars != null && this.wars.size() > 0) {
-					for (Map.Entry<String, WordWar> wm : this.wars.entrySet()) {
-						if (wm.getValue().getChannel().equalsIgnoreCase(channel)
-							&& wm.getValue().time_to_start <= 0) {
-							val = true;
-							break;
-						}
-					}
-				}
-			}
-			catch (InterruptedException ex) {
-				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-			} finally {
-				this.wars_lock.release();
-			}
-		}
-		return val;
-	}
-	
 	private String generate_markhov(String type) {
 		String sentence = "";
 		long timeout = 3000;
@@ -2287,10 +2315,19 @@ public class Tim extends PircBot {
 				while (nextRes.next()) {
 					check += nextRes.getInt("count");
 					if (check > pick) {
-						sentence += " " + nextRes.getString("second");
 						lastWord = nextRes.getString("second");
+
+						if ("".equals(lastWord)) {
+							break;
+						}
+
+						sentence += " " + nextRes.getString("second");
 						break;
 					}
+				}
+
+				if ("".equals(lastWord) && this.rand.nextInt(100) > 50) {
+					break;
 				}
 
 				curWords++;
@@ -2303,9 +2340,20 @@ public class Tim extends PircBot {
 		return sentence;
 	}
 
+	/**
+	 * Process a message to populate the Markhov data tables
+	 * 
+	 * Takes a message and a type and builds Markhov chain data out of the 
+	 * message, skipping bad words and other things we don't want to track such
+	 * as email addresses and URLs.
+	 * 
+	 * @param message
+	 * @param type 
+	 * 
+	 */
 	private void process_markhov(String message, String type) {
 		String first;
-		String second;
+		String second = "";
 
 		String[] words = message.split(" ");
 		long timeout = 3000;
@@ -2320,6 +2368,10 @@ public class Tim extends PircBot {
 			}
 
 			for (int i = 0; i < (words.length - 1); i++) {
+				if (skipMarkhovWord(words[i])) {
+					continue;
+				}
+
 				if (i == 0) {
 					first = "";
 					second = words[i];
@@ -2329,7 +2381,11 @@ public class Tim extends PircBot {
 
 					addPair.executeUpdate();
 				}
-				
+
+				if (skipMarkhovWord(words[i+1])) {
+					continue;
+				}
+
 				first = words[i];
 				second = words[i+1];
 
@@ -2338,10 +2394,60 @@ public class Tim extends PircBot {
 				
 				addPair.executeUpdate();
 			}
+
+			if (!second.isEmpty()) {
+				addPair.setString(1, second);
+				addPair.setString(2, "");
+				
+				addPair.executeUpdate();
+			}
+
 			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
+	}
+	
+	private boolean skipMarkhovWord(String word) {
+		long timeout = 3000;
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+			PreparedStatement checkBad = con.prepareStatement("SELECT count(*) as matched FROM bad_words WHERE word LIKE ?");
+			ResultSet checkBadRes;
+			
+			checkBad.setString(1, word);
+			checkBadRes = checkBad.executeQuery();
+			checkBadRes.next();
+
+			if (checkBadRes.getInt("matched") > 0) {
+				return true;
+			}
+		}
+		catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+		// If email, skip
+		if (Pattern.matches("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$", word)) {
+			return true;
+		}
+		
+		// Checks for URL
+		try {
+			new URL(word);
+			return true;
+		}
+		catch (MalformedURLException ex) {
+			// NOOP
+		}
+		
+		// Phone number
+		if (Pattern.matches("^\\(?(\\d{3})\\)?[- ]?(\\d{3})[- ]?(\\d{4})$", word)) {
+			return true;
+		}
+		
+		return false;
 	}
 }
