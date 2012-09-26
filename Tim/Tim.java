@@ -281,7 +281,7 @@ public class Tim extends PircBot {
 		}
 
 		if (!sender.equals(this.getNick()) && !"".equals(target)) {
-			this.interact(sender, target, action);
+			this.interact(sender, target, action, "emote");
 			this.process_markhov(action, "emote");
 		}
 	}
@@ -357,12 +357,11 @@ public class Tim extends PircBot {
 					}
 				}
 				else if (Pattern.matches("(?i).*markhov test.*", message)) {
-					this.sendMessage(channel, this.generate_markhov("say"));
 				}
 			}
 
 			if (!sender.equals(this.getNick()) && !"".equals(channel)) {
-				this.interact(sender, channel, message);
+				this.interact(sender, channel, message, "say");
 				this.process_markhov(message, "say");
 			}
 		}
@@ -660,7 +659,7 @@ public class Tim extends PircBot {
 		}
 	}
 
-	private void interact(String sender, String channel, String message) {
+	private void interact(String sender, String channel, String message, String type) {
 		// Some channels don't want chatter. Is this one of them?
 		if (!this.isChannelMuzzled(channel)) {
 			long elapsed = System.currentTimeMillis() / 1000 - this.chatterTimer;
@@ -676,9 +675,12 @@ public class Tim extends PircBot {
 			// Odds are percentage based, so this needs to be 100.
 			int i = this.rand.nextInt(100);
 			if (i < odds) {
-				int j = this.rand.nextInt(220);
+				int j = this.rand.nextInt(260);
 
-				if (j > 180) {
+				if (j > 220) {
+					this.sendDelayedMessage(channel, this.generate_markhov(type), this.rand.nextInt(1500));
+				}
+				else if (j > 180) {
 					this.getItem(channel, sender, null);
 				}
 				else if (j > 160) {
