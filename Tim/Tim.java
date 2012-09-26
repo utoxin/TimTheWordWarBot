@@ -16,23 +16,23 @@
  */
 package Tim;
 
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.*;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.*;
 import org.jibble.pircbot.*;
 import snaq.db.ConnectionPool;
 
@@ -289,10 +289,7 @@ public class Tim extends PircBot {
 	@Override
 	public void onMessage(String channel, String sender, String login,
 						  String hostname, String message) {
-		if (this.ignore_list.contains(sender)) {
-			return;
-		}
-		else {
+		if (!this.ignore_list.contains(sender)) {
 			// Find all messages that start with ! and pass them to a method for
 			// further processing.
 			if (message.charAt(0) == '!') {
@@ -512,8 +509,8 @@ public class Tim extends PircBot {
 			}
 			else if (command.equals("approveitem")) {
 				if (args != null && args.length > 0) {
-					int idx = 0;
-					String item = "";
+					int idx;
+					String item;
 					try {
 						idx = Integer.parseInt(args[0]);
 						item = this.pending_items.get(idx);
@@ -539,8 +536,8 @@ public class Tim extends PircBot {
 			}
 			else if (command.equals("disapproveitem")) {
 				if (args != null && args.length > 0) {
-					int idx = 0;
-					String item = "";
+					int idx;
+					String item;
 					try {
 						idx = Integer.parseInt(args[0]);
 						item = this.approved_items.get(idx);
@@ -566,8 +563,8 @@ public class Tim extends PircBot {
 			}
 			else if (command.equals("deleteitem")) {
 				if (args != null && args.length > 0) {
-					int idx = 0;
-					String item = "";
+					int idx;
+					String item;
 					try {
 						idx = Integer.parseInt(args[0]);
 						item = this.pending_items.get(idx);
@@ -635,10 +632,8 @@ public class Tim extends PircBot {
 				this.printAdminCommandList(sender, channel);
 			}
 			else if (this.story.parseAdminCommand(channel, sender, message)) {
-				return;
 			}
 			else if (this.challenge.parseAdminCommand(channel, sender, message)) {
-				return;
 			}
 			else {
 				this.sendMessage(channel, "$" + command + " is not a valid admin command - try $help");
@@ -969,10 +964,8 @@ public class Tim extends PircBot {
 				this.foof(channel, sender, args, true);
 			}
 			else if (this.story.parseUserCommand(channel, sender, prefix, message)) {
-				return;
 			}
 			else if (this.challenge.parseUserCommand(channel, sender, prefix, message)) {
-				return;
 			}
 			else {
 				this.sendMessage(channel, "!" + command + " was not part of my training.");
@@ -1045,7 +1038,7 @@ public class Tim extends PircBot {
 
 	private void dice(String number, String channel, String sender,
 					  String[] args) {
-		int max = 0;
+		int max;
 		try {
 			max = Integer.parseInt(number);
 			int r = this.rand.nextInt(max) + 1;
@@ -1129,7 +1122,7 @@ public class Tim extends PircBot {
 
 	private void sing(String channel) {
 		int r = this.rand.nextInt(100);
-		String response = "";
+		String response;
 		if (r > 90) {
 			response = "sings a beautiful song";
 		}
@@ -1189,7 +1182,7 @@ public class Tim extends PircBot {
 				colour = " " + colour;
 		}
 		int i = this.rand.nextInt(100);
-		String act = "";
+		String act;
 		if (i > 20) {
 			act = "hurls a" + colour + " coloured fridge at " + target;
 		}
@@ -1228,7 +1221,7 @@ public class Tim extends PircBot {
 		time += this.rand.nextInt(10) * 500 + 1500;
 
 		int i = this.rand.nextInt(100);
-		String act = "";
+		String act;
 		String colour = this.colours.get(this.rand.nextInt(this.colours.size()));
 
 		if (i > 20) {
@@ -1252,7 +1245,7 @@ public class Tim extends PircBot {
 
 	private void summon(String channel, String sender, String[] args,
 						Boolean righto) {
-		String target = "";
+		String target;
 		if (args == null || args.length == 0) {
 			target = this.deities.get(this.rand.nextInt(this.deities.size()));
 		}
@@ -1272,7 +1265,7 @@ public class Tim extends PircBot {
 		time += this.rand.nextInt(10) * 500 + 1500;
 
 		int i = this.rand.nextInt(100);
-		String act = "";
+		String act;
 
 		if (i > 50) {
 			act = "completes the ritual successfully, drawing " + target
@@ -1319,7 +1312,7 @@ public class Tim extends PircBot {
 		time += this.rand.nextInt(10) * 500 + 1500;
 
 		int i = this.rand.nextInt(100);
-		String act = "";
+		String act;
 		String colour = this.colours.get(this.rand.nextInt(this.colours.size()));
 
 		if (i > 20) {
@@ -1369,7 +1362,7 @@ public class Tim extends PircBot {
 	private void startWar(String channel, String sender, String[] args) {
 		long time;
 		long to_start = 5000;
-		String warname = "";
+		String warname;
 		try {
 			time = (long) ( Double.parseDouble(args[0]) * 60 );
 		}
@@ -1568,7 +1561,7 @@ public class Tim extends PircBot {
 		double modifier;
 		int goal;
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 
 		if (args.length != 2) {
 			this.sendMessage(channel, sender
@@ -1672,7 +1665,7 @@ public class Tim extends PircBot {
 
 	private String getSetting(String key) {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		String value = "";
 
 		try {
@@ -1698,10 +1691,10 @@ public class Tim extends PircBot {
 
 	private void getApprovedItems() {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
+		String value;
 
 		try {
-			String value = "";
 			this.approved_items.clear();
 
 			con = pool.getConnection(timeout);
@@ -1717,13 +1710,12 @@ public class Tim extends PircBot {
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		return;
 	}
 
 	private void getPendingItems() {
 		long timeout = 3000;
-		Connection con = null;
-		String value = "";
+		Connection con;
+		String value;
 		this.pending_items.clear();
 
 		try {
@@ -1741,12 +1733,11 @@ public class Tim extends PircBot {
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		return;
 	}
 
 	private void insertPendingItem(String item) {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1759,12 +1750,11 @@ public class Tim extends PircBot {
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		return;
 	}
 
 	private void setItemApproved(String item, Boolean approved) {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1778,12 +1768,11 @@ public class Tim extends PircBot {
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		return;
 	}
 
 	private void removeItem(String item) {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1796,7 +1785,6 @@ public class Tim extends PircBot {
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		return;
 	}
 
 	private void refreshDbLists() {
@@ -1853,7 +1841,7 @@ public class Tim extends PircBot {
 
 	private void getAdminList() {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1876,7 +1864,7 @@ public class Tim extends PircBot {
 
 	private void getIgnoreList() {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1898,7 +1886,7 @@ public class Tim extends PircBot {
 
 	private void setIgnore(String username) {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1915,7 +1903,7 @@ public class Tim extends PircBot {
 
 	private void removeIgnore(String username) {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1932,7 +1920,7 @@ public class Tim extends PircBot {
 
 	private void getAypwipList() {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1954,7 +1942,7 @@ public class Tim extends PircBot {
 
 	private void getColourList() {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1976,7 +1964,7 @@ public class Tim extends PircBot {
 
 	private void getCommandmentList() {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1998,7 +1986,7 @@ public class Tim extends PircBot {
 
 	private void getDeityList() {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2020,7 +2008,7 @@ public class Tim extends PircBot {
 
 	private void getEightballList() {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2042,7 +2030,7 @@ public class Tim extends PircBot {
 
 	private void getFlavourList() {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2064,7 +2052,7 @@ public class Tim extends PircBot {
 
 	private void getGreetingList() {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2086,7 +2074,7 @@ public class Tim extends PircBot {
 
 	private void getChannelList() {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2094,8 +2082,8 @@ public class Tim extends PircBot {
 			ResultSet rs = s.executeQuery("SELECT * FROM `channels`");
 
 			this.channel_data.clear();
-			ChannelInfo ci = null;
-			String channel = "";
+			ChannelInfo ci;
+			String channel;
 
 			while (rs.next()) {
 				channel = rs.getString("channel").toLowerCase();
@@ -2112,7 +2100,7 @@ public class Tim extends PircBot {
 
 	private void saveChannel(String channel) {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2133,7 +2121,7 @@ public class Tim extends PircBot {
 
 	private void deleteChannel(String channel) {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2153,7 +2141,7 @@ public class Tim extends PircBot {
 
 	private void setChannelAdultFlag(String channel, boolean adult) {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2178,7 +2166,7 @@ public class Tim extends PircBot {
 
 	private void setChannelMuzzledFlag(String channel, boolean muzzled) {
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2241,7 +2229,7 @@ public class Tim extends PircBot {
 	private String generate_markhov(String type) {
 		String sentence = "";
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 			PreparedStatement nextList, getTotal;
@@ -2321,7 +2309,7 @@ public class Tim extends PircBot {
 
 		String[] words = message.split(" ");
 		long timeout = 3000;
-		Connection con = null;
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 			PreparedStatement addPair;
