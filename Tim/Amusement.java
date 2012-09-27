@@ -304,7 +304,7 @@ public class Amusement {
 
 	protected void randomAction( String sender, String channel, String message, String type ) {
 		String[] actions = {
-			"item", "eightball", "fridge", "defenestrate", "sing", "foof"
+			"item", "eightball", "fridge", "defenestrate", "sing", "foof", "dance"
 		};
 
 		String action = actions[ircclient.rand.nextInt(actions.length)];
@@ -321,6 +321,8 @@ public class Amusement {
 			sing(channel);
 		} else if ("foof".equals(action)) {
 			foof(channel, sender, actions, false);
+		} else if ("dance".equals(action)) {
+			dance(channel);
 		}
 	}
 
