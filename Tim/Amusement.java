@@ -277,17 +277,15 @@ public class Amusement {
 		return false;
 	}
 
-	protected int helpSection( String target, String channel, int delayCnt, int msgdelay ) {
+	protected void helpSection( String target, String channel) {
 		String[] strs = {"Amusement Commands:",
 						 "    !get <anything> - I will fetch you whatever you like.",
 						 "    !getfor <someone> <anything> - I will give someone whatever you like.",
 						 "    !eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.",};
 
-		for (int i = 0; i < strs.length; ++i, ++delayCnt) {
-			ircclient.sendDelayedMessage(target, strs[i], msgdelay * delayCnt);
+		for (int i = 0; i < strs.length; ++i) {
+			ircclient.sendNotice(target, strs[i]);
 		}
-
-		return delayCnt;
 	}
 
 	public void refreshDbLists() {

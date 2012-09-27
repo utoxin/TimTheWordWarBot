@@ -86,18 +86,16 @@ public class ChainStory {
 		return false;
 	}
 
-	protected int helpSection( String target, String channel, int delayCnt, int msgdelay ) {
+	protected void helpSection( String target, String channel) {
 		String[] strs = {
 			"Chain Story Commands:",
 			"    !chaininfo - General info about the current status of my navel.",
 			"    !chainlast - The last paragraph of my novel, so you have something to base the next one one.",
 			"    !chainnew <paragraph> - Provide the next paragraph of my great cyberspace novel!",};
 
-		for (int i = 0; i < strs.length; ++i, ++delayCnt) {
-			ircclient.sendDelayedMessage(target, strs[i], msgdelay * delayCnt);
+		for (int i = 0; i < strs.length; ++i) {
+			ircclient.sendNotice(target, strs[i]);
 		}
-		
-		return delayCnt;
 	}
 
 	public void refreshDbLists() {

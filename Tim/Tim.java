@@ -212,7 +212,7 @@ public final class Tim extends PircBot {
 
 		// Read message delay from DB, but never go below 100ms.
 		long delay = Long.parseLong(getSetting("max_rate"));
-		delay = Math.max(delay, 100);
+		delay = Math.max(delay, 25);
 		this.setMessageDelay(delay);
 
 		this.story = new ChainStory(this);
@@ -619,9 +619,15 @@ public final class Tim extends PircBot {
 						  String target, String notice ) {
 		if (sender.equals("NickServ") && notice.contains("This nick")) {
 			this.sendMessage("NickServ", "identify " + this.password);
+
+			String postConnect = getSetting("post_identify");
+
+			if (!"".equals(postConnect)) {
+				this.sendRawLineViaQueue(postConnect);
+			}
 		}
 	}
-
+	
 	@Override
 	protected void onDisconnect() {
 		if (!this.shutdown) {
@@ -768,9 +774,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void printCommandList( String target, String channel ) {
-		int msgdelay = 5;
-		int delayCnt = 0;
-
 		this.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new windor or tab with the help text.)");
 
 		String[] strs = {"I am a robot trained by the WordWar Monks of Honolulu. You have "
@@ -783,26 +786,23 @@ public final class Tim extends PircBot {
 						 "    !settopic <topic> - If able, I will try to set the channel's topic.",
 						 "    !credits - Details of my creators, and where to find my source code.",
 		};
-		for (int i = 0; i < strs.length; ++i, ++delayCnt) {
-			this.sendDelayedMessage(target, strs[i], msgdelay * delayCnt);
+		for (int i = 0; i < strs.length; ++i) {
+			this.sendNotice(target, strs[i]);
 		}
 
-		delayCnt = this.story.helpSection(target, channel, delayCnt, msgdelay);
-		delayCnt = this.challenge.helpSection(target, channel, delayCnt, msgdelay);
-		delayCnt = this.amusement.helpSection(target, channel, delayCnt, msgdelay);
+		this.story.helpSection(target, channel);
+		this.challenge.helpSection(target, channel);
+		this.amusement.helpSection(target, channel);
 		
 		String[] post = {"I... I think there might be other tricks I know... You'll have to find them!",
 						 "I will also respond to the /invite command if you would like to see me in another channel. "
 		};
-		for (int i = 0; i < post.length; ++i, ++delayCnt) {
-			this.sendDelayedMessage(target, post[i], msgdelay * delayCnt);
+		for (int i = 0; i < post.length; ++i) {
+			this.sendNotice(target, post[i]);
 		}
 	}
 
 	private void printAdminCommandList( String target, String channel ) {
-		int msgdelay = 5;
-		int delayCnt = 0;
-
 		this.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new windor or tab with the help text.)");
 
 		String[] helplines = {"Core Admin Commands:",
@@ -821,11 +821,11 @@ public final class Tim extends PircBot {
 							  "    $listignores - Prints the list of ignored users"
 		};
 
-		for (int i = 0; i < helplines.length; ++i, ++delayCnt) {
-			this.sendDelayedMessage(target, helplines[i], msgdelay * delayCnt);
+		for (int i = 0; i < helplines.length; ++i) {
+			this.sendNotice(target, helplines[i]);
 		}
 
-		delayCnt = this.challenge.adminHelpSection(target, channel, delayCnt, msgdelay);
+		this.challenge.adminHelpSection(target, channel);
 	}
 
 	// !endwar <name>

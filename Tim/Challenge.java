@@ -242,7 +242,7 @@ public class Challenge {
 		return false;
 	}
 
-	protected int helpSection( String target, String channel, int delayCnt, int msgdelay ) {
+	protected void helpSection( String target, String channel ) {
 		String[] strs = {
 			"Challenge Commands:",
 			"    !challenge - Request a challenge",
@@ -250,14 +250,12 @@ public class Challenge {
 			"    !challengefor <name> - Challenge someone else",
 			"    !challengefor <name> <challenge> - Challenge someone else, and store it for approval",};
 
-		for (int i = 0; i < strs.length; ++i, ++delayCnt) {
-			ircclient.sendDelayedMessage(target, strs[i], msgdelay * delayCnt);
+		for (int i = 0; i < strs.length; ++i) {
+			ircclient.sendNotice(target, strs[i]);
 		}
-		
-		return delayCnt;
 	}
 
-	protected int adminHelpSection( String target, String channel, int delayCnt, int msgdelay ) {
+	protected void adminHelpSection( String target, String channel ) {
 		String[] strs = {
 			"Challenge Commands:",
 			"    $challenge pending [<page>] - List a page of pending items",
@@ -266,11 +264,9 @@ public class Challenge {
 			"    $challenge delete <# from pending> - Delete pending item",
 			"    $challenge unapprove <# from approved> - Unapprove a previously approved item",};
 
-		for (int i = 0; i < strs.length; ++i, ++delayCnt) {
-			ircclient.sendDelayedMessage(target, strs[i], msgdelay * delayCnt);
+		for (int i = 0; i < strs.length; ++i) {
+			ircclient.sendNotice(target, strs[i]);
 		}
-		
-		return delayCnt;
 	}
 
 	public void refreshDbLists() {
