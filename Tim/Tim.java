@@ -124,7 +124,6 @@ public class Tim extends PircBot {
 			this.doCommandActions = true;
 			this.doRandomActions = true;
 			this.doMarkhov = true;
-			this.chatterTimer = System.currentTimeMillis() / 1000;
 		}
 
 		/**
@@ -142,14 +141,13 @@ public class Tim extends PircBot {
 			this.doRandomActions = random;
 			this.doCommandActions = command;
 			this.doMarkhov = markhov;
-			this.chatterTimer = System.currentTimeMillis() / 1000;
 		}
 		
-		private void setChatterTimers() {
-			this.chatterMaxBaseOdds = Integer.parseInt(Tim.getSetting("chatterMaxBaseOdds"));
-			this.chatterNameMultiplier = Integer.parseInt(Tim.getSetting("chatterNameMultiplier"));
-			this.chatterTimeMultiplier = Integer.parseInt(Tim.getSetting("chatterTimeMultiplier"));
-			this.chatterTimeDivisor = Integer.parseInt(Tim.getSetting("chatterTimeDivisor"));
+		public void setChatterTimers(int maxBaseOdds, int nameMultiplier, int timeMultiplier, int timeDivisor) {
+			this.chatterMaxBaseOdds = maxBaseOdds;
+			this.chatterNameMultiplier = nameMultiplier;
+			this.chatterTimeMultiplier = timeMultiplier;
+			this.chatterTimeDivisor = timeDivisor;
 
 			if (this.chatterMaxBaseOdds == 0) {
 				this.chatterMaxBaseOdds = 20;
@@ -166,6 +164,8 @@ public class Tim extends PircBot {
 			if (this.chatterTimeDivisor == 0) {
 				this.chatterTimeDivisor = 2;
 			}
+
+			this.chatterTimer = System.currentTimeMillis() / 1000;
 		}
 	}
 
@@ -189,7 +189,7 @@ public class Tim extends PircBot {
 	private boolean shutdown;
 	private String password;
 	protected String debugChannel;
-	protected static ConnectionPool pool;
+	protected ConnectionPool pool;
 	private ChainStory story;
 	private Challenge challenge;
 
@@ -222,16 +222,16 @@ public class Tim extends PircBot {
 		String url = "jdbc:mysql://" + Tim.config.getString("sql_server") + ":3306/" + Tim.config.getString("sql_database");
 		pool = new ConnectionPool("local", 2, 5, 10, 180000, url, Tim.config.getString("sql_user"), Tim.config.getString("sql_password"));
 
-		this.setName(Tim.getSetting("nickname"));
-		this.password = Tim.getSetting("password");
-		this.debugChannel = Tim.getSetting("debug_channel");
+		this.setName(getSetting("nickname"));
+		this.password = getSetting("password");
+		this.debugChannel = getSetting("debug_channel");
 		if (this.debugChannel.equals("")) {
 			// Ideally, we should fail here...
 			this.debugChannel = "#timmydebug";
 		}
 		
 		// Read message delay from DB, but never go below 100ms.
-		long delay = Long.parseLong(Tim.getSetting("max_rate"));
+		long delay = Long.parseLong(getSetting("max_rate"));
 		delay = Math.max(delay, 100);
 		this.setMessageDelay(delay);
 
@@ -307,6 +307,9 @@ public class Tim extends PircBot {
 	@Override
 	protected void onAction(String sender, String login, String hostname,
 							String target, String action) {
+		
+		ChannelInfo cdata = this.channel_data.get(target.toLowerCase());
+
 		if (this.admin_list.contains(sender)) {
 			if (action.equalsIgnoreCase("punches " + this.getNick()
 										+ " in the face!")) {
@@ -319,13 +322,18 @@ public class Tim extends PircBot {
 
 		if (!sender.equals(this.getNick()) && !"".equals(target)) {
 			this.interact(sender, target, action, "emote");
-			this.process_markhov(action, "emote");
+			if (cdata.doMarkhov) {
+				this.process_markhov(action, "emote");
+			}
 		}
 	}
 
 	@Override
 	public void onMessage(String channel, String sender, String login,
 						  String hostname, String message) {
+		
+		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
+
 		if (!this.ignore_list.contains(sender)) {
 			// Find all messages that start with ! and pass them to a method for
 			// further processing.
@@ -392,12 +400,15 @@ public class Tim extends PircBot {
 				}
 				else if (Pattern.matches("(?i).*markhov test.*", message)) {
 					this.sendDelayedMessage(channel, this.generate_markhov("say"), this.rand.nextInt(1500));
+					return;
 				}
 			}
 
 			if (!sender.equals(this.getNick()) && !"".equals(channel)) {
 				this.interact(sender, channel, message, "say");
-				this.process_markhov(message, "say");
+				if (cdata.doMarkhov) {
+					this.process_markhov(message, "say");
+				}
 			}
 		}
 	}
@@ -1213,20 +1224,38 @@ public class Tim extends PircBot {
 
 	private void sing(String channel) {
 		int r = this.rand.nextInt(100);
+
 		String response;
 		if (r > 90) {
-			response = "sings a beautiful song";
+			response = "sings the well known song '%s' better than the original artist!";
 		}
 		else if (r > 60) {
-			response = "chants a snappy ditty";
+			response = "chants some obscure lyrics from '%s'. At least you think that's the name of the song...";
 		}
 		else if (r > 30) {
-			response = "starts singing 'It's a Small World'";
+			response = "starts singing '%s'. You've heard better...";
 		}
 		else {
-			response = "screeches, and all the windows shatter";
+			response = "screeches out some words from '%s', and all the nearby windows shatter... Ouch.";
 		}
-		this.sendAction(channel, response);
+
+		long timeout = 3000;
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+			PreparedStatement songName = con.prepareStatement("SELECT name FROM songs ORDER BY rand() LIMIT 1");
+			ResultSet songNameRes;
+			
+			songNameRes = songName.executeQuery();
+			songNameRes.next();
+
+			this.sendDelayedAction(channel, String.format(response, songNameRes.getString("name")), this.rand.nextInt(1500));
+			con.close();
+		}
+		catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	
 	}
 
 	private void commandment(String channel, String sender, String[] args) {
@@ -1701,17 +1730,17 @@ public class Tim extends PircBot {
 	}
 
 	private void useBackupNick() {
-		this.setName(Tim.getSetting("backup_nickname"));
+		this.setName(getSetting("backup_nickname"));
 	}
 
 	private void connectToServer() {
 		try {
-			this.connect(Tim.getSetting("server"));
+			this.connect(getSetting("server"));
 		}
 		catch (Exception e) {
 			this.useBackupNick();
 			try {
-				this.connect(Tim.getSetting("server"));
+				this.connect(getSetting("server"));
 			}
 			catch (Exception ex) {
 				System.err.print("Could not connect - name & backup in use");
@@ -1754,7 +1783,7 @@ public class Tim extends PircBot {
 		return AsImplodedString;
 	}
 
-	public static String getSetting(String key) {
+	public String getSetting(String key) {
 		long timeout = 3000;
 		Connection con;
 		String value = "";
@@ -2145,6 +2174,12 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				channel = rs.getString("channel").toLowerCase();
 				ci = new ChannelInfo(channel, rs.getBoolean("adult"), rs.getBoolean("markhov"), rs.getBoolean("random"), rs.getBoolean("command"));
+				ci.setChatterTimers(
+					Integer.parseInt(getSetting("chatterMaxBaseOdds")), 
+					Integer.parseInt(getSetting("chatterNameMultiplier")), 
+					Integer.parseInt(getSetting("chatterTimeMultiplier")), 
+					Integer.parseInt(getSetting("chatterTimeDivisor")));
+
 				this.channel_data.put(channel, ci);
 			}
 			
@@ -2294,14 +2329,20 @@ public class Tim extends PircBot {
 
 			int maxLength = this.rand.nextInt(25) + 10;
 			int curWords = 1;
+			boolean keepGoing = true;
 			
-			while (curWords < maxLength) {
+			while (keepGoing || curWords < maxLength) {
+				keepGoing = true;
+
 				getTotal.setString(1, lastWord);
 				nextList.setString(1, lastWord);
 
 				totalRes = getTotal.executeQuery();
-				totalRes.next();
-				total = totalRes.getInt("total");
+				if (totalRes.next()) {
+					total = totalRes.getInt("total");
+				} else {
+					break;
+				}
 				
 				if (total == 0) {
 					break;
@@ -2326,8 +2367,8 @@ public class Tim extends PircBot {
 					}
 				}
 
-				if ("".equals(lastWord) && this.rand.nextInt(100) > 50) {
-					break;
+				if ("".equals(lastWord)) {
+					keepGoing = false;
 				}
 
 				curWords++;
@@ -2422,8 +2463,11 @@ public class Tim extends PircBot {
 			checkBadRes.next();
 
 			if (checkBadRes.getInt("matched") > 0) {
+				con.close();
 				return true;
 			}
+
+			con.close();
 		}
 		catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
