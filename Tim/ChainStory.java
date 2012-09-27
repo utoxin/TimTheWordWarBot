@@ -1,12 +1,23 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * This file is part of Timmy, the Wordwar Bot.
+ *
+ * Timmy is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * Timmy is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Timmy. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package Tim;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.sql.*;
 
 /**
  *
@@ -14,22 +25,25 @@ import java.sql.*;
  */
 public class ChainStory {
 	Tim ircclient;
+	private long timeout = 3000;
+	private Connection con = null;
 
-	public ChainStory(Tim ircclient) {
+	public ChainStory( Tim ircclient ) {
 		this.ircclient = ircclient;
 	}
 
 	/**
-	 * Parses user-level commands passed from the main class. Returns true if 
-	 * the message was handled, false if it was not.
-	 * 
-	 * @param channel
-	 * @param sender
-	 * @param prefix
-	 * @param message
-	 * @return 
+	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
+	 * not.
+	 *
+	 * @param channel What channel this came from
+	 * @param sender  Who sent the command
+	 * @param prefix  What prefix was on the command
+	 * @param message What was the actual content of the message
+	 *
+	 * @return True if message was handled, false otherwise.
 	 */
-	public boolean parseUserCommand(String channel, String sender, String prefix, String message) {
+	public boolean parseUserCommand( String channel, String sender, String prefix, String message ) {
 		String command;
 		String argsString = "";
 		String[] args = null;
@@ -39,8 +53,7 @@ public class ChainStory {
 			command = message.substring(1, space).toLowerCase();
 			argsString = message.substring(space + 1);
 			args = argsString.split(" ", 0);
-		}
-		else {
+		} else {
 			command = message.substring(1).toLowerCase();
 		}
 
@@ -48,65 +61,63 @@ public class ChainStory {
 			if (command.equals("chainlast")) {
 				showLast(channel);
 				return true;
-			}
-			else if (command.equals("chainnew")) {
-				addNew(channel, sender, argsString);
-				return true;
-			}
-			else if (command.equals("chaininfo")) {
-				info(channel);
-				return true;
-			}
-			else if (command.equals("chainhelp")) {
-				help(sender, channel);
-				return true;
+			} else {
+				if (command.equals("chainnew")) {
+					addNew(channel, sender, argsString);
+					return true;
+				} else {
+					if (command.equals("chaininfo")) {
+						info(channel);
+						return true;
+					} else {
+						if (command.equals("chainhelp")) {
+							help(sender, channel);
+							return true;
+						}
+					}
+				}
 			}
 		}
-		
+
 		return false;
 	}
-
 
 	/**
-	 * Parses admin-level commands passed from the main class. Returns true if 
-	 * the message was handled, false if it was not.
-	 * 
-	 * @param channel
-	 * @param sender
-	 * @param prefix
-	 * @param message
-	 * @return 
+	 * Parses admin-level commands passed from the main class. Returns true if the message was handled, false if it was
+	 * not.
+	 *
+	 * @param channel What channel this came from
+	 * @param sender  Who sent the command
+	 * @param message What was the actual content of the message.
+	 *
+	 * @return True if message was handled, false otherwise
 	 */
-	public boolean parseAdminCommand(String channel, String sender, String message) {
+	public boolean parseAdminCommand( String channel, String sender, String message ) {
 		return false;
 	}
-	
-	private void help(String target, String channel) {
-		int msgdelay = 9;
-		String[] strs = { 
-						  "!chaininfo - General info about the current status of my navel.",
-						  "!chainlast - The last line of my novel, so you have something to base the next one one.",
-						  "!chainnew <new line for novel> - Provide the next line of my great cyberspace novel!",
-						  "!chainhelp - Get help on my chain story commands",
-		};
 
-		this.ircclient.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new windor or tab with the help text.)");
+	private void help( String target, String channel ) {
+		int msgdelay = 9;
+		String[] strs = {
+			"!chaininfo - General info about the current status of my navel.",
+			"!chainlast - The last line of my novel, so you have something to base the next one one.",
+			"!chainnew <new line for novel> - Provide the next line of my great cyberspace novel!",
+			"!chainhelp - Get help on my chain story commands",};
+
+		this.ircclient.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new window or tab with the help text.)");
 		for (int i = 0; i < strs.length; ++i) {
 			this.ircclient.sendDelayedMessage(target, strs[i], msgdelay * i);
 		}
 	}
 
 	public void refreshDbLists() {
-		return;
 	}
-		
-	public void info(String channel) {
-		long timeout = 3000;
-		Connection con = null;
+
+	public void info( String channel ) {
 		String word_count = "", last_line = "", author_count = "";
 		ResultSet rs;
 		PreparedStatement s;
-		
+
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
@@ -116,14 +127,14 @@ public class ChainStory {
 			while (rs.next()) {
 				word_count = rs.getString("word_count");
 			}
-			
+
 			s = con.prepareStatement("SELECT COUNT(DISTINCT author) AS author_count FROM story");
 			s.executeQuery();
 			rs = s.getResultSet();
 			while (rs.next()) {
 				author_count = rs.getString("author_count");
 			}
-			
+
 			s = con.prepareStatement("SELECT * FROM `story` ORDER BY id DESC LIMIT 1");
 			s.executeQuery();
 
@@ -135,18 +146,14 @@ public class ChainStory {
 			this.ircclient.sendMessage(channel, "My novel is currently " + word_count + " words long, with sections written by " + author_count + " different people, and the last line is:");
 			this.ircclient.sendMessage(channel, last_line);
 			this.ircclient.sendMessage(channel, "You can read an excerpt in my profile here: http://www.nanowrimo.org/en/participants/timmybot");
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-	
-	public void showLast(String channel) {
-		long timeout = 3000;
-		Connection con = null;
 
+	public void showLast( String channel ) {
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
@@ -158,22 +165,17 @@ public class ChainStory {
 				this.ircclient.sendMessage(channel, "Let's see... the last line of my novel is...");
 				this.ircclient.sendMessage(channel, rs.getString("string"));
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	public void addNew(String channel, String sender, String message) {
-		long timeout = 3000;
-		Connection con = null;
-
+	public void addNew( String channel, String sender, String message ) {
 		if ("".equals(message)) {
 			this.ircclient.sendAction(channel, "blinks, and looks confused. \"But there's nothing there. That won't help my wordcount!\"");
-		}
-		else {
+		} else {
 			try {
 				con = ircclient.pool.getConnection(timeout);
 
@@ -192,8 +194,7 @@ public class ChainStory {
 				}
 
 				con.close();
-			}
-			catch (SQLException ex) {
+			} catch (SQLException ex) {
 				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}

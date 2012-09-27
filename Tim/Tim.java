@@ -1,18 +1,14 @@
 /**
- *  This file is part of Timmy, the Wordwar Bot.
+ * This file is part of Timmy, the Wordwar Bot.
  *
- *  Timmy is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Timmy is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
  *
- *  Timmy is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Timmy is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with Timmy.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with Timmy. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package Tim;
 
@@ -28,23 +24,20 @@ import org.jibble.pircbot.PircBot;
 import org.jibble.pircbot.User;
 import snaq.db.ConnectionPool;
 
-public class Tim extends PircBot {
-
+public final class Tim extends PircBot {
 	public static AppConfig config = AppConfig.getInstance();
 
 	public class WarClockThread extends TimerTask {
-
 		private Tim parent;
 
-		public WarClockThread(Tim pparent) {
+		public WarClockThread( Tim pparent ) {
 			this.parent = pparent;
 		}
 
 		public void run() {
 			try {
 				this.parent._tick();
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				System.out.println("&&& THROWABLE CAUGHT in DelayCommand.run:");
 				t.printStackTrace(System.out);
 				System.out.flush();
@@ -53,19 +46,17 @@ public class Tim extends PircBot {
 	}
 
 	protected enum ActionType {
-
 		MESSAGE, ACTION, NOTICE
 	};
 
 	public class DelayCommand extends TimerTask {
-
 		private ActionType type;
 		private Tim parent;
 		private String text;
 		private String target;
 
-		public DelayCommand(Tim pparent, String target, String text,
-							ActionType type) {
+		public DelayCommand( Tim pparent, String target, String text,
+							 ActionType type ) {
 			this.parent = pparent;
 			this.text = text;
 			this.target = target;
@@ -84,13 +75,12 @@ public class Tim extends PircBot {
 					case NOTICE:
 						this.parent.sendNotice(this.target, this.text);
 				}
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				System.out.println("&&& THROWABLE CAUGHT in DelayCommand.run:");
 				t.printStackTrace(System.out);
 				System.out.flush();
 				this.parent.sendMessage(this.target,
-										"I couldn't schedule your command for some reason:");
+					"I couldn't schedule your command for some reason:");
 				this.parent.sendMessage(this.target, t.toString());
 			}
 
@@ -101,7 +91,6 @@ public class Tim extends PircBot {
 	 * Helps keep track of channel information.
 	 */
 	private class ChannelInfo {
-
 		public String Name;
 		public boolean isAdult;
 		public boolean doMarkhov;
@@ -115,10 +104,10 @@ public class Tim extends PircBot {
 
 		/**
 		 * Construct channel with default flags.
-		 * 
-		 * @param name 
+		 *
+		 * @param name What is the name of the channel
 		 */
-		public ChannelInfo(String name) {
+		public ChannelInfo( String name ) {
 			this.Name = name;
 			this.isAdult = false;
 			this.doCommandActions = true;
@@ -128,22 +117,22 @@ public class Tim extends PircBot {
 
 		/**
 		 * Construct channel by specifying values for flags.
-		 * 
-		 * @param name
-		 * @param adult
-		 * @param markhov
-		 * @param random
-		 * @param command 
+		 *
+		 * @param name    What is the name of the channel
+		 * @param adult   Is the channel considered 'adult'
+		 * @param markhov Should markhov chain processing and generation happen on channel
+		 * @param random  Should random actions happen on this channel
+		 * @param command Should 'fun' commands be processed on channel
 		 */
-		public ChannelInfo(String name, boolean adult, boolean markhov, boolean random, boolean command) {
+		public ChannelInfo( String name, boolean adult, boolean markhov, boolean random, boolean command ) {
 			this.Name = name;
 			this.isAdult = adult;
 			this.doRandomActions = random;
 			this.doCommandActions = command;
 			this.doMarkhov = markhov;
 		}
-		
-		public void setChatterTimers(int maxBaseOdds, int nameMultiplier, int timeMultiplier, int timeDivisor) {
+
+		public void setChatterTimers( int maxBaseOdds, int nameMultiplier, int timeMultiplier, int timeDivisor ) {
 			this.chatterMaxBaseOdds = maxBaseOdds;
 			this.chatterNameMultiplier = nameMultiplier;
 			this.chatterTimeMultiplier = timeMultiplier;
@@ -168,7 +157,6 @@ public class Tim extends PircBot {
 			this.chatterTimer = System.currentTimeMillis() / 1000;
 		}
 	}
-
 	private Set<String> admin_list = new HashSet<String>(16);
 	private Set<String> ignore_list = new HashSet<String>(16);
 	private Hashtable<String, ChannelInfo> channel_data = new Hashtable<String, ChannelInfo>(62);
@@ -198,11 +186,10 @@ public class Tim extends PircBot {
 		Driver driver;
 
 		/**
-		 * Make sure the JDBC driver is initialized. Used by the connection
-		 * pool.
-		 * 
-		 * This try/catch block seems excessive to me, but it's what NetBeans
-		 * suggested, and I'm not very experienced with java, so... here it is.
+		 * Make sure the JDBC driver is initialized. Used by the connection pool.
+		 *
+		 * This try/catch block seems excessive to me, but it's what NetBeans suggested, and I'm not very experienced
+		 * with java, so... here it is.
 		 */
 		try {
 			c = Class.forName("com.mysql.jdbc.Driver");
@@ -229,7 +216,7 @@ public class Tim extends PircBot {
 			// Ideally, we should fail here...
 			this.debugChannel = "#timmydebug";
 		}
-		
+
 		// Read message delay from DB, but never go below 100ms.
 		long delay = Long.parseLong(getSetting("max_rate"));
 		delay = Math.max(delay, 100);
@@ -258,56 +245,47 @@ public class Tim extends PircBot {
 
 	/**
 	 * Sends an message with a delay
-	 * 
-	 * @param target
-	 *            The user or channel to send the message to
-	 * @param action
-	 *            The string for the text of the message
-	 * @param delay
-	 *            The delay in milliseconds
+	 *
+	 * @param target The user or channel to send the message to
+	 * @param action The string for the text of the message
+	 * @param delay  The delay in milliseconds
 	 */
-	public void sendDelayedMessage(String target, String message, int delay) {
+	public void sendDelayedMessage( String target, String message, int delay ) {
 		DelayCommand talk = new DelayCommand(this, target, message,
-											 ActionType.MESSAGE);
+			ActionType.MESSAGE);
 		this.ticker.schedule(talk, delay);
 	}
 
 	/**
 	 * Sends an action with a delay
-	 * 
-	 * @param target
-	 *            The user or channel to send the action to
-	 * @param action
-	 *            The string for the text of the action
-	 * @param delay
-	 *            The delay in milliseconds
+	 *
+	 * @param target The user or channel to send the action to
+	 * @param action The string for the text of the action
+	 * @param delay  The delay in milliseconds
 	 */
-	public void sendDelayedAction(String target, String action, int delay) {
+	public void sendDelayedAction( String target, String action, int delay ) {
 		DelayCommand act = new DelayCommand(this, target, action,
-											ActionType.ACTION);
+			ActionType.ACTION);
 		this.ticker.schedule(act, delay);
 	}
 
 	/**
 	 * Sends a notice with a delay
-	 * 
-	 * @param target
-	 *            The user or channel to send the notice to
-	 * @param action
-	 *            The string for the text of the notice
-	 * @param delay
-	 *            The delay in milliseconds
+	 *
+	 * @param target The user or channel to send the notice to
+	 * @param action The string for the text of the notice
+	 * @param delay  The delay in milliseconds
 	 */
-	public void sendDelayedNotice(String target, String action, int delay) {
+	public void sendDelayedNotice( String target, String action, int delay ) {
 		DelayCommand act = new DelayCommand(this, target, action,
-											ActionType.NOTICE);
+			ActionType.NOTICE);
 		this.ticker.schedule(act, delay);
 	}
 
 	@Override
-	protected void onAction(String sender, String login, String hostname,
-							String target, String action) {
-		
+	protected void onAction( String sender, String login, String hostname,
+							 String target, String action ) {
+
 		ChannelInfo cdata = this.channel_data.get(target.toLowerCase());
 
 		if (this.admin_list.contains(sender)) {
@@ -329,9 +307,9 @@ public class Tim extends PircBot {
 	}
 
 	@Override
-	public void onMessage(String channel, String sender, String login,
-						  String hostname, String message) {
-		
+	public void onMessage( String channel, String sender, String login,
+						   String hostname, String message ) {
+
 		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
 
 		if (!this.ignore_list.contains(sender)) {
@@ -344,8 +322,7 @@ public class Tim extends PircBot {
 			else if (message.charAt(0) == '@') {
 				this.doCommand(channel, sender, "@", message);
 				return;
-			}
-			else if (message.charAt(0) == '$') {
+			} else if (message.charAt(0) == '$') {
 				this.doAdmin(channel, sender, '$', message.substring(1));
 				return;
 			}
@@ -353,52 +330,45 @@ public class Tim extends PircBot {
 			// Other fun stuff we can make him do
 			if (message.toLowerCase().contains("hello")
 				&& message.toLowerCase().contains(
-					this.getNick().toLowerCase())) {
+				this.getNick().toLowerCase())) {
 				this.sendMessage(channel, "Hi, " + sender + "!");
 				return;
-			}
-			else if (message.toLowerCase().contains("how many lights")) {
+			} else if (message.toLowerCase().contains("how many lights")) {
 				this.sendMessage(channel, "There are FOUR LIGHTS!");
 				return;
-			}
-			else if (message.contains(":(") || message.contains("):")) {
+			} else if (message.contains(":(") || message.contains("):")) {
 				this.sendAction(channel, "gives " + sender + " a hug");
 				return;
-			}
-			else if (message.contains(":'(")) {
+			} else if (message.contains(":'(")) {
 				this.sendAction(channel, "passes " + sender + " a tissue");
 				return;
-			}
-			else if (message.toLowerCase().contains(
-					"are you thinking what i'm thinking")
-					 || message.toLowerCase().contains(
-					"are you pondering what i'm pondering")) {
+			} else if (message.toLowerCase().contains(
+				"are you thinking what i'm thinking")
+					   || message.toLowerCase().contains(
+				"are you pondering what i'm pondering")) {
 				int i = this.rand.nextInt(this.aypwips.size());
 				this.sendMessage(channel,
-								 String.format(this.aypwips.get(i), sender));
+					String.format(this.aypwips.get(i), sender));
 				return;
-			}
-			else {
+			} else {
 				if (Pattern.matches(
-						"(?i).*how do i (change|set) my (nick|name).*",
-						message)) {
+					"(?i).*how do i (change|set) my (nick|name).*",
+					message)) {
 					this.sendMessage(
-							channel,
-							String.format(
-							"%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere",
-							sender));
+						channel,
+						String.format(
+						"%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere",
+						sender));
 					return;
-				}
-				else if (Pattern.matches("(?i)" + this.getNick() + ".*[?]",
-										 message)) {
+				} else if (Pattern.matches("(?i)" + this.getNick() + ".*[?]",
+					message)) {
 					int r = this.rand.nextInt(100);
 
 					if (r < 50) {
 						this.eightball(channel, sender, null);
 						return;
 					}
-				}
-				else if (Pattern.matches("(?i).*markhov test.*", message)) {
+				} else if (Pattern.matches("(?i).*markhov test.*", message)) {
 					this.sendDelayedMessage(channel, this.generate_markhov("say"), this.rand.nextInt(1500));
 					return;
 				}
@@ -413,7 +383,7 @@ public class Tim extends PircBot {
 		}
 	}
 
-	private void doAdmin(String channel, String sender, char c, String message) {
+	private void doAdmin( String channel, String sender, char c, String message ) {
 		// Method for processing admin commands.
 		if (this.admin_list.contains(sender.toLowerCase()) || this.admin_list.contains(channel.toLowerCase())) {
 			String command;
@@ -423,8 +393,7 @@ public class Tim extends PircBot {
 			if (space > 0) {
 				command = message.substring(0, space).toLowerCase();
 				args = message.substring(space + 1).split(" ", 0);
-			}
-			else {
+			} else {
 				command = message.substring(0).toLowerCase();
 			}
 
@@ -439,17 +408,14 @@ public class Tim extends PircBot {
 
 						this.setChannelAdultFlag(target, flag);
 						this.sendMessage(channel, sender + ": Channel adult flag updated for " + target);
-					}
-					else {
+					} else {
 						this.sendMessage(channel, "I don't know about " + target);
 					}
-				}
-				else {
+				} else {
 					this.sendMessage(channel,
-									 "Use: $setadultflag <#channel> <0/1>");
+						"Use: $setadultflag <#channel> <0/1>");
 				}
-			}
-			else if (command.equals("setmuzzleflag")) {
+			} else if (command.equals("setmuzzleflag")) {
 				if (args != null && args.length == 2) {
 					String target = args[0].toLowerCase();
 					if (this.channel_data.containsKey(target)) {
@@ -460,27 +426,22 @@ public class Tim extends PircBot {
 
 						this.setChannelMuzzledFlag(target, flag);
 						this.sendMessage(channel, sender + ": Channel muzzle flag updated for " + target);
-					}
-					else {
+					} else {
 						this.sendMessage(channel, "I don't know about " + target);
 					}
-				}
-				else {
+				} else {
 					this.sendMessage(channel, "Usage: $setmuzzleflag <#channel> <0/1>");
 				}
-			}
-			else if (command.equals("shutdown")) {
+			} else if (command.equals("shutdown")) {
 				this.sendMessage(channel, "Shutting down...");
 				this.shutdown = true;
 				this.quitServer("I am shutting down! Bye!");
 				System.exit(0);
-			}
-			else if (command.equals("reload") || command.equals("refreshdb")) {
+			} else if (command.equals("reload") || command.equals("refreshdb")) {
 				this.sendMessage(channel, "Reading database tables ...");
 				this.refreshDbLists();
 				this.sendDelayedMessage(channel, "Tables reloaded.", 1000);
-			}
-			else if (command.equals("reset")) {
+			} else if (command.equals("reset")) {
 				this.sendMessage(channel, "Restarting internal timer...");
 
 				try {
@@ -489,8 +450,7 @@ public class Tim extends PircBot {
 
 					this.ticker.cancel();
 					this.ticker = null;
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 				}
 
 				this.warticker = new WarClockThread(this);
@@ -499,17 +459,15 @@ public class Tim extends PircBot {
 				this.refreshDbLists();
 
 				this.sendDelayedMessage(channel, "Can you hear me now?", 2000);
-			}
-			else if (command.equals("listitems")) {
+			} else if (command.equals("listitems")) {
 				int pages = ( this.approved_items.size() + 9 ) / 10;
 				int wantPage = 0;
 				if (args != null && args.length > 0) {
 					try {
 						wantPage = Integer.parseInt(args[0]) - 1;
-					}
-					catch (NumberFormatException ex) {
+					} catch (NumberFormatException ex) {
 						this.sendMessage(channel,
-										 "Page number was not numeric.");
+							"Page number was not numeric.");
 						return;
 					}
 				}
@@ -520,24 +478,22 @@ public class Tim extends PircBot {
 
 				int list_idx = wantPage * 10;
 				this.sendMessage(channel, String.format(
-						"Showing page %d of %d (%d items total)", wantPage + 1,
-						pages, this.approved_items.size()));
+					"Showing page %d of %d (%d items total)", wantPage + 1,
+					pages, this.approved_items.size()));
 				for (int i = 0; i < 10 && list_idx < this.approved_items.size(); ++i, list_idx = wantPage
 																								 * 10 + i) {
 					this.sendMessage(channel, String.format("%d: %s", list_idx,
-															this.approved_items.get(list_idx)));
+						this.approved_items.get(list_idx)));
 				}
-			}
-			else if (command.equals("listpending")) {
+			} else if (command.equals("listpending")) {
 				int pages = ( this.pending_items.size() + 9 ) / 10;
 				int wantPage = 0;
 				if (args != null && args.length > 0) {
 					try {
 						wantPage = Integer.parseInt(args[0]) - 1;
-					}
-					catch (NumberFormatException ex) {
+					} catch (NumberFormatException ex) {
 						this.sendMessage(channel,
-										 "Page number was not numeric.");
+							"Page number was not numeric.");
 						return;
 					}
 				}
@@ -548,23 +504,21 @@ public class Tim extends PircBot {
 
 				int list_idx = wantPage * 10;
 				this.sendMessage(channel, String.format(
-						"Showing page %d of %d (%d items total)", wantPage + 1,
-						pages, this.pending_items.size()));
+					"Showing page %d of %d (%d items total)", wantPage + 1,
+					pages, this.pending_items.size()));
 				for (int i = 0; i < 10 && list_idx < this.pending_items.size(); ++i, list_idx = wantPage
 																								* 10 + i) {
 					this.sendMessage(channel, String.format("%d: %s", list_idx,
-															this.pending_items.get(list_idx)));
+						this.pending_items.get(list_idx)));
 				}
-			}
-			else if (command.equals("approveitem")) {
+			} else if (command.equals("approveitem")) {
 				if (args != null && args.length > 0) {
 					int idx;
 					String item;
 					try {
 						idx = Integer.parseInt(args[0]);
 						item = this.pending_items.get(idx);
-					}
-					catch (NumberFormatException ex) {
+					} catch (NumberFormatException ex) {
 						// Must be a string
 						item = args[0];
 						for (int i = 1; i < args.length; ++i) {
@@ -576,22 +530,19 @@ public class Tim extends PircBot {
 						this.setItemApproved(item, true);
 						this.pending_items.remove(idx);
 						this.approved_items.add(item);
-					}
-					else {
+					} else {
 						this.sendMessage(channel, String.format(
-								"Item %s is not pending approval.", args[0]));
+							"Item %s is not pending approval.", args[0]));
 					}
 				}
-			}
-			else if (command.equals("disapproveitem")) {
+			} else if (command.equals("disapproveitem")) {
 				if (args != null && args.length > 0) {
 					int idx;
 					String item;
 					try {
 						idx = Integer.parseInt(args[0]);
 						item = this.approved_items.get(idx);
-					}
-					catch (NumberFormatException ex) {
+					} catch (NumberFormatException ex) {
 						// Must be a string
 						item = args[0];
 						for (int i = 1; i < args.length; ++i) {
@@ -603,22 +554,19 @@ public class Tim extends PircBot {
 						this.setItemApproved(item, false);
 						this.pending_items.add(item);
 						this.approved_items.remove(idx);
-					}
-					else {
+					} else {
 						this.sendMessage(channel, String.format(
-								"Item %s is not pending approval.", args[0]));
+							"Item %s is not pending approval.", args[0]));
 					}
 				}
-			}
-			else if (command.equals("deleteitem")) {
+			} else if (command.equals("deleteitem")) {
 				if (args != null && args.length > 0) {
 					int idx;
 					String item;
 					try {
 						idx = Integer.parseInt(args[0]);
 						item = this.pending_items.get(idx);
-					}
-					catch (NumberFormatException ex) {
+					} catch (NumberFormatException ex) {
 						// Must be a string
 						item = args[0];
 						for (int i = 1; i < args.length; ++i) {
@@ -629,14 +577,12 @@ public class Tim extends PircBot {
 					if (idx >= 0) {
 						this.removeItem(item);
 						this.pending_items.remove(item);
-					}
-					else {
+					} else {
 						this.sendMessage(channel, String.format(
-								"Item %s is not pending approval.", args[0]));
+							"Item %s is not pending approval.", args[0]));
 					}
 				}
-			}
-			else if (command.equals("ignore")) {
+			} else if (command.equals("ignore")) {
 				if (args != null && args.length > 0) {
 					String users = "";
 					for (int i = 0; i < args.length; ++i) {
@@ -645,14 +591,12 @@ public class Tim extends PircBot {
 						this.setIgnore(args[i]);
 					}
 					this.sendMessage(channel,
-									 "The following users have been ignored:" + users);
-				}
-				else {
+						"The following users have been ignored:" + users);
+				} else {
 					this.sendMessage(channel,
-									 "Usage: $ignore <user 1> [ <user 2> [<user 3> [...] ] ]");
+						"Usage: $ignore <user 1> [ <user 2> [<user 3> [...] ] ]");
 				}
-			}
-			else if (command.equals("unignore")) {
+			} else if (command.equals("unignore")) {
 				if (args != null && args.length > 0) {
 					String users = "";
 					for (int i = 0; i < args.length; ++i) {
@@ -661,49 +605,42 @@ public class Tim extends PircBot {
 						this.removeIgnore(args[i]);
 					}
 					this.sendMessage(channel,
-									 "The following users have been unignored:" + users);
-				}
-				else {
+						"The following users have been unignored:" + users);
+				} else {
 					this.sendMessage(channel,
-									 "Usage: $unignore <user 1> [ <user 2> [<user 3> [...] ] ]");
+						"Usage: $unignore <user 1> [ <user 2> [<user 3> [...] ] ]");
 				}
-			}
-			else if (command.equals("listignores")) {
+			} else if (command.equals("listignores")) {
 				this.sendMessage(channel,
-								 "There are " + this.ignore_list.size()
-								 + " users ignored.");
+					"There are " + this.ignore_list.size()
+					+ " users ignored.");
 				Iterator<String> iter = this.ignore_list.iterator();
 				while (iter.hasNext()) {
 					this.sendMessage(channel, iter.next());
 				}
-			}
-			else if (command.equals("help")) {
+			} else if (command.equals("help")) {
 				this.printAdminCommandList(sender, channel);
-			}
-			else if (this.story.parseAdminCommand(channel, sender, message)) {
-			}
-			else if (this.challenge.parseAdminCommand(channel, sender, message)) {
-			}
-			else {
+			} else if (this.story.parseAdminCommand(channel, sender, message)) {
+			} else if (this.challenge.parseAdminCommand(channel, sender, message)) {
+			} else {
 				this.sendMessage(channel, "$" + command + " is not a valid admin command - try $help");
 			}
-		}
-		else {
+		} else {
 			// The sender is NOT an admin
 			this.sendMessage(
-					this.debugChannel,
-					String.format(
-					"User %s in channel %s attempted to use an admin command (%s)!",
-					sender, channel, message));
+				this.debugChannel,
+				String.format(
+				"User %s in channel %s attempted to use an admin command (%s)!",
+				sender, channel, message));
 			this.sendMessage(
-					channel,
-					String.format(
-					"%s: You are not an admin. Only Admins have access to that command.",
-					sender));
+				channel,
+				String.format(
+				"%s: You are not an admin. Only Admins have access to that command.",
+				sender));
 		}
 	}
 
-	private void interact(String sender, String channel, String message, String type) {
+	private void interact( String sender, String channel, String message, String type ) {
 		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
 		boolean didChatter = false;
 
@@ -723,7 +660,7 @@ public class Tim extends PircBot {
 			if (i < odds) {
 				this.sendDelayedMessage(channel, this.generate_markhov(type), this.rand.nextInt(1500));
 				cdata.chatterTimer = cdata.chatterTimer
-									+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+									 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
 				didChatter = true;
 			}
 		}
@@ -744,12 +681,12 @@ public class Tim extends PircBot {
 			int i = this.rand.nextInt(100);
 			if (i < odds) {
 				int base_odds = 20;
-			
+
 				if (this.rand.nextInt(100) < base_odds) {
 					this.getItem(channel, sender, null);
 					base_odds -= 5;
 					cdata.chatterTimer = cdata.chatterTimer
-										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
 					didChatter = true;
 				}
 
@@ -757,7 +694,7 @@ public class Tim extends PircBot {
 					this.challenge.issueChallenge(channel, sender, null);
 					base_odds -= 5;
 					cdata.chatterTimer = cdata.chatterTimer
-										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
 					didChatter = true;
 				}
 
@@ -765,10 +702,10 @@ public class Tim extends PircBot {
 					int r = this.rand.nextInt(this.eightballs.size());
 					this.sendDelayedAction(channel, "mutters under his breath, \""
 													+ this.eightballs.get(r) + "\"",
-											this.rand.nextInt(1500));		
+						this.rand.nextInt(1500));
 					base_odds -= 5;
 					cdata.chatterTimer = cdata.chatterTimer
-										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
 					didChatter = true;
 				}
 
@@ -776,7 +713,7 @@ public class Tim extends PircBot {
 					this.throwFridge(channel, sender, sender.split(" ", 0), false);
 					base_odds -= 5;
 					cdata.chatterTimer = cdata.chatterTimer
-										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
 					didChatter = true;
 				}
 
@@ -784,7 +721,7 @@ public class Tim extends PircBot {
 					this.defenestrate(channel, sender, sender.split(" "), false);
 					base_odds -= 5;
 					cdata.chatterTimer = cdata.chatterTimer
-										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
 					didChatter = true;
 				}
 
@@ -792,7 +729,7 @@ public class Tim extends PircBot {
 					this.sing(channel);
 					base_odds -= 5;
 					cdata.chatterTimer = cdata.chatterTimer
-										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
 					didChatter = true;
 				}
 
@@ -800,7 +737,7 @@ public class Tim extends PircBot {
 					this.foof(channel, sender, sender.split(" "), false);
 					base_odds -= 5;
 					cdata.chatterTimer = cdata.chatterTimer
-										+ this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
 					didChatter = true;
 				}
 			}
@@ -814,8 +751,8 @@ public class Tim extends PircBot {
 	}
 
 	@Override
-	protected void onPrivateMessage(String sender, String login,
-									String hostname, String message) {
+	protected void onPrivateMessage( String sender, String login,
+									 String hostname, String message ) {
 		if (this.admin_list.contains(sender)) {
 			String[] args = message.split(" ");
 			if (args != null && args.length > 2) {
@@ -825,8 +762,7 @@ public class Tim extends PircBot {
 				}
 				if (args[0].equalsIgnoreCase("say")) {
 					this.sendMessage(args[1], msg);
-				}
-				else if (args[0].equalsIgnoreCase("act")) {
+				} else if (args[0].equalsIgnoreCase("act")) {
 					this.sendAction(args[1], msg);
 				}
 			}
@@ -834,8 +770,8 @@ public class Tim extends PircBot {
 	}
 
 	@Override
-	protected void onInvite(String targetNick, String sourceNick,
-							String sourceLogin, String sourceHostname, String channel) {
+	protected void onInvite( String targetNick, String sourceNick,
+							 String sourceLogin, String sourceHostname, String channel ) {
 		if (!this.ignore_list.contains(sourceNick)
 			&& targetNick.equals(this.getNick())) {
 			if (!this.channel_data.containsKey(channel.toLowerCase())) {
@@ -846,16 +782,16 @@ public class Tim extends PircBot {
 	}
 
 	@Override
-	protected void onKick(String channel, String kickerNick, String kickerLogin,
-						  String kickerHostname, String recipientNick, String reason) {
+	protected void onKick( String channel, String kickerNick, String kickerLogin,
+						   String kickerHostname, String recipientNick, String reason ) {
 		if (!kickerNick.equals(this.getNick())) {
 			this.deleteChannel(channel.toLowerCase());
 		}
 	}
 
 	@Override
-	protected void onPart(String channel, String sender, String login,
-						  String hostname) {
+	protected void onPart( String channel, String sender, String login,
+						   String hostname ) {
 		if (!sender.equals(this.getNick())) {
 			User[] userlist = this.getUsers(channel);
 			if (userlist.length <= 1) {
@@ -866,8 +802,8 @@ public class Tim extends PircBot {
 	}
 
 	@Override
-	public void onNotice(String sender, String nick, String hostname,
-						 String target, String notice) {
+	public void onNotice( String sender, String nick, String hostname,
+						  String target, String notice ) {
 		if (sender.equals("NickServ") && notice.contains("This nick")) {
 			this.sendMessage("NickServ", "identify " + this.password);
 		}
@@ -881,8 +817,8 @@ public class Tim extends PircBot {
 	}
 
 	@Override
-	public void onJoin(String channel, String sender, String login,
-					   String hostname) {
+	public void onJoin( String channel, String sender, String login,
+						String hostname ) {
 		if (!sender.equals(this.getName()) && !login.equals(this.getLogin())) {
 			String message = "Hello, " + sender + "!";
 			if (this.wars.size() > 0) {
@@ -911,10 +847,10 @@ public class Tim extends PircBot {
 			if (Pattern.matches("(?i)mib_......", sender)
 				|| Pattern.matches("(?i)guest.*", sender)) {
 				this.sendDelayedMessage(
-						channel,
-						String.format(
-						"%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere",
-						sender), 2400);
+					channel,
+					String.format(
+					"%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere",
+					sender), 2400);
 			}
 
 			int r = this.rand.nextInt(100);
@@ -926,8 +862,8 @@ public class Tim extends PircBot {
 		}
 	}
 
-	public void doCommand(String channel, String sender, String prefix,
-						  String message) {
+	public void doCommand( String channel, String sender, String prefix,
+						   String message ) {
 		String command;
 		String[] args = null;
 
@@ -935,8 +871,7 @@ public class Tim extends PircBot {
 		if (space > 0) {
 			command = message.substring(1, space).toLowerCase();
 			args = message.substring(space + 1).split(" ", 0);
-		}
-		else {
+		} else {
 			command = message.substring(1).toLowerCase();
 		}
 
@@ -944,44 +879,35 @@ public class Tim extends PircBot {
 			if (command.equals("startwar")) {
 				if (args != null && args.length > 1) {
 					this.startWar(channel, sender, args);
-				}
-				else {
+				} else {
 					this.sendMessage(channel,
-									 "Use: !startwar <duration in min> [<time to start in min> [<name>]]");
+						"Use: !startwar <duration in min> [<time to start in min> [<name>]]");
 				}
-			}
-			else if (command.equals("boxodoom")) {
+			} else if (command.equals("boxodoom")) {
 				this.boxodoom(channel, sender, args);
-			}
-			else if (command.equals("startjudgedwar")) {
+			} else if (command.equals("startjudgedwar")) {
 				this.sendMessage(channel, "Not done yet, sorry!");
-			}
-			else if (command.equals("endwar")) {
+			} else if (command.equals("endwar")) {
 				this.endWar(channel, sender, args);
-			}
-			else if (command.equals("listwars")) {
+			} else if (command.equals("listwars")) {
 				this.listWars(channel, sender, args, false);
-			}
-			else if (command.equals("listall")) {
+			} else if (command.equals("listall")) {
 				this.listAllWars(channel, sender, args);
-			}
-			else if (command.equals("eggtimer")) {
+			} else if (command.equals("eggtimer")) {
 				double time = 15;
 				if (args != null) {
 					try {
 						time = Double.parseDouble(args[0]);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						this.sendMessage(channel,
-										 "Could not understand first parameter. Was it numeric?");
+							"Could not understand first parameter. Was it numeric?");
 						return;
 					}
 				}
 				this.sendMessage(channel, sender + ": your timer has been set.");
 				this.sendDelayedNotice(sender, "Your timer has expired!",
-									   (int) ( time * 60 * 1000 ));
-			}
-			else if (command.equals("settopic")) {
+					(int) ( time * 60 * 1000 ));
+			} else if (command.equals("settopic")) {
 				if (args != null && args.length > 0) {
 					String topic = args[0];
 					for (int i = 1; i < args.length; i++) {
@@ -989,122 +915,100 @@ public class Tim extends PircBot {
 					}
 					this.setTopic(channel, topic + " --" + sender);
 				}
-			}
-			else if (command.equals("sing")) {
+			} else if (command.equals("sing")) {
 				this.sing(channel);
-			}
-			else if (command.equals("eightball") || command.equals("8-ball")) {
+			} else if (command.equals("eightball") || command.equals("8-ball")) {
 				this.eightball(channel, sender, args);
-			}
-			else if (command.charAt(0) == 'd'
-					 && Pattern.matches("d\\d+", command)) {
+			} else if (command.charAt(0) == 'd'
+					   && Pattern.matches("d\\d+", command)) {
 				this.dice(command.substring(1), channel, sender, args);
-			}
-			else if (command.equals("woot")) {
+			} else if (command.equals("woot")) {
 				this.sendAction(channel, "cheers! Hooray!");
-			}
-			else if (command.equals("get")) {
+			} else if (command.equals("get")) {
 				this.getItem(channel, sender, args);
-			}
-			else if (command.equals("getfor")) {
+			} else if (command.equals("getfor")) {
 				if (args != null && args.length > 0) {
 					if (args.length > 1) {
 						// Want a new args array less the first old element.
-						String[] newargs = new String[ args.length - 1 ];
+						String[] newargs = new String[args.length - 1];
 						for (int i = 1; i < args.length; ++i) {
 							newargs[i - 1] = args[i];
 						}
 						this.getItem(channel, args[0], newargs);
-					}
-					else {
+					} else {
 						this.getItem(channel, args[0], null);
 					}
 				}
-			}
-			else if (command.equals("fridge")) {
+			} else if (command.equals("fridge")) {
 				this.throwFridge(channel, sender, args, true);
-			}
-			else if (command.equals("dance")) {
+			} else if (command.equals("dance")) {
 				this.sendAction(channel, "dances a cozy jig");
-			}
-			else if (command.equals("lick")) {
+			} else if (command.equals("lick")) {
 				this.lick(channel, sender, args);
-			}
-			else if (command.equals("commandment")) {
+			} else if (command.equals("commandment")) {
 				this.commandment(channel, sender, args);
 			} // add additional commands above here!!
 			else if (command.equals("help")) {
 				this.printCommandList(sender, channel);
-			}
-			else if (command.equals("credits")) {
+			} else if (command.equals("credits")) {
 				this.sendMessage(
-						channel,
-						"I was created by MysteriousAges in 2008 using PHP, and ported to the Java PircBot library in 2009. Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: https://github.com/MysteriousAges/TimTheWordWarBot, and my NaNoWriMo profile page is here: http://www.nanowrimo.org/en/participants/timmybot");
-			}
-			else if (command.equals("anything") || command.equals("jack")
-					|| command.equals("squat") || command.equals("much")) {
+					channel,
+					"I was created by MysteriousAges in 2008 using PHP, and ported to the Java PircBot library in 2009. Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: https://github.com/MysteriousAges/TimTheWordWarBot, and my NaNoWriMo profile page is here: http://www.nanowrimo.org/en/participants/timmybot");
+			} else if (command.equals("anything") || command.equals("jack")
+					   || command.equals("squat") || command.equals("much")) {
 				this.sendMessage(channel, "Nice try, " + sender
-						+ ", trying to get me to look stupid.");
+										  + ", trying to get me to look stupid.");
 
 				int r = this.rand.nextInt(100);
 				if (r < 10) {
 					this.defenestrate(channel, sender, sender.split(" ", 0),
-							false);
-				}
-				else if (r < 20) {
+						false);
+				} else if (r < 20) {
 					this.throwFridge(channel, sender, sender.split(" ", 0),
-							false);
+						false);
 				}
-			}
-			else if (command.equals("defenestrate")) {
+			} else if (command.equals("defenestrate")) {
 				this.defenestrate(channel, sender, args, true);
-			}
-			else if (command.equals("summon")) {
+			} else if (command.equals("summon")) {
 				this.summon(channel, sender, args, true);
-			}
-			else if (command.equals("foof")) {
+			} else if (command.equals("foof")) {
 				this.foof(channel, sender, args, true);
-			}
-			else if (this.story.parseUserCommand(channel, sender, prefix, message)) {
-			}
-			else if (this.challenge.parseUserCommand(channel, sender, prefix, message)) {
-			}
-			else {
+			} else if (this.story.parseUserCommand(channel, sender, prefix, message)) {
+			} else if (this.challenge.parseUserCommand(channel, sender, prefix, message)) {
+			} else {
 				this.sendMessage(channel, "!" + command + " was not part of my training.");
 			}
-		}
-		else if (prefix.equals("@")) {
+		} else if (prefix.equals("@")) {
 			long wordcount;
 			try {
 				wordcount = (long) Double.parseDouble(command);
 				for (Map.Entry<String, WordWar> wm : this.wars.entrySet()) {
 					this.sendMessage(channel, wm.getKey());
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 			}
 
 		}
 	}
 
-	private void printCommandList(String target, String channel) {
+	private void printCommandList( String target, String channel ) {
 		int msgdelay = 9;
-		String[] strs = { "I am a robot trained by the WordWar Monks of Honolulu. You have "
-						  + "never heard of them. It is because they are awesome. I am capable "
-						  + "of running the following commands:",
-						  "!startwar <duration> <time to start> <an optional name> - Starts a word war",
-						  "!listwars - I will tell you about the wars currently in progress.",
-						  "!boxodoom <difficulty> <duration> - Difficulty is easy/average/hard, duration in minutes.",
-						  "!eggtimer <time> - I will send you a message after <time> minutes.",
-						  "!get <anything> - I will fetch you whatever you like.",
-						  "!getfor <someone> <anything> - I will give someone whatever you like.",
-						  "!eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.",
-						  "!settopic <topic> - If able, I will try to set the channel's topic.",
-						  "!credits - Details of my creators, and where to find my source code.",
-						  "!chainhelp - Get help on my chain story commands",
-						  "!challengehelp - Get help on my challenge commands",
-						  "I... I think there might be other tricks I know... You'll have to find them!",
-						  "I will also respond to the /invite command if you would like to see me in another channel. "
+		String[] strs = {"I am a robot trained by the WordWar Monks of Honolulu. You have "
+						 + "never heard of them. It is because they are awesome. I am capable "
+						 + "of running the following commands:",
+						 "!startwar <duration> <time to start> <an optional name> - Starts a word war",
+						 "!listwars - I will tell you about the wars currently in progress.",
+						 "!boxodoom <difficulty> <duration> - Difficulty is easy/average/hard, duration in minutes.",
+						 "!eggtimer <time> - I will send you a message after <time> minutes.",
+						 "!get <anything> - I will fetch you whatever you like.",
+						 "!getfor <someone> <anything> - I will give someone whatever you like.",
+						 "!eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.",
+						 "!settopic <topic> - If able, I will try to set the channel's topic.",
+						 "!credits - Details of my creators, and where to find my source code.",
+						 "!chainhelp - Get help on my chain story commands",
+						 "!challengehelp - Get help on my challenge commands",
+						 "I... I think there might be other tricks I know... You'll have to find them!",
+						 "I will also respond to the /invite command if you would like to see me in another channel. "
 		};
 
 		this.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new windor or tab with the help text.)");
@@ -1113,22 +1017,22 @@ public class Tim extends PircBot {
 		}
 	}
 
-	private void printAdminCommandList(String target, String channel) {
+	private void printAdminCommandList( String target, String channel ) {
 		int msgdelay = 9;
-		String[] helplines = { "All admin commands:",
-							   "$setadultflag <#channel> <0/1> - clears/sets adult flag on channel",
-							   "$setmuzzleflag <#channel> <0/1> - clears/sets muzzle flag on channel",
-							   "$shutdown - Forces bot to exit",
-							   "$reload - Reloads data from MySQL (also $refreshdb)",
-							   "$reset - Resets internal timer for wars, and reloads data from MySQL",
-							   "$listitems [ <page #> ] - lists all currently approved !get/!getfor items",
-							   "$listpending [ <page #> ] - lists all unapproved !get/!getfor items",
-							   "$approveitem <item # from $listpending> - removes item from pending list and marks as approved for !get/!getfor",
-							   "$disapproveitem <item # from $listitems> - removes item from approved list and marks as pending for !get/!getfor",
-							   "$deleteitem <item # from $listpending> - permanently removes an item from the pending list for !get/!getfor",
-							   "$ignore <username> - Places user on the bot's ignore list",
-							   "$unignore <username> - Removes user from bot's ignore list",
-							   "$listignores - Prints the list of ignored users"
+		String[] helplines = {"All admin commands:",
+							  "$setadultflag <#channel> <0/1> - clears/sets adult flag on channel",
+							  "$setmuzzleflag <#channel> <0/1> - clears/sets muzzle flag on channel",
+							  "$shutdown - Forces bot to exit",
+							  "$reload - Reloads data from MySQL (also $refreshdb)",
+							  "$reset - Resets internal timer for wars, and reloads data from MySQL",
+							  "$listitems [ <page #> ] - lists all currently approved !get/!getfor items",
+							  "$listpending [ <page #> ] - lists all unapproved !get/!getfor items",
+							  "$approveitem <item # from $listpending> - removes item from pending list and marks as approved for !get/!getfor",
+							  "$disapproveitem <item # from $listitems> - removes item from approved list and marks as pending for !get/!getfor",
+							  "$deleteitem <item # from $listpending> - permanently removes an item from the pending list for !get/!getfor",
+							  "$ignore <username> - Places user on the bot's ignore list",
+							  "$unignore <username> - Removes user from bot's ignore list",
+							  "$listignores - Prints the list of ignored users"
 		};
 
 		this.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new windor or tab with the help text.)");
@@ -1137,22 +1041,20 @@ public class Tim extends PircBot {
 		}
 	}
 
-
-	private void dice(String number, String channel, String sender,
-					  String[] args) {
+	private void dice( String number, String channel, String sender,
+					   String[] args ) {
 		int max;
 		try {
 			max = Integer.parseInt(number);
 			int r = this.rand.nextInt(max) + 1;
 			this.sendMessage(channel, sender + ": Your result is " + r);
-		}
-		catch (NumberFormatException ex) {
+		} catch (NumberFormatException ex) {
 			this.sendMessage(channel, number
 									  + " is not a number I could understand.");
 		}
 	}
 
-	private void getItem(String channel, String target, String[] args) {
+	private void getItem( String channel, String target, String[] args ) {
 		String item = "";
 		if (args != null) {
 			item = args[0];
@@ -1174,7 +1076,7 @@ public class Tim extends PircBot {
 		this.sendAction(channel, String.format("gets %s %s", target, item));
 	}
 
-	private void lick(String channel, String sender, String[] args) {
+	private void lick( String channel, String sender, String[] args ) {
 		if (this.isChannelAdult(channel)) {
 			if (args.length >= 1) {
 				String argStr = this.implodeArray(args);
@@ -1183,59 +1085,51 @@ public class Tim extends PircBot {
 					this.sendAction(channel, "licks " + argStr
 											 + ". Tastes like... like...");
 					this.sendDelayedMessage(channel, "Like the Apocalypse.",
-											1000);
+						1000);
 					this.sendDelayedAction(channel, "cowers in fear", 2400);
-				}
-				else if (args[0].equalsIgnoreCase(this.getNick())) {
+				} else if (args[0].equalsIgnoreCase(this.getNick())) {
 					this.sendAction(channel, "licks " + args[0]
 											 + ". Tastes like meta.");
-				}
-				else if (this.admin_list.contains(args[0])) {
+				} else if (this.admin_list.contains(args[0])) {
 					this.sendAction(channel, "licks " + argStr
 											 + ". Tastes like perfection, pure and simple.");
-				}
-				else {
+				} else {
 					this.sendAction(
-							channel,
-							"licks "
-							+ argStr
-							+ ". Tastes like "
-							+ this.flavours.get(this.rand.nextInt(this.flavours.size())));
-				}
-			}
-			else {
-				this.sendAction(
 						channel,
 						"licks "
-						+ sender
-						+ "! Tastes like "
+						+ argStr
+						+ ". Tastes like "
 						+ this.flavours.get(this.rand.nextInt(this.flavours.size())));
+				}
+			} else {
+				this.sendAction(
+					channel,
+					"licks "
+					+ sender
+					+ "! Tastes like "
+					+ this.flavours.get(this.rand.nextInt(this.flavours.size())));
 			}
-		}
-		else {
+		} else {
 			this.sendMessage(channel, "Sorry, I don't do that here.");
 		}
 	}
 
-	private void eightball(String channel, String sender, String[] args) {
+	private void eightball( String channel, String sender, String[] args ) {
 		int r = this.rand.nextInt(this.eightballs.size());
 		this.sendMessage(channel, this.eightballs.get(r));
 	}
 
-	private void sing(String channel) {
+	private void sing( String channel ) {
 		int r = this.rand.nextInt(100);
 
 		String response;
 		if (r > 90) {
 			response = "sings the well known song '%s' better than the original artist!";
-		}
-		else if (r > 60) {
+		} else if (r > 60) {
 			response = "chants some obscure lyrics from '%s'. At least you think that's the name of the song...";
-		}
-		else if (r > 30) {
+		} else if (r > 30) {
 			response = "starts singing '%s'. You've heard better...";
-		}
-		else {
+		} else {
 			response = "screeches out some words from '%s', and all the nearby windows shatter... Ouch.";
 		}
 
@@ -1245,20 +1139,19 @@ public class Tim extends PircBot {
 			con = pool.getConnection(timeout);
 			PreparedStatement songName = con.prepareStatement("SELECT name FROM songs ORDER BY rand() LIMIT 1");
 			ResultSet songNameRes;
-			
+
 			songNameRes = songName.executeQuery();
 			songNameRes.next();
 
 			this.sendDelayedAction(channel, String.format(response, songNameRes.getString("name")), this.rand.nextInt(1500));
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
-	
+
 	}
 
-	private void commandment(String channel, String sender, String[] args) {
+	private void commandment( String channel, String sender, String[] args ) {
 		int r = this.rand.nextInt(this.commandments.size());
 		if (args != null && args.length == 1 && Double.parseDouble(args[0]) > 0
 			&& Double.parseDouble(args[0]) <= this.commandments.size()) {
@@ -1267,8 +1160,8 @@ public class Tim extends PircBot {
 		this.sendMessage(channel, this.commandments.get(r));
 	}
 
-	private void throwFridge(String channel, String sender, String[] args,
-							 Boolean righto) {
+	private void throwFridge( String channel, String sender, String[] args,
+							  Boolean righto ) {
 		String target = sender;
 		if (args != null && args.length > 0) {
 			if (!args[0].equalsIgnoreCase(this.getNick())
@@ -1287,7 +1180,7 @@ public class Tim extends PircBot {
 		int time = 2 + this.rand.nextInt(15);
 		time *= 1000;
 		this.sendDelayedAction(channel,
-							   "looks back and forth, then slinks off...", time);
+			"looks back and forth, then slinks off...", time);
 		time += this.rand.nextInt(10) * 500 + 1500;
 		String colour = this.colours.get(this.rand.nextInt(this.colours.size()));
 		switch (colour.charAt(0)) {
@@ -1305,20 +1198,18 @@ public class Tim extends PircBot {
 		String act;
 		if (i > 20) {
 			act = "hurls a" + colour + " coloured fridge at " + target;
-		}
-		else if (i > 3) {
+		} else if (i > 3) {
 			target = sender;
 			act = "hurls a" + colour + " coloured fridge at " + target
 				  + " and runs away giggling";
-		}
-		else {
+		} else {
 			act = "trips and drops a" + colour + " fridge on himself";
 		}
 		this.sendDelayedAction(channel, act, time);
 	}
 
-	private void defenestrate(String channel, String sender, String[] args,
-							  Boolean righto) {
+	private void defenestrate( String channel, String sender, String[] args,
+							   Boolean righto ) {
 		String target = sender;
 		if (args != null && args.length > 0) {
 			if (!args[0].equalsIgnoreCase(this.getNick())
@@ -1336,8 +1227,8 @@ public class Tim extends PircBot {
 		int time = 2 + this.rand.nextInt(15);
 		time *= 1000;
 		this.sendDelayedAction(channel,
-							   "looks around for a convenient window, then slinks off...",
-							   time);
+			"looks around for a convenient window, then slinks off...",
+			time);
 		time += this.rand.nextInt(10) * 500 + 1500;
 
 		int i = this.rand.nextInt(100);
@@ -1349,27 +1240,24 @@ public class Tim extends PircBot {
 				  + target
 				  + " through the nearest window, where they land on a giant pile of fluffy "
 				  + colour + " coloured pillows.";
-		}
-		else if (i > 3) {
+		} else if (i > 3) {
 			target = sender;
 			act = "laughs maniacally then throws "
 				  + target
 				  + " through the nearest window, where they land on a giant pile of fluffy "
 				  + colour + " coloured pillows.";
-		}
-		else {
+		} else {
 			act = "trips and falls out the window!";
 		}
 		this.sendDelayedAction(channel, act, time);
 	}
 
-	private void summon(String channel, String sender, String[] args,
-						Boolean righto) {
+	private void summon( String channel, String sender, String[] args,
+						 Boolean righto ) {
 		String target;
 		if (args == null || args.length == 0) {
 			target = this.deities.get(this.rand.nextInt(this.deities.size()));
-		}
-		else {
+		} else {
 			target = this.implodeArray(args);
 		}
 
@@ -1380,8 +1268,8 @@ public class Tim extends PircBot {
 		int time = 2 + this.rand.nextInt(15);
 		time *= 1000;
 		this.sendDelayedAction(channel,
-							   "prepares the summoning circle required to bring " + target
-							   + " into the world...", time);
+			"prepares the summoning circle required to bring " + target
+			+ " into the world...", time);
 		time += this.rand.nextInt(10) * 500 + 1500;
 
 		int i = this.rand.nextInt(100);
@@ -1390,13 +1278,11 @@ public class Tim extends PircBot {
 		if (i > 50) {
 			act = "completes the ritual successfully, drawing " + target
 				  + " through, and binding them into the summoning circle!";
-		}
-		else if (i > 30) {
+		} else if (i > 30) {
 			act = "completes the ritual, drawing "
 				  + target
 				  + " through, but something goes wrong and they fade away after just a few moments.";
-		}
-		else {
+		} else {
 			String target2 = this.deities.get(this.rand.nextInt(this.deities.size()));
 			act = "attempts to summon "
 				  + target
@@ -1407,8 +1293,8 @@ public class Tim extends PircBot {
 		this.sendDelayedAction(channel, act, time);
 	}
 
-	private void foof(String channel, String sender, String[] args,
-					  Boolean righto) {
+	private void foof( String channel, String sender, String[] args,
+					   Boolean righto ) {
 		String target = sender;
 		if (args != null && args.length > 0) {
 			if (!args[0].equalsIgnoreCase(this.getNick())
@@ -1426,9 +1312,9 @@ public class Tim extends PircBot {
 		int time = 2 + this.rand.nextInt(15);
 		time *= 1000;
 		this.sendDelayedAction(
-				channel,
-				"surreptitiously works his way over to the couch, looking ever so casual...",
-				time);
+			channel,
+			"surreptitiously works his way over to the couch, looking ever so casual...",
+			time);
 		time += this.rand.nextInt(10) * 500 + 1500;
 
 		int i = this.rand.nextInt(100);
@@ -1438,21 +1324,19 @@ public class Tim extends PircBot {
 		if (i > 20) {
 			act = "grabs a " + colour + " pillow, and throws it at " + target
 				  + ", hitting them squarely in the back of the head.";
-		}
-		else if (i > 3) {
+		} else if (i > 3) {
 			target = sender;
 			act = "laughs maniacally then throws a " + colour + " pillow at "
 				  + target
 				  + ", then runs off and hides behind the nearest couch.";
-		}
-		else {
+		} else {
 			act = "trips and lands on a " + colour + " pillow. Oof!";
 		}
 		this.sendDelayedAction(channel, act, time);
 	}
 
 	// !endwar <name>
-	private void endWar(String channel, String sender, String[] args) {
+	private void endWar( String channel, String sender, String[] args ) {
 		if (args != null && args.length > 0) {
 			String name = this.implodeArray(args);
 			if (this.wars.containsKey(name.toLowerCase())) {
@@ -1463,49 +1347,43 @@ public class Tim extends PircBot {
 					this.sendMessage(channel, "The war '" + war.getName()
 											  + "' has been ended.");
 					this.sendMessage(this.debugChannel, "War '" + war.getName() + "' killed by " + sender + " in channel " + war.getChannel());
-				}
-				else {
+				} else {
 					this.sendMessage(channel, sender
 											  + ": Only the starter of a war can end it early.");
 				}
-			}
-			else {
+			} else {
 				this.sendMessage(channel, sender
 										  + ": I don't know of a war with name: '" + name + "'");
 			}
-		}
-		else {
+		} else {
 			this.sendMessage(channel, sender + ": I need a war name to end.");
 		}
 	}
 
-	private void startWar(String channel, String sender, String[] args) {
+	private void startWar( String channel, String sender, String[] args ) {
 		long time;
 		long to_start = 5000;
 		String warname;
 		try {
 			time = (long) ( Double.parseDouble(args[0]) * 60 );
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			this.sendMessage(
-					channel,
-					sender
-					+ ": could not understand the duration parameter. Was it numeric?");
+				channel,
+				sender
+				+ ": could not understand the duration parameter. Was it numeric?");
 			return;
 		}
 		if (args.length >= 2) {
 			try {
 				to_start = (long) ( Double.parseDouble(args[1]) * 60 );
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				if (args[1].equalsIgnoreCase("now")) {
 					to_start = 0;
-				}
-				else {
+				} else {
 					this.sendMessage(
-							channel,
-							sender
-							+ ": could not understand the time to start parameter. Was it numeric?");
+						channel,
+						sender
+						+ ": could not understand the time to start parameter. Was it numeric?");
 					return;
 				}
 			}
@@ -1516,8 +1394,7 @@ public class Tim extends PircBot {
 			for (int i = 3; i < args.length; i++) {
 				warname = warname + " " + args[i];
 			}
-		}
-		else {
+		} else {
 			warname = sender + "'s war";
 		}
 
@@ -1535,24 +1412,22 @@ public class Tim extends PircBot {
 				this.sendMessage(channel, sender
 										  + ": your wordwar will start in " + to_start / 60.0
 										  + " minutes.");
-			}
-			else {
+			} else {
 				this.beginWar(war);
 			}
-		}
-		else {
+		} else {
 			this.sendMessage(channel, sender
 									  + ": there is already a war with the name '" + warname
 									  + "'");
 		}
 	}
 
-	private void listAllWars(String channel, String sender, String[] args) {
+	private void listAllWars( String channel, String sender, String[] args ) {
 		this.listWars(channel, sender, args, true);
 	}
 
-	private void listWars(String channel, String sender, String[] args,
-						  boolean all) {
+	private void listWars( String channel, String sender, String[] args,
+						   boolean all ) {
 		String target = args != null ? sender : channel;
 		if (this.wars != null && this.wars.size() > 0) {
 			for (Map.Entry<String, WordWar> wm : this.wars.entrySet()) {
@@ -1560,8 +1435,7 @@ public class Tim extends PircBot {
 					this.sendMessage(target, all ? wm.getValue().getDescriptionWithChannel() : wm.getValue().getDescription());
 				}
 			}
-		}
-		else {
+		} else {
 			this.sendMessage(target, "No wars are currently available.");
 		}
 	}
@@ -1602,8 +1476,7 @@ public class Tim extends PircBot {
 						if (war.time_to_start == 0) {
 							this.beginWar(war);
 						}
-					}
-					else if (war.remaining > 0) {
+					} else if (war.remaining > 0) {
 						war.remaining--;
 						switch ((int) war.remaining) {
 							case 60:
@@ -1627,20 +1500,18 @@ public class Tim extends PircBot {
 					}
 				}
 				this.wars_lock.release();
-			}
-			catch (Throwable e) {
+			} catch (Throwable e) {
 				this.wars_lock.release();
 			}
 		}
 	}
 
-	private void warStartCount(WordWar war) {
+	private void warStartCount( WordWar war ) {
 		if (war.time_to_start < 60) {
 			this.sendMessage(war.getChannel(), war.getName() + ": Starting in "
 											   + war.time_to_start
 											   + ( war.time_to_start == 1 ? " second" : " seconds" ) + "!");
-		}
-		else {
+		} else {
 			int time_to_start = (int) war.time_to_start / 60;
 			this.sendMessage(war.getChannel(), war.getName() + ": Starting in "
 											   + time_to_start
@@ -1648,34 +1519,33 @@ public class Tim extends PircBot {
 		}
 	}
 
-	private void warEndCount(WordWar war) {
+	private void warEndCount( WordWar war ) {
 		if (war.remaining < 60) {
 			this.sendMessage(war.getChannel(), war.getName() + ": "
 											   + war.remaining
 											   + ( war.remaining == 1 ? " second" : " seconds" )
 											   + " remaining!");
-		}
-		else {
+		} else {
 			int remaining = (int) war.remaining / 60;
 			this.sendMessage(war.getChannel(), war.getName() + ": " + remaining
 											   + ( remaining == 1 ? " minute" : " minutes" ) + " remaining.");
 		}
 	}
 
-	private void beginWar(WordWar war) {
+	private void beginWar( WordWar war ) {
 		this.sendNotice(war.getChannel(), "WordWar: '" + war.getName()
 										  + " 'starts now! (" + war.getDuration() / 60 + " minutes)");
 		this.sendMessage(this.debugChannel, "War " + war.getName() + " started in channel " + war.getChannel());
 	}
 
-	private void endWar(WordWar war) {
+	private void endWar( WordWar war ) {
 		this.sendNotice(war.getChannel(), "WordWar: '" + war.getName()
 										  + "' is over!");
 		this.wars.remove(war.getName().toLowerCase());
 		this.sendMessage(this.debugChannel, "War '" + war.getName() + "' finished in channel " + war.getChannel());
 	}
 
-	private void boxodoom(String channel, String sender, String[] args) {
+	private void boxodoom( String channel, String sender, String[] args ) {
 		long duration;
 		long base_wpm;
 		double modifier;
@@ -1716,8 +1586,7 @@ public class Tim extends PircBot {
 			}
 
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
@@ -1726,7 +1595,7 @@ public class Tim extends PircBot {
 		goal = (int) ( duration * base_wpm * modifier / 10 ) * 10;
 
 		this.sendMessage(channel,
-						 sender + ": Your goal is " + String.valueOf(goal));
+			sender + ": Your goal is " + String.valueOf(goal));
 	}
 
 	private void useBackupNick() {
@@ -1736,13 +1605,11 @@ public class Tim extends PircBot {
 	private void connectToServer() {
 		try {
 			this.connect(getSetting("server"));
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			this.useBackupNick();
 			try {
 				this.connect(getSetting("server"));
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				System.err.print("Could not connect - name & backup in use");
 				System.exit(1);
 			}
@@ -1756,7 +1623,7 @@ public class Tim extends PircBot {
 		this.joinChannel(this.debugChannel);
 	}
 
-	public static void main(String[] args) {
+	public static void main( String[] args ) {
 		Tim bot = new Tim();
 
 		bot.setLogin("ThereAreSomeWhoCallMeTim_Bot");
@@ -1765,12 +1632,11 @@ public class Tim extends PircBot {
 		bot.connectToServer();
 	}
 
-	private String implodeArray(String[] inputArray) {
+	private String implodeArray( String[] inputArray ) {
 		String AsImplodedString;
 		if (inputArray.length == 0) {
 			AsImplodedString = "";
-		}
-		else {
+		} else {
 			StringBuilder sb = new StringBuilder();
 			sb.append(inputArray[0]);
 			for (int i = 1; i < inputArray.length; i++) {
@@ -1783,7 +1649,7 @@ public class Tim extends PircBot {
 		return AsImplodedString;
 	}
 
-	public String getSetting(String key) {
+	public String getSetting( String key ) {
 		long timeout = 3000;
 		Connection con;
 		String value = "";
@@ -1799,10 +1665,9 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				value = rs.getString("value");
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
@@ -1824,10 +1689,9 @@ public class Tim extends PircBot {
 				value = rs.getString("item");
 				this.approved_items.add(value);
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -1847,15 +1711,14 @@ public class Tim extends PircBot {
 				value = rs.getString("item");
 				this.pending_items.add(value);
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	private void insertPendingItem(String item) {
+	private void insertPendingItem( String item ) {
 		long timeout = 3000;
 		Connection con;
 		try {
@@ -1864,15 +1727,14 @@ public class Tim extends PircBot {
 			PreparedStatement s = con.prepareStatement("INSERT INTO `items` (`item`, `approved`) VALUES (?, FALSE)");
 			s.setString(1, item);
 			s.executeUpdate();
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	private void setItemApproved(String item, Boolean approved) {
+	private void setItemApproved( String item, Boolean approved ) {
 		long timeout = 3000;
 		Connection con;
 		try {
@@ -1882,15 +1744,14 @@ public class Tim extends PircBot {
 			s.setBoolean(1, approved);
 			s.setString(2, item);
 			s.executeUpdate();
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	private void removeItem(String item) {
+	private void removeItem( String item ) {
 		long timeout = 3000;
 		Connection con;
 		try {
@@ -1899,10 +1760,9 @@ public class Tim extends PircBot {
 			PreparedStatement s = con.prepareStatement("DELETE FROM `items` WHERE `item` = ?");
 			s.setString(1, item);
 			s.executeUpdate();
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -1940,10 +1800,9 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.admin_list.add(rs.getString("name").toLowerCase());
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -1962,15 +1821,14 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.ignore_list.add(rs.getString("name").toLowerCase());
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	private void setIgnore(String username) {
+	private void setIgnore( String username ) {
 		long timeout = 3000;
 		Connection con;
 		try {
@@ -1979,15 +1837,14 @@ public class Tim extends PircBot {
 			PreparedStatement s = con.prepareStatement("INSERT INTO `ignores` (`name`) VALUES (?);");
 			s.setString(1, username.toLowerCase());
 			s.executeUpdate();
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	private void removeIgnore(String username) {
+	private void removeIgnore( String username ) {
 		long timeout = 3000;
 		Connection con;
 		try {
@@ -1996,10 +1853,9 @@ public class Tim extends PircBot {
 			PreparedStatement s = con.prepareStatement("DELETE FROM `ignores` WHERE `name` = ?;");
 			s.setString(1, username.toLowerCase());
 			s.executeUpdate();
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -2018,10 +1874,9 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.aypwips.add(rs.getString("string"));
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -2040,10 +1895,9 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.colours.add(rs.getString("string"));
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -2062,10 +1916,9 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.commandments.add(rs.getString("string"));
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -2084,10 +1937,9 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.deities.add(rs.getString("string"));
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -2106,10 +1958,9 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.eightballs.add(rs.getString("string"));
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -2128,10 +1979,9 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.flavours.add(rs.getString("string"));
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -2150,10 +2000,9 @@ public class Tim extends PircBot {
 			while (rs.next()) {
 				this.greetings.add(rs.getString("string"));
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -2175,22 +2024,21 @@ public class Tim extends PircBot {
 				channel = rs.getString("channel").toLowerCase();
 				ci = new ChannelInfo(channel, rs.getBoolean("adult"), rs.getBoolean("markhov"), rs.getBoolean("random"), rs.getBoolean("command"));
 				ci.setChatterTimers(
-					Integer.parseInt(getSetting("chatterMaxBaseOdds")), 
-					Integer.parseInt(getSetting("chatterNameMultiplier")), 
-					Integer.parseInt(getSetting("chatterTimeMultiplier")), 
+					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
+					Integer.parseInt(getSetting("chatterNameMultiplier")),
+					Integer.parseInt(getSetting("chatterTimeMultiplier")),
 					Integer.parseInt(getSetting("chatterTimeDivisor")));
 
 				this.channel_data.put(channel, ci);
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	private void saveChannel(String channel) {
+	private void saveChannel( String channel ) {
 		long timeout = 3000;
 		Connection con;
 		try {
@@ -2203,15 +2051,14 @@ public class Tim extends PircBot {
 			if (!this.channel_data.containsKey(channel.toLowerCase())) {
 				this.channel_data.put(channel.toLowerCase(), new ChannelInfo(channel.toLowerCase()));
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	private void deleteChannel(String channel) {
+	private void deleteChannel( String channel ) {
 		long timeout = 3000;
 		Connection con;
 		try {
@@ -2223,15 +2070,14 @@ public class Tim extends PircBot {
 
 			// Will do nothing if the channel is not in the list.
 			this.channel_data.remove(channel.toLowerCase());
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	private void setChannelAdultFlag(String channel, boolean adult) {
+	private void setChannelAdultFlag( String channel, boolean adult ) {
 		long timeout = 3000;
 		Connection con;
 		try {
@@ -2244,19 +2090,17 @@ public class Tim extends PircBot {
 
 			if (adult) {
 				this.channel_data.get(channel.toLowerCase()).isAdult = true;
-			}
-			else {
+			} else {
 				this.channel_data.get(channel.toLowerCase()).isAdult = false;
 			}
-			
+
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	private void setChannelMuzzledFlag(String channel, boolean muzzled) {
+	private void setChannelMuzzledFlag( String channel, boolean muzzled ) {
 		long timeout = 3000;
 		Connection con;
 		try {
@@ -2274,13 +2118,12 @@ public class Tim extends PircBot {
 			this.channel_data.get(channel.toLowerCase()).doRandomActions = muzzled;
 
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	private boolean isChannelAdult(String channel) {
+	private boolean isChannelAdult( String channel ) {
 		boolean val = false;
 		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
 		if (cdata != null) {
@@ -2289,14 +2132,14 @@ public class Tim extends PircBot {
 		return val;
 	}
 
-	private String generate_markhov(String type) {
+	private String generate_markhov( String type ) {
 		String sentence = "";
 		long timeout = 3000;
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 			PreparedStatement nextList, getTotal;
-			
+
 			if ("emote".equals(type)) {
 				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markhov_emote_data WHERE first = ? GROUP BY first");
 				nextList = con.prepareStatement("SELECT * FROM markhov_emote_data WHERE first = ? ORDER BY count ASC");
@@ -2315,14 +2158,14 @@ public class Tim extends PircBot {
 
 			String lastWord = "";
 			int check = 0;
-			
+
 			ResultSet nextRes = nextList.executeQuery();
 			while (nextRes.next()) {
 				check += nextRes.getInt("count");
 				if (check > pick) {
 					break;
 				}
-				
+
 				sentence = nextRes.getString("second");
 				lastWord = nextRes.getString("second");
 			}
@@ -2330,7 +2173,7 @@ public class Tim extends PircBot {
 			int maxLength = this.rand.nextInt(25) + 10;
 			int curWords = 1;
 			boolean keepGoing = true;
-			
+
 			while (keepGoing || curWords < maxLength) {
 				keepGoing = true;
 
@@ -2343,11 +2186,11 @@ public class Tim extends PircBot {
 				} else {
 					break;
 				}
-				
+
 				if (total == 0) {
 					break;
 				}
-				
+
 				pick = this.rand.nextInt(total);
 
 				check = 0;
@@ -2373,26 +2216,24 @@ public class Tim extends PircBot {
 
 				curWords++;
 			}
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		
+
 		return sentence;
 	}
 
 	/**
 	 * Process a message to populate the Markhov data tables
-	 * 
-	 * Takes a message and a type and builds Markhov chain data out of the 
-	 * message, skipping bad words and other things we don't want to track such
-	 * as email addresses and URLs.
-	 * 
-	 * @param message
-	 * @param type 
-	 * 
+	 *
+	 * Takes a message and a type and builds Markhov chain data out of the message, skipping bad words and other things
+	 * we don't want to track such as email addresses and URLs.
+	 *
+	 * @param message What is the message to parse
+	 * @param type    What type of message was it (say or emote)
+	 *
 	 */
-	private void process_markhov(String message, String type) {
+	private void process_markhov( String message, String type ) {
 		String first;
 		String second = "";
 
@@ -2408,7 +2249,7 @@ public class Tim extends PircBot {
 				addPair = con.prepareStatement("INSERT INTO markhov_say_data (first, second, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
 			}
 
-			for (int i = 0; i < (words.length - 1); i++) {
+			for (int i = 0; i < ( words.length - 1 ); i++) {
 				if (skipMarkhovWord(words[i])) {
 					continue;
 				}
@@ -2423,41 +2264,40 @@ public class Tim extends PircBot {
 					addPair.executeUpdate();
 				}
 
-				if (skipMarkhovWord(words[i+1])) {
+				if (skipMarkhovWord(words[i + 1])) {
 					continue;
 				}
 
 				first = words[i];
-				second = words[i+1];
+				second = words[i + 1];
 
 				addPair.setString(1, first);
 				addPair.setString(2, second);
-				
+
 				addPair.executeUpdate();
 			}
 
 			if (!second.isEmpty()) {
 				addPair.setString(1, second);
 				addPair.setString(2, "");
-				
+
 				addPair.executeUpdate();
 			}
 
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-	
-	private boolean skipMarkhovWord(String word) {
+
+	private boolean skipMarkhovWord( String word ) {
 		long timeout = 3000;
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 			PreparedStatement checkBad = con.prepareStatement("SELECT count(*) as matched FROM bad_words WHERE word LIKE ?");
 			ResultSet checkBadRes;
-			
+
 			checkBad.setString(1, word);
 			checkBadRes = checkBad.executeQuery();
 			checkBadRes.next();
@@ -2468,8 +2308,7 @@ public class Tim extends PircBot {
 			}
 
 			con.close();
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
@@ -2477,21 +2316,20 @@ public class Tim extends PircBot {
 		if (Pattern.matches("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$", word)) {
 			return true;
 		}
-		
+
 		// Checks for URL
 		try {
 			new URL(word);
 			return true;
-		}
-		catch (MalformedURLException ex) {
+		} catch (MalformedURLException ex) {
 			// NOOP
 		}
-		
+
 		// Phone number
 		if (Pattern.matches("^\\(?(\\d{3})\\)?[- ]?(\\d{3})[- ]?(\\d{4})$", word)) {
 			return true;
 		}
-		
+
 		return false;
 	}
 }
