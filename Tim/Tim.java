@@ -157,18 +157,10 @@ public final class Tim extends PircBot {
 			this.chatterTimer = System.currentTimeMillis() / 1000;
 		}
 	}
-	private Set<String> admin_list = new HashSet<String>(16);
+	protected Set<String> admin_list = new HashSet<String>(16);
 	private Set<String> ignore_list = new HashSet<String>(16);
 	private Hashtable<String, ChannelInfo> channel_data = new Hashtable<String, ChannelInfo>(62);
-	private List<String> colours = new ArrayList<String>();
-	private List<String> eightballs = new ArrayList<String>();
 	private List<String> greetings = new ArrayList<String>();
-	private List<String> commandments = new ArrayList<String>();
-	private List<String> aypwips = new ArrayList<String>();
-	private List<String> flavours = new ArrayList<String>();
-	private List<String> deities = new ArrayList<String>();
-	private List<String> approved_items = new ArrayList<String>();
-	private List<String> pending_items = new ArrayList<String>();
 	private Map<String, WordWar> wars;
 	private WarClockThread warticker;
 	private Timer ticker;
@@ -180,6 +172,8 @@ public final class Tim extends PircBot {
 	protected ConnectionPool pool;
 	private ChainStory story;
 	private Challenge challenge;
+	private MarkhovChains markhov;
+	private Amusement amusement;
 	private long timeout = 3000;
 	private Connection con;
 
@@ -226,6 +220,8 @@ public final class Tim extends PircBot {
 
 		this.story = new ChainStory(this);
 		this.challenge = new Challenge(this);
+		this.markhov = new MarkhovChains(this);
+		this.amusement = new Amusement(this);
 
 		this.refreshDbLists();
 
@@ -303,7 +299,7 @@ public final class Tim extends PircBot {
 		if (!sender.equals(this.getNick()) && !"".equals(target)) {
 			this.interact(sender, target, action, "emote");
 			if (cdata.doMarkhov) {
-				this.process_markhov(action, "emote");
+				markhov.process_markhov(action, "emote");
 			}
 		}
 	}
@@ -348,9 +344,9 @@ public final class Tim extends PircBot {
 				"are you thinking what i'm thinking")
 					   || message.toLowerCase().contains(
 				"are you pondering what i'm pondering")) {
-				int i = this.rand.nextInt(this.aypwips.size());
+				int i = this.rand.nextInt(amusement.aypwips.size());
 				this.sendMessage(channel,
-					String.format(this.aypwips.get(i), sender));
+					String.format(amusement.aypwips.get(i), sender));
 				return;
 			} else {
 				if (Pattern.matches(
@@ -367,11 +363,11 @@ public final class Tim extends PircBot {
 					int r = this.rand.nextInt(100);
 
 					if (r < 50) {
-						this.eightball(channel, sender, null);
+						amusement.eightball(channel, sender, false);
 						return;
 					}
 				} else if (Pattern.matches("(?i).*markhov test.*", message)) {
-					this.sendDelayedMessage(channel, this.generate_markhov("say"), this.rand.nextInt(1500));
+					this.sendDelayedMessage(channel, markhov.generate_markhov("say"), this.rand.nextInt(1500));
 					return;
 				}
 			}
@@ -379,7 +375,7 @@ public final class Tim extends PircBot {
 			if (!sender.equals(this.getNick()) && !"".equals(channel)) {
 				this.interact(sender, channel, message, "say");
 				if (cdata.doMarkhov) {
-					this.process_markhov(message, "say");
+					markhov.process_markhov(message, "say");
 				}
 			}
 		}
@@ -461,129 +457,6 @@ public final class Tim extends PircBot {
 				this.refreshDbLists();
 
 				this.sendDelayedMessage(channel, "Can you hear me now?", 2000);
-			} else if (command.equals("listitems")) {
-				int pages = ( this.approved_items.size() + 9 ) / 10;
-				int wantPage = 0;
-				if (args != null && args.length > 0) {
-					try {
-						wantPage = Integer.parseInt(args[0]) - 1;
-					} catch (NumberFormatException ex) {
-						this.sendMessage(channel,
-							"Page number was not numeric.");
-						return;
-					}
-				}
-
-				if (wantPage > pages) {
-					wantPage = pages;
-				}
-
-				int list_idx = wantPage * 10;
-				this.sendMessage(channel, String.format(
-					"Showing page %d of %d (%d items total)", wantPage + 1,
-					pages, this.approved_items.size()));
-				for (int i = 0; i < 10 && list_idx < this.approved_items.size(); ++i, list_idx = wantPage
-																								 * 10 + i) {
-					this.sendMessage(channel, String.format("%d: %s", list_idx,
-						this.approved_items.get(list_idx)));
-				}
-			} else if (command.equals("listpending")) {
-				int pages = ( this.pending_items.size() + 9 ) / 10;
-				int wantPage = 0;
-				if (args != null && args.length > 0) {
-					try {
-						wantPage = Integer.parseInt(args[0]) - 1;
-					} catch (NumberFormatException ex) {
-						this.sendMessage(channel,
-							"Page number was not numeric.");
-						return;
-					}
-				}
-
-				if (wantPage > pages) {
-					wantPage = pages;
-				}
-
-				int list_idx = wantPage * 10;
-				this.sendMessage(channel, String.format(
-					"Showing page %d of %d (%d items total)", wantPage + 1,
-					pages, this.pending_items.size()));
-				for (int i = 0; i < 10 && list_idx < this.pending_items.size(); ++i, list_idx = wantPage
-																								* 10 + i) {
-					this.sendMessage(channel, String.format("%d: %s", list_idx,
-						this.pending_items.get(list_idx)));
-				}
-			} else if (command.equals("approveitem")) {
-				if (args != null && args.length > 0) {
-					int idx;
-					String item;
-					try {
-						idx = Integer.parseInt(args[0]);
-						item = this.pending_items.get(idx);
-					} catch (NumberFormatException ex) {
-						// Must be a string
-						item = args[0];
-						for (int i = 1; i < args.length; ++i) {
-							item = item + " " + args[i];
-						}
-						idx = this.pending_items.indexOf(item);
-					}
-					if (idx >= 0) {
-						this.setItemApproved(item, true);
-						this.pending_items.remove(idx);
-						this.approved_items.add(item);
-					} else {
-						this.sendMessage(channel, String.format(
-							"Item %s is not pending approval.", args[0]));
-					}
-				}
-			} else if (command.equals("disapproveitem")) {
-				if (args != null && args.length > 0) {
-					int idx;
-					String item;
-					try {
-						idx = Integer.parseInt(args[0]);
-						item = this.approved_items.get(idx);
-					} catch (NumberFormatException ex) {
-						// Must be a string
-						item = args[0];
-						for (int i = 1; i < args.length; ++i) {
-							item = item + " " + args[i];
-						}
-						idx = this.approved_items.indexOf(item);
-					}
-					if (idx >= 0) {
-						this.setItemApproved(item, false);
-						this.pending_items.add(item);
-						this.approved_items.remove(idx);
-					} else {
-						this.sendMessage(channel, String.format(
-							"Item %s is not pending approval.", args[0]));
-					}
-				}
-			} else if (command.equals("deleteitem")) {
-				if (args != null && args.length > 0) {
-					int idx;
-					String item;
-					try {
-						idx = Integer.parseInt(args[0]);
-						item = this.pending_items.get(idx);
-					} catch (NumberFormatException ex) {
-						// Must be a string
-						item = args[0];
-						for (int i = 1; i < args.length; ++i) {
-							item = item + " " + args[i];
-						}
-						idx = this.pending_items.indexOf(item);
-					}
-					if (idx >= 0) {
-						this.removeItem(item);
-						this.pending_items.remove(item);
-					} else {
-						this.sendMessage(channel, String.format(
-							"Item %s is not pending approval.", args[0]));
-					}
-				}
 			} else if (command.equals("ignore")) {
 				if (args != null && args.length > 0) {
 					String users = "";
@@ -622,6 +495,7 @@ public final class Tim extends PircBot {
 				}
 			} else if (command.equals("help")) {
 				this.printAdminCommandList(sender, channel);
+			} else if (this.amusement.parseAdminCommand(channel, sender, message)) {
 			} else if (this.story.parseAdminCommand(channel, sender, message)) {
 			} else if (this.challenge.parseAdminCommand(channel, sender, message)) {
 			} else {
@@ -644,106 +518,51 @@ public final class Tim extends PircBot {
 
 	private void interact( String sender, String channel, String message, String type ) {
 		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
-		boolean didChatter = false;
 
-		if (cdata.doMarkhov) {
-			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
-			long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
-			if (odds > cdata.chatterMaxBaseOdds) {
-				odds = cdata.chatterMaxBaseOdds;
-			}
-
-			if (message.toLowerCase().contains(this.getNick().toLowerCase())) {
-				odds = odds * cdata.chatterNameMultiplier;
-			}
-
-			// Odds are percentage based, so this needs to be 100.
-			int i = this.rand.nextInt(100);
-			if (i < odds) {
-				this.sendDelayedMessage(channel, this.generate_markhov(type), this.rand.nextInt(1500));
-				cdata.chatterTimer = cdata.chatterTimer
-									 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-				didChatter = true;
-			}
+		long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
+		long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
+		if (odds > cdata.chatterMaxBaseOdds) {
+			odds = cdata.chatterMaxBaseOdds;
 		}
 
-		// Random Actions
-		if (cdata.doRandomActions && !didChatter) {
-			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
-			long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
-			if (odds > cdata.chatterMaxBaseOdds) {
-				odds = cdata.chatterMaxBaseOdds;
-			}
-
-			if (message.toLowerCase().contains(this.getNick().toLowerCase())) {
-				odds = odds * cdata.chatterNameMultiplier;
-			}
-
-			// Odds are percentage based, so this needs to be 100.
-			int i = this.rand.nextInt(100);
-			if (i < odds) {
-				int base_odds = 20;
-
-				while (!didChatter) {
-					if (this.rand.nextInt(100) < base_odds) {
-						this.getItem(channel, sender, null);
-						cdata.chatterTimer = cdata.chatterTimer
-											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-						didChatter = true;
-					}
-
-					if (this.rand.nextInt(100) < base_odds && !didChatter) {
-						this.challenge.issueChallenge(channel, sender, null);
-						cdata.chatterTimer = cdata.chatterTimer
-											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-						didChatter = true;
-					}
-
-					if (this.rand.nextInt(100) < base_odds && !didChatter) {
-						int r = this.rand.nextInt(this.eightballs.size());
-						this.sendDelayedAction(channel, "mutters under his breath, \""
-														+ this.eightballs.get(r) + "\"",
-							this.rand.nextInt(1500));
-						cdata.chatterTimer = cdata.chatterTimer
-											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-						didChatter = true;
-					}
-
-					if (this.rand.nextInt(100) < base_odds && !didChatter) {
-						this.throwFridge(channel, sender, sender.split(" ", 0), false);
-						cdata.chatterTimer = cdata.chatterTimer
-											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-						didChatter = true;
-					}
-
-					if (this.rand.nextInt(100) < base_odds && !didChatter) {
-						this.defenestrate(channel, sender, sender.split(" "), false);
-						cdata.chatterTimer = cdata.chatterTimer
-											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-						didChatter = true;
-					}
-
-					if (this.rand.nextInt(100) < base_odds && !didChatter) {
-						this.sing(channel);
-						cdata.chatterTimer = cdata.chatterTimer
-											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-						didChatter = true;
-					}
-
-					if (this.rand.nextInt(100) < base_odds && !didChatter) {
-						this.foof(channel, sender, sender.split(" "), false);
-						cdata.chatterTimer = cdata.chatterTimer
-											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-						didChatter = true;
-					}
-				}
-			}
+		if (message.toLowerCase().contains(this.getNick().toLowerCase())) {
+			odds = odds * cdata.chatterNameMultiplier;
 		}
 
-		if (didChatter) {
-			this.sendMessage(
-				this.debugChannel,
-				"Chattered On: " + channel);
+		if (this.rand.nextInt(100) < odds) {
+			String[] actions;
+
+			if (cdata.doMarkhov && !cdata.doRandomActions) {
+				actions = new String[] {
+					"markhov"
+				};
+			} else if (cdata.doMarkhov && cdata.doRandomActions) {
+				actions = new String[] {
+					"markhov",
+					"challenge",
+					"amusement"
+				};
+			} else if (cdata.doMarkhov && cdata.doRandomActions) {
+				actions = new String[] {
+					"challenge",
+					"amusement"
+				};
+			} else {
+				return;
+			}
+
+			String action = actions[rand.nextInt(actions.length)];
+			
+			if ("markhov".equals(action)) {
+				markhov.randomAction(sender, channel, message, type);
+			} else if ("challenge".equals(action)) {
+				challenge.randomAction(sender, channel, message, type);
+			} else if ("amusement".equals(action)) {
+				amusement.randomAction(sender, channel, message, type);
+			}
+
+			cdata.chatterTimer += this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+			this.sendMessage(this.debugChannel, "Chattered On: " + channel);
 		}
 	}
 
@@ -912,38 +731,6 @@ public final class Tim extends PircBot {
 					}
 					this.setTopic(channel, topic + " --" + sender);
 				}
-			} else if (command.equals("sing")) {
-				this.sing(channel);
-			} else if (command.equals("eightball") || command.equals("8-ball")) {
-				this.eightball(channel, sender, args);
-			} else if (command.charAt(0) == 'd'
-					   && Pattern.matches("d\\d+", command)) {
-				this.dice(command.substring(1), channel, sender, args);
-			} else if (command.equals("woot")) {
-				this.sendAction(channel, "cheers! Hooray!");
-			} else if (command.equals("get")) {
-				this.getItem(channel, sender, args);
-			} else if (command.equals("getfor")) {
-				if (args != null && args.length > 0) {
-					if (args.length > 1) {
-						// Want a new args array less the first old element.
-						String[] newargs = new String[args.length - 1];
-						for (int i = 1; i < args.length; ++i) {
-							newargs[i - 1] = args[i];
-						}
-						this.getItem(channel, args[0], newargs);
-					} else {
-						this.getItem(channel, args[0], null);
-					}
-				}
-			} else if (command.equals("fridge")) {
-				this.throwFridge(channel, sender, args, true);
-			} else if (command.equals("dance")) {
-				this.sendAction(channel, "dances a cozy jig");
-			} else if (command.equals("lick")) {
-				this.lick(channel, sender, args);
-			} else if (command.equals("commandment")) {
-				this.commandment(channel, sender, args);
 			} // add additional commands above here!!
 			else if (command.equals("help")) {
 				this.printCommandList(sender, channel);
@@ -958,20 +745,15 @@ public final class Tim extends PircBot {
 
 				int r = this.rand.nextInt(100);
 				if (r < 10) {
-					this.defenestrate(channel, sender, sender.split(" ", 0),
+					this.amusement.defenestrate(channel, sender, sender.split(" ", 0),
 						false);
 				} else if (r < 20) {
-					this.throwFridge(channel, sender, sender.split(" ", 0),
+					this.amusement.throwFridge(channel, sender, sender.split(" ", 0),
 						false);
 				}
-			} else if (command.equals("defenestrate")) {
-				this.defenestrate(channel, sender, args, true);
-			} else if (command.equals("summon")) {
-				this.summon(channel, sender, args, true);
-			} else if (command.equals("foof")) {
-				this.foof(channel, sender, args, true);
 			} else if (this.story.parseUserCommand(channel, sender, prefix, message)) {
 			} else if (this.challenge.parseUserCommand(channel, sender, prefix, message)) {
+			} else if (this.amusement.parseUserCommand(channel, sender, prefix, message)) {
 			} else {
 				this.sendMessage(channel, "!" + command + " was not part of my training.");
 			}
@@ -989,345 +771,64 @@ public final class Tim extends PircBot {
 	}
 
 	private void printCommandList( String target, String channel ) {
-		int msgdelay = 9;
-		String[] strs = {"I am a robot trained by the WordWar Monks of Honolulu. You have "
-						 + "never heard of them. It is because they are awesome. I am capable "
-						 + "of running the following commands:",
-						 "!startwar <duration> <time to start> <an optional name> - Starts a word war",
-						 "!listwars - I will tell you about the wars currently in progress.",
-						 "!boxodoom <difficulty> <duration> - Difficulty is easy/average/hard, duration in minutes.",
-						 "!eggtimer <time> - I will send you a message after <time> minutes.",
-						 "!get <anything> - I will fetch you whatever you like.",
-						 "!getfor <someone> <anything> - I will give someone whatever you like.",
-						 "!eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.",
-						 "!settopic <topic> - If able, I will try to set the channel's topic.",
-						 "!credits - Details of my creators, and where to find my source code.",
-						 "!chainhelp - Get help on my chain story commands",
-						 "!challengehelp - Get help on my challenge commands",
-						 "I... I think there might be other tricks I know... You'll have to find them!",
-						 "I will also respond to the /invite command if you would like to see me in another channel. "
-		};
+		int msgdelay = 5;
+		int delayCnt = 0;
 
 		this.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new windor or tab with the help text.)");
-		for (int i = 0; i < strs.length; ++i) {
-			this.sendDelayedMessage(target, strs[i], msgdelay * i);
+
+		String[] strs = {"I am a robot trained by the WordWar Monks of Honolulu. You have "
+						 + "never heard of them. It is because they are awesome.",
+						 "Core Commands:",
+						 "    !startwar <duration> <time to start> <an optional name> - Starts a word war",
+						 "    !listwars - I will tell you about the wars currently in progress.",
+						 "    !boxodoom <difficulty> <duration> - Difficulty is easy/average/hard, duration in minutes.",
+						 "    !eggtimer <time> - I will send you a message after <time> minutes.",
+						 "    !settopic <topic> - If able, I will try to set the channel's topic.",
+						 "    !credits - Details of my creators, and where to find my source code.",
+		};
+		for (int i = 0; i < strs.length; ++i, ++delayCnt) {
+			this.sendDelayedMessage(target, strs[i], msgdelay * delayCnt);
+		}
+
+		delayCnt = this.story.helpSection(target, channel, delayCnt, msgdelay);
+		delayCnt = this.challenge.helpSection(target, channel, delayCnt, msgdelay);
+		delayCnt = this.amusement.helpSection(target, channel, delayCnt, msgdelay);
+		
+		String[] post = {"I... I think there might be other tricks I know... You'll have to find them!",
+						 "I will also respond to the /invite command if you would like to see me in another channel. "
+		};
+		for (int i = 0; i < post.length; ++i, ++delayCnt) {
+			this.sendDelayedMessage(target, post[i], msgdelay * delayCnt);
 		}
 	}
 
 	private void printAdminCommandList( String target, String channel ) {
-		int msgdelay = 9;
-		String[] helplines = {"All admin commands:",
-							  "$setadultflag <#channel> <0/1> - clears/sets adult flag on channel",
-							  "$setmuzzleflag <#channel> <0/1> - clears/sets muzzle flag on channel",
-							  "$shutdown - Forces bot to exit",
-							  "$reload - Reloads data from MySQL (also $refreshdb)",
-							  "$reset - Resets internal timer for wars, and reloads data from MySQL",
-							  "$listitems [ <page #> ] - lists all currently approved !get/!getfor items",
-							  "$listpending [ <page #> ] - lists all unapproved !get/!getfor items",
-							  "$approveitem <item # from $listpending> - removes item from pending list and marks as approved for !get/!getfor",
-							  "$disapproveitem <item # from $listitems> - removes item from approved list and marks as pending for !get/!getfor",
-							  "$deleteitem <item # from $listpending> - permanently removes an item from the pending list for !get/!getfor",
-							  "$ignore <username> - Places user on the bot's ignore list",
-							  "$unignore <username> - Removes user from bot's ignore list",
-							  "$listignores - Prints the list of ignored users"
-		};
+		int msgdelay = 5;
+		int delayCnt = 0;
 
 		this.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new windor or tab with the help text.)");
-		for (int i = 0; i < helplines.length; ++i) {
-			this.sendDelayedMessage(target, helplines[i], msgdelay * i);
-		}
-	}
 
-	private void dice( String number, String channel, String sender,
-					   String[] args ) {
-		int max;
-		try {
-			max = Integer.parseInt(number);
-			int r = this.rand.nextInt(max) + 1;
-			this.sendMessage(channel, sender + ": Your result is " + r);
-		} catch (NumberFormatException ex) {
-			this.sendMessage(channel, number
-									  + " is not a number I could understand.");
-		}
-	}
+		String[] helplines = {"Core Admin Commands:",
+							  "    $setadultflag <#channel> <0/1> - clears/sets adult flag on channel",
+							  "    $setmuzzleflag <#channel> <0/1> - clears/sets muzzle flag on channel",
+							  "    $shutdown - Forces bot to exit",
+							  "    $reload - Reloads data from MySQL (also $refreshdb)",
+							  "    $reset - Resets internal timer for wars, and reloads data from MySQL",
+							  "    $listitems [ <page #> ] - lists all currently approved !get/!getfor items",
+							  "    $listpending [ <page #> ] - lists all unapproved !get/!getfor items",
+							  "    $approveitem <item # from $listpending> - removes item from pending list and marks as approved for !get/!getfor",
+							  "    $disapproveitem <item # from $listitems> - removes item from approved list and marks as pending for !get/!getfor",
+							  "    $deleteitem <item # from $listpending> - permanently removes an item from the pending list for !get/!getfor",
+							  "    $ignore <username> - Places user on the bot's ignore list",
+							  "    $unignore <username> - Removes user from bot's ignore list",
+							  "    $listignores - Prints the list of ignored users"
+		};
 
-	private void getItem( String channel, String target, String[] args ) {
-		String item = "";
-		if (args != null) {
-			item = args[0];
-			for (int i = 1; i < args.length; ++i) {
-				item = item + " " + args[i];
-			}
-			if (!( this.approved_items.contains(item) || this.pending_items.contains(item) ) && item.length() < 300) {
-				this.insertPendingItem(item);
-				this.pending_items.add(item);
-			}
+		for (int i = 0; i < helplines.length; ++i, ++delayCnt) {
+			this.sendDelayedMessage(target, helplines[i], msgdelay * delayCnt);
 		}
 
-		if (item.isEmpty()) {
-			// Find a random item.
-			int i = this.rand.nextInt(this.approved_items.size());
-			item = this.approved_items.get(i);
-		}
-
-		this.sendAction(channel, String.format("gets %s %s", target, item));
-	}
-
-	private void lick( String channel, String sender, String[] args ) {
-		if (this.isChannelAdult(channel)) {
-			if (args.length >= 1) {
-				String argStr = this.implodeArray(args);
-
-				if (args[0].equalsIgnoreCase("MysteriousAges")) {
-					this.sendAction(channel, "licks " + argStr
-											 + ". Tastes like... like...");
-					this.sendDelayedMessage(channel, "Like the Apocalypse.",
-						1000);
-					this.sendDelayedAction(channel, "cowers in fear", 2400);
-				} else if (args[0].equalsIgnoreCase(this.getNick())) {
-					this.sendAction(channel, "licks " + args[0]
-											 + ". Tastes like meta.");
-				} else if (this.admin_list.contains(args[0])) {
-					this.sendAction(channel, "licks " + argStr
-											 + ". Tastes like perfection, pure and simple.");
-				} else {
-					this.sendAction(
-						channel,
-						"licks "
-						+ argStr
-						+ ". Tastes like "
-						+ this.flavours.get(this.rand.nextInt(this.flavours.size())));
-				}
-			} else {
-				this.sendAction(
-					channel,
-					"licks "
-					+ sender
-					+ "! Tastes like "
-					+ this.flavours.get(this.rand.nextInt(this.flavours.size())));
-			}
-		} else {
-			this.sendMessage(channel, "Sorry, I don't do that here.");
-		}
-	}
-
-	private void eightball( String channel, String sender, String[] args ) {
-		int r = this.rand.nextInt(this.eightballs.size());
-		this.sendMessage(channel, this.eightballs.get(r));
-	}
-
-	private void sing( String channel ) {
-		int r = this.rand.nextInt(100);
-
-		String response;
-		if (r > 90) {
-			response = "sings the well known song '%s' better than the original artist!";
-		} else if (r > 60) {
-			response = "chants some obscure lyrics from '%s'. At least you think that's the name of the song...";
-		} else if (r > 30) {
-			response = "starts singing '%s'. You've heard better...";
-		} else {
-			response = "screeches out some words from '%s', and all the nearby windows shatter... Ouch.";
-		}
-
-		try {
-			con = pool.getConnection(timeout);
-			PreparedStatement songName = con.prepareStatement("SELECT name FROM songs ORDER BY rand() LIMIT 1");
-			ResultSet songNameRes;
-
-			songNameRes = songName.executeQuery();
-			songNameRes.next();
-
-			this.sendDelayedAction(channel, String.format(response, songNameRes.getString("name")), this.rand.nextInt(1500));
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-	}
-
-	private void commandment( String channel, String sender, String[] args ) {
-		int r = this.rand.nextInt(this.commandments.size());
-		if (args != null && args.length == 1 && Double.parseDouble(args[0]) > 0
-			&& Double.parseDouble(args[0]) <= this.commandments.size()) {
-			r = (int) Double.parseDouble(args[0]) - 1;
-		}
-		this.sendMessage(channel, this.commandments.get(r));
-	}
-
-	private void throwFridge( String channel, String sender, String[] args,
-							  Boolean righto ) {
-		String target = sender;
-		if (args != null && args.length > 0) {
-			if (!args[0].equalsIgnoreCase(this.getNick())
-				&& !args[0].equalsIgnoreCase("himself")
-				&& !args[0].equalsIgnoreCase("herself")
-				&& !this.admin_list.contains(args[0])
-				&& !args[0].equalsIgnoreCase("myst")) {
-				target = this.implodeArray(args) + " ";
-			}
-		}
-
-		if (righto) {
-			this.sendMessage(channel, "Righto...");
-		}
-
-		int time = 2 + this.rand.nextInt(15);
-		time *= 1000;
-		this.sendDelayedAction(channel,
-			"looks back and forth, then slinks off...", time);
-		time += this.rand.nextInt(10) * 500 + 1500;
-		String colour = this.colours.get(this.rand.nextInt(this.colours.size()));
-		switch (colour.charAt(0)) {
-			case 'a':
-			case 'e':
-			case 'i':
-			case 'o':
-			case 'u':
-				colour = "n " + colour;
-				break;
-			default:
-				colour = " " + colour;
-		}
-		int i = this.rand.nextInt(100);
-		String act;
-		if (i > 20) {
-			act = "hurls a" + colour + " coloured fridge at " + target;
-		} else if (i > 3) {
-			target = sender;
-			act = "hurls a" + colour + " coloured fridge at " + target
-				  + " and runs away giggling";
-		} else {
-			act = "trips and drops a" + colour + " fridge on himself";
-		}
-		this.sendDelayedAction(channel, act, time);
-	}
-
-	private void defenestrate( String channel, String sender, String[] args,
-							   Boolean righto ) {
-		String target = sender;
-		if (args != null && args.length > 0) {
-			if (!args[0].equalsIgnoreCase(this.getNick())
-				&& !args[0].equalsIgnoreCase("himself")
-				&& !args[0].equalsIgnoreCase("herself")
-				&& !this.admin_list.contains(args[0])) {
-				target = this.implodeArray(args);
-			}
-		}
-
-		if (righto) {
-			this.sendMessage(channel, "Righto...");
-		}
-
-		int time = 2 + this.rand.nextInt(15);
-		time *= 1000;
-		this.sendDelayedAction(channel,
-			"looks around for a convenient window, then slinks off...",
-			time);
-		time += this.rand.nextInt(10) * 500 + 1500;
-
-		int i = this.rand.nextInt(100);
-		String act;
-		String colour = this.colours.get(this.rand.nextInt(this.colours.size()));
-
-		if (i > 20) {
-			act = "throws "
-				  + target
-				  + " through the nearest window, where they land on a giant pile of fluffy "
-				  + colour + " coloured pillows.";
-		} else if (i > 3) {
-			target = sender;
-			act = "laughs maniacally then throws "
-				  + target
-				  + " through the nearest window, where they land on a giant pile of fluffy "
-				  + colour + " coloured pillows.";
-		} else {
-			act = "trips and falls out the window!";
-		}
-		this.sendDelayedAction(channel, act, time);
-	}
-
-	private void summon( String channel, String sender, String[] args,
-						 Boolean righto ) {
-		String target;
-		if (args == null || args.length == 0) {
-			target = this.deities.get(this.rand.nextInt(this.deities.size()));
-		} else {
-			target = this.implodeArray(args);
-		}
-
-		if (righto) {
-			this.sendMessage(channel, "Righto...");
-		}
-
-		int time = 2 + this.rand.nextInt(15);
-		time *= 1000;
-		this.sendDelayedAction(channel,
-			"prepares the summoning circle required to bring " + target
-			+ " into the world...", time);
-		time += this.rand.nextInt(10) * 500 + 1500;
-
-		int i = this.rand.nextInt(100);
-		String act;
-
-		if (i > 50) {
-			act = "completes the ritual successfully, drawing " + target
-				  + " through, and binding them into the summoning circle!";
-		} else if (i > 30) {
-			act = "completes the ritual, drawing "
-				  + target
-				  + " through, but something goes wrong and they fade away after just a few moments.";
-		} else {
-			String target2 = this.deities.get(this.rand.nextInt(this.deities.size()));
-			act = "attempts to summon "
-				  + target
-				  + ", but something goes horribly wrong. After the smoke clears, "
-				  + target2
-				  + " is left standing on the smoldering remains of the summoning circle.";
-		}
-		this.sendDelayedAction(channel, act, time);
-	}
-
-	private void foof( String channel, String sender, String[] args,
-					   Boolean righto ) {
-		String target = sender;
-		if (args != null && args.length > 0) {
-			if (!args[0].equalsIgnoreCase(this.getNick())
-				&& !args[0].equalsIgnoreCase("himself")
-				&& !args[0].equalsIgnoreCase("herself")
-				&& !this.admin_list.contains(args[0])) {
-				target = this.implodeArray(args);
-			}
-		}
-
-		if (righto) {
-			this.sendMessage(channel, "Righto...");
-		}
-
-		int time = 2 + this.rand.nextInt(15);
-		time *= 1000;
-		this.sendDelayedAction(
-			channel,
-			"surreptitiously works his way over to the couch, looking ever so casual...",
-			time);
-		time += this.rand.nextInt(10) * 500 + 1500;
-
-		int i = this.rand.nextInt(100);
-		String act;
-		String colour = this.colours.get(this.rand.nextInt(this.colours.size()));
-
-		if (i > 20) {
-			act = "grabs a " + colour + " pillow, and throws it at " + target
-				  + ", hitting them squarely in the back of the head.";
-		} else if (i > 3) {
-			target = sender;
-			act = "laughs maniacally then throws a " + colour + " pillow at "
-				  + target
-				  + ", then runs off and hides behind the nearest couch.";
-		} else {
-			act = "trips and lands on a " + colour + " pillow. Oof!";
-		}
-		this.sendDelayedAction(channel, act, time);
+		delayCnt = this.challenge.adminHelpSection(target, channel, delayCnt, msgdelay);
 	}
 
 	// !endwar <name>
@@ -1625,7 +1126,7 @@ public final class Tim extends PircBot {
 		bot.connectToServer();
 	}
 
-	private String implodeArray( String[] inputArray ) {
+	protected String implodeArray( String[] inputArray ) {
 		String AsImplodedString;
 		if (inputArray.length == 0) {
 			AsImplodedString = "";
@@ -1665,103 +1166,13 @@ public final class Tim extends PircBot {
 		return value;
 	}
 
-	private void getApprovedItems() {
-		String value;
-
-		try {
-			this.approved_items.clear();
-
-			con = pool.getConnection(timeout);
-			PreparedStatement s = con.prepareStatement("SELECT `item` FROM `items` WHERE `approved` = TRUE");
-			ResultSet rs = s.executeQuery();
-			while (rs.next()) {
-				value = rs.getString("item");
-				this.approved_items.add(value);
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void getPendingItems() {
-		String value;
-		this.pending_items.clear();
-
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("SELECT `item` FROM `items` WHERE `approved` = FALSE");
-			ResultSet rs = s.executeQuery();
-			while (rs.next()) {
-				value = rs.getString("item");
-				this.pending_items.add(value);
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void insertPendingItem( String item ) {
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("INSERT INTO `items` (`item`, `approved`) VALUES (?, FALSE)");
-			s.setString(1, item);
-			s.executeUpdate();
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void setItemApproved( String item, Boolean approved ) {
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("UPDATE `items` SET `approved` = ? WHERE `item` = ?");
-			s.setBoolean(1, approved);
-			s.setString(2, item);
-			s.executeUpdate();
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void removeItem( String item ) {
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("DELETE FROM `items` WHERE `item` = ?");
-			s.setString(1, item);
-			s.executeUpdate();
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
 	private void refreshDbLists() {
 		this.getAdminList();
 		this.getChannelList();
 		this.getIgnoreList();
-		this.getAypwipList();
-		this.getColourList();
-		this.getCommandmentList();
-		this.getDeityList();
-		this.getEightballList();
-		this.getFlavourList();
 		this.getGreetingList();
-		this.getApprovedItems();
-		this.getPendingItems();
 
+		this.amusement.refreshDbLists();
 		this.story.refreshDbLists();
 		this.challenge.refreshDbLists();
 	}
@@ -1826,120 +1237,6 @@ public final class Tim extends PircBot {
 			PreparedStatement s = con.prepareStatement("DELETE FROM `ignores` WHERE `name` = ?;");
 			s.setString(1, username.toLowerCase());
 			s.executeUpdate();
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void getAypwipList() {
-		try {
-			con = pool.getConnection(timeout);
-
-			Statement s = con.createStatement();
-			s.executeQuery("SELECT `string` FROM `aypwips`");
-
-			ResultSet rs = s.getResultSet();
-			this.aypwips.clear();
-			while (rs.next()) {
-				this.aypwips.add(rs.getString("string"));
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void getColourList() {
-		try {
-			con = pool.getConnection(timeout);
-
-			Statement s = con.createStatement();
-			s.executeQuery("SELECT `string` FROM `colours`");
-
-			ResultSet rs = s.getResultSet();
-			this.colours.clear();
-			while (rs.next()) {
-				this.colours.add(rs.getString("string"));
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void getCommandmentList() {
-		try {
-			con = pool.getConnection(timeout);
-
-			Statement s = con.createStatement();
-			s.executeQuery("SELECT `string` FROM `commandments`");
-
-			ResultSet rs = s.getResultSet();
-			this.commandments.clear();
-			while (rs.next()) {
-				this.commandments.add(rs.getString("string"));
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void getDeityList() {
-		try {
-			con = pool.getConnection(timeout);
-
-			Statement s = con.createStatement();
-			s.executeQuery("SELECT `string` FROM `deities`");
-
-			ResultSet rs = s.getResultSet();
-			this.deities.clear();
-			while (rs.next()) {
-				this.deities.add(rs.getString("string"));
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void getEightballList() {
-		try {
-			con = pool.getConnection(timeout);
-
-			Statement s = con.createStatement();
-			s.executeQuery("SELECT `string` FROM `eightballs`");
-
-			ResultSet rs = s.getResultSet();
-			this.eightballs.clear();
-			while (rs.next()) {
-				this.eightballs.add(rs.getString("string"));
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void getFlavourList() {
-		try {
-			con = pool.getConnection(timeout);
-
-			Statement s = con.createStatement();
-			s.executeQuery("SELECT `string` FROM `flavours`");
-
-			ResultSet rs = s.getResultSet();
-			this.flavours.clear();
-			while (rs.next()) {
-				this.flavours.add(rs.getString("string"));
-			}
 
 			con.close();
 		} catch (SQLException ex) {
@@ -2072,208 +1369,12 @@ public final class Tim extends PircBot {
 		}
 	}
 
-	private boolean isChannelAdult( String channel ) {
+	protected boolean isChannelAdult( String channel ) {
 		boolean val = false;
 		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
 		if (cdata != null) {
 			val = cdata.isAdult;
 		}
 		return val;
-	}
-
-	private String generate_markhov( String type ) {
-		String sentence = "";
-		try {
-			con = pool.getConnection(timeout);
-			PreparedStatement nextList, getTotal;
-
-			if ("emote".equals(type)) {
-				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markhov_emote_data WHERE first = ? GROUP BY first");
-				nextList = con.prepareStatement("SELECT * FROM markhov_emote_data WHERE first = ? ORDER BY count ASC");
-			} else {
-				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markhov_say_data WHERE first = ? GROUP BY first");
-				nextList = con.prepareStatement("SELECT first, second, count FROM markhov_say_data WHERE first = ? ORDER BY count ASC");
-			}
-
-			getTotal.setString(1, "");
-			nextList.setString(1, "");
-
-			ResultSet totalRes = getTotal.executeQuery();
-			totalRes.next();
-			int total = totalRes.getInt("total");
-			int pick = this.rand.nextInt(total);
-
-			String lastWord = "";
-			int check = 0;
-
-			ResultSet nextRes = nextList.executeQuery();
-			while (nextRes.next()) {
-				check += nextRes.getInt("count");
-				if (check > pick) {
-					break;
-				}
-
-				sentence = nextRes.getString("second");
-				lastWord = nextRes.getString("second");
-			}
-
-			int maxLength = this.rand.nextInt(25) + 10;
-			int curWords = 1;
-			boolean keepGoing = true;
-
-			while (keepGoing || curWords < maxLength) {
-				keepGoing = true;
-
-				getTotal.setString(1, lastWord);
-				nextList.setString(1, lastWord);
-
-				totalRes = getTotal.executeQuery();
-				if (totalRes.next()) {
-					total = totalRes.getInt("total");
-				} else {
-					break;
-				}
-
-				if (total == 0) {
-					break;
-				}
-
-				pick = this.rand.nextInt(total);
-
-				check = 0;
-
-				nextRes = nextList.executeQuery();
-				while (nextRes.next()) {
-					check += nextRes.getInt("count");
-					if (check > pick) {
-						lastWord = nextRes.getString("second");
-
-						if ("".equals(lastWord)) {
-							break;
-						}
-
-						sentence += " " + nextRes.getString("second");
-						break;
-					}
-				}
-
-				if ("".equals(lastWord)) {
-					keepGoing = false;
-				}
-
-				curWords++;
-			}
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-		return sentence;
-	}
-
-	/**
-	 * Process a message to populate the Markhov data tables
-	 *
-	 * Takes a message and a type and builds Markhov chain data out of the message, skipping bad words and other things
-	 * we don't want to track such as email addresses and URLs.
-	 *
-	 * @param message What is the message to parse
-	 * @param type    What type of message was it (say or emote)
-	 *
-	 */
-	private void process_markhov( String message, String type ) {
-		String first;
-		String second = "";
-
-		String[] words = message.split(" ");
-		try {
-			con = pool.getConnection(timeout);
-			PreparedStatement addPair;
-			if ("emote".equals(type)) {
-				addPair = con.prepareStatement("INSERT INTO markhov_emote_data (first, second, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
-			} else {
-				addPair = con.prepareStatement("INSERT INTO markhov_say_data (first, second, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
-			}
-
-			for (int i = 0; i < ( words.length - 1 ); i++) {
-				if (skipMarkhovWord(words[i])) {
-					continue;
-				}
-
-				if (i == 0) {
-					first = "";
-					second = words[i];
-
-					addPair.setString(1, first);
-					addPair.setString(2, second);
-
-					addPair.executeUpdate();
-				}
-
-				if (skipMarkhovWord(words[i + 1])) {
-					continue;
-				}
-
-				first = words[i];
-				second = words[i + 1];
-
-				addPair.setString(1, first);
-				addPair.setString(2, second);
-
-				addPair.executeUpdate();
-			}
-
-			if (!second.isEmpty()) {
-				addPair.setString(1, second);
-				addPair.setString(2, "");
-
-				addPair.executeUpdate();
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private boolean skipMarkhovWord( String word ) {
-		try {
-			con = pool.getConnection(timeout);
-			PreparedStatement checkBad = con.prepareStatement("SELECT count(*) as matched FROM bad_words WHERE word LIKE ?");
-			ResultSet checkBadRes;
-
-			checkBad.setString(1, word);
-			checkBadRes = checkBad.executeQuery();
-			checkBadRes.next();
-
-			if (checkBadRes.getInt("matched") > 0) {
-				con.close();
-				return true;
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-		// If email, skip
-		if (Pattern.matches("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$", word)) {
-			return true;
-		}
-
-		// Checks for URL
-		try {
-			new URL(word);
-			return true;
-		} catch (MalformedURLException ex) {
-			// NOOP
-		}
-
-		// Phone number
-		if (Pattern.matches("^\\(?(\\d{3})\\)?[- ]?(\\d{3})[- ]?(\\d{4})$", word)) {
-			return true;
-		}
-
-		return false;
 	}
 }

@@ -61,21 +61,12 @@ public class ChainStory {
 			if (command.equals("chainlast")) {
 				showLast(channel);
 				return true;
-			} else {
-				if (command.equals("chainnew")) {
+			} else if (command.equals("chainnew")) {
 					addNew(channel, sender, argsString);
 					return true;
-				} else {
-					if (command.equals("chaininfo")) {
-						info(channel);
-						return true;
-					} else {
-						if (command.equals("chainhelp")) {
-							help(sender, channel);
-							return true;
-						}
-					}
-				}
+			} else if (command.equals("chaininfo")) {
+					info(channel);
+					return true;
 			}
 		}
 
@@ -96,18 +87,18 @@ public class ChainStory {
 		return false;
 	}
 
-	private void help( String target, String channel ) {
-		int msgdelay = 9;
+	protected int helpSection( String target, String channel, int delayCnt, int msgdelay ) {
 		String[] strs = {
-			"!chaininfo - General info about the current status of my navel.",
-			"!chainlast - The last line of my novel, so you have something to base the next one one.",
-			"!chainnew <new line for novel> - Provide the next line of my great cyberspace novel!",
-			"!chainhelp - Get help on my chain story commands",};
+			"Chain Story Commands:",
+			"    !chaininfo - General info about the current status of my navel.",
+			"    !chainlast - The last paragraph of my novel, so you have something to base the next one one.",
+			"    !chainnew <paragraph> - Provide the next paragraph of my great cyberspace novel!",};
 
-		this.ircclient.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new window or tab with the help text.)");
-		for (int i = 0; i < strs.length; ++i) {
-			this.ircclient.sendDelayedMessage(target, strs[i], msgdelay * i);
+		for (int i = 0; i < strs.length; ++i, ++delayCnt) {
+			ircclient.sendDelayedMessage(target, strs[i], msgdelay * delayCnt);
 		}
+		
+		return delayCnt;
 	}
 
 	public void refreshDbLists() {
@@ -143,7 +134,7 @@ public class ChainStory {
 				last_line = rs.getString("string");
 			}
 
-			this.ircclient.sendMessage(channel, "My novel is currently " + word_count + " words long, with sections written by " + author_count + " different people, and the last line is:");
+			this.ircclient.sendMessage(channel, "My novel is currently " + word_count + " words long, with paragraphs written by " + author_count + " different people, and the last paragraph is:");
 			this.ircclient.sendMessage(channel, last_line);
 			this.ircclient.sendMessage(channel, "You can read an excerpt in my profile here: http://www.nanowrimo.org/en/participants/timmybot");
 
@@ -162,7 +153,7 @@ public class ChainStory {
 
 			ResultSet rs = s.getResultSet();
 			while (rs.next()) {
-				this.ircclient.sendMessage(channel, "Let's see... the last line of my novel is...");
+				this.ircclient.sendMessage(channel, "Let's see... the last paragraph of my novel is...");
 				this.ircclient.sendMessage(channel, rs.getString("string"));
 			}
 
