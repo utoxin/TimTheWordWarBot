@@ -30,7 +30,6 @@ public class Challenge {
 	private List<String> approved = new ArrayList<String>();
 	private List<String> pending = new ArrayList<String>();
 	private long timeout = 3000;
-	private Connection con = null;
 
 	public Challenge( Tim ircclient ) {
 		this.ircclient = ircclient;
@@ -307,6 +306,7 @@ public class Challenge {
 	}
 
 	private void getApprovedChallenges() {
+		Connection con;
 		String value;
 		this.approved.clear();
 
@@ -326,6 +326,7 @@ public class Challenge {
 	}
 
 	private void getPendingChallenges() {
+		Connection con;
 		String value;
 		this.pending.clear();
 
@@ -346,6 +347,7 @@ public class Challenge {
 	}
 
 	private void insertPendingChallenge( String challenge ) {
+		Connection con;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
@@ -360,6 +362,7 @@ public class Challenge {
 	}
 
 	private void setChallengeApproved( String challenge, Boolean approved ) {
+		Connection con;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
@@ -375,6 +378,7 @@ public class Challenge {
 	}
 
 	private void removeChallenge( String challenge ) {
+		Connection con;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 

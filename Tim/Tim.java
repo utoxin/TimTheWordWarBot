@@ -173,7 +173,6 @@ public final class Tim extends PircBot {
 	private MarkhovChains markhov;
 	private Amusement amusement;
 	private long timeout = 3000;
-	private Connection con;
 
 	public Tim() {
 		Class c;
@@ -560,7 +559,7 @@ public final class Tim extends PircBot {
 			}
 
 			cdata.chatterTimer += this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-			this.sendMessage(this.debugChannel, "Chattered On: " + channel);
+			channelLog("Chattered On: " + channel);
 		}
 	}
 
@@ -1040,6 +1039,7 @@ public final class Tim extends PircBot {
 	}
 
 	private void boxodoom( String channel, String sender, String[] args ) {
+		Connection con;
 		long duration;
 		long base_wpm;
 		double modifier;
@@ -1142,6 +1142,7 @@ public final class Tim extends PircBot {
 	}
 
 	public String getSetting( String key ) {
+		Connection con;
 		String value = "";
 
 		try {
@@ -1176,6 +1177,7 @@ public final class Tim extends PircBot {
 	}
 
 	private void getAdminList() {
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1196,6 +1198,7 @@ public final class Tim extends PircBot {
 	}
 
 	private void getIgnoreList() {
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1215,6 +1218,7 @@ public final class Tim extends PircBot {
 	}
 
 	private void setIgnore( String username ) {
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1229,6 +1233,7 @@ public final class Tim extends PircBot {
 	}
 
 	private void removeIgnore( String username ) {
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1243,6 +1248,7 @@ public final class Tim extends PircBot {
 	}
 
 	private void getGreetingList() {
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1262,15 +1268,26 @@ public final class Tim extends PircBot {
 	}
 
 	private void getChannelList() {
+		Connection con;
+		ChannelInfo ci;
+		String channel;
+
+		this.channel_data.clear();
+
+		ci = new ChannelInfo(this.debugChannel, true, true, true, true);
+		ci.setChatterTimers(
+			Integer.parseInt(getSetting("chatterMaxBaseOdds")),
+			Integer.parseInt(getSetting("chatterNameMultiplier")),
+			Integer.parseInt(getSetting("chatterTimeMultiplier")),
+			Integer.parseInt(getSetting("chatterTimeDivisor")));
+
+		this.channel_data.put(this.debugChannel, ci);
+		
 		try {
 			con = pool.getConnection(timeout);
 
 			Statement s = con.createStatement();
 			ResultSet rs = s.executeQuery("SELECT * FROM `channels`");
-
-			this.channel_data.clear();
-			ChannelInfo ci;
-			String channel;
 
 			while (rs.next()) {
 				channel = rs.getString("channel").toLowerCase();
@@ -1291,6 +1308,7 @@ public final class Tim extends PircBot {
 	}
 
 	private void saveChannel( String channel ) {
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1309,6 +1327,7 @@ public final class Tim extends PircBot {
 	}
 
 	private void deleteChannel( String channel ) {
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1326,6 +1345,7 @@ public final class Tim extends PircBot {
 	}
 
 	private void setChannelAdultFlag( String channel, boolean adult ) {
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1347,6 +1367,7 @@ public final class Tim extends PircBot {
 	}
 
 	private void setChannelMuzzledFlag( String channel, boolean muzzled ) {
+		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1374,5 +1395,9 @@ public final class Tim extends PircBot {
 			val = cdata.isAdult;
 		}
 		return val;
+	}
+	
+	protected void channelLog( String message ) {
+		this.sendMessage(this.debugChannel, message);
 	}
 }

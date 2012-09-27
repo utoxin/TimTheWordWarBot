@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 public class MarkhovChains {
 	Tim ircclient;
 	private long timeout = 3000;
-	private Connection con = null;
 
 	public MarkhovChains( Tim ircclient ) {
 		this.ircclient = ircclient;
@@ -80,6 +79,7 @@ public class MarkhovChains {
 	}
 
 	public String generate_markhov( String type ) {
+		Connection con = null;
 		String sentence = "";
 		try {
 			con = ircclient.pool.getConnection(timeout);
@@ -161,9 +161,19 @@ public class MarkhovChains {
 
 				curWords++;
 			}
-			con.close();
+
+			nextRes.close();
+			totalRes.close();
+			nextList.close();
+			getTotal.close();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				con.close();
+			} catch (SQLException ex) {
+				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 
 		return sentence;
@@ -180,6 +190,7 @@ public class MarkhovChains {
 	 *
 	 */
 	public void process_markhov( String message, String type ) {
+		Connection con = null;
 		String first;
 		String second = "";
 
@@ -228,13 +239,21 @@ public class MarkhovChains {
 				addPair.executeUpdate();
 			}
 
-			con.close();
+			addPair.close();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				con.close();
+			} catch (SQLException ex) {
+				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 
 	private boolean skipMarkhovWord( String word ) {
+		Connection con = null;
+		boolean foundBadWord = false;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 			PreparedStatement checkBad = con.prepareStatement("SELECT count(*) as matched FROM bad_words WHERE word LIKE ?");
@@ -245,15 +264,25 @@ public class MarkhovChains {
 			checkBadRes.next();
 
 			if (checkBadRes.getInt("matched") > 0) {
-				con.close();
-				return true;
+				foundBadWord = true;
 			}
 
-			con.close();
+			checkBadRes.close();
+			checkBad.close();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
+		} finally {
+			try {
+				con.close();
+			} catch (SQLException ex) {
+				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			}
 
+			if (foundBadWord) {
+				return true;
+			}
+		}
+		
 		// If email, skip
 		if (Pattern.matches("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$", word)) {
 			return true;

@@ -26,7 +26,6 @@ import java.util.logging.Logger;
 public class ChainStory {
 	Tim ircclient;
 	private long timeout = 3000;
-	private Connection con = null;
 
 	public ChainStory( Tim ircclient ) {
 		this.ircclient = ircclient;
@@ -105,6 +104,7 @@ public class ChainStory {
 	}
 
 	public void info( String channel ) {
+		Connection con;
 		String word_count = "", last_line = "", author_count = "";
 		ResultSet rs;
 		PreparedStatement s;
@@ -145,6 +145,7 @@ public class ChainStory {
 	}
 
 	public void showLast( String channel ) {
+		Connection con;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
@@ -164,6 +165,7 @@ public class ChainStory {
 	}
 
 	public void addNew( String channel, String sender, String message ) {
+		Connection con;
 		if ("".equals(message)) {
 			this.ircclient.sendAction(channel, "blinks, and looks confused. \"But there's nothing there. That won't help my wordcount!\"");
 		} else {

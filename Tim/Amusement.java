@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 public class Amusement {
 	Tim ircclient;
 	private long timeout = 3000;
-	private Connection con = null;
 	private List<String> approved_items = new ArrayList<String>();
 	private List<String> pending_items = new ArrayList<String>();
 	private List<String> colours = new ArrayList<String>();
@@ -314,13 +313,13 @@ public class Amusement {
 		} else if ("eightball".equals(action)) {
 			eightball(channel, sender, true);
 		} else if ("fridge".equals(action)) {
-			throwFridge(channel, sender, actions, false);
+			throwFridge(channel, sender, null, false);
 		} else if ("defenestrate".equals(action)) {
-			defenestrate(channel, sender, actions, false);
+			defenestrate(channel, sender, null, false);
 		} else if ("sing".equals(action)) {
 			sing(channel);
 		} else if ("foof".equals(action)) {
-			foof(channel, sender, actions, false);
+			foof(channel, sender, null, false);
 		} else if ("dance".equals(action)) {
 			dance(channel);
 		}
@@ -411,6 +410,7 @@ public class Amusement {
 	}
 
 	protected void sing( String channel ) {
+		Connection con;
 		int r = ircclient.rand.nextInt(100);
 
 		String response;
@@ -440,6 +440,7 @@ public class Amusement {
 	}
 
 	protected void dance( String channel ) {
+		Connection con;
 		int r = ircclient.rand.nextInt(100);
 
 		String response;
@@ -653,6 +654,7 @@ public class Amusement {
 	}
 
 	protected void getApprovedItems() {
+		Connection con;
 		String value;
 
 		try {
@@ -673,6 +675,7 @@ public class Amusement {
 	}
 
 	protected void getPendingItems() {
+		Connection con;
 		String value;
 		this.pending_items.clear();
 
@@ -693,6 +696,7 @@ public class Amusement {
 	}
 
 	protected void insertPendingItem( String item ) {
+		Connection con;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
@@ -707,6 +711,7 @@ public class Amusement {
 	}
 
 	protected void setItemApproved( String item, Boolean approved ) {
+		Connection con;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
@@ -722,6 +727,7 @@ public class Amusement {
 	}
 
 	protected void removeItem( String item ) {
+		Connection con;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
@@ -736,6 +742,7 @@ public class Amusement {
 	}
 
 	protected void getAypwipList() {
+		Connection con;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
@@ -755,6 +762,7 @@ public class Amusement {
 	}
 
 	protected void getColourList() {
+		Connection con;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
@@ -774,6 +782,7 @@ public class Amusement {
 	}
 
 	protected void getCommandmentList() {
+		Connection con;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
@@ -793,6 +802,7 @@ public class Amusement {
 	}
 
 	protected void getDeityList() {
+		Connection con;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
@@ -812,6 +822,7 @@ public class Amusement {
 	}
 
 	protected void getEightballList() {
+		Connection con;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
@@ -831,6 +842,7 @@ public class Amusement {
 	}
 
 	protected void getFlavourList() {
+		Connection con;
 		try {
 			con = ircclient.pool.getConnection(timeout);
 
