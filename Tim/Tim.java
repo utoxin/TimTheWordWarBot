@@ -666,7 +666,7 @@ public final class Tim extends PircBot {
 		}
 
 		// Random Actions
-		if (cdata.doRandomActions) {
+		if (cdata.doRandomActions && !didChatter) {
 			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 			long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
 			if (odds > cdata.chatterMaxBaseOdds) {
@@ -682,63 +682,58 @@ public final class Tim extends PircBot {
 			if (i < odds) {
 				int base_odds = 20;
 
-				if (this.rand.nextInt(100) < base_odds) {
-					this.getItem(channel, sender, null);
-					base_odds -= 5;
-					cdata.chatterTimer = cdata.chatterTimer
-										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-					didChatter = true;
-				}
+				while (!didChatter) {
+					if (this.rand.nextInt(100) < base_odds) {
+						this.getItem(channel, sender, null);
+						cdata.chatterTimer = cdata.chatterTimer
+											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+						didChatter = true;
+					}
 
-				if (this.rand.nextInt(100) < base_odds) {
-					this.challenge.issueChallenge(channel, sender, null);
-					base_odds -= 5;
-					cdata.chatterTimer = cdata.chatterTimer
-										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-					didChatter = true;
-				}
+					if (this.rand.nextInt(100) < base_odds && !didChatter) {
+						this.challenge.issueChallenge(channel, sender, null);
+						cdata.chatterTimer = cdata.chatterTimer
+											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+						didChatter = true;
+					}
 
-				if (this.rand.nextInt(100) < base_odds) {
-					int r = this.rand.nextInt(this.eightballs.size());
-					this.sendDelayedAction(channel, "mutters under his breath, \""
-													+ this.eightballs.get(r) + "\"",
-						this.rand.nextInt(1500));
-					base_odds -= 5;
-					cdata.chatterTimer = cdata.chatterTimer
-										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-					didChatter = true;
-				}
+					if (this.rand.nextInt(100) < base_odds && !didChatter) {
+						int r = this.rand.nextInt(this.eightballs.size());
+						this.sendDelayedAction(channel, "mutters under his breath, \""
+														+ this.eightballs.get(r) + "\"",
+							this.rand.nextInt(1500));
+						cdata.chatterTimer = cdata.chatterTimer
+											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+						didChatter = true;
+					}
 
-				if (this.rand.nextInt(100) < base_odds) {
-					this.throwFridge(channel, sender, sender.split(" ", 0), false);
-					base_odds -= 5;
-					cdata.chatterTimer = cdata.chatterTimer
-										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-					didChatter = true;
-				}
+					if (this.rand.nextInt(100) < base_odds && !didChatter) {
+						this.throwFridge(channel, sender, sender.split(" ", 0), false);
+						cdata.chatterTimer = cdata.chatterTimer
+											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+						didChatter = true;
+					}
 
-				if (this.rand.nextInt(100) < base_odds) {
-					this.defenestrate(channel, sender, sender.split(" "), false);
-					base_odds -= 5;
-					cdata.chatterTimer = cdata.chatterTimer
-										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-					didChatter = true;
-				}
+					if (this.rand.nextInt(100) < base_odds && !didChatter) {
+						this.defenestrate(channel, sender, sender.split(" "), false);
+						cdata.chatterTimer = cdata.chatterTimer
+											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+						didChatter = true;
+					}
 
-				if (this.rand.nextInt(100) < base_odds) {
-					this.sing(channel);
-					base_odds -= 5;
-					cdata.chatterTimer = cdata.chatterTimer
-										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-					didChatter = true;
-				}
+					if (this.rand.nextInt(100) < base_odds && !didChatter) {
+						this.sing(channel);
+						cdata.chatterTimer = cdata.chatterTimer
+											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+						didChatter = true;
+					}
 
-				if (this.rand.nextInt(100) < base_odds) {
-					this.foof(channel, sender, sender.split(" "), false);
-					base_odds -= 5;
-					cdata.chatterTimer = cdata.chatterTimer
-										 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-					didChatter = true;
+					if (this.rand.nextInt(100) < base_odds && !didChatter) {
+						this.foof(channel, sender, sender.split(" "), false);
+						cdata.chatterTimer = cdata.chatterTimer
+											 + this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+						didChatter = true;
+					}
 				}
 			}
 		}
@@ -2216,6 +2211,7 @@ public final class Tim extends PircBot {
 
 				curWords++;
 			}
+			con.close();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
