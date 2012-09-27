@@ -180,6 +180,8 @@ public final class Tim extends PircBot {
 	protected ConnectionPool pool;
 	private ChainStory story;
 	private Challenge challenge;
+	private long timeout = 3000;
+	private Connection con;
 
 	public Tim() {
 		Class c;
@@ -1128,8 +1130,6 @@ public final class Tim extends PircBot {
 			response = "screeches out some words from '%s', and all the nearby windows shatter... Ouch.";
 		}
 
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 			PreparedStatement songName = con.prepareStatement("SELECT name FROM songs ORDER BY rand() LIMIT 1");
@@ -1545,8 +1545,6 @@ public final class Tim extends PircBot {
 		long base_wpm;
 		double modifier;
 		int goal;
-		long timeout = 3000;
-		Connection con;
 
 		if (args.length != 2) {
 			this.sendMessage(channel, sender
@@ -1645,8 +1643,6 @@ public final class Tim extends PircBot {
 	}
 
 	public String getSetting( String key ) {
-		long timeout = 3000;
-		Connection con;
 		String value = "";
 
 		try {
@@ -1670,8 +1666,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void getApprovedItems() {
-		long timeout = 3000;
-		Connection con;
 		String value;
 
 		try {
@@ -1692,8 +1686,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void getPendingItems() {
-		long timeout = 3000;
-		Connection con;
 		String value;
 		this.pending_items.clear();
 
@@ -1714,8 +1706,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void insertPendingItem( String item ) {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1730,8 +1720,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void setItemApproved( String item, Boolean approved ) {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1747,8 +1735,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void removeItem( String item ) {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1781,8 +1767,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void getAdminList() {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1803,8 +1787,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void getIgnoreList() {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1824,8 +1806,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void setIgnore( String username ) {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1840,8 +1820,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void removeIgnore( String username ) {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1856,8 +1834,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void getAypwipList() {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1877,8 +1853,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void getColourList() {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1898,8 +1872,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void getCommandmentList() {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1919,8 +1891,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void getDeityList() {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1940,8 +1910,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void getEightballList() {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1961,8 +1929,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void getFlavourList() {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -1982,8 +1948,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void getGreetingList() {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2003,8 +1967,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void getChannelList() {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2034,8 +1996,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void saveChannel( String channel ) {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2054,8 +2014,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void deleteChannel( String channel ) {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2073,8 +2031,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void setChannelAdultFlag( String channel, boolean adult ) {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2096,8 +2052,6 @@ public final class Tim extends PircBot {
 	}
 
 	private void setChannelMuzzledFlag( String channel, boolean muzzled ) {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -2129,8 +2083,6 @@ public final class Tim extends PircBot {
 
 	private String generate_markhov( String type ) {
 		String sentence = "";
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 			PreparedStatement nextList, getTotal;
@@ -2234,8 +2186,6 @@ public final class Tim extends PircBot {
 		String second = "";
 
 		String[] words = message.split(" ");
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 			PreparedStatement addPair;
@@ -2287,8 +2237,6 @@ public final class Tim extends PircBot {
 	}
 
 	private boolean skipMarkhovWord( String word ) {
-		long timeout = 3000;
-		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 			PreparedStatement checkBad = con.prepareStatement("SELECT count(*) as matched FROM bad_words WHERE word LIKE ?");

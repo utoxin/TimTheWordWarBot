@@ -58,7 +58,7 @@ public class WordWar {
 		int count = 0;
 		long minutes;
 		long seconds;
-		minutes = seconds = 0;
+
 		count++;
 		String about = "WordWar '" + this.getName() + "':";
 		if (this.time_to_start > 0) {
