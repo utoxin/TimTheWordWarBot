@@ -12,8 +12,6 @@
  */
 package Tim;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.Semaphore;

@@ -99,8 +99,7 @@ public class Amusement {
 				throwFridge(channel, sender, args, true);
 				return true;
 			} else if (command.equals("dance")) {
-				// TODO: Update this!
-				ircclient.sendAction(channel, "dances a cozy jig");
+				dance(channel);
 				return true;
 			} else if (command.equals("lick")) {
 				lick(channel, sender, args);
@@ -436,7 +435,35 @@ public class Amusement {
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
+	}
 
+	protected void dance( String channel ) {
+		int r = ircclient.rand.nextInt(100);
+
+		String response;
+		if (r > 90) {
+			response = "dances the %s so well he should be on Dancing with the Stars!";
+		} else if (r > 60) {
+			response = "does the %s, and tears up the dance floor.";
+		} else if (r > 30) {
+			response = "attempts to do the %s, but obviously needs more practice.";
+		} else {
+			response = "flails about in a fashion that vaguely resembles the %s. Sort of.";
+		}
+
+		try {
+			con = ircclient.pool.getConnection(timeout);
+			PreparedStatement danceName = con.prepareStatement("SELECT name FROM dances ORDER BY rand() LIMIT 1");
+			ResultSet danceNameRes;
+
+			danceNameRes = danceName.executeQuery();
+			danceNameRes.next();
+
+			ircclient.sendDelayedAction(channel, String.format(response, danceNameRes.getString("name")), ircclient.rand.nextInt(1500));
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	protected void commandment( String channel, String sender, String[] args ) {
