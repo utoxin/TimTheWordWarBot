@@ -214,7 +214,7 @@ public final class Tim extends PircBot {
 
 		// Read message delay from DB, but never go below 100ms.
 		long delay = Long.parseLong(getSetting("max_rate"));
-		delay = Math.max(delay, 25);
+		delay = Math.max(delay, 100);
 		this.setMessageDelay(delay);
 
 		this.story = new ChainStory(this);
@@ -544,12 +544,14 @@ public final class Tim extends PircBot {
 				actions = new String[] {
 					"markhov",
 					"challenge",
-					"amusement"
+					"amusement",
+					"amusement",
 				};
 			} else if (cdata.doMarkhov && cdata.doRandomActions) {
 				actions = new String[] {
 					"challenge",
-					"amusement"
+					"amusement",
+					"amusement",
 				};
 			} else {
 				return;
@@ -600,14 +602,16 @@ public final class Tim extends PircBot {
 		 * in lots of spam when they come back.
 		 */
 		for (ChannelInfo cdata : this.channel_data.values()) {
+			cdata = this.channel_data.get(cdata.Name);
+			
 			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 			long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
 			if (odds > cdata.chatterMaxBaseOdds) {
 				odds = cdata.chatterMaxBaseOdds;
 			}
 			
-			odds /= 2;
-
+			channelLog("Channel: " + cdata.Name + "  Odds: " + Long.toString(odds) + "   Timer: " + Long.toString(cdata.chatterTimer));
+			
 			if (this.rand.nextInt(100) < odds) {
 				String[] actions;
 
