@@ -1262,7 +1262,6 @@ public final class Tim extends PircBot {
 				this.greetings.add(rs.getString("string"));
 			}
 			rs.close();
-			s.close();
 
 			s.executeQuery("SELECT `string` FROM `extra_greetings`");
 			rs = s.getResultSet();
@@ -1324,7 +1323,7 @@ public final class Tim extends PircBot {
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("INSERT INTO `channels` (`channel`, `adult`, `muzzled`) VALUES (?, 0, 0)");
+			PreparedStatement s = con.prepareStatement("INSERT INTO `channels` (`channel`, `adult`, `markhov`, `random`, `command`) VALUES (?, 0, 1, 1, 1)");
 			s.setString(1, channel.toLowerCase());
 			s.executeUpdate();
 
