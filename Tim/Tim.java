@@ -834,6 +834,7 @@ public final class Tim extends PircBot {
 		}
 
 		this.challenge.adminHelpSection(target, channel);
+		this.markhov.adminHelpSection(target, channel);
 	}
 
 	// !endwar <name>

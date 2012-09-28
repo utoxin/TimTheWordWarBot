@@ -83,6 +83,17 @@ public class MarkhovChains {
 		return false;
 	}
 
+
+	protected void adminHelpSection( String target, String channel ) {
+		String[] strs = {
+			"Markhov Chain Commands:",
+			"    $badword <word> - Add <word> to the 'bad word' list, and purge from the chain data.",};
+
+		for (int i = 0; i < strs.length; ++i) {
+			ircclient.sendNotice(target, strs[i]);
+		}
+	}
+
 	public void refreshDbLists() {
 	}
 
