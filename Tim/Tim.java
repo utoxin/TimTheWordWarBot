@@ -616,16 +616,15 @@ public final class Tim extends PircBot {
 	}
 
 	@Override
-	public void onNotice( String sender, String nick, String hostname,
-						  String target, String notice ) {
-		if (sender.equals("NickServ") && notice.contains("This nick")) {
-			this.sendMessage("NickServ", "identify " + this.password);
+	public void onConnect() {
+		if (!"".equals(this.password)) {
+			this.identify(this.password);
+		}
 
-			String postConnect = getSetting("post_identify");
+		String postConnect = getSetting("post_identify");
 
-			if (!"".equals(postConnect)) {
-				this.sendRawLineViaQueue(postConnect);
-			}
+		if (!"".equals(postConnect)) {
+			this.sendRawLineViaQueue(postConnect);
 		}
 	}
 	
