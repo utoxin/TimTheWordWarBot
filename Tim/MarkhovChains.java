@@ -105,7 +105,11 @@ public class MarkhovChains {
 		String action = actions[ircclient.rand.nextInt(actions.length)];
 		
 		if ("markhov".equals(action)) {
-			ircclient.sendDelayedMessage(channel, generate_markhov(type), ircclient.rand.nextInt(1500));
+			if ("say".equals(type)) {
+				ircclient.sendDelayedMessage(channel, generate_markhov(type), ircclient.rand.nextInt(1500));
+			} else {
+				ircclient.sendDelayedAction(channel, generate_markhov(type), ircclient.rand.nextInt(1500));
+			}
 		}
 	}
 

@@ -44,7 +44,7 @@ public final class Tim extends PircBot {
 		}
 	}
 
-	protected enum ActionType {
+	public enum ActionType {
 		MESSAGE, ACTION, NOTICE
 	};
 
