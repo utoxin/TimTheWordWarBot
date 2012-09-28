@@ -300,9 +300,16 @@ public class Amusement {
 	}
 
 	protected void randomAction( String sender, String channel, String message, String type ) {
-		String[] actions = {
-			"item", "eightball", "fridge", "defenestrate", "sing", "foof", "dance"
-		};
+		String[] actions;
+		if (sender == null) {
+			actions = new String[] {
+				"eightball", "sing", "dance"
+			};
+		} else {
+			actions = new String[] {
+				"item", "eightball", "fridge", "defenestrate", "sing", "foof", "dance"
+			};
+		}
 
 		String action = actions[ircclient.rand.nextInt(actions.length)];
 

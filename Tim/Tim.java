@@ -566,7 +566,7 @@ public final class Tim extends PircBot {
 			}
 
 			cdata.chatterTimer += this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-			channelLog("Chattered On: " + channel);
+			channelLog("Chattered On: " + cdata.Name + "   Odds: " + Long.toString(odds) + "%");
 		}
 	}
 
@@ -591,6 +591,59 @@ public final class Tim extends PircBot {
 		}
 	}
 
+	@Override
+	protected void onServerPing(String response) {
+		/**
+		 * This loop is used to reduce the chatter odds on idle channels, by periodically triggering idle chatter
+		 * in channels. If they currently have chatter turned off, this simply decreases their timer, and then
+		 * goes on. That way, the odds don't build up to astronomical levels while people are idle or away, resulting
+		 * in lots of spam when they come back.
+		 */
+		for (ChannelInfo cdata : this.channel_data.values()) {
+			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
+			long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
+			if (odds > cdata.chatterMaxBaseOdds) {
+				odds = cdata.chatterMaxBaseOdds;
+			}
+			
+			odds /= 2;
+
+			if (this.rand.nextInt(100) < odds) {
+				String[] actions;
+
+				cdata.chatterTimer += this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+				channelLog("Idle Chattered On: " + cdata.Name + "   Odds: " + Long.toString(odds) + "%");
+
+				if (cdata.doMarkhov && !cdata.doRandomActions) {
+					actions = new String[] {
+						"markhov"
+					};
+				} else if (cdata.doMarkhov && cdata.doRandomActions) {
+					actions = new String[] {
+						"markhov",
+						"amusement"
+					};
+				} else if (cdata.doMarkhov && cdata.doRandomActions) {
+					actions = new String[] {
+						"amusement"
+					};
+				} else {
+					continue;
+				}
+
+				String action = actions[rand.nextInt(actions.length)];
+
+				if ("markhov".equals(action)) {
+					markhov.randomAction(null, cdata.Name, null, "say");
+				} else if ("amusement".equals(action)) {
+					amusement.randomAction(null, cdata.Name, null, "say");
+				}
+			}
+		}
+
+		super.onServerPing(response);
+	}
+	
 	@Override
 	protected void onInvite( String targetNick, String sourceNick,
 							 String sourceLogin, String sourceHostname, String channel ) {
