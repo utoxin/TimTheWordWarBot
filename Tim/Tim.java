@@ -18,6 +18,7 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.jibble.pircbot.Colors;
 import org.jibble.pircbot.PircBot;
 import org.jibble.pircbot.User;
 import snaq.db.ConnectionPool;
@@ -283,6 +284,8 @@ public final class Tim extends PircBot {
 							 String target, String action ) {
 
 		ChannelInfo cdata = this.channel_data.get(target.toLowerCase());
+		
+		action = Colors.removeFormattingAndColors(action);
 
 		if (this.admin_list.contains(sender)) {
 			if (action.equalsIgnoreCase("punches " + this.getNick()
@@ -307,6 +310,8 @@ public final class Tim extends PircBot {
 						   String hostname, String message ) {
 
 		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
+		
+		message = Colors.removeFormattingAndColors(message);
 
 		if (!this.ignore_list.contains(sender)) {
 			// Find all messages that start with ! and pass them to a method for
@@ -567,6 +572,8 @@ public final class Tim extends PircBot {
 	@Override
 	protected void onPrivateMessage( String sender, String login,
 									 String hostname, String message ) {
+		message = Colors.removeFormattingAndColors(message);
+
 		if (this.admin_list.contains(sender)) {
 			String[] args = message.split(" ");
 			if (args != null && args.length > 2) {
