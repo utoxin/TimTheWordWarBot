@@ -501,6 +501,7 @@ public final class Tim extends PircBot {
 			} else if (this.amusement.parseAdminCommand(channel, sender, message)) {
 			} else if (this.story.parseAdminCommand(channel, sender, message)) {
 			} else if (this.challenge.parseAdminCommand(channel, sender, message)) {
+			} else if (this.markhov.parseAdminCommand(channel, sender, message)) {
 			} else {
 				this.sendMessage(channel, "$" + command + " is not a valid admin command - try $help");
 			}

@@ -60,6 +60,26 @@ public class MarkhovChains {
 	 * @return True if message was handled, false otherwise
 	 */
 	public boolean parseAdminCommand( String channel, String sender, String message ) {
+		String command;
+		String argsString;
+		String[] args = null;
+
+		int space = message.indexOf(" ");
+		if (space > 0) {
+			command = message.substring(0, space).toLowerCase();
+			argsString = message.substring(space + 1);
+			args = argsString.split(" ", 0);
+		} else {
+			command = message.toLowerCase();
+		}
+
+		if (command.equals("badword")) {
+			if (args != null && args.length == 1) {
+				addBadWord(args[0], channel);
+				return true;
+			}
+		}
+
 		return false;
 	}
 
@@ -78,6 +98,40 @@ public class MarkhovChains {
 		}
 	}
 
+	public void addBadWord( String word, String channel ) {
+		Connection con;
+		if ("".equals(word)) {
+			this.ircclient.sendMessage(channel, "I can't add nothing. Please provide the bad word.");
+		} else {
+			try {
+				con = ircclient.pool.getConnection(timeout);
+
+				PreparedStatement s = con.prepareStatement("REPLACE INTO bad_words SET word = ?");
+				s.setString(1, word);
+				s.executeUpdate();
+				s.close();
+				
+				s = con.prepareStatement("DELETE FROM markhov_say_data WHERE first = ? OR second = ?");
+				s.setString(1, word);
+				s.setString(2, word);
+				s.executeUpdate();
+				s.close();
+				
+				s = con.prepareStatement("DELETE FROM markhov_emote_data WHERE first = ? OR second = ?");
+				s.setString(1, word);
+				s.setString(2, word);
+				s.executeUpdate();
+				s.close();
+				
+				this.ircclient.sendAction(channel, "quickly goes through his records, and purges all knowledge of that horrible word.");
+
+				con.close();
+			} catch (SQLException ex) {
+				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+	}
+	
 	public String generate_markhov( String type ) {
 		Connection con = null;
 		String sentence = "";
