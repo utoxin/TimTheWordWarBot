@@ -1,1 +1,18 @@
-A wordwar bot created for use during NaNoWriMo.
+Timmy - The NaNoWriMo Wordwar Bot
+
+Timmy is an IRC bot created for use in NaNoWriMo chatrooms. He has commands to
+run short wordwars (contests to write as many words as possible in a set period
+of time), timers, writing challenges, and possibly other useful commands.
+
+He also has a plethora of silly commands and abilities that serve to help
+entertain the writers in the chatroom. These abilities can be disabled in any
+given channel, if the people in that channel would prefer to only use the useful
+commands.
+
+Timmy was originally created in PHP in 2008 by MysteriousAges, and ported to
+Java in 2009. Utoxin started helping in 2010, and has done significant work in
+cleaning up the codebase and adding new advanced functionality such as the
+Markhov Chain chatter code.
+
+GitHub Repository: https://github.com/MysteriousAges/TimTheWordWarBot
+NaNoWriMo Profile: http://www.nanowrimo.org/en/participants/timmybot

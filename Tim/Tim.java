@@ -159,6 +159,7 @@ public final class Tim extends PircBot {
 	private Set<String> ignore_list = new HashSet<String>(16);
 	private Hashtable<String, ChannelInfo> channel_data = new Hashtable<String, ChannelInfo>(62);
 	private List<String> greetings = new ArrayList<String>();
+	private List<String> extra_greetings = new ArrayList<String>();
 	private Map<String, WordWar> wars;
 	private WarClockThread warticker;
 	private Timer ticker;
@@ -639,7 +640,7 @@ public final class Tim extends PircBot {
 	public void onJoin( String channel, String sender, String login,
 						String hostname ) {
 		if (!sender.equals(this.getName()) && !login.equals(this.getLogin())) {
-			String message = "Hello, " + sender + "!";
+			String message = greetings.get(rand.nextInt(greetings.size()));
 			if (this.wars.size() > 0) {
 				int warscount = 0;
 				String winfo = "";
@@ -661,7 +662,7 @@ public final class Tim extends PircBot {
 							   + ( warscount > 0 ? ": " + winfo : "." );
 				}
 			}
-			this.sendDelayedMessage(channel, message, 1600);
+			this.sendDelayedMessage(channel, String.format(message, sender), 1000);
 
 			if (Pattern.matches("(?i)mib_......", sender)
 				|| Pattern.matches("(?i)guest.*", sender)) {
@@ -669,14 +670,14 @@ public final class Tim extends PircBot {
 					channel,
 					String.format(
 					"%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere",
-					sender), 2400);
+					sender), 1500);
 			}
 
 			int r = this.rand.nextInt(100);
 
-			if (r < 4) {
-				r = this.rand.nextInt(this.greetings.size());
-				this.sendDelayedMessage(channel, this.greetings.get(r), 2400);
+			if (r < 10) {
+				r = this.rand.nextInt(this.extra_greetings.size());
+				this.sendDelayedMessage(channel, this.extra_greetings.get(r), 2000);
 			}
 		}
 	}
@@ -1251,15 +1252,26 @@ public final class Tim extends PircBot {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
-
 			Statement s = con.createStatement();
-			s.executeQuery("SELECT `string` FROM `greetings`");
+			ResultSet rs;
 
-			ResultSet rs = s.getResultSet();
+			s.executeQuery("SELECT `string` FROM `greetings`");
+			rs = s.getResultSet();
 			this.greetings.clear();
 			while (rs.next()) {
 				this.greetings.add(rs.getString("string"));
 			}
+			rs.close();
+			s.close();
+
+			s.executeQuery("SELECT `string` FROM `extra_greetings`");
+			rs = s.getResultSet();
+			this.extra_greetings.clear();
+			while (rs.next()) {
+				this.extra_greetings.add(rs.getString("string"));
+			}
+			rs.close();
+			s.close();
 
 			con.close();
 		} catch (SQLException ex) {
