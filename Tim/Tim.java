@@ -603,19 +603,18 @@ public final class Tim extends PircBot {
 		 */
 		for (ChannelInfo cdata : this.channel_data.values()) {
 			cdata = this.channel_data.get(cdata.Name);
-			
+
 			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
-			long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
-			if (odds > cdata.chatterMaxBaseOdds) {
-				odds = cdata.chatterMaxBaseOdds;
-			}
-			
-			channelLog("Channel: " + cdata.Name + "  Odds: " + Long.toString(odds) + "   Timer: " + Long.toString(cdata.chatterTimer));
-			
-			if (this.rand.nextInt(100) < odds) {
+			long odds = (long) ( Math.log(elapsed) * cdata.chatterTimeMultiplier );
+
+			if (odds > (cdata.chatterMaxBaseOdds * 2)) {
 				String[] actions;
 
-				cdata.chatterTimer += this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+				cdata.chatterTimer += this.rand.nextInt((int) (elapsed / cdata.chatterTimeDivisor));
+				if (cdata.chatterTimeDivisor > 1) {
+					cdata.chatterTimer += this.rand.nextInt((int) (elapsed / cdata.chatterTimeDivisor));
+				}
+
 				channelLog("Idle Chattered On: " + cdata.Name + "   Odds: " + Long.toString(odds) + "%");
 
 				if (cdata.doMarkhov && !cdata.doRandomActions) {
