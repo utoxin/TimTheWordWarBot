@@ -13,10 +13,8 @@
 package Tim;
 
 import com.mysql.jdbc.Driver;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import snaq.db.ConnectionPool;
@@ -29,7 +27,12 @@ public class DBAccess {
 	private static DBAccess instance;
 
 	private long timeout = 3000;
-	
+
+	protected Set<String> admin_list = new HashSet<String>(16);
+	protected Hashtable<String, ChannelInfo> channel_data = new Hashtable<String, ChannelInfo>(62);
+	protected List<String> extra_greetings = new ArrayList<String>();
+	protected List<String> greetings = new ArrayList<String>();
+	protected Set<String> ignore_list = new HashSet<String>(16);	
 	protected ConnectionPool pool;
 
 	static {
@@ -65,6 +68,141 @@ public class DBAccess {
 		return instance;
     }
 
+	private void deleteChannel( String channel ) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("DELETE FROM `channels` WHERE `channel` = ?");
+			s.setString(1, channel.toLowerCase());
+			s.executeUpdate();
+
+			// Will do nothing if the channel is not in the list.
+			this.channel_data.remove(channel.toLowerCase());
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void deleteIgnore( String username ) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("DELETE FROM `ignores` WHERE `name` = ?;");
+			s.setString(1, username.toLowerCase());
+			s.executeUpdate();
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getAdminList() {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			Statement s = con.createStatement();
+			s.executeQuery("SELECT `name` FROM `admins`");
+
+			ResultSet rs = s.getResultSet();
+
+			this.admin_list.clear();
+			while (rs.next()) {
+				this.admin_list.add(rs.getString("name").toLowerCase());
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getChannelList() {
+		Connection con;
+		ChannelInfo ci;
+		String channel;
+
+		this.channel_data.clear();
+
+		try {
+			con = pool.getConnection(timeout);
+
+			Statement s = con.createStatement();
+			ResultSet rs = s.executeQuery("SELECT * FROM `channels`");
+
+			while (rs.next()) {
+				channel = rs.getString("channel").toLowerCase();
+				ci = new ChannelInfo(channel, rs.getBoolean("adult"), rs.getBoolean("markhov"), rs.getBoolean("random"), rs.getBoolean("command"));
+				ci.setChatterTimers(
+					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
+					Integer.parseInt(getSetting("chatterNameMultiplier")),
+					Integer.parseInt(getSetting("chatterTimeMultiplier")),
+					Integer.parseInt(getSetting("chatterTimeDivisor")));
+
+				this.channel_data.put(channel, ci);
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getGreetingList() {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+			Statement s = con.createStatement();
+			ResultSet rs;
+
+			s.executeQuery("SELECT `string` FROM `greetings`");
+			rs = s.getResultSet();
+			this.greetings.clear();
+			while (rs.next()) {
+				this.greetings.add(rs.getString("string"));
+			}
+			rs.close();
+
+			s.executeQuery("SELECT `string` FROM `extra_greetings`");
+			rs = s.getResultSet();
+			this.extra_greetings.clear();
+			while (rs.next()) {
+				this.extra_greetings.add(rs.getString("string"));
+			}
+			rs.close();
+			s.close();
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getIgnoreList() {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			Statement s = con.createStatement();
+			s.executeQuery("SELECT `name` FROM `ignores`");
+
+			ResultSet rs = s.getResultSet();
+			this.ignore_list.clear();
+			while (rs.next()) {
+				this.ignore_list.add(rs.getString("name").toLowerCase());
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
 	public String getSetting( String key ) {
 		Connection con;
 		String value = "";
@@ -87,5 +225,94 @@ public class DBAccess {
 		}
 
 		return value;
+	}
+
+	private void saveChannel( String channel ) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("INSERT INTO `channels` (`channel`, `adult`, `markhov`, `random`, `command`) VALUES (?, 0, 1, 1, 1)");
+			s.setString(1, channel.toLowerCase());
+			s.executeUpdate();
+
+			if (!this.channel_data.containsKey(channel.toLowerCase())) {
+				this.channel_data.put(channel.toLowerCase(), new ChannelInfo(channel.toLowerCase()));
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void saveIgnore( String username ) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("INSERT INTO `ignores` (`name`) VALUES (?);");
+			s.setString(1, username.toLowerCase());
+			s.executeUpdate();
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void setChannelAdultFlag( String channel, boolean adult ) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET adult = ? WHERE `channel` = ?");
+			s.setBoolean(1, adult);
+			s.setString(2, channel.toLowerCase());
+			s.executeUpdate();
+
+			if (adult) {
+				this.channel_data.get(channel.toLowerCase()).isAdult = true;
+			} else {
+				this.channel_data.get(channel.toLowerCase()).isAdult = false;
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void setChannelMuzzledFlag( String channel, boolean muzzled ) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `markhov` = ?, `random` = ?, `command` = ? WHERE `channel` = ?");
+			s.setBoolean(1, muzzled);
+			s.setBoolean(2, muzzled);
+			s.setBoolean(3, muzzled);
+			s.setString(2, channel.toLowerCase());
+			s.executeUpdate();
+
+			this.channel_data.get(channel.toLowerCase()).doMarkhov = muzzled;
+			this.channel_data.get(channel.toLowerCase()).doCommandActions = muzzled;
+			this.channel_data.get(channel.toLowerCase()).doRandomActions = muzzled;
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	public void refreshDbLists() {
+		this.getAdminList();
+		this.getChannelList();
+		this.getIgnoreList();
+		this.getGreetingList();
+
+//		this.amusement.refreshDbLists();
+//		this.story.refreshDbLists();
+//		this.challenge.refreshDbLists();
 	}
 }

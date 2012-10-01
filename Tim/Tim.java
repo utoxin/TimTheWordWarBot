@@ -14,41 +14,46 @@ package Tim;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.sql.*;
-import java.util.*;
-import java.util.concurrent.Semaphore;
+import java.util.Enumeration;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
 import org.pircbotx.exception.NickAlreadyInUseException;
-import snaq.db.ConnectionPool;
 
 public class Tim {
+	public static Amusement amusement;
+	public static PircBotX bot;
+	public static Challenge challenge;
 	public static AppConfig config = AppConfig.getInstance();
 	public static DBAccess db = DBAccess.getInstance();
-	
-	public PircBotX bot;
-
-	private WarClockThread warticker;
-	private Timer ticker;
-	private Semaphore wars_lock;
+	public static Tim instance;
+	public static MarkhovChains markhov;
+	public static Random rand;
+	public static ChainStory story;
+	public static WarTicker warticker = WarTicker.getInstance();
 
 	public static void main( String[] args ) {
-		Tim instance = new Tim();
+		instance = new Tim();
 	}
 
-	public Tim () {
+	public Tim() {
+		rand = new Random();
+		story = new ChainStory();
+		challenge = new Challenge();
+		markhov = new MarkhovChains();
+		amusement = new Amusement();
+
 		bot = new PircBotX();
 		bot.getListenerManager().addListener(new SimpleResponses());
 		bot.setEncoding(Charset.forName("UTF-8"));
 		bot.setLogin("WarMech");
-		bot.setMessageDelay(50);
+		bot.setMessageDelay(Long.parseLong(db.getSetting("max_rate")));
 		bot.setName(db.getSetting("nickname"));
 
 		try {
-			bot.connect("irc.kydance.net");
+			bot.connect(db.getSetting("server"));
 		} catch (IOException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		} catch (NickAlreadyInUseException ex) {
@@ -56,237 +61,35 @@ public class Tim {
 		} catch (IrcException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		
-		bot.joinChannel("#warmech");
 
-		this.warticker = new WarClockThread(this);
-		this.ticker = new Timer(true);
-		this.ticker.scheduleAtFixedRate(this.warticker, 0, 1000);
-		this.wars_lock = new Semaphore(1, true);
-	}
-	
-	public class WarClockThread extends TimerTask {
-		private Tim parent;
+		bot.identify(db.getSetting("password"));
 
-		public WarClockThread( Tim parent ) {
-			this.parent = parent;
+		String post_identify = db.getSetting("post_identify");
+		if (!"".equals(post_identify)) {
+			bot.sendRawLineNow(post_identify);
 		}
 
-		public void run() {
-			try {
-				//this.parent._tick();
-			} catch (Throwable t) {
-				System.out.println("&&& THROWABLE CAUGHT in DelayCommand.run:");
-				t.printStackTrace(System.out);
-				System.out.flush();
-			}
+		db.refreshDbLists();
+
+		// Join our channels
+		for (Enumeration<ChannelInfo> e = db.channel_data.elements(); e.hasMoreElements();) {
+			bot.joinChannel(e.nextElement().Name);
 		}
 	}
 
-	public enum ActionType {
-		MESSAGE, ACTION, NOTICE
-	};
-
-	public class DelayCommand extends TimerTask {
-		private ActionType type;
-		private Tim parent;
-		private String text;
-		private String target;
-
-		public DelayCommand( Tim parent, String target, String text,
-							 ActionType type ) {
-			this.parent = parent;
-			this.text = text;
-			this.target = target;
-			this.type = type;
-		}
-
-		public void run() {
-			try {
-				switch (this.type) {
-					case MESSAGE:
-						this.parent.bot.sendMessage(this.target, this.text);
-						break;
-					case ACTION:
-						this.parent.bot.sendAction(this.target, this.text);
-						break;
-					case NOTICE:
-						this.parent.bot.sendNotice(this.target, this.text);
-				}
-			} catch (Throwable t) {
-				System.out.println("&&& THROWABLE CAUGHT in DelayCommand.run:");
-				t.printStackTrace(System.out);
-				System.out.flush();
-				this.parent.bot.sendMessage(this.target,
-					"I couldn't schedule your command for some reason:");
-				this.parent.bot.sendMessage(this.target, t.toString());
-			}
-		}
+	/**
+	 * Singleton access method.
+	 *
+	 * @return Singleton
+	 */
+	public static Tim getInstance() {
+		return instance;
 	}
 
-//	/**
-//	 * Helps keep track of channel information.
-//	 */
-//	private class ChannelInfo {
-//		public String Name;
-//		public boolean isAdult;
-//		public boolean doMarkhov;
-//		public boolean doRandomActions;
-//		public boolean doCommandActions;
-//		public long chatterTimer;
-//		public int chatterMaxBaseOdds;
-//		public int chatterNameMultiplier;
-//		public int chatterTimeMultiplier;
-//		public int chatterTimeDivisor;
-//
-//		/**
-//		 * Construct channel with default flags.
-//		 *
-//		 * @param name What is the name of the channel
-//		 */
-//		public ChannelInfo( String name ) {
-//			this.Name = name;
-//			this.isAdult = false;
-//			this.doCommandActions = true;
-//			this.doRandomActions = true;
-//			this.doMarkhov = true;
-//		}
-//
-//		/**
-//		 * Construct channel by specifying values for flags.
-//		 *
-//		 * @param name    What is the name of the channel
-//		 * @param adult   Is the channel considered 'adult'
-//		 * @param markhov Should markhov chain processing and generation happen on channel
-//		 * @param random  Should random actions happen on this channel
-//		 * @param command Should 'fun' commands be processed on channel
-//		 */
-//		public ChannelInfo( String name, boolean adult, boolean markhov, boolean random, boolean command ) {
-//			this.Name = name;
-//			this.isAdult = adult;
-//			this.doRandomActions = random;
-//			this.doCommandActions = command;
-//			this.doMarkhov = markhov;
-//		}
-//
-//		public void setChatterTimers( int maxBaseOdds, int nameMultiplier, int timeMultiplier, int timeDivisor ) {
-//			this.chatterMaxBaseOdds = maxBaseOdds;
-//			this.chatterNameMultiplier = nameMultiplier;
-//			this.chatterTimeMultiplier = timeMultiplier;
-//			this.chatterTimeDivisor = timeDivisor;
-//
-//			if (this.chatterMaxBaseOdds == 0) {
-//				this.chatterMaxBaseOdds = 20;
-//			}
-//
-//			if (this.chatterNameMultiplier == 0) {
-//				this.chatterNameMultiplier = 4;
-//			}
-//
-//			if (this.chatterTimeMultiplier == 0) {
-//				this.chatterTimeMultiplier = 4;
-//			}
-//
-//			if (this.chatterTimeDivisor == 0) {
-//				this.chatterTimeDivisor = 2;
-//			}
-//
-//			this.chatterTimer = System.currentTimeMillis() / 1000;
-//		}
-//	}
-//	protected Set<String> admin_list = new HashSet<String>(16);
-//	private Set<String> ignore_list = new HashSet<String>(16);
-//	private Hashtable<String, ChannelInfo> channel_data = new Hashtable<String, ChannelInfo>(62);
-//	private List<String> greetings = new ArrayList<String>();
-//	private List<String> extra_greetings = new ArrayList<String>();
-//	private Map<String, WordWar> wars;
-//	protected Random rand;
-//	private boolean shutdown;
-//	private String password;
-//	protected String debugChannel;
-//	private ChainStory story;
-//	private Challenge challenge;
-//	private MarkhovChains markhov;
-//	private Amusement amusement;
-//	private long timeout = 3000;
-//
-//	public Tim() {
-//		this.setName(getSetting("nickname"));
-//		this.password = getSetting("password");
-//		this.debugChannel = getSetting("debug_channel");
-//		if (this.debugChannel.equals("")) {
-//			// Ideally, we should fail here...
-//			this.debugChannel = "#timmydebug";
-//		}
-//
-//		// Read message delay from DB, but never go below 100ms.
-//		long delay = Long.parseLong(getSetting("max_rate"));
-//		delay = Math.max(delay, 100);
-//		this.setMessageDelay(delay);
-//
-//		this.story = new ChainStory(this);
-//		this.challenge = new Challenge(this);
-//		this.markhov = new MarkhovChains(this);
-//		this.amusement = new Amusement(this);
-//
-//		this.refreshDbLists();
-//
-//		this.wars = Collections.synchronizedMap(new Hashtable<String, WordWar>());
-//
-//
-//		this.rand = new Random();
-//		this.shutdown = false;
-//	}
-//
-//	@Override
-//	public synchronized void dispose() {
-//		super.dispose();
-//	}
-//
-//	/**
-//	 * Sends an message with a delay
-//	 *
-//	 * @param target The user or channel to send the message to
-//	 * @param action The string for the text of the message
-//	 * @param delay  The delay in milliseconds
-//	 */
-//	public void sendDelayedMessage( String target, String message, int delay ) {
-//		DelayCommand talk = new DelayCommand(this, target, message,
-//			ActionType.MESSAGE);
-//		this.ticker.schedule(talk, delay);
-//	}
-//
-//	/**
-//	 * Sends an action with a delay
-//	 *
-//	 * @param target The user or channel to send the action to
-//	 * @param action The string for the text of the action
-//	 * @param delay  The delay in milliseconds
-//	 */
-//	public void sendDelayedAction( String target, String action, int delay ) {
-//		DelayCommand act = new DelayCommand(this, target, action,
-//			ActionType.ACTION);
-//		this.ticker.schedule(act, delay);
-//	}
-//
-//	/**
-//	 * Sends a notice with a delay
-//	 *
-//	 * @param target The user or channel to send the notice to
-//	 * @param action The string for the text of the notice
-//	 * @param delay  The delay in milliseconds
-//	 */
-//	public void sendDelayedNotice( String target, String action, int delay ) {
-//		DelayCommand act = new DelayCommand(this, target, action,
-//			ActionType.NOTICE);
-//		this.ticker.schedule(act, delay);
-//	}
-//
 //	@Override
 //	protected void onAction( String sender, String login, String hostname,
 //							 String target, String action ) {
 //
-//		ChannelInfo cdata = this.channel_data.get(target.toLowerCase());
 //		
 //		action = Colors.removeFormattingAndColors(action);
 //
@@ -300,12 +103,6 @@ public class Tim {
 //			}
 //		}
 //
-//		if (!sender.equals(this.getNick()) && !"".equals(target)) {
-//			this.interact(sender, target, action, "emote");
-//			if (cdata.doMarkhov) {
-//				markhov.process_markhov(action, "emote");
-//			}
-//		}
 //	}
 //
 //	@Override
@@ -661,26 +458,6 @@ public class Tim {
 //	}
 //
 //	@Override
-//	public void onConnect() {
-//		if (!"".equals(this.password)) {
-//			this.identify(this.password);
-//		}
-//
-//		String postConnect = getSetting("post_identify");
-//
-//		if (!"".equals(postConnect)) {
-//			this.sendRawLineViaQueue(postConnect);
-//		}
-//	}
-//	
-//	@Override
-//	protected void onDisconnect() {
-//		if (!this.shutdown) {
-//			this.connectToServer();
-//		}
-//	}
-//
-//	@Override
 //	public void onJoin( String channel, String sender, String login,
 //						String hostname ) {
 //		if (!sender.equals(this.getName()) && !login.equals(this.getLogin())) {
@@ -728,94 +505,6 @@ public class Tim {
 //
 //	public void doCommand( String channel, String sender, String prefix,
 //						   String message ) {
-//		String command;
-//		String[] args = null;
-//
-//		int space = message.indexOf(" ");
-//		if (space > 0) {
-//			command = message.substring(1, space).toLowerCase();
-//			args = message.substring(space + 1).split(" ", 0);
-//		} else {
-//			command = message.substring(1).toLowerCase();
-//		}
-//
-//		if (prefix.equals("!")) {
-//			if (command.equals("startwar")) {
-//				if (args != null && args.length > 1) {
-//					this.startWar(channel, sender, args);
-//				} else {
-//					this.sendMessage(channel,
-//						"Use: !startwar <duration in min> [<time to start in min> [<name>]]");
-//				}
-//			} else if (command.equals("boxodoom")) {
-//				this.boxodoom(channel, sender, args);
-//			} else if (command.equals("startjudgedwar")) {
-//				this.sendMessage(channel, "Not done yet, sorry!");
-//			} else if (command.equals("endwar")) {
-//				this.endWar(channel, sender, args);
-//			} else if (command.equals("listwars")) {
-//				this.listWars(channel, sender, args, false);
-//			} else if (command.equals("listall")) {
-//				this.listAllWars(channel, sender, args);
-//			} else if (command.equals("eggtimer")) {
-//				double time = 15;
-//				if (args != null) {
-//					try {
-//						time = Double.parseDouble(args[0]);
-//					} catch (Exception e) {
-//						this.sendMessage(channel,
-//							"Could not understand first parameter. Was it numeric?");
-//						return;
-//					}
-//				}
-//				this.sendMessage(channel, sender + ": your timer has been set.");
-//				this.sendDelayedNotice(sender, "Your timer has expired!",
-//					(int) ( time * 60 * 1000 ));
-//			} else if (command.equals("settopic")) {
-//				if (args != null && args.length > 0) {
-//					String topic = args[0];
-//					for (int i = 1; i < args.length; i++) {
-//						topic += " " + args[i];
-//					}
-//					this.setTopic(channel, topic + " --" + sender);
-//				}
-//			} // add additional commands above here!!
-//			else if (command.equals("help")) {
-//				this.printCommandList(sender, channel);
-//			} else if (command.equals("credits")) {
-//				this.sendMessage(
-//					channel,
-//					"I was created by MysteriousAges in 2008 using PHP, and ported to the Java PircBot library in 2009. Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: https://github.com/MysteriousAges/TimTheWordWarBot, and my NaNoWriMo profile page is here: http://www.nanowrimo.org/en/participants/timmybot");
-//			} else if (command.equals("anything") || command.equals("jack")
-//					   || command.equals("squat") || command.equals("much")) {
-//				this.sendMessage(channel, "Nice try, " + sender
-//										  + ", trying to get me to look stupid.");
-//
-//				int r = this.rand.nextInt(100);
-//				if (r < 10) {
-//					this.amusement.defenestrate(channel, sender, sender.split(" ", 0),
-//						false);
-//				} else if (r < 20) {
-//					this.amusement.throwFridge(channel, sender, sender.split(" ", 0),
-//						false);
-//				}
-//			} else if (this.story.parseUserCommand(channel, sender, prefix, message)) {
-//			} else if (this.challenge.parseUserCommand(channel, sender, prefix, message)) {
-//			} else if (this.amusement.parseUserCommand(channel, sender, prefix, message)) {
-//			} else {
-//				this.sendMessage(channel, "!" + command + " was not part of my training.");
-//			}
-//		} else if (prefix.equals("@")) {
-//			long wordcount;
-//			try {
-//				wordcount = (long) Double.parseDouble(command);
-//				for (Map.Entry<String, WordWar> wm : this.wars.entrySet()) {
-//					this.sendMessage(channel, wm.getKey());
-//				}
-//			} catch (Exception e) {
-//			}
-//
-//		}
 //	}
 //
 //	private void printCommandList( String target, String channel ) {
@@ -874,543 +563,6 @@ public class Tim {
 //		this.markhov.adminHelpSection(target, channel);
 //	}
 //
-//	// !endwar <name>
-//	private void endWar( String channel, String sender, String[] args ) {
-//		if (args != null && args.length > 0) {
-//			String name = this.implodeArray(args);
-//			if (this.wars.containsKey(name.toLowerCase())) {
-//				if (sender.equalsIgnoreCase(this.wars.get(name.toLowerCase()).getStarter())
-//					|| this.admin_list.contains(sender)
-//					|| this.admin_list.contains(channel.toLowerCase())) {
-//					WordWar war = this.wars.remove(name.toLowerCase());
-//					this.sendMessage(channel, "The war '" + war.getName()
-//											  + "' has been ended.");
-//					this.sendMessage(this.debugChannel, "War '" + war.getName() + "' killed by " + sender + " in channel " + war.getChannel());
-//				} else {
-//					this.sendMessage(channel, sender
-//											  + ": Only the starter of a war can end it early.");
-//				}
-//			} else {
-//				this.sendMessage(channel, sender
-//										  + ": I don't know of a war with name: '" + name + "'");
-//			}
-//		} else {
-//			this.sendMessage(channel, sender + ": I need a war name to end.");
-//		}
-//	}
-//
-//	private void startWar( String channel, String sender, String[] args ) {
-//		long time;
-//		long to_start = 5000;
-//		String warname;
-//		try {
-//			time = (long) ( Double.parseDouble(args[0]) * 60 );
-//		} catch (Exception e) {
-//			this.sendMessage(
-//				channel,
-//				sender
-//				+ ": could not understand the duration parameter. Was it numeric?");
-//			return;
-//		}
-//		if (args.length >= 2) {
-//			try {
-//				to_start = (long) ( Double.parseDouble(args[1]) * 60 );
-//			} catch (Exception e) {
-//				if (args[1].equalsIgnoreCase("now")) {
-//					to_start = 0;
-//				} else {
-//					this.sendMessage(
-//						channel,
-//						sender
-//						+ ": could not understand the time to start parameter. Was it numeric?");
-//					return;
-//				}
-//			}
-//
-//		}
-//		if (args.length >= 3) {
-//			warname = args[2];
-//			for (int i = 3; i < args.length; i++) {
-//				warname = warname + " " + args[i];
-//			}
-//		} else {
-//			warname = sender + "'s war";
-//		}
-//
-//		if (time < 60) {
-//			this.sendMessage(channel, sender
-//									  + ": Duration must be at least 1 minute.");
-//			return;
-//		}
-//
-//		if (!this.wars.containsKey(warname.toLowerCase())) {
-//			WordWar war = new WordWar(time, to_start, warname, sender, channel);
-//			this.wars.put(war.getName().toLowerCase(), war);
-//			this.sendMessage(this.debugChannel, "War scheduled by " + sender + " in channel " + channel);
-//			if (to_start > 0) {
-//				this.sendMessage(channel, sender
-//										  + ": your wordwar will start in " + to_start / 60.0
-//										  + " minutes.");
-//			} else {
-//				this.beginWar(war);
-//			}
-//		} else {
-//			this.sendMessage(channel, sender
-//									  + ": there is already a war with the name '" + warname
-//									  + "'");
-//		}
-//	}
-//
-//	private void listAllWars( String channel, String sender, String[] args ) {
-//		this.listWars(channel, sender, args, true);
-//	}
-//
-//	private void listWars( String channel, String sender, String[] args,
-//						   boolean all ) {
-//		String target = args != null ? sender : channel;
-//		if (this.wars != null && this.wars.size() > 0) {
-//			for (Map.Entry<String, WordWar> wm : this.wars.entrySet()) {
-//				if (all || wm.getValue().getChannel().equalsIgnoreCase(channel)) {
-//					this.sendMessage(target, all ? wm.getValue().getDescriptionWithChannel() : wm.getValue().getDescription());
-//				}
-//			}
-//		} else {
-//			this.sendMessage(target, "No wars are currently available.");
-//		}
-//	}
-//
-//	private void _tick() {
-//		this._warsUpdate();
-//	}
-//
-//	private void _warsUpdate() {
-//		if (this.wars != null && this.wars.size() > 0) {
-//			try {
-//				this.wars_lock.acquire();
-//				Iterator<String> itr = this.wars.keySet().iterator();
-//				WordWar war;
-//				while (itr.hasNext()) {
-//					war = this.wars.get(itr.next());
-//					if (war.time_to_start > 0) {
-//						war.time_to_start--;
-//						switch ((int) war.time_to_start) {
-//							case 60:
-//							case 30:
-//							case 5:
-//							case 4:
-//							case 3:
-//							case 2:
-//							case 1:
-//								this.warStartCount(war);
-//								break;
-//							case 0:
-//								// 0 seconds until start. Don't say a damn thing.
-//								break;
-//							default:
-//								if ((int) war.time_to_start % 300 == 0) {
-//									this.warStartCount(war);
-//								}
-//								break;
-//						}
-//						if (war.time_to_start == 0) {
-//							this.beginWar(war);
-//						}
-//					} else if (war.remaining > 0) {
-//						war.remaining--;
-//						switch ((int) war.remaining) {
-//							case 60:
-//							case 5:
-//							case 4:
-//							case 3:
-//							case 2:
-//							case 1:
-//								this.warEndCount(war);
-//								break;
-//							case 0:
-//								this.endWar(war);
-//								break;
-//							default:
-//								if ((int) war.remaining % 300 == 0) {
-//									this.warEndCount(war);
-//								}
-//								// do nothing
-//								break;
-//						}
-//					}
-//				}
-//				this.wars_lock.release();
-//			} catch (Throwable e) {
-//				this.wars_lock.release();
-//			}
-//		}
-//	}
-//
-//	private void warStartCount( WordWar war ) {
-//		if (war.time_to_start < 60) {
-//			this.sendMessage(war.getChannel(), war.getName() + ": Starting in "
-//											   + war.time_to_start
-//											   + ( war.time_to_start == 1 ? " second" : " seconds" ) + "!");
-//		} else {
-//			int time_to_start = (int) war.time_to_start / 60;
-//			this.sendMessage(war.getChannel(), war.getName() + ": Starting in "
-//											   + time_to_start
-//											   + ( time_to_start == 1 ? " minute" : " minutes" ) + "!");
-//		}
-//	}
-//
-//	private void warEndCount( WordWar war ) {
-//		if (war.remaining < 60) {
-//			this.sendMessage(war.getChannel(), war.getName() + ": "
-//											   + war.remaining
-//											   + ( war.remaining == 1 ? " second" : " seconds" )
-//											   + " remaining!");
-//		} else {
-//			int remaining = (int) war.remaining / 60;
-//			this.sendMessage(war.getChannel(), war.getName() + ": " + remaining
-//											   + ( remaining == 1 ? " minute" : " minutes" ) + " remaining.");
-//		}
-//	}
-//
-//	private void beginWar( WordWar war ) {
-//		this.sendNotice(war.getChannel(), "WordWar: '" + war.getName()
-//										  + " 'starts now! (" + war.getDuration() / 60 + " minutes)");
-//		this.sendMessage(this.debugChannel, "War " + war.getName() + " started in channel " + war.getChannel());
-//	}
-//
-//	private void endWar( WordWar war ) {
-//		this.sendNotice(war.getChannel(), "WordWar: '" + war.getName()
-//										  + "' is over!");
-//		this.wars.remove(war.getName().toLowerCase());
-//		this.sendMessage(this.debugChannel, "War '" + war.getName() + "' finished in channel " + war.getChannel());
-//	}
-//
-//	private void boxodoom( String channel, String sender, String[] args ) {
-//		Connection con;
-//		long duration;
-//		long base_wpm;
-//		double modifier;
-//		int goal;
-//
-//		if (args.length != 2) {
-//			this.sendMessage(channel, sender
-//									  + ": !boxodoom requires two parameters.");
-//			return;
-//		}
-//
-//		if (!Pattern.matches("(?i)easy|average|hard", args[0])) {
-//			this.sendMessage(channel, sender
-//									  + ": Difficulty must be one of: easy, average, hard");
-//			return;
-//		}
-//
-//		duration = (long) Double.parseDouble(args[1]);
-//
-//		if (duration < 1) {
-//			this.sendMessage(channel, sender
-//									  + ": Duration must be greater than or equal to 1.");
-//			return;
-//		}
-//
-//		String value = "";
-//		try {
-//			con = pool.getConnection(timeout);
-//			PreparedStatement s = con.prepareStatement("SELECT `challenge` FROM `box_of_doom` WHERE `difficulty` = ? ORDER BY rand() LIMIT 1");
-//			s.setString(1, args[0]);
-//			s.executeQuery();
-//
-//			ResultSet rs = s.getResultSet();
-//			while (rs.next()) {
-//				value = rs.getString("challenge");
-//			}
-//
-//			con.close();
-//		} catch (SQLException ex) {
-//			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-//		}
-//
-//		base_wpm = (long) Double.parseDouble(value);
-//		modifier = 1.0 / Math.log(duration + 1.0) / 1.5 + 0.68;
-//		goal = (int) ( duration * base_wpm * modifier / 10 ) * 10;
-//
-//		this.sendMessage(channel,
-//			sender + ": Your goal is " + String.valueOf(goal));
-//	}
-//
-//	private void useBackupNick() {
-//		this.setName(getSetting("backup_nickname"));
-//	}
-//
-//	private void connectToServer() {
-//		try {
-//			this.connect(getSetting("server"));
-//		} catch (Exception e) {
-//			this.useBackupNick();
-//			try {
-//				this.connect(getSetting("server"));
-//			} catch (Exception ex) {
-//				System.err.print("Could not connect - name & backup in use");
-//				System.exit(1);
-//			}
-//		}
-//
-//		// Join our channels
-//		for (Enumeration<ChannelInfo> e = this.channel_data.elements(); e.hasMoreElements();) {
-//			this.joinChannel(e.nextElement().Name);
-//		}
-//
-//		this.joinChannel(this.debugChannel);
-//	}
-//	protected String implodeArray( String[] inputArray ) {
-//		String AsImplodedString;
-//		if (inputArray.length == 0) {
-//			AsImplodedString = "";
-//		} else {
-//			StringBuilder sb = new StringBuilder();
-//			sb.append(inputArray[0]);
-//			for (int i = 1; i < inputArray.length; i++) {
-//				sb.append(" ");
-//				sb.append(inputArray[i]);
-//			}
-//			AsImplodedString = sb.toString();
-//		}
-//
-//		return AsImplodedString;
-//	}
-//
-//
-//	private void refreshDbLists() {
-//		this.getAdminList();
-//		this.getChannelList();
-//		this.getIgnoreList();
-//		this.getGreetingList();
-//
-//		this.amusement.refreshDbLists();
-//		this.story.refreshDbLists();
-//		this.challenge.refreshDbLists();
-//	}
-//
-//	private void getAdminList() {
-//		Connection con;
-//		try {
-//			con = pool.getConnection(timeout);
-//
-//			Statement s = con.createStatement();
-//			s.executeQuery("SELECT `name` FROM `admins`");
-//
-//			ResultSet rs = s.getResultSet();
-//
-//			this.admin_list.clear();
-//			while (rs.next()) {
-//				this.admin_list.add(rs.getString("name").toLowerCase());
-//			}
-//
-//			con.close();
-//		} catch (SQLException ex) {
-//			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-//		}
-//	}
-//
-//	private void getIgnoreList() {
-//		Connection con;
-//		try {
-//			con = pool.getConnection(timeout);
-//
-//			Statement s = con.createStatement();
-//			s.executeQuery("SELECT `name` FROM `ignores`");
-//
-//			ResultSet rs = s.getResultSet();
-//			this.ignore_list.clear();
-//			while (rs.next()) {
-//				this.ignore_list.add(rs.getString("name").toLowerCase());
-//			}
-//
-//			con.close();
-//		} catch (SQLException ex) {
-//			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-//		}
-//	}
-//
-//	private void setIgnore( String username ) {
-//		Connection con;
-//		try {
-//			con = pool.getConnection(timeout);
-//
-//			PreparedStatement s = con.prepareStatement("INSERT INTO `ignores` (`name`) VALUES (?);");
-//			s.setString(1, username.toLowerCase());
-//			s.executeUpdate();
-//
-//			con.close();
-//		} catch (SQLException ex) {
-//			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-//		}
-//	}
-//
-//	private void removeIgnore( String username ) {
-//		Connection con;
-//		try {
-//			con = pool.getConnection(timeout);
-//
-//			PreparedStatement s = con.prepareStatement("DELETE FROM `ignores` WHERE `name` = ?;");
-//			s.setString(1, username.toLowerCase());
-//			s.executeUpdate();
-//
-//			con.close();
-//		} catch (SQLException ex) {
-//			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-//		}
-//	}
-//
-//	private void getGreetingList() {
-//		Connection con;
-//		try {
-//			con = pool.getConnection(timeout);
-//			Statement s = con.createStatement();
-//			ResultSet rs;
-//
-//			s.executeQuery("SELECT `string` FROM `greetings`");
-//			rs = s.getResultSet();
-//			this.greetings.clear();
-//			while (rs.next()) {
-//				this.greetings.add(rs.getString("string"));
-//			}
-//			rs.close();
-//
-//			s.executeQuery("SELECT `string` FROM `extra_greetings`");
-//			rs = s.getResultSet();
-//			this.extra_greetings.clear();
-//			while (rs.next()) {
-//				this.extra_greetings.add(rs.getString("string"));
-//			}
-//			rs.close();
-//			s.close();
-//
-//			con.close();
-//		} catch (SQLException ex) {
-//			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-//		}
-//	}
-//
-//	private void getChannelList() {
-//		Connection con;
-//		ChannelInfo ci;
-//		String channel;
-//
-//		this.channel_data.clear();
-//
-//		ci = new ChannelInfo(this.debugChannel, true, true, true, true);
-//		ci.setChatterTimers(
-//			Integer.parseInt(getSetting("chatterMaxBaseOdds")),
-//			Integer.parseInt(getSetting("chatterNameMultiplier")),
-//			Integer.parseInt(getSetting("chatterTimeMultiplier")),
-//			Integer.parseInt(getSetting("chatterTimeDivisor")));
-//
-//		this.channel_data.put(this.debugChannel, ci);
-//		
-//		try {
-//			con = pool.getConnection(timeout);
-//
-//			Statement s = con.createStatement();
-//			ResultSet rs = s.executeQuery("SELECT * FROM `channels`");
-//
-//			while (rs.next()) {
-//				channel = rs.getString("channel").toLowerCase();
-//				ci = new ChannelInfo(channel, rs.getBoolean("adult"), rs.getBoolean("markhov"), rs.getBoolean("random"), rs.getBoolean("command"));
-//				ci.setChatterTimers(
-//					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
-//					Integer.parseInt(getSetting("chatterNameMultiplier")),
-//					Integer.parseInt(getSetting("chatterTimeMultiplier")),
-//					Integer.parseInt(getSetting("chatterTimeDivisor")));
-//
-//				this.channel_data.put(channel, ci);
-//			}
-//
-//			con.close();
-//		} catch (SQLException ex) {
-//			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-//		}
-//	}
-//
-//	private void saveChannel( String channel ) {
-//		Connection con;
-//		try {
-//			con = pool.getConnection(timeout);
-//
-//			PreparedStatement s = con.prepareStatement("INSERT INTO `channels` (`channel`, `adult`, `markhov`, `random`, `command`) VALUES (?, 0, 1, 1, 1)");
-//			s.setString(1, channel.toLowerCase());
-//			s.executeUpdate();
-//
-//			if (!this.channel_data.containsKey(channel.toLowerCase())) {
-//				this.channel_data.put(channel.toLowerCase(), new ChannelInfo(channel.toLowerCase()));
-//			}
-//
-//			con.close();
-//		} catch (SQLException ex) {
-//			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-//		}
-//	}
-//
-//	private void deleteChannel( String channel ) {
-//		Connection con;
-//		try {
-//			con = pool.getConnection(timeout);
-//
-//			PreparedStatement s = con.prepareStatement("DELETE FROM `channels` WHERE `channel` = ?");
-//			s.setString(1, channel.toLowerCase());
-//			s.executeUpdate();
-//
-//			// Will do nothing if the channel is not in the list.
-//			this.channel_data.remove(channel.toLowerCase());
-//
-//			con.close();
-//		} catch (SQLException ex) {
-//			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-//		}
-//	}
-//
-//	private void setChannelAdultFlag( String channel, boolean adult ) {
-//		Connection con;
-//		try {
-//			con = pool.getConnection(timeout);
-//
-//			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET adult = ? WHERE `channel` = ?");
-//			s.setBoolean(1, adult);
-//			s.setString(2, channel.toLowerCase());
-//			s.executeUpdate();
-//
-//			if (adult) {
-//				this.channel_data.get(channel.toLowerCase()).isAdult = true;
-//			} else {
-//				this.channel_data.get(channel.toLowerCase()).isAdult = false;
-//			}
-//
-//			con.close();
-//		} catch (SQLException ex) {
-//			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-//		}
-//	}
-//
-//	private void setChannelMuzzledFlag( String channel, boolean muzzled ) {
-//		Connection con;
-//		try {
-//			con = pool.getConnection(timeout);
-//
-//			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `markhov` = ?, `random` = ?, `command` = ? WHERE `channel` = ?");
-//			s.setBoolean(1, muzzled);
-//			s.setBoolean(2, muzzled);
-//			s.setBoolean(3, muzzled);
-//			s.setString(2, channel.toLowerCase());
-//			s.executeUpdate();
-//
-//			this.channel_data.get(channel.toLowerCase()).doMarkhov = muzzled;
-//			this.channel_data.get(channel.toLowerCase()).doCommandActions = muzzled;
-//			this.channel_data.get(channel.toLowerCase()).doRandomActions = muzzled;
-//
-//			con.close();
-//		} catch (SQLException ex) {
-//			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-//		}
-//	}
-//
 //	protected boolean isChannelAdult( String channel ) {
 //		boolean val = false;
 //		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
@@ -1418,9 +570,5 @@ public class Tim {
 //			val = cdata.isAdult;
 //		}
 //		return val;
-//	}
-//	
-//	protected void channelLog( String message ) {
-//		this.sendMessage(this.debugChannel, message);
 //	}
 }

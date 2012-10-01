@@ -24,7 +24,6 @@ import java.util.regex.Pattern;
  * @author mwalker
  */
 public class Amusement {
-	Tim ircclient;
 	private long timeout = 3000;
 	private List<String> approved_items = new ArrayList<String>();
 	private List<String> pending_items = new ArrayList<String>();
@@ -34,10 +33,6 @@ public class Amusement {
 	protected List<String> aypwips = new ArrayList<String>();
 	private List<String> flavours = new ArrayList<String>();
 	private List<String> deities = new ArrayList<String>();
-
-	public Amusement( Tim ircclient ) {
-		this.ircclient = ircclient;
-	}
 
 	/**
 	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
@@ -74,7 +69,7 @@ public class Amusement {
 				dice(command.substring(1), channel, sender, args);
 				return true;
 			} else if (command.equals("woot")) {
-				ircclient.sendAction(channel, "cheers! Hooray!");
+				Tim.bot.sendAction(channel, "cheers! Hooray!");
 				return true;
 			} else if (command.equals("get")) {
 				getItem(channel, sender, args);
@@ -151,7 +146,7 @@ public class Amusement {
 				try {
 					wantPage = Integer.parseInt(args[0]) - 1;
 				} catch (NumberFormatException ex) {
-					ircclient.sendMessage(channel,
+					Tim.bot.sendMessage(channel,
 						"Page number was not numeric.");
 					return true;
 				}
@@ -162,12 +157,12 @@ public class Amusement {
 			}
 
 			int list_idx = wantPage * 10;
-			ircclient.sendMessage(channel, String.format(
+			Tim.bot.sendMessage(channel, String.format(
 				"Showing page %d of %d (%d items total)", wantPage + 1,
 				pages, this.approved_items.size()));
 			for (int i = 0; i < 10 && list_idx < this.approved_items.size(); ++i, list_idx = wantPage
 																							 * 10 + i) {
-				ircclient.sendMessage(channel, String.format("%d: %s", list_idx,
+				Tim.bot.sendMessage(channel, String.format("%d: %s", list_idx,
 					this.approved_items.get(list_idx)));
 			}
 			return true;
@@ -178,7 +173,7 @@ public class Amusement {
 				try {
 					wantPage = Integer.parseInt(args[0]) - 1;
 				} catch (NumberFormatException ex) {
-					ircclient.sendMessage(channel,
+					Tim.bot.sendMessage(channel,
 						"Page number was not numeric.");
 					return true;
 				}
@@ -189,12 +184,12 @@ public class Amusement {
 			}
 
 			int list_idx = wantPage * 10;
-			ircclient.sendMessage(channel, String.format(
+			Tim.bot.sendMessage(channel, String.format(
 				"Showing page %d of %d (%d items total)", wantPage + 1,
 				pages, this.pending_items.size()));
 			for (int i = 0; i < 10 && list_idx < this.pending_items.size(); ++i, list_idx = wantPage
 																							* 10 + i) {
-				ircclient.sendMessage(channel, String.format("%d: %s", list_idx,
+				Tim.bot.sendMessage(channel, String.format("%d: %s", list_idx,
 					this.pending_items.get(list_idx)));
 			}
 			return true;
@@ -218,7 +213,7 @@ public class Amusement {
 					this.pending_items.remove(idx);
 					this.approved_items.add(item);
 				} else {
-					ircclient.sendMessage(channel, String.format(
+					Tim.bot.sendMessage(channel, String.format(
 						"Item %s is not pending approval.", args[0]));
 				}
 			}
@@ -243,7 +238,7 @@ public class Amusement {
 					this.pending_items.add(item);
 					this.approved_items.remove(idx);
 				} else {
-					ircclient.sendMessage(channel, String.format(
+					Tim.bot.sendMessage(channel, String.format(
 						"Item %s is not pending approval.", args[0]));
 				}
 			}
@@ -267,7 +262,7 @@ public class Amusement {
 					this.removeItem(item);
 					this.pending_items.remove(item);
 				} else {
-					ircclient.sendMessage(channel, String.format(
+					Tim.bot.sendMessage(channel, String.format(
 						"Item %s is not pending approval.", args[0]));
 				}
 			}
@@ -284,7 +279,7 @@ public class Amusement {
 						 "    !eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.",};
 
 		for (int i = 0; i < strs.length; ++i) {
-			ircclient.sendNotice(target, strs[i]);
+			Tim.bot.sendNotice(target, strs[i]);
 		}
 	}
 
@@ -311,7 +306,7 @@ public class Amusement {
 			};
 		}
 
-		String action = actions[ircclient.rand.nextInt(actions.length)];
+		String action = actions[Tim.rand.nextInt(actions.length)];
 
 		if ("item".equals(action)) {
 			getItem(channel, sender, null);
@@ -335,10 +330,10 @@ public class Amusement {
 		int max;
 		try {
 			max = Integer.parseInt(number);
-			int r = ircclient.rand.nextInt(max) + 1;
-			ircclient.sendMessage(channel, sender + ": Your result is " + r);
+			int r = Tim.rand.nextInt(max) + 1;
+			Tim.bot.sendMessage(channel, sender + ": Your result is " + r);
 		} catch (NumberFormatException ex) {
-			ircclient.sendMessage(channel, number
+			Tim.bot.sendMessage(channel, number
 										   + " is not a number I could understand.");
 		}
 	}
@@ -358,65 +353,65 @@ public class Amusement {
 
 		if (item.isEmpty()) {
 			// Find a random item.
-			int i = ircclient.rand.nextInt(this.approved_items.size());
+			int i = Tim.rand.nextInt(this.approved_items.size());
 			item = this.approved_items.get(i);
 		}
 
-		ircclient.sendAction(channel, String.format("gets %s %s", target, item));
+		Tim.bot.sendAction(channel, String.format("gets %s %s", target, item));
 	}
 
 	protected void lick( String channel, String sender, String[] args ) {
-		if (ircclient.isChannelAdult(channel)) {
+		if (Tim.bot.isChannelAdult(channel)) {
 			if (args.length >= 1) {
-				String argStr = ircclient.implodeArray(args);
+				String argStr = Tim.bot.implodeArray(args);
 
 				if (args[0].equalsIgnoreCase("MysteriousAges")) {
-					ircclient.sendAction(channel, "licks " + argStr
+					Tim.bot.sendAction(channel, "licks " + argStr
 												  + ". Tastes like... like...");
-					ircclient.sendDelayedMessage(channel, "Like the Apocalypse.",
+					Tim.bot.sendDelayedMessage(channel, "Like the Apocalypse.",
 						1000);
-					ircclient.sendDelayedAction(channel, "cowers in fear", 2400);
-				} else if (args[0].equalsIgnoreCase(ircclient.getNick())) {
-					ircclient.sendAction(channel, "licks " + args[0]
+					Tim.bot.sendDelayedAction(channel, "cowers in fear", 2400);
+				} else if (args[0].equalsIgnoreCase(Tim.bot.getNick())) {
+					Tim.bot.sendAction(channel, "licks " + args[0]
 												  + ". Tastes like meta.");
-				} else if (ircclient.admin_list.contains(args[0])) {
-					ircclient.sendAction(channel, "licks " + argStr
+				} else if (Tim.bot.admin_list.contains(args[0])) {
+					Tim.bot.sendAction(channel, "licks " + argStr
 												  + ". Tastes like perfection, pure and simple.");
 				} else {
-					ircclient.sendAction(
+					Tim.bot.sendAction(
 						channel,
 						"licks "
 						+ argStr
 						+ ". Tastes like "
-						+ this.flavours.get(ircclient.rand.nextInt(this.flavours.size())));
+						+ this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
 				}
 			} else {
-				ircclient.sendAction(
+				Tim.bot.sendAction(
 					channel,
 					"licks "
 					+ sender
 					+ "! Tastes like "
-					+ this.flavours.get(ircclient.rand.nextInt(this.flavours.size())));
+					+ this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
 			}
 		} else {
-			ircclient.sendMessage(channel, "Sorry, I don't do that here.");
+			Tim.bot.sendMessage(channel, "Sorry, I don't do that here.");
 		}
 	}
 
 	protected void eightball( String channel, String sender, boolean mutter ) {
-		int r = ircclient.rand.nextInt(this.eightballs.size());
-		int delay = ircclient.rand.nextInt(1500);
+		int r = Tim.rand.nextInt(this.eightballs.size());
+		int delay = Tim.rand.nextInt(1500);
 
 		if (mutter) {
-			ircclient.sendDelayedAction(channel, "mutters under his breath, \"" + this.eightballs.get(r) + "\"", delay);
+			Tim.bot.sendDelayedAction(channel, "mutters under his breath, \"" + this.eightballs.get(r) + "\"", delay);
 		} else {
-			ircclient.sendDelayedMessage(channel, sender + ": " + this.eightballs.get(r), delay);
+			Tim.bot.sendDelayedMessage(channel, sender + ": " + this.eightballs.get(r), delay);
 		}
 	}
 
 	protected void sing( String channel ) {
 		Connection con;
-		int r = ircclient.rand.nextInt(100);
+		int r = Tim.rand.nextInt(100);
 
 		String response;
 		if (r > 90) {
@@ -430,14 +425,14 @@ public class Amusement {
 		}
 
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 			PreparedStatement songName = con.prepareStatement("SELECT name FROM songs ORDER BY rand() LIMIT 1");
 			ResultSet songNameRes;
 
 			songNameRes = songName.executeQuery();
 			songNameRes.next();
 
-			ircclient.sendDelayedAction(channel, String.format(response, songNameRes.getString("name")), ircclient.rand.nextInt(1500));
+			Tim.bot.sendDelayedAction(channel, String.format(response, songNameRes.getString("name")), Tim.rand.nextInt(1500));
 			con.close();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -446,7 +441,7 @@ public class Amusement {
 
 	protected void dance( String channel ) {
 		Connection con;
-		int r = ircclient.rand.nextInt(100);
+		int r = Tim.rand.nextInt(100);
 
 		String response;
 		if (r > 90) {
@@ -460,52 +455,100 @@ public class Amusement {
 		}
 
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 			PreparedStatement danceName = con.prepareStatement("SELECT name FROM dances ORDER BY rand() LIMIT 1");
 			ResultSet danceNameRes;
 
 			danceNameRes = danceName.executeQuery();
 			danceNameRes.next();
 
-			ircclient.sendDelayedAction(channel, String.format(response, danceNameRes.getString("name")), ircclient.rand.nextInt(1500));
+			Tim.bot.sendDelayedAction(channel, String.format(response, danceNameRes.getString("name")), Tim.rand.nextInt(1500));
 			con.close();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
+	private void boxodoom( String channel, String sender, String[] args ) {
+		Connection con;
+		long duration;
+		long base_wpm;
+		double modifier;
+		int goal;
+
+		if (args.length != 2) {
+			Tim.bot.sendMessage(channel, sender + ": !boxodoom requires two parameters.");
+			return;
+		}
+
+		if (!Pattern.matches("(?i)easy|average|hard", args[0])) {
+			Tim.bot.sendMessage(channel, sender + ": Difficulty must be one of: easy, average, hard");
+			return;
+		}
+
+		duration = (long) Double.parseDouble(args[1]);
+
+		if (duration < 1) {
+			Tim.bot.sendMessage(channel, sender + ": Duration must be greater than or equal to 1.");
+			return;
+		}
+
+		String value = "";
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+			PreparedStatement s = con.prepareStatement("SELECT `challenge` FROM `box_of_doom` WHERE `difficulty` = ? ORDER BY rand() LIMIT 1");
+			s.setString(1, args[0]);
+			s.executeQuery();
+
+			ResultSet rs = s.getResultSet();
+			while (rs.next()) {
+				value = rs.getString("challenge");
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+		base_wpm = (long) Double.parseDouble(value);
+		modifier = 1.0 / Math.log(duration + 1.0) / 1.5 + 0.68;
+		goal = (int) ( duration * base_wpm * modifier / 10 ) * 10;
+
+		Tim.bot.sendMessage(channel, sender + ": Your goal is " + String.valueOf(goal));
+	}
+
 	protected void commandment( String channel, String sender, String[] args ) {
-		int r = ircclient.rand.nextInt(this.commandments.size());
+		int r = Tim.rand.nextInt(this.commandments.size());
 		if (args != null && args.length == 1 && Double.parseDouble(args[0]) > 0
 			&& Double.parseDouble(args[0]) <= this.commandments.size()) {
 			r = (int) Double.parseDouble(args[0]) - 1;
 		}
-		ircclient.sendMessage(channel, this.commandments.get(r));
+		Tim.bot.sendMessage(channel, this.commandments.get(r));
 	}
 
 	protected void throwFridge( String channel, String sender, String[] args,
 								Boolean righto ) {
 		String target = sender;
 		if (args != null && args.length > 0) {
-			if (!args[0].equalsIgnoreCase(ircclient.getNick())
+			if (!args[0].equalsIgnoreCase(Tim.bot.getNick())
 				&& !args[0].equalsIgnoreCase("himself")
 				&& !args[0].equalsIgnoreCase("herself")
-				&& !ircclient.admin_list.contains(args[0])
+				&& !Tim.bot.admin_list.contains(args[0])
 				&& !args[0].equalsIgnoreCase("myst")) {
-				target = ircclient.implodeArray(args) + " ";
+				target = Tim.bot.implodeArray(args) + " ";
 			}
 		}
 
 		if (righto) {
-			ircclient.sendMessage(channel, "Righto...");
+			Tim.bot.sendMessage(channel, "Righto...");
 		}
 
-		int time = 2 + ircclient.rand.nextInt(15);
+		int time = 2 + Tim.rand.nextInt(15);
 		time *= 1000;
-		ircclient.sendDelayedAction(channel,
+		Tim.bot.sendDelayedAction(channel,
 			"looks back and forth, then slinks off...", time);
-		time += ircclient.rand.nextInt(10) * 500 + 1500;
-		String colour = this.colours.get(ircclient.rand.nextInt(this.colours.size()));
+		time += Tim.rand.nextInt(10) * 500 + 1500;
+		String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
 		switch (colour.charAt(0)) {
 			case 'a':
 			case 'e':
@@ -517,7 +560,7 @@ public class Amusement {
 			default:
 				colour = " " + colour;
 		}
-		int i = ircclient.rand.nextInt(100);
+		int i = Tim.rand.nextInt(100);
 		String act;
 		if (i > 20) {
 			act = "hurls a" + colour + " coloured fridge at " + target;
@@ -528,35 +571,35 @@ public class Amusement {
 		} else {
 			act = "trips and drops a" + colour + " fridge on himself";
 		}
-		ircclient.sendDelayedAction(channel, act, time);
+		Tim.bot.sendDelayedAction(channel, act, time);
 	}
 
 	protected void defenestrate( String channel, String sender, String[] args,
 								 Boolean righto ) {
 		String target = sender;
 		if (args != null && args.length > 0) {
-			if (!args[0].equalsIgnoreCase(ircclient.getNick())
+			if (!args[0].equalsIgnoreCase(Tim.bot.getNick())
 				&& !args[0].equalsIgnoreCase("himself")
 				&& !args[0].equalsIgnoreCase("herself")
-				&& !ircclient.admin_list.contains(args[0])) {
-				target = ircclient.implodeArray(args);
+				&& !Tim.bot.admin_list.contains(args[0])) {
+				target = Tim.bot.implodeArray(args);
 			}
 		}
 
 		if (righto) {
-			ircclient.sendMessage(channel, "Righto...");
+			Tim.bot.sendMessage(channel, "Righto...");
 		}
 
-		int time = 2 + ircclient.rand.nextInt(15);
+		int time = 2 + Tim.rand.nextInt(15);
 		time *= 1000;
-		ircclient.sendDelayedAction(channel,
+		Tim.bot.sendDelayedAction(channel,
 			"looks around for a convenient window, then slinks off...",
 			time);
-		time += ircclient.rand.nextInt(10) * 500 + 1500;
+		time += Tim.rand.nextInt(10) * 500 + 1500;
 
-		int i = ircclient.rand.nextInt(100);
+		int i = Tim.rand.nextInt(100);
 		String act;
-		String colour = this.colours.get(ircclient.rand.nextInt(this.colours.size()));
+		String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
 
 		if (i > 20) {
 			act = "throws "
@@ -572,30 +615,30 @@ public class Amusement {
 		} else {
 			act = "trips and falls out the window!";
 		}
-		ircclient.sendDelayedAction(channel, act, time);
+		Tim.bot.sendDelayedAction(channel, act, time);
 	}
 
 	protected void summon( String channel, String sender, String[] args,
 						   Boolean righto ) {
 		String target;
 		if (args == null || args.length == 0) {
-			target = this.deities.get(ircclient.rand.nextInt(this.deities.size()));
+			target = this.deities.get(Tim.rand.nextInt(this.deities.size()));
 		} else {
-			target = ircclient.implodeArray(args);
+			target = Tim.bot.implodeArray(args);
 		}
 
 		if (righto) {
-			ircclient.sendMessage(channel, "Righto...");
+			Tim.bot.sendMessage(channel, "Righto...");
 		}
 
-		int time = 2 + ircclient.rand.nextInt(15);
+		int time = 2 + Tim.rand.nextInt(15);
 		time *= 1000;
-		ircclient.sendDelayedAction(channel,
+		Tim.bot.sendDelayedAction(channel,
 			"prepares the summoning circle required to bring " + target
 			+ " into the world...", time);
-		time += ircclient.rand.nextInt(10) * 500 + 1500;
+		time += Tim.rand.nextInt(10) * 500 + 1500;
 
-		int i = ircclient.rand.nextInt(100);
+		int i = Tim.rand.nextInt(100);
 		String act;
 
 		if (i > 50) {
@@ -606,43 +649,43 @@ public class Amusement {
 				  + target
 				  + " through, but something goes wrong and they fade away after just a few moments.";
 		} else {
-			String target2 = this.deities.get(ircclient.rand.nextInt(this.deities.size()));
+			String target2 = this.deities.get(Tim.rand.nextInt(this.deities.size()));
 			act = "attempts to summon "
 				  + target
 				  + ", but something goes horribly wrong. After the smoke clears, "
 				  + target2
 				  + " is left standing on the smoldering remains of the summoning circle.";
 		}
-		ircclient.sendDelayedAction(channel, act, time);
+		Tim.bot.sendDelayedAction(channel, act, time);
 	}
 
 	protected void foof( String channel, String sender, String[] args,
 						 Boolean righto ) {
 		String target = sender;
 		if (args != null && args.length > 0) {
-			if (!args[0].equalsIgnoreCase(ircclient.getNick())
+			if (!args[0].equalsIgnoreCase(Tim.bot.getNick())
 				&& !args[0].equalsIgnoreCase("himself")
 				&& !args[0].equalsIgnoreCase("herself")
-				&& !ircclient.admin_list.contains(args[0])) {
-				target = ircclient.implodeArray(args);
+				&& !Tim.bot.admin_list.contains(args[0])) {
+				target = Tim.bot.implodeArray(args);
 			}
 		}
 
 		if (righto) {
-			ircclient.sendMessage(channel, "Righto...");
+			Tim.bot.sendMessage(channel, "Righto...");
 		}
 
-		int time = 2 + ircclient.rand.nextInt(15);
+		int time = 2 + Tim.rand.nextInt(15);
 		time *= 1000;
-		ircclient.sendDelayedAction(
+		Tim.bot.sendDelayedAction(
 			channel,
 			"surreptitiously works his way over to the couch, looking ever so casual...",
 			time);
-		time += ircclient.rand.nextInt(10) * 500 + 1500;
+		time += Tim.rand.nextInt(10) * 500 + 1500;
 
-		int i = ircclient.rand.nextInt(100);
+		int i = Tim.rand.nextInt(100);
 		String act;
-		String colour = this.colours.get(ircclient.rand.nextInt(this.colours.size()));
+		String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
 
 		if (i > 20) {
 			act = "grabs a " + colour + " pillow, and throws it at " + target
@@ -655,7 +698,7 @@ public class Amusement {
 		} else {
 			act = "trips and lands on a " + colour + " pillow. Oof!";
 		}
-		ircclient.sendDelayedAction(channel, act, time);
+		Tim.bot.sendDelayedAction(channel, act, time);
 	}
 
 	protected void getApprovedItems() {
@@ -665,7 +708,7 @@ public class Amusement {
 		try {
 			this.approved_items.clear();
 
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 			PreparedStatement s = con.prepareStatement("SELECT `item` FROM `items` WHERE `approved` = TRUE");
 			ResultSet rs = s.executeQuery();
 			while (rs.next()) {
@@ -685,7 +728,7 @@ public class Amusement {
 		this.pending_items.clear();
 
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("SELECT `item` FROM `items` WHERE `approved` = FALSE");
 			ResultSet rs = s.executeQuery();
@@ -703,7 +746,7 @@ public class Amusement {
 	protected void insertPendingItem( String item ) {
 		Connection con;
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("INSERT INTO `items` (`item`, `approved`) VALUES (?, FALSE)");
 			s.setString(1, item);
@@ -718,7 +761,7 @@ public class Amusement {
 	protected void setItemApproved( String item, Boolean approved ) {
 		Connection con;
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("UPDATE `items` SET `approved` = ? WHERE `item` = ?");
 			s.setBoolean(1, approved);
@@ -734,7 +777,7 @@ public class Amusement {
 	protected void removeItem( String item ) {
 		Connection con;
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("DELETE FROM `items` WHERE `item` = ?");
 			s.setString(1, item);
@@ -749,7 +792,7 @@ public class Amusement {
 	protected void getAypwipList() {
 		Connection con;
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			Statement s = con.createStatement();
 			s.executeQuery("SELECT `string` FROM `aypwips`");
@@ -769,7 +812,7 @@ public class Amusement {
 	protected void getColourList() {
 		Connection con;
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			Statement s = con.createStatement();
 			s.executeQuery("SELECT `string` FROM `colours`");
@@ -789,7 +832,7 @@ public class Amusement {
 	protected void getCommandmentList() {
 		Connection con;
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			Statement s = con.createStatement();
 			s.executeQuery("SELECT `string` FROM `commandments`");
@@ -809,7 +852,7 @@ public class Amusement {
 	protected void getDeityList() {
 		Connection con;
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			Statement s = con.createStatement();
 			s.executeQuery("SELECT `string` FROM `deities`");
@@ -829,7 +872,7 @@ public class Amusement {
 	protected void getEightballList() {
 		Connection con;
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			Statement s = con.createStatement();
 			s.executeQuery("SELECT `string` FROM `eightballs`");
@@ -849,7 +892,7 @@ public class Amusement {
 	protected void getFlavourList() {
 		Connection con;
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			Statement s = con.createStatement();
 			s.executeQuery("SELECT `string` FROM `flavours`");

@@ -26,14 +26,9 @@ import java.util.logging.Logger;
  * @author mwalker
  */
 public class Challenge {
-	Tim ircclient;
 	private List<String> approved = new ArrayList<String>();
 	private List<String> pending = new ArrayList<String>();
 	private long timeout = 3000;
-
-	public Challenge( Tim ircclient ) {
-		this.ircclient = ircclient;
-	}
 
 	/**
 	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
@@ -115,7 +110,7 @@ public class Challenge {
 					try {
 						wantPage = Integer.parseInt(args[1]) - 1;
 					} catch (NumberFormatException ex) {
-						this.ircclient.sendMessage(channel,
+						Tim.bot.sendMessage(channel,
 							"Page number was not numeric.");
 						return true;
 					}
@@ -126,12 +121,12 @@ public class Challenge {
 				}
 
 				int list_idx = wantPage * 10;
-				this.ircclient.sendMessage(channel, String.format(
+				Tim.bot.sendMessage(channel, String.format(
 					"Showing page %d of %d (%d challenges total)", wantPage + 1,
 					pages, this.approved.size()));
 				for (int i = 0; i < 10 && list_idx < this.approved.size(); ++i, list_idx = wantPage
 																						   * 10 + i) {
-					this.ircclient.sendMessage(channel, String.format("%d: %s", list_idx,
+					Tim.bot.sendMessage(channel, String.format("%d: %s", list_idx,
 						this.approved.get(list_idx)));
 				}
 				return true;
@@ -142,7 +137,7 @@ public class Challenge {
 					try {
 						wantPage = Integer.parseInt(args[1]) - 1;
 					} catch (NumberFormatException ex) {
-						this.ircclient.sendMessage(channel,
+						Tim.bot.sendMessage(channel,
 							"Page number was not numeric.");
 						return true;
 					}
@@ -153,12 +148,12 @@ public class Challenge {
 				}
 
 				int list_idx = wantPage * 10;
-				this.ircclient.sendMessage(channel, String.format(
+				Tim.bot.sendMessage(channel, String.format(
 					"Showing page %d of %d (%d challenges total)", wantPage + 1,
 					pages, this.pending.size()));
 				for (int i = 0; i < 10 && list_idx < this.pending.size(); ++i, list_idx = wantPage
 																						  * 10 + i) {
-					this.ircclient.sendMessage(channel, String.format("%d: %s", list_idx,
+					Tim.bot.sendMessage(channel, String.format("%d: %s", list_idx,
 						this.pending.get(list_idx)));
 				}
 				return true;
@@ -182,7 +177,7 @@ public class Challenge {
 						this.pending.remove(idx);
 						this.approved.add(challenge);
 					} else {
-						this.ircclient.sendMessage(channel, String.format(
+						Tim.bot.sendMessage(channel, String.format(
 							"Challenge %s is not pending approval.", args[1]));
 					}
 				}
@@ -207,7 +202,7 @@ public class Challenge {
 						this.pending.add(challenge);
 						this.approved.remove(idx);
 					} else {
-						this.ircclient.sendMessage(channel, String.format(
+						Tim.bot.sendMessage(channel, String.format(
 							"Challenge %s is not pending approval.", args[1]));
 					}
 					return true;
@@ -231,7 +226,7 @@ public class Challenge {
 						this.removeChallenge(challenge);
 						this.pending.remove(challenge);
 					} else {
-						this.ircclient.sendMessage(channel, String.format(
+						Tim.bot.sendMessage(channel, String.format(
 							"Challenge %s is not pending approval.", args[0]));
 					}
 					return true;
@@ -251,7 +246,7 @@ public class Challenge {
 			"    !challengefor <name> <challenge> - Challenge someone else, and store it for approval",};
 
 		for (int i = 0; i < strs.length; ++i) {
-			ircclient.sendNotice(target, strs[i]);
+			Tim.bot.sendNotice(target, strs[i]);
 		}
 	}
 
@@ -265,7 +260,7 @@ public class Challenge {
 			"    $challenge unapprove <# from approved> - Unapprove a previously approved item",};
 
 		for (int i = 0; i < strs.length; ++i) {
-			ircclient.sendNotice(target, strs[i]);
+			Tim.bot.sendNotice(target, strs[i]);
 		}
 	}
 
@@ -279,7 +274,7 @@ public class Challenge {
 			"challenge"
 		};
 
-		String action = actions[ircclient.rand.nextInt(actions.length)];
+		String action = actions[Tim.rand.nextInt(actions.length)];
 		
 		if ("challenge".equals(action)) {
 			issueChallenge(channel, sender, null);
@@ -294,11 +289,11 @@ public class Challenge {
 			}
 		} else {
 			// Find a random challenge.
-			int i = this.ircclient.rand.nextInt(this.approved.size());
+			int i = Tim.rand.nextInt(this.approved.size());
 			challenge = this.approved.get(i);
 		}
 
-		this.ircclient.sendAction(channel, String.format("challenges %s: %s", target, challenge));
+		Tim.bot.sendAction(channel, String.format("challenges %s: %s", target, challenge));
 	}
 
 	private void getApprovedChallenges() {
@@ -307,7 +302,7 @@ public class Challenge {
 		this.approved.clear();
 
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 			PreparedStatement s = con.prepareStatement("SELECT `challenge` FROM `challenges` WHERE `approved` = TRUE");
 			ResultSet rs = s.executeQuery();
 			while (rs.next()) {
@@ -327,7 +322,7 @@ public class Challenge {
 		this.pending.clear();
 
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("SELECT `challenge` FROM `challenges` WHERE `approved` = FALSE");
 			ResultSet rs = s.executeQuery();
@@ -345,7 +340,7 @@ public class Challenge {
 	private void insertPendingChallenge( String challenge ) {
 		Connection con;
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("INSERT INTO `challenges` (`challenge`, `approved`) VALUES (?, FALSE)");
 			s.setString(1, challenge);
@@ -360,7 +355,7 @@ public class Challenge {
 	private void setChallengeApproved( String challenge, Boolean approved ) {
 		Connection con;
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("UPDATE `challenges` SET `approved` = ? WHERE `challenge` = ?");
 			s.setBoolean(1, approved);
@@ -376,7 +371,7 @@ public class Challenge {
 	private void removeChallenge( String challenge ) {
 		Connection con;
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = Tim.db.pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("DELETE FROM `challenges` WHERE `challenge` = ?");
 			s.setString(1, challenge);

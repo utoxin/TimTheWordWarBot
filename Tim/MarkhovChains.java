@@ -21,17 +21,44 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.pircbotx.PircBotX;
+import org.pircbotx.hooks.ListenerAdapter;
+import org.pircbotx.hooks.events.ActionEvent;
+import org.pircbotx.hooks.events.MessageEvent;
 
 /**
  *
  * @author mwalker
  */
-public class MarkhovChains {
-	Tim ircclient;
+public class MarkhovChains extends ListenerAdapter {
+	private DBAccess db = DBAccess.getInstance();
+	private Tim client = Tim.getInstance();
 	private long timeout = 3000;
 
-	public MarkhovChains( Tim ircclient ) {
-		this.ircclient = ircclient;
+	@Override
+	public void onMessage(MessageEvent event) {
+		PircBotX bot = event.getBot();
+
+		ChannelInfo cdata = db.channel_data.get(event.getChannel().getName().toLowerCase());
+
+		if (!event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
+			if (cdata.doMarkhov) {
+				process_markhov(event.getMessage(), "say");
+			}
+		}
+	}
+
+	@Override
+	public void onAction(ActionEvent event) {
+		PircBotX bot = event.getBot();
+
+		ChannelInfo cdata = db.channel_data.get(event.getChannel().getName().toLowerCase());
+
+		if (!event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
+			if (cdata.doMarkhov) {
+				process_markhov(event.getMessage(), "emote");
+			}
+		}
 	}
 
 	/**
@@ -90,7 +117,7 @@ public class MarkhovChains {
 			"    $badword <word> - Add <word> to the 'bad word' list, and purge from the chain data.",};
 
 		for (int i = 0; i < strs.length; ++i) {
-			ircclient.sendNotice(target, strs[i]);
+			Tim.bot.sendNotice(target, strs[i]);
 		}
 	}
 
@@ -102,13 +129,13 @@ public class MarkhovChains {
 			"markhov"
 		};
 
-		String action = actions[ircclient.rand.nextInt(actions.length)];
+		String action = actions[client.rand.nextInt(actions.length)];
 		
 		if ("markhov".equals(action)) {
 			if ("say".equals(type)) {
-				ircclient.sendDelayedMessage(channel, generate_markhov(type), ircclient.rand.nextInt(1500));
+				client.sendDelayedMessage(channel, generate_markhov(type), client.rand.nextInt(1500));
 			} else {
-				ircclient.sendDelayedAction(channel, generate_markhov(type), ircclient.rand.nextInt(1500));
+				client.sendDelayedAction(channel, generate_markhov(type), client.rand.nextInt(1500));
 			}
 		}
 	}
@@ -116,10 +143,10 @@ public class MarkhovChains {
 	public void addBadWord( String word, String channel ) {
 		Connection con;
 		if ("".equals(word)) {
-			this.ircclient.sendMessage(channel, "I can't add nothing. Please provide the bad word.");
+			Tim.bot.sendMessage(channel, "I can't add nothing. Please provide the bad word.");
 		} else {
 			try {
-				con = ircclient.pool.getConnection(timeout);
+				con = db.pool.getConnection(timeout);
 
 				PreparedStatement s = con.prepareStatement("REPLACE INTO bad_words SET word = ?");
 				s.setString(1, word);
@@ -138,7 +165,7 @@ public class MarkhovChains {
 				s.executeUpdate();
 				s.close();
 				
-				this.ircclient.sendAction(channel, "quickly goes through his records, and purges all knowledge of that horrible word.");
+				Tim.bot.sendAction(channel, "quickly goes through his records, and purges all knowledge of that horrible word.");
 
 				con.close();
 			} catch (SQLException ex) {
@@ -151,7 +178,7 @@ public class MarkhovChains {
 		Connection con = null;
 		String sentence = "";
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = db.pool.getConnection(timeout);
 			PreparedStatement nextList, getTotal;
 
 			if ("emote".equals(type)) {
@@ -168,7 +195,7 @@ public class MarkhovChains {
 			ResultSet totalRes = getTotal.executeQuery();
 			totalRes.next();
 			int total = totalRes.getInt("total");
-			int pick = ircclient.rand.nextInt(total);
+			int pick = client.rand.nextInt(total);
 
 			String lastWord = "";
 			int check = 0;
@@ -184,7 +211,7 @@ public class MarkhovChains {
 				lastWord = nextRes.getString("second");
 			}
 
-			int maxLength = ircclient.rand.nextInt(25) + 10;
+			int maxLength = client.rand.nextInt(25) + 10;
 			int curWords = 1;
 			boolean keepGoing = true;
 
@@ -205,7 +232,7 @@ public class MarkhovChains {
 					break;
 				}
 
-				pick = ircclient.rand.nextInt(total);
+				pick = client.rand.nextInt(total);
 
 				check = 0;
 
@@ -265,7 +292,7 @@ public class MarkhovChains {
 
 		String[] words = message.split(" ");
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = db.pool.getConnection(timeout);
 			PreparedStatement addPair;
 			if ("emote".equals(type)) {
 				addPair = con.prepareStatement("INSERT INTO markhov_emote_data (first, second, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
@@ -324,7 +351,7 @@ public class MarkhovChains {
 		Connection con = null;
 		boolean foundBadWord = false;
 		try {
-			con = ircclient.pool.getConnection(timeout);
+			con = db.pool.getConnection(timeout);
 			PreparedStatement checkBad = con.prepareStatement("SELECT count(*) as matched FROM bad_words WHERE word LIKE ?");
 			ResultSet checkBadRes;
 
