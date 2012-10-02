@@ -18,6 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.pircbotx.hooks.events.MessageEvent;
 
 /**
  *
@@ -37,7 +38,8 @@ public class ChainStory {
 	 *
 	 * @return True if message was handled, false otherwise.
 	 */
-	public boolean parseUserCommand( String channel, String sender, String prefix, String message ) {
+	public boolean parseUserCommand( MessageEvent event ) {
+		String message = event.getMessage();
 		String command;
 		String argsString = "";
 		String[] args = null;
@@ -51,17 +53,15 @@ public class ChainStory {
 			command = message.substring(1).toLowerCase();
 		}
 
-		if (prefix.equals("!")) {
-			if (command.equals("chainlast")) {
-				showLast(channel);
-				return true;
-			} else if (command.equals("chainnew")) {
-					addNew(channel, sender, argsString);
-					return true;
-			} else if (command.equals("chaininfo")) {
-					info(channel);
-					return true;
-			}
+		if (command.equals("chainlast")) {
+			showLast(event);
+			return true;
+		} else if (command.equals("chainnew")) {
+			addNew(event, argsString);
+			return true;
+		} else if (command.equals("chaininfo")) {
+			info(event);
+			return true;
 		}
 
 		return false;
@@ -81,7 +81,7 @@ public class ChainStory {
 		return false;
 	}
 
-	protected void helpSection( String target, String channel) {
+	protected void helpSection( MessageEvent event ) {
 		String[] strs = {
 			"Chain Story Commands:",
 			"    !chaininfo - General info about the current status of my navel.",
@@ -89,14 +89,14 @@ public class ChainStory {
 			"    !chainnew <paragraph> - Provide the next paragraph of my great cyberspace novel!",};
 
 		for (int i = 0; i < strs.length; ++i) {
-			Tim.bot.sendNotice(target, strs[i]);
+			Tim.bot.sendNotice(event.getUser(), strs[i]);
 		}
 	}
 
 	public void refreshDbLists() {
 	}
 
-	public void info( String channel ) {
+	public void info( MessageEvent event ) {
 		Connection con;
 		String word_count = "", last_line = "", author_count = "";
 		ResultSet rs;
@@ -127,9 +127,9 @@ public class ChainStory {
 				last_line = rs.getString("string");
 			}
 
-			Tim.bot.sendMessage(channel, "My novel is currently " + word_count + " words long, with paragraphs written by " + author_count + " different people, and the last paragraph is:");
-			Tim.bot.sendMessage(channel, last_line);
-			Tim.bot.sendMessage(channel, "You can read an excerpt in my profile here: http://www.nanowrimo.org/en/participants/timmybot");
+			event.respond("My novel is currently " + word_count + " words long, with paragraphs written by " + author_count + " different people, and the last paragraph is:");
+			event.respond(last_line);
+			event.respond("You can read an excerpt in my profile here: http://www.nanowrimo.org/en/participants/timmybot");
 
 			con.close();
 		} catch (SQLException ex) {
@@ -137,7 +137,7 @@ public class ChainStory {
 		}
 	}
 
-	public void showLast( String channel ) {
+	public void showLast( MessageEvent event ) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -147,8 +147,8 @@ public class ChainStory {
 
 			ResultSet rs = s.getResultSet();
 			while (rs.next()) {
-				Tim.bot.sendMessage(channel, "Let's see... the last paragraph of my novel is...");
-				Tim.bot.sendMessage(channel, rs.getString("string"));
+				event.respond("Let's see... the last paragraph of my novel is...");
+				event.respond(rs.getString("string"));
 			}
 
 			con.close();
@@ -157,26 +157,26 @@ public class ChainStory {
 		}
 	}
 
-	public void addNew( String channel, String sender, String message ) {
+	public void addNew( MessageEvent event, String message ) {
 		Connection con;
 		if ("".equals(message)) {
-			Tim.bot.sendAction(channel, "blinks, and looks confused. \"But there's nothing there. That won't help my wordcount!\"");
+			Tim.bot.sendAction(event.getChannel(), "blinks, and looks confused. \"But there's nothing there. That won't help my wordcount!\"");
 		} else {
 			try {
 				con = Tim.db.pool.getConnection(timeout);
 
 				PreparedStatement s = con.prepareStatement("INSERT INTO story SET string = ?, author = ?, created = NOW()");
 				s.setString(1, message);
-				s.setString(2, sender);
+				s.setString(2, event.getUser().getNick());
 				s.executeUpdate();
 
-				Tim.bot.sendAction(channel, "quickly copies down what " + sender + " said. \"Thanks!\"");
+				Tim.bot.sendAction(event.getChannel(), "quickly copies down what " + event.getUser().getNick() + " said. \"Thanks!\"");
 
 				s = con.prepareStatement("SELECT SUM( LENGTH( STRING ) - LENGTH( REPLACE( STRING ,  ' ',  '' ) ) +1 ) AS word_count FROM story");
 				s.executeQuery();
 				ResultSet rs = s.getResultSet();
 				while (rs.next()) {
-					Tim.bot.sendMessage(channel, "My novel is now " + rs.getString("word_count") + " words long!");
+					event.respond("My novel is now " + rs.getString("word_count") + " words long!");
 				}
 
 				con.close();

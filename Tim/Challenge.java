@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.pircbotx.hooks.events.MessageEvent;
 
 /**
  *
@@ -41,7 +42,8 @@ public class Challenge {
 	 *
 	 * @return True if message was handled, false otherwise.
 	 */
-	public boolean parseUserCommand( String channel, String sender, String prefix, String message ) {
+	public boolean parseUserCommand( MessageEvent event ) {
+		String message = event.getMessage();
 		String command;
 		String argsString = "";
 		String[] args = null;
@@ -55,24 +57,22 @@ public class Challenge {
 			command = message.substring(1).toLowerCase();
 		}
 
-		if (prefix.equals("!")) {
-			if (command.equals("challenge")) {
-				issueChallenge(channel, sender, argsString);
-				return true;
-			} else if (command.equals("challengefor")) {
-				String target;
-				space = argsString.indexOf(" ");
-				if (space > 0) {
-					target = argsString.substring(0, space);
-					argsString = argsString.substring(space + 1);
-				} else {
-					target = argsString;
-					argsString = "";
-				}
-
-				issueChallenge(channel, target, argsString);
-				return true;
+		if (command.equals("challenge")) {
+			issueChallenge(event, event.getUser().getNick(), argsString);
+			return true;
+		} else if (command.equals("challengefor")) {
+			String target;
+			space = argsString.indexOf(" ");
+			if (space > 0) {
+				target = argsString.substring(0, space);
+				argsString = argsString.substring(space + 1);
+			} else {
+				target = argsString;
+				argsString = "";
 			}
+
+			issueChallenge(event, target, argsString);
+			return true;
 		}
 
 		return false;
@@ -237,7 +237,7 @@ public class Challenge {
 		return false;
 	}
 
-	protected void helpSection( String target, String channel ) {
+	protected void helpSection( MessageEvent event ) {
 		String[] strs = {
 			"Challenge Commands:",
 			"    !challenge - Request a challenge",
@@ -246,11 +246,11 @@ public class Challenge {
 			"    !challengefor <name> <challenge> - Challenge someone else, and store it for approval",};
 
 		for (int i = 0; i < strs.length; ++i) {
-			Tim.bot.sendNotice(target, strs[i]);
+			Tim.bot.sendNotice(event.getUser(), strs[i]);
 		}
 	}
 
-	protected void adminHelpSection( String target, String channel ) {
+	protected void adminHelpSection( MessageEvent event ) {
 		String[] strs = {
 			"Challenge Commands:",
 			"    $challenge pending [<page>] - List a page of pending items",
@@ -260,7 +260,7 @@ public class Challenge {
 			"    $challenge unapprove <# from approved> - Unapprove a previously approved item",};
 
 		for (int i = 0; i < strs.length; ++i) {
-			Tim.bot.sendNotice(target, strs[i]);
+			Tim.bot.sendNotice(event.getUser(), strs[i]);
 		}
 	}
 
@@ -281,7 +281,7 @@ public class Challenge {
 		}
 	}
 
-	public void issueChallenge( String channel, String target, String challenge ) {
+	public void issueChallenge( MessageEvent event, String target, String challenge ) {
 		if (challenge != null && !( "".equals(challenge) )) {
 			if (!( this.approved.contains(challenge) || this.pending.contains(challenge) ) && challenge.length() < 300) {
 				this.insertPendingChallenge(challenge);
@@ -293,7 +293,7 @@ public class Challenge {
 			challenge = this.approved.get(i);
 		}
 
-		Tim.bot.sendAction(channel, String.format("challenges %s: %s", target, challenge));
+		Tim.bot.sendAction(event.getChannel(), String.format("challenges %s: %s", target, challenge));
 	}
 
 	private void getApprovedChallenges() {

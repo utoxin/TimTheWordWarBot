@@ -133,9 +133,9 @@ public class MarkhovChains extends ListenerAdapter {
 		
 		if ("markhov".equals(action)) {
 			if ("say".equals(type)) {
-				client.sendDelayedMessage(channel, generate_markhov(type), client.rand.nextInt(1500));
+				Tim.sendDelayedMessage(channel, generate_markhov(type), client.rand.nextInt(1500));
 			} else {
-				client.sendDelayedAction(channel, generate_markhov(type), client.rand.nextInt(1500));
+				Tim.sendDelayedAction(channel, generate_markhov(type), client.rand.nextInt(1500));
 			}
 		}
 	}
@@ -183,7 +183,7 @@ public class MarkhovChains extends ListenerAdapter {
 
 			if ("emote".equals(type)) {
 				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markhov_emote_data WHERE first = ?");
-				nextList = con.prepareStatement("SELECT * FROM markhov_emote_data WHERE first = ? ORDER BY count ASC");
+				nextList = con.prepareStatement("SELECT first, second, count FROM markhov_emote_data WHERE first = ? ORDER BY count ASC");
 			} else {
 				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markhov_say_data WHERE first = ?");
 				nextList = con.prepareStatement("SELECT first, second, count FROM markhov_say_data WHERE first = ? ORDER BY count ASC");
@@ -195,7 +195,7 @@ public class MarkhovChains extends ListenerAdapter {
 			ResultSet totalRes = getTotal.executeQuery();
 			totalRes.next();
 			int total = totalRes.getInt("total");
-			int pick = client.rand.nextInt(total);
+			int pick = Tim.rand.nextInt(total);
 
 			String lastWord = "";
 			int check = 0;
@@ -211,7 +211,7 @@ public class MarkhovChains extends ListenerAdapter {
 				lastWord = nextRes.getString("second");
 			}
 
-			int maxLength = client.rand.nextInt(25) + 10;
+			int maxLength = Tim.rand.nextInt(25) + 10;
 			int curWords = 1;
 			boolean keepGoing = true;
 
@@ -232,7 +232,7 @@ public class MarkhovChains extends ListenerAdapter {
 					break;
 				}
 
-				pick = client.rand.nextInt(total);
+				pick = Tim.rand.nextInt(total);
 
 				check = 0;
 

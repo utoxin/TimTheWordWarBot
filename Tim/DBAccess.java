@@ -17,6 +17,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.pircbotx.Channel;
 import snaq.db.ConnectionPool;
 
 /**
@@ -225,6 +226,15 @@ public class DBAccess {
 		}
 
 		return value;
+	}
+
+	protected boolean isChannelAdult( Channel channel ) {
+		boolean val = false;
+		ChannelInfo cdata = this.channel_data.get(channel.getName().toLowerCase());
+		if (cdata != null) {
+			val = cdata.isAdult;
+		}
+		return val;
 	}
 
 	private void saveChannel( String channel ) {

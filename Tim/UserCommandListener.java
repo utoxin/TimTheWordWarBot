@@ -55,7 +55,7 @@ public class UserCommandListener extends ListenerAdapter {
 			} else if (command.equals("listall")) {
 				Tim.warticker.listAllWars(event);
 			} else if (command.equals("boxodoom")) {
-				this.boxodoom(channel, sender, args);
+				Tim.amusement.boxodoom(event, args);
 			} else if (command.equals("eggtimer")) {
 				double time = 15;
 				if (args != null) {
@@ -75,19 +75,48 @@ public class UserCommandListener extends ListenerAdapter {
 				}
 				event.respond("Your timer has expired!");
 			} else if (command.equals("help")) {
-				this.printCommandList(sender, channel);
+				this.printCommandList(event);
 			} else if (command.equals("credits")) {
 				event.respond(
 					"I was created by MysteriousAges in 2008 using PHP, and ported to the Java PircBot library in 2009. "
 					+ "Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: "
 					+ "https://github.com/MysteriousAges/TimTheWordWarBot, and my NaNoWriMo profile page is here: "
 					+ "http://www.nanowrimo.org/en/participants/timmybot");
-			} else if (this.story.parseUserCommand(channel, sender, prefix, message)) {
-			} else if (this.challenge.parseUserCommand(channel, sender, prefix, message)) {
-			} else if (this.amusement.parseUserCommand(channel, sender, prefix, message)) {
+			} else if (Tim.story.parseUserCommand(event)) {
+			} else if (Tim.challenge.parseUserCommand(event)) {
+			} else if (Tim.amusement.parseUserCommand(event)) {
 			} else {
 				event.respond("!" + command + " was not part of my training.");
 			}
+		}
+	}
+
+	private void printCommandList( MessageEvent event ) {
+		Tim.bot.sendAction(event.getChannel(), "whispers something to " + event.getUser().getNick() + ". (Check for a new window or tab with the help text.)");
+
+		String[] strs = {"I am a robot trained by the WordWar Monks of Honolulu. You have "
+						 + "never heard of them. It is because they are awesome.",
+						 "Core Commands:",
+						 "    !startwar <duration> <time to start> <an optional name> - Starts a word war",
+						 "    !listwars - I will tell you about the wars currently in progress.",
+						 "    !boxodoom <difficulty> <duration> - Difficulty is easy/average/hard, duration in minutes.",
+						 "    !eggtimer <time> - I will send you a message after <time> minutes.",
+						 "    !settopic <topic> - If able, I will try to set the channel's topic.",
+						 "    !credits - Details of my creators, and where to find my source code.",
+		};
+		for (int i = 0; i < strs.length; ++i) {
+			Tim.bot.sendNotice(event.getUser(), strs[i]);
+		}
+
+		Tim.story.helpSection(event);
+		Tim.challenge.helpSection(event);
+		Tim.amusement.helpSection(event);
+		
+		String[] post = {"I... I think there might be other tricks I know... You'll have to find them!",
+						 "I will also respond to the /invite command if you would like to see me in another channel. "
+		};
+		for (int i = 0; i < post.length; ++i) {
+			Tim.bot.sendNotice(event.getUser(), post[i]);
 		}
 	}
 }

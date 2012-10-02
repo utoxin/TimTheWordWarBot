@@ -18,7 +18,9 @@ import java.util.Enumeration;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.pircbotx.Channel;
 import org.pircbotx.PircBotX;
+import org.pircbotx.User;
 import org.pircbotx.exception.IrcException;
 import org.pircbotx.exception.NickAlreadyInUseException;
 
@@ -84,6 +86,36 @@ public class Tim {
 	 */
 	public static Tim getInstance() {
 		return instance;
+	}
+	
+	public static void sendDelayedMessage(Channel channel, String message, int delay) {
+		try {
+			Thread.sleep(delay);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		
+		bot.sendMessage(channel, message);
+	}
+
+	public static void sendDelayedAction(Channel channel, String message, int delay) {
+		try {
+			Thread.sleep(delay);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		
+		bot.sendAction(channel, message);
+	}
+
+	public static void sendDelayedNotice(User user, String message, int delay) {
+		try {
+			Thread.sleep(delay);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		
+		bot.sendNotice(user, message);
 	}
 
 //	@Override
@@ -507,34 +539,6 @@ public class Tim {
 //						   String message ) {
 //	}
 //
-//	private void printCommandList( String target, String channel ) {
-//		this.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new windor or tab with the help text.)");
-//
-//		String[] strs = {"I am a robot trained by the WordWar Monks of Honolulu. You have "
-//						 + "never heard of them. It is because they are awesome.",
-//						 "Core Commands:",
-//						 "    !startwar <duration> <time to start> <an optional name> - Starts a word war",
-//						 "    !listwars - I will tell you about the wars currently in progress.",
-//						 "    !boxodoom <difficulty> <duration> - Difficulty is easy/average/hard, duration in minutes.",
-//						 "    !eggtimer <time> - I will send you a message after <time> minutes.",
-//						 "    !settopic <topic> - If able, I will try to set the channel's topic.",
-//						 "    !credits - Details of my creators, and where to find my source code.",
-//		};
-//		for (int i = 0; i < strs.length; ++i) {
-//			this.sendNotice(target, strs[i]);
-//		}
-//
-//		this.story.helpSection(target, channel);
-//		this.challenge.helpSection(target, channel);
-//		this.amusement.helpSection(target, channel);
-//		
-//		String[] post = {"I... I think there might be other tricks I know... You'll have to find them!",
-//						 "I will also respond to the /invite command if you would like to see me in another channel. "
-//		};
-//		for (int i = 0; i < post.length; ++i) {
-//			this.sendNotice(target, post[i]);
-//		}
-//	}
 //
 //	private void printAdminCommandList( String target, String channel ) {
 //		this.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new windor or tab with the help text.)");
@@ -563,12 +567,4 @@ public class Tim {
 //		this.markhov.adminHelpSection(target, channel);
 //	}
 //
-//	protected boolean isChannelAdult( String channel ) {
-//		boolean val = false;
-//		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
-//		if (cdata != null) {
-//			val = cdata.isAdult;
-//		}
-//		return val;
-//	}
 }
