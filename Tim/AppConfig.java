@@ -16,10 +16,9 @@
  */
 package Tim;
 
+import java.util.Collection;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
-
-import java.util.Collection;
 
 public class AppConfig extends XMLConfiguration {
 	// Need this to make warnings shut up more.

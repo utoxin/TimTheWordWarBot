@@ -23,7 +23,7 @@ import org.pircbotx.hooks.events.PrivateMessageEvent;
  */
 public class AdminCommandListener extends ListenerAdapter {
 	@Override
-	public void onMessage(MessageEvent event) {
+	public void onMessage( MessageEvent event ) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 
 		if (message.charAt(0) == '$') {
@@ -33,10 +33,10 @@ public class AdminCommandListener extends ListenerAdapter {
 
 				int space = message.indexOf(" ");
 				if (space > 0) {
-					command = message.substring(0, space).toLowerCase();
+					command = message.substring(1, space).toLowerCase();
 					args = message.substring(space + 1).split(" ", 0);
 				} else {
-					command = message.substring(0).toLowerCase();
+					command = message.substring(1).toLowerCase();
 				}
 
 				if (command.equals("setadultflag")) {
@@ -145,7 +145,7 @@ public class AdminCommandListener extends ListenerAdapter {
 	}
 
 	private void printAdminCommandList( MessageEvent event ) {
-		Tim.bot.sendAction(event.getChannel(), "whispers in " + event.getUser().getNick() + "'s ear. (Check for a new windor or tab with the help text.)");
+		Tim.bot.sendAction(event.getChannel(), "whispers something to " + event.getUser().getNick() + ". (Check for a new window or tab with the help text.)");
 
 		String[] helplines = {"Core Admin Commands:",
 							  "    $setadultflag <#channel> <0/1> - clears/sets adult flag on channel",
