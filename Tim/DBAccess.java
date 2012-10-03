@@ -319,8 +319,8 @@ public class DBAccess {
 		this.getIgnoreList();
 		this.getGreetingList();
 
-//		this.amusement.refreshDbLists();
-//		this.story.refreshDbLists();
-//		this.challenge.refreshDbLists();
+		Tim.amusement.refreshDbLists();
+		Tim.story.refreshDbLists();
+		Tim.challenge.refreshDbLists();
 	}
 }

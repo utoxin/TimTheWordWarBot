@@ -96,11 +96,11 @@ public class MarkhovChains extends ListenerAdapter {
 
 		int space = message.indexOf(" ");
 		if (space > 0) {
-			command = message.substring(0, space).toLowerCase();
+			command = message.substring(1, space).toLowerCase();
 			argsString = message.substring(space + 1);
 			args = argsString.split(" ", 0);
 		} else {
-			command = message.toLowerCase();
+			command = message.toLowerCase().substring(1);
 		}
 
 		if (command.equals("badword")) {

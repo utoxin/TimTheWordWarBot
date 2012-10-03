@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.pircbotx.User;
 import org.pircbotx.hooks.ListenerAdapter;
+import org.pircbotx.hooks.events.InviteEvent;
 import org.pircbotx.hooks.events.JoinEvent;
 import org.pircbotx.hooks.events.KickEvent;
 import org.pircbotx.hooks.events.PartEvent;
@@ -33,6 +34,16 @@ public class ServerListener extends ListenerAdapter {
 		}
 	}
 
+	@Override
+	public void onInvite (InviteEvent event) {
+		if (!Tim.db.ignore_list.contains(event.getUser())) {
+			if (!Tim.db.channel_data.containsKey(event.getChannel())) {
+				Tim.bot.joinChannel(event.getChannel());
+				Tim.db.saveChannel(event.getChannel());
+			}
+		}
+	}
+	
 	@Override
 	public void onPart( PartEvent event ) {
 		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {

@@ -98,11 +98,11 @@ public class Challenge {
 
 		int space = message.indexOf(" ");
 		if (space > 0) {
-			command = message.substring(0, space).toLowerCase();
+			command = message.substring(1, space).toLowerCase();
 			argsString = message.substring(space + 1);
 			args = argsString.split(" ", 0);
 		} else {
-			command = message.toLowerCase();
+			command = message.toLowerCase().substring(1);
 		}
 
 		if (command.equals("challenge")) {
@@ -169,6 +169,7 @@ public class Challenge {
 						this.setChallengeApproved(challenge, true);
 						this.pending.remove(idx);
 						this.approved.add(challenge);
+						event.respond(String.format("Challenge %s approved.", args[1]));
 					} else {
 						event.respond(String.format("Challenge %s is not pending approval.", args[1]));
 					}
@@ -193,8 +194,9 @@ public class Challenge {
 						this.setChallengeApproved(challenge, false);
 						this.pending.add(challenge);
 						this.approved.remove(idx);
+						event.respond(String.format("Challenge %s unapproved.", args[1]));
 					} else {
-						event.respond(String.format("Challenge %s is not pending approval.", args[1]));
+						event.respond(String.format("Challenge %s is not in approved list.", args[1]));
 					}
 					return true;
 				}
@@ -216,6 +218,7 @@ public class Challenge {
 					if (idx >= 0) {
 						this.removeChallenge(challenge);
 						this.pending.remove(challenge);
+						event.respond(String.format("Challenge %s deleted from pending list.", args[0]));
 					} else {
 						event.respond(String.format("Challenge %s is not pending approval.", args[0]));
 					}

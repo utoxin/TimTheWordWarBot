@@ -139,11 +139,11 @@ public class Amusement {
 
 		int space = message.indexOf(" ");
 		if (space > 0) {
-			command = message.substring(0, space).toLowerCase();
+			command = message.substring(1, space).toLowerCase();
 			argsString = message.substring(space + 1);
-			args = argsString.split(" ", 0);
+			args = argsString.split(" ", 1);
 		} else {
-			command = message.toLowerCase();
+			command = message.toLowerCase().substring(1);
 		}
 
 		if (command.equals("listitems")) {
@@ -209,6 +209,7 @@ public class Amusement {
 					this.setItemApproved(item, true);
 					this.pending_items.remove(idx);
 					this.approved_items.add(item);
+					event.respond(String.format("Item %s approved.", args[0]));
 				} else {
 					event.respond(String.format("Item %s is not pending approval.", args[0]));
 				}
@@ -233,8 +234,9 @@ public class Amusement {
 					this.setItemApproved(item, false);
 					this.pending_items.add(item);
 					this.approved_items.remove(idx);
+					event.respond(String.format("Item %s disapproved.", args[0]));
 				} else {
-					event.respond(String.format("Item %s is not pending approval.", args[0]));
+					event.respond(String.format("Item %s is not in approved list.", args[0]));
 				}
 			}
 			return true;
@@ -256,6 +258,7 @@ public class Amusement {
 				if (idx >= 0) {
 					this.removeItem(item);
 					this.pending_items.remove(item);
+					event.respond(String.format("Item %s has been deleted from pending list.", args[0]));
 				} else {
 					event.respond(String.format("Item %s is not pending approval.", args[0]));
 				}
@@ -368,7 +371,7 @@ public class Amusement {
 
 	protected void lick( MessageEvent event, String[] args ) {
 		if (Tim.db.isChannelAdult(event.getChannel())) {
-			if (args.length >= 1) {
+			if (args != null && args.length >= 1) {
 				String argStr = StringUtils.join(args, " ");
 
 				Tim.bot.sendAction(
@@ -389,7 +392,7 @@ public class Amusement {
 		if (mutter) {
 			Tim.sendDelayedAction(channel, "mutters under his breath, \"" + this.eightballs.get(r) + "\"", delay);
 		} else {
-			Tim.sendDelayedMessage(channel, sender + ": " + this.eightballs.get(r), delay);
+			Tim.sendDelayedMessage(channel, sender.getNick() + ": " + this.eightballs.get(r), delay);
 		}
 	}
 

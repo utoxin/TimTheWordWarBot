@@ -100,7 +100,6 @@ public class UserCommandListener extends ListenerAdapter {
 						 "    !listwars - I will tell you about the wars currently in progress.",
 						 "    !boxodoom <difficulty> <duration> - Difficulty is easy/average/hard, duration in minutes.",
 						 "    !eggtimer <time> - I will send you a message after <time> minutes.",
-						 "    !settopic <topic> - If able, I will try to set the channel's topic.",
 						 "    !credits - Details of my creators, and where to find my source code.",};
 		for (int i = 0; i < strs.length; ++i) {
 			Tim.bot.sendNotice(event.getUser(), strs[i]);
