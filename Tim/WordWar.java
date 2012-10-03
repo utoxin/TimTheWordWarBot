@@ -12,21 +12,23 @@
  */
 package Tim;
 
+import org.pircbotx.Channel;
+import org.pircbotx.User;
+
 /**
  *
  * @author Marc
  *
  */
 public class WordWar {
-	private String channel;
+	private Channel channel;
+	private User starter;
 	private long duration;
 	private String name;
 	public long remaining;
-	private String starter;
 	public long time_to_start;
 
-	public WordWar( long time, long to_start, String warname,
-					String startingUser, String hosting_channel ) {
+	public WordWar(long time, long to_start, String warname, User startingUser, Channel hosting_channel) {
 		this.starter = startingUser;
 		this.time_to_start = to_start;
 		this.duration = this.remaining = time;
@@ -34,7 +36,7 @@ public class WordWar {
 		this.channel = hosting_channel;
 	}
 
-	public String getChannel() {
+	public Channel getChannel() {
 		return this.channel;
 	}
 
@@ -46,7 +48,7 @@ public class WordWar {
 		return name;
 	}
 
-	public String getStarter() {
+	public User getStarter() {
 		return starter;
 	}
 
