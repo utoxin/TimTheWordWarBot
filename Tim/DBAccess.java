@@ -54,7 +54,7 @@ public class DBAccess {
 		}
 
 		// Initialize the connection pool, to prevent SQL timeout issues
-		String url = "jdbc:mysql://" + Tim.config.getString("sql_server") + ":3306/" + Tim.config.getString("sql_database");
+		String url = "jdbc:mysql://" + Tim.config.getString("sql_server") + ":3306/" + Tim.config.getString("sql_database") + "?useUnicode=true&characterEncoding=UTF-8";
 		pool = new ConnectionPool("local", 5, 25, 50, 180000, url, Tim.config.getString("sql_user"), Tim.config.getString("sql_password"));
 	}
 

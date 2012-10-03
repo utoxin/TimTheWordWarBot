@@ -47,7 +47,7 @@ public class ReactionListener extends ListenerAdapter {
 					int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
 					Tim.bot.sendMessage(event.getChannel(), String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
 				} else if (Pattern.matches("(?i).*markhov test.*", message)) {
-					Tim.sendDelayedMessage(event.getChannel(), Tim.markhov.generate_markhov("emote"), Tim.rand.nextInt(500) + 500);
+					Tim.sendDelayedMessage(event.getChannel(), Tim.markhov.generate_markhov("say"), Tim.rand.nextInt(500) + 500);
 				} else {
 					if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && Tim.rand.nextInt(100) < 50) {
 						Tim.amusement.eightball(event.getChannel(), event.getUser(), false);
@@ -115,14 +115,18 @@ public class ReactionListener extends ListenerAdapter {
 			
 			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 			long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
-			if (odds > cdata.chatterMaxBaseOdds) {
-				odds = cdata.chatterMaxBaseOdds;
+			if (odds < cdata.chatterMaxBaseOdds) {
+				return;
 			}
 
 			if (Tim.rand.nextInt(100) < odds) {
 				String[] actions;
 
-				cdata.chatterTimer += Tim.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+				int newDivisor = cdata.chatterTimeDivisor;
+				if (newDivisor > 1) {
+					newDivisor -= 1;
+				}
+				cdata.chatterTimer += Tim.rand.nextInt((int) elapsed / newDivisor);
 
 				if (cdata.doMarkhov && !cdata.doRandomActions) {
 					actions = new String[] {

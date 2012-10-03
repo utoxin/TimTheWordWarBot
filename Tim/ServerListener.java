@@ -47,7 +47,7 @@ public class ServerListener extends ListenerAdapter {
 	@Override
 	public void onJoin( JoinEvent event ) {
 		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
-			String message = Tim.db.greetings.get(Tim.rand.nextInt(Tim.db.greetings.size()));
+			String message = String.format(Tim.db.greetings.get(Tim.rand.nextInt(Tim.db.greetings.size())), event.getUser().getNick());
 			
 			if (Tim.warticker.wars.size() > 0) {
 				int warscount = 0;
