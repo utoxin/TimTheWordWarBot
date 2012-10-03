@@ -114,9 +114,10 @@ public class ReactionListener extends ListenerAdapter {
 			cdata = Tim.db.channel_data.get(cdata.Name);
 
 			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
-			long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
+			long odds = Math.round(Math.sqrt(elapsed) / 3);
+
 			if (odds < cdata.chatterMaxBaseOdds) {
-				return;
+				continue;
 			}
 
 			if (Tim.rand.nextInt(100) < odds) {
@@ -160,7 +161,7 @@ public class ReactionListener extends ListenerAdapter {
 		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName().toLowerCase());
 
 		long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
-		long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
+		long odds = Math.round(Math.sqrt(elapsed) / 3);
 		if (odds > cdata.chatterMaxBaseOdds) {
 			odds = cdata.chatterMaxBaseOdds;
 		}

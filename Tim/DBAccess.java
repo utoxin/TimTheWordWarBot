@@ -28,7 +28,7 @@ public class DBAccess {
 	private static DBAccess instance;
 	private long timeout = 3000;
 	protected Set<String> admin_list = new HashSet<String>(16);
-	protected Hashtable<String, ChannelInfo> channel_data = new Hashtable<String, ChannelInfo>(62);
+	protected HashMap<String, ChannelInfo> channel_data = new HashMap<String, ChannelInfo>(62);
 	protected List<String> extra_greetings = new ArrayList<String>();
 	protected List<String> greetings = new ArrayList<String>();
 	protected Set<String> ignore_list = new HashSet<String>(16);
@@ -245,7 +245,14 @@ public class DBAccess {
 			s.executeUpdate();
 
 			if (!this.channel_data.containsKey(channel.toLowerCase())) {
-				this.channel_data.put(channel.toLowerCase(), new ChannelInfo(channel.toLowerCase()));
+				ChannelInfo new_channel = new ChannelInfo(channel.toLowerCase());
+				new_channel.setChatterTimers(
+					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
+					Integer.parseInt(getSetting("chatterNameMultiplier")),
+					Integer.parseInt(getSetting("chatterTimeMultiplier")),
+					Integer.parseInt(getSetting("chatterTimeDivisor")));
+
+				this.channel_data.put(channel.toLowerCase(), new_channel);
 			}
 
 			con.close();

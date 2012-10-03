@@ -14,7 +14,7 @@ package Tim;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Enumeration;
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -80,8 +80,8 @@ public class Tim {
 		db.refreshDbLists();
 
 		// Join our channels
-		for (Enumeration<ChannelInfo> e = db.channel_data.elements(); e.hasMoreElements();) {
-			bot.joinChannel(e.nextElement().Name);
+		for (Map.Entry<String, ChannelInfo> entry : db.channel_data.entrySet()) {
+			bot.joinChannel(entry.getValue().Name);
 		}
 	}
 
