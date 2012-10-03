@@ -27,63 +27,65 @@ public class UserCommandListener extends ListenerAdapter {
 	public void onMessage(MessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 
-		if (message.charAt(0) == '!') {
-			String command;
-			String[] args = null;
+		if (!Tim.db.ignore_list.contains(event.getUser().getNick())) {
+			if (message.charAt(0) == '!') {
+				String command;
+				String[] args = null;
 
-			int space = message.indexOf(" ");
-			if (space > 0) {
-				command = message.substring(1, space).toLowerCase();
-				args = message.substring(space + 1).split(" ", 0);
-			} else {
-				command = message.substring(1).toLowerCase();
-			}
-
-			if (command.equals("startwar")) {
-				if (args != null && args.length > 1) {
-					Tim.warticker.startWar(event, args);
+				int space = message.indexOf(" ");
+				if (space > 0) {
+					command = message.substring(1, space).toLowerCase();
+					args = message.substring(space + 1).split(" ", 0);
 				} else {
-					event.respond("Usage: !startwar <duration in min> [<time to start in min> [<name>]]");
-				}
-			} else if (command.equals("endwar")) {
-				Tim.warticker.endWar(event, args);
-			} else if (command.equals("listwars")) {
-				Tim.warticker.listWars(event, false);
-			} else if (command.equals("listall")) {
-				Tim.warticker.listAllWars(event);
-			} else if (command.equals("boxodoom")) {
-				Tim.amusement.boxodoom(event, args);
-			} else if (command.equals("eggtimer")) {
-				double time = 15;
-				if (args != null) {
-					try {
-						time = Double.parseDouble(args[0]);
-					} catch (Exception e) {
-						event.respond("Could not understand first parameter. Was it numeric?");
-						return;
-					}
+					command = message.substring(1).toLowerCase();
 				}
 
-				event.respond("Your timer has been set.");
-				try {
-					Thread.sleep((long) ( time * 60 * 1000 ));
-				} catch (InterruptedException ex) {
-					Logger.getLogger(UserCommandListener.class.getName()).log(Level.SEVERE, null, ex);
+				if (command.equals("startwar")) {
+					if (args != null && args.length > 1) {
+						Tim.warticker.startWar(event, args);
+					} else {
+						event.respond("Usage: !startwar <duration in min> [<time to start in min> [<name>]]");
+					}
+				} else if (command.equals("endwar")) {
+					Tim.warticker.endWar(event, args);
+				} else if (command.equals("listwars")) {
+					Tim.warticker.listWars(event, false);
+				} else if (command.equals("listall")) {
+					Tim.warticker.listAllWars(event);
+				} else if (command.equals("boxodoom")) {
+					Tim.amusement.boxodoom(event, args);
+				} else if (command.equals("eggtimer")) {
+					double time = 15;
+					if (args != null) {
+						try {
+							time = Double.parseDouble(args[0]);
+						} catch (Exception e) {
+							event.respond("Could not understand first parameter. Was it numeric?");
+							return;
+						}
+					}
+
+					event.respond("Your timer has been set.");
+					try {
+						Thread.sleep((long) ( time * 60 * 1000 ));
+					} catch (InterruptedException ex) {
+						Logger.getLogger(UserCommandListener.class.getName()).log(Level.SEVERE, null, ex);
+					}
+					event.respond("Your timer has expired!");
+				} else if (command.equals("help")) {
+					this.printCommandList(event);
+				} else if (command.equals("credits")) {
+					event.respond(
+						"I was created by MysteriousAges in 2008 using PHP, and ported to the Java PircBot library in 2009. "
+						+ "Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: "
+						+ "https://github.com/utoxin/TimTheWordWarBot, and my NaNoWriMo profile page is here: "
+						+ "http://nanowrimo.org/en/participants/timmybot");
+				} else if (Tim.story.parseUserCommand(event)) {
+				} else if (Tim.challenge.parseUserCommand(event)) {
+				} else if (Tim.amusement.parseUserCommand(event)) {
+				} else {
+					event.respond("!" + command + " was not part of my training.");
 				}
-				event.respond("Your timer has expired!");
-			} else if (command.equals("help")) {
-				this.printCommandList(event);
-			} else if (command.equals("credits")) {
-				event.respond(
-					"I was created by MysteriousAges in 2008 using PHP, and ported to the Java PircBot library in 2009. "
-					+ "Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: "
-					+ "https://github.com/utoxin/TimTheWordWarBot, and my NaNoWriMo profile page is here: "
-					+ "http://nanowrimo.org/en/participants/timmybot");
-			} else if (Tim.story.parseUserCommand(event)) {
-			} else if (Tim.challenge.parseUserCommand(event)) {
-			} else if (Tim.amusement.parseUserCommand(event)) {
-			} else {
-				event.respond("!" + command + " was not part of my training.");
 			}
 		}
 	}

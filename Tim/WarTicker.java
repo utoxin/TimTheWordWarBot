@@ -26,7 +26,7 @@ public class WarTicker {
 	public WarClockThread warticker;
 	private Semaphore wars_lock;
 	private Timer ticker;
-	private Map<String, WordWar> wars;
+	public Map<String, WordWar> wars;
 
 	static {
 		instance = new WarTicker();

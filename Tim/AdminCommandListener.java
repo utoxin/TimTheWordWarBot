@@ -15,6 +15,7 @@ package Tim;
 import org.pircbotx.Colors;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.MessageEvent;
+import org.pircbotx.hooks.events.PrivateMessageEvent;
 
 /**
  *
@@ -123,6 +124,26 @@ public class AdminCommandListener extends ListenerAdapter {
 		}
 	}
 
+	@Override
+	public void onPrivateMessage( PrivateMessageEvent event ) {
+		String message = Colors.removeFormattingAndColors(event.getMessage());
+
+		if (Tim.db.admin_list.contains(event.getUser().getNick().toLowerCase())) {
+			String[] args = message.split(" ");
+			if (args != null && args.length > 2) {
+				String msg = "";
+				for (int i = 2; i < args.length; i++) {
+					msg += args[i] + " ";
+				}
+				if (args[0].equalsIgnoreCase("say")) {
+					Tim.bot.sendMessage(args[1], msg);
+				} else if (args[0].equalsIgnoreCase("act")) {
+					Tim.bot.sendAction(args[1], msg);
+				}
+			}
+		}
+	}
+
 	private void printAdminCommandList( MessageEvent event ) {
 		Tim.bot.sendAction(event.getChannel(), "whispers in " + event.getUser().getNick() + "'s ear. (Check for a new windor or tab with the help text.)");
 
@@ -149,5 +170,4 @@ public class AdminCommandListener extends ListenerAdapter {
 		Tim.challenge.adminHelpSection(event);
 		Tim.markhov.adminHelpSection(event);
 	}
-
 }
