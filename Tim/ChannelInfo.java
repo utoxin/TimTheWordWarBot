@@ -25,7 +25,7 @@ public class ChannelInfo {
 	 *
 	 * @param name What is the name of the channel
 	 */
-	public ChannelInfo( String name ) {
+	public ChannelInfo(String name) {
 		this.Name = name;
 		this.isAdult = false;
 		this.doCommandActions = true;
@@ -42,7 +42,7 @@ public class ChannelInfo {
 	 * @param random  Should random actions happen on this channel
 	 * @param command Should 'fun' commands be processed on channel
 	 */
-	public ChannelInfo( String name, boolean adult, boolean markhov, boolean random, boolean command ) {
+	public ChannelInfo(String name, boolean adult, boolean markhov, boolean random, boolean command) {
 		this.Name = name;
 		this.isAdult = adult;
 		this.doRandomActions = random;
@@ -50,7 +50,7 @@ public class ChannelInfo {
 		this.doMarkhov = markhov;
 	}
 
-	public void setChatterTimers( int maxBaseOdds, int nameMultiplier, int timeMultiplier, int timeDivisor ) {
+	public void setChatterTimers(int maxBaseOdds, int nameMultiplier, int timeMultiplier, int timeDivisor) {
 		this.chatterMaxBaseOdds = maxBaseOdds;
 		this.chatterNameMultiplier = nameMultiplier;
 		this.chatterTimeMultiplier = timeMultiplier;

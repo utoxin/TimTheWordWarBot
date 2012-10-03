@@ -21,10 +21,13 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.pircbotx.Channel;
+import org.pircbotx.Colors;
 import org.pircbotx.PircBotX;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.ActionEvent;
 import org.pircbotx.hooks.events.MessageEvent;
+import org.pircbotx.hooks.events.ServerPingEvent;
 
 /**
  *
@@ -32,7 +35,6 @@ import org.pircbotx.hooks.events.MessageEvent;
  */
 public class MarkhovChains extends ListenerAdapter {
 	private DBAccess db = DBAccess.getInstance();
-	private Tim client = Tim.getInstance();
 	private long timeout = 3000;
 
 	@Override
@@ -43,7 +45,7 @@ public class MarkhovChains extends ListenerAdapter {
 
 		if (!event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
 			if (cdata.doMarkhov) {
-				process_markhov(event.getMessage(), "say");
+				process_markhov(Colors.removeFormattingAndColors(event.getMessage()), "say");
 			}
 		}
 	}
@@ -56,7 +58,7 @@ public class MarkhovChains extends ListenerAdapter {
 
 		if (!event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
 			if (cdata.doMarkhov) {
-				process_markhov(event.getMessage(), "emote");
+				process_markhov(Colors.removeFormattingAndColors(event.getMessage()), "emote");
 			}
 		}
 	}
@@ -72,7 +74,7 @@ public class MarkhovChains extends ListenerAdapter {
 	 *
 	 * @return True if message was handled, false otherwise.
 	 */
-	public boolean parseUserCommand( String channel, String sender, String prefix, String message ) {
+	public boolean parseUserCommand(String channel, String sender, String prefix, String message) {
 		return false;
 	}
 
@@ -86,7 +88,8 @@ public class MarkhovChains extends ListenerAdapter {
 	 *
 	 * @return True if message was handled, false otherwise
 	 */
-	public boolean parseAdminCommand( String channel, String sender, String message ) {
+	public boolean parseAdminCommand(MessageEvent event) {
+		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString;
 		String[] args = null;
@@ -102,7 +105,7 @@ public class MarkhovChains extends ListenerAdapter {
 
 		if (command.equals("badword")) {
 			if (args != null && args.length == 1) {
-				addBadWord(args[0], channel);
+				addBadWord(args[0], event.getChannel());
 				return true;
 			}
 		}
@@ -110,37 +113,48 @@ public class MarkhovChains extends ListenerAdapter {
 		return false;
 	}
 
-
-	protected void adminHelpSection( String target, String channel ) {
+	protected void adminHelpSection(MessageEvent event) {
 		String[] strs = {
 			"Markhov Chain Commands:",
 			"    $badword <word> - Add <word> to the 'bad word' list, and purge from the chain data.",};
 
 		for (int i = 0; i < strs.length; ++i) {
-			Tim.bot.sendNotice(target, strs[i]);
+			Tim.bot.sendNotice(event.getUser(), strs[i]);
 		}
 	}
 
 	public void refreshDbLists() {
 	}
 
-	protected void randomAction( String sender, String channel, String message, String type ) {
+	public void randomActionWrapper(MessageEvent event) {
+		randomAction(event.getChannel(), "say");
+	}
+
+	public void randomActionWrapper(ActionEvent event) {
+		randomAction(event.getChannel(), "emote");
+	}
+
+	public void randomActionWrapper(ServerPingEvent event, String channel) {
+		randomAction(event.getBot().getChannel(channel), "say");
+	}
+
+	protected void randomAction(Channel channel, String type) {
 		String[] actions = {
 			"markhov"
 		};
 
-		String action = actions[client.rand.nextInt(actions.length)];
-		
+		String action = actions[Tim.rand.nextInt(actions.length)];
+
 		if ("markhov".equals(action)) {
 			if ("say".equals(type)) {
-				Tim.sendDelayedMessage(channel, generate_markhov(type), client.rand.nextInt(1500));
+				Tim.sendDelayedMessage(channel, generate_markhov(type), Tim.rand.nextInt(1500));
 			} else {
-				Tim.sendDelayedAction(channel, generate_markhov(type), client.rand.nextInt(1500));
+				Tim.sendDelayedAction(channel, generate_markhov(type), Tim.rand.nextInt(1500));
 			}
 		}
 	}
 
-	public void addBadWord( String word, String channel ) {
+	public void addBadWord(String word, Channel channel) {
 		Connection con;
 		if ("".equals(word)) {
 			Tim.bot.sendMessage(channel, "I can't add nothing. Please provide the bad word.");
@@ -152,19 +166,19 @@ public class MarkhovChains extends ListenerAdapter {
 				s.setString(1, word);
 				s.executeUpdate();
 				s.close();
-				
+
 				s = con.prepareStatement("DELETE FROM markhov_say_data WHERE first = ? OR second = ?");
 				s.setString(1, word);
 				s.setString(2, word);
 				s.executeUpdate();
 				s.close();
-				
+
 				s = con.prepareStatement("DELETE FROM markhov_emote_data WHERE first = ? OR second = ?");
 				s.setString(1, word);
 				s.setString(2, word);
 				s.executeUpdate();
 				s.close();
-				
+
 				Tim.bot.sendAction(channel, "quickly goes through his records, and purges all knowledge of that horrible word.");
 
 				con.close();
@@ -173,8 +187,8 @@ public class MarkhovChains extends ListenerAdapter {
 			}
 		}
 	}
-	
-	public String generate_markhov( String type ) {
+
+	public String generate_markhov(String type) {
 		Connection con = null;
 		String sentence = "";
 		try {
@@ -285,7 +299,7 @@ public class MarkhovChains extends ListenerAdapter {
 	 * @param type    What type of message was it (say or emote)
 	 *
 	 */
-	public void process_markhov( String message, String type ) {
+	public void process_markhov(String message, String type) {
 		Connection con = null;
 		String first;
 		String second = "";
@@ -347,7 +361,7 @@ public class MarkhovChains extends ListenerAdapter {
 		}
 	}
 
-	private boolean skipMarkhovWord( String word ) {
+	private boolean skipMarkhovWord(String word) {
 		Connection con = null;
 		boolean foundBadWord = false;
 		try {
@@ -378,7 +392,7 @@ public class MarkhovChains extends ListenerAdapter {
 				return true;
 			}
 		}
-		
+
 		// If email, skip
 		if (Pattern.matches("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$", word)) {
 			return true;

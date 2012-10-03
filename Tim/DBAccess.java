@@ -26,19 +26,17 @@ import snaq.db.ConnectionPool;
  */
 public class DBAccess {
 	private static DBAccess instance;
-
 	private long timeout = 3000;
-
 	protected Set<String> admin_list = new HashSet<String>(16);
 	protected Hashtable<String, ChannelInfo> channel_data = new Hashtable<String, ChannelInfo>(62);
 	protected List<String> extra_greetings = new ArrayList<String>();
 	protected List<String> greetings = new ArrayList<String>();
-	protected Set<String> ignore_list = new HashSet<String>(16);	
+	protected Set<String> ignore_list = new HashSet<String>(16);
 	protected ConnectionPool pool;
 
 	static {
-        instance = new DBAccess();
-    }
+		instance = new DBAccess();
+	}
 
 	private DBAccess() {
 		Class c;
@@ -61,15 +59,15 @@ public class DBAccess {
 	}
 
 	/**
-     * Singleton access method.
-     *
-     * @return Singleton
-     */
-    public static DBAccess getInstance() {
+	 * Singleton access method.
+	 *
+	 * @return Singleton
+	 */
+	public static DBAccess getInstance() {
 		return instance;
-    }
+	}
 
-	private void deleteChannel( String channel ) {
+	public void deleteChannel(String channel) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -87,7 +85,7 @@ public class DBAccess {
 		}
 	}
 
-	private void deleteIgnore( String username ) {
+	public void deleteIgnore(String username) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -102,7 +100,7 @@ public class DBAccess {
 		}
 	}
 
-	private void getAdminList() {
+	public void getAdminList() {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -123,7 +121,7 @@ public class DBAccess {
 		}
 	}
 
-	private void getChannelList() {
+	public void getChannelList() {
 		Connection con;
 		ChannelInfo ci;
 		String channel;
@@ -154,7 +152,7 @@ public class DBAccess {
 		}
 	}
 
-	private void getGreetingList() {
+	public void getGreetingList() {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -184,7 +182,7 @@ public class DBAccess {
 		}
 	}
 
-	private void getIgnoreList() {
+	public void getIgnoreList() {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -204,7 +202,7 @@ public class DBAccess {
 		}
 	}
 
-	public String getSetting( String key ) {
+	public String getSetting(String key) {
 		Connection con;
 		String value = "";
 
@@ -228,7 +226,7 @@ public class DBAccess {
 		return value;
 	}
 
-	protected boolean isChannelAdult( Channel channel ) {
+	public boolean isChannelAdult(Channel channel) {
 		boolean val = false;
 		ChannelInfo cdata = this.channel_data.get(channel.getName().toLowerCase());
 		if (cdata != null) {
@@ -237,7 +235,7 @@ public class DBAccess {
 		return val;
 	}
 
-	private void saveChannel( String channel ) {
+	public void saveChannel(String channel) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -256,7 +254,7 @@ public class DBAccess {
 		}
 	}
 
-	private void saveIgnore( String username ) {
+	public void saveIgnore(String username) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -271,7 +269,7 @@ public class DBAccess {
 		}
 	}
 
-	private void setChannelAdultFlag( String channel, boolean adult ) {
+	public void setChannelAdultFlag(String channel, boolean adult) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -293,7 +291,7 @@ public class DBAccess {
 		}
 	}
 
-	private void setChannelMuzzledFlag( String channel, boolean muzzled ) {
+	public void setChannelMuzzledFlag(String channel, boolean muzzled) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);

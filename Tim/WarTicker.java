@@ -23,13 +23,12 @@ import org.pircbotx.hooks.events.MessageEvent;
  */
 public class WarTicker {
 	private static WarTicker instance;
-
-	private WarClockThread warticker;
+	public WarClockThread warticker;
 	private Semaphore wars_lock;
 	private Timer ticker;
 	private Map<String, WordWar> wars;
 
-	static  {
+	static {
 		instance = new WarTicker();
 	}
 
@@ -43,18 +42,18 @@ public class WarTicker {
 	}
 
 	/**
-     * Singleton access method.
-     *
-     * @return Singleton
-     */
-    public static WarTicker getInstance() {
+	 * Singleton access method.
+	 *
+	 * @return Singleton
+	 */
+	public static WarTicker getInstance() {
 		return instance;
-    }
+	}
 
-	private class WarClockThread extends TimerTask {
+	public class WarClockThread extends TimerTask {
 		private WarTicker parent;
 
-		public WarClockThread( WarTicker parent ) {
+		public WarClockThread(WarTicker parent) {
 			this.parent = parent;
 		}
 
@@ -72,7 +71,7 @@ public class WarTicker {
 	public void _tick() {
 		this._warsUpdate();
 	}
-	
+
 	private void _warsUpdate() {
 		if (this.wars != null && this.wars.size() > 0) {
 			try {
@@ -135,44 +134,35 @@ public class WarTicker {
 		}
 	}
 
-	private void warStartCount( WordWar war ) {
+	private void warStartCount(WordWar war) {
 		if (war.time_to_start < 60) {
-			Tim.bot.sendMessage(war.getChannel(), war.getName() + ": Starting in "
-											   + war.time_to_start
-											   + ( war.time_to_start == 1 ? " second" : " seconds" ) + "!");
+			Tim.bot.sendMessage(war.getChannel(), war.getName() + ": Starting in " + war.time_to_start + ( war.time_to_start == 1 ? " second" : " seconds" ) + "!");
 		} else {
 			int time_to_start = (int) war.time_to_start / 60;
-			Tim.bot.sendMessage(war.getChannel(), war.getName() + ": Starting in "
-											   + time_to_start
-											   + ( time_to_start == 1 ? " minute" : " minutes" ) + "!");
+			Tim.bot.sendMessage(war.getChannel(), war.getName() + ": Starting in " + time_to_start + ( time_to_start == 1 ? " minute" : " minutes" ) + "!");
 		}
 	}
 
-	private void warEndCount( WordWar war ) {
+	private void warEndCount(WordWar war) {
 		if (war.remaining < 60) {
-			Tim.bot.sendMessage(war.getChannel(), war.getName() + ": "
-											   + war.remaining
-											   + ( war.remaining == 1 ? " second" : " seconds" )
-											   + " remaining!");
+			Tim.bot.sendMessage(war.getChannel(), war.getName() + ": " + war.remaining + ( war.remaining == 1 ? " second" : " seconds" ) + " remaining!");
 		} else {
 			int remaining = (int) war.remaining / 60;
-			Tim.bot.sendMessage(war.getChannel(), war.getName() + ": " + remaining
-											   + ( remaining == 1 ? " minute" : " minutes" ) + " remaining.");
+			Tim.bot.sendMessage(war.getChannel(), war.getName() + ": " + remaining + ( remaining == 1 ? " minute" : " minutes" ) + " remaining.");
 		}
 	}
 
-	private void beginWar( WordWar war ) {
-		Tim.bot.sendNotice(war.getChannel(), "WordWar: '" + war.getName()
-										  + " 'starts now! (" + war.getDuration() / 60 + " minutes)");
+	private void beginWar(WordWar war) {
+		Tim.bot.sendNotice(war.getChannel(), "WordWar: '" + war.getName() + " 'starts now! (" + war.getDuration() / 60 + " minutes)");
 	}
 
-	private void endWar( WordWar war ) {
+	private void endWar(WordWar war) {
 		Tim.bot.sendNotice(war.getChannel(), "WordWar: '" + war.getName() + "' is over!");
 		this.wars.remove(war.getName().toLowerCase());
 	}
 
 	// !endwar <name>
-	public void endWar( MessageEvent event, String[] args ) {
+	public void endWar(MessageEvent event, String[] args) {
 		if (args != null && args.length > 0) {
 			String name = StringUtils.join(args, " ");
 			if (this.wars.containsKey(name.toLowerCase())) {
@@ -192,7 +182,7 @@ public class WarTicker {
 		}
 	}
 
-	public void startWar( MessageEvent event, String[] args ) {
+	public void startWar(MessageEvent event, String[] args) {
 		long time;
 		long to_start = 5000;
 		String warname;
@@ -243,11 +233,11 @@ public class WarTicker {
 		}
 	}
 
-	public void listAllWars( MessageEvent event ) {
+	public void listAllWars(MessageEvent event) {
 		this.listWars(event, true);
 	}
 
-	public void listWars( MessageEvent event, boolean all ) {
+	public void listWars(MessageEvent event, boolean all) {
 		if (this.wars != null && this.wars.size() > 0) {
 			for (Map.Entry<String, WordWar> wm : this.wars.entrySet()) {
 				if (all || wm.getValue().getChannel().canEqual(event.getChannel())) {

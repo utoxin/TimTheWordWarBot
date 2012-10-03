@@ -36,7 +36,7 @@ public class Tim {
 	public static ChainStory story;
 	public static WarTicker warticker = WarTicker.getInstance();
 
-	public static void main( String[] args ) {
+	public static void main(String[] args) {
 		instance = new Tim();
 	}
 
@@ -48,11 +48,16 @@ public class Tim {
 		amusement = new Amusement();
 
 		bot = new PircBotX();
-		bot.getListenerManager().addListener(new SimpleResponses());
+
+		bot.getListenerManager().addListener(new AdminCommandListener());
+		bot.getListenerManager().addListener(new UserCommandListener());
+		bot.getListenerManager().addListener(new ReactionListener());
+		
 		bot.setEncoding(Charset.forName("UTF-8"));
 		bot.setLogin("WarMech");
 		bot.setMessageDelay(Long.parseLong(db.getSetting("max_rate")));
 		bot.setName(db.getSetting("nickname"));
+		bot.setVerbose(true);
 
 		try {
 			bot.connect(db.getSetting("server"));
@@ -87,14 +92,14 @@ public class Tim {
 	public static Tim getInstance() {
 		return instance;
 	}
-	
+
 	public static void sendDelayedMessage(Channel channel, String message, int delay) {
 		try {
 			Thread.sleep(delay);
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		
+
 		bot.sendMessage(channel, message);
 	}
 
@@ -104,7 +109,7 @@ public class Tim {
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		
+
 		bot.sendAction(channel, message);
 	}
 
@@ -114,10 +119,9 @@ public class Tim {
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		
+
 		bot.sendNotice(user, message);
 	}
-
 //	@Override
 //	protected void onAction( String sender, String login, String hostname,
 //							 String target, String action ) {
@@ -140,246 +144,16 @@ public class Tim {
 //	@Override
 //	public void onMessage( String channel, String sender, String login,
 //						   String hostname, String message ) {
-//
-//		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
-//		
-//		message = Colors.removeFormattingAndColors(message);
-//
 //		if (!this.ignore_list.contains(sender)) {
-//			// Find all messages that start with ! and pass them to a method for
-//			// further processing.
-//			if (message.charAt(0) == '!') {
-//				this.doCommand(channel, sender, "!", message);
-//				return;
-//			} // Notation for wordcounts
-//			else if (message.charAt(0) == '@') {
-//				this.doCommand(channel, sender, "@", message);
-//				return;
-//			} else if (message.charAt(0) == '$') {
-//				this.doAdmin(channel, sender, '$', message.substring(1));
-//				return;
-//			}
-//
 //			// Other fun stuff we can make him do
-//			} else if (message.toLowerCase().contains(
-//				"are you thinking what i'm thinking")
-//					   || message.toLowerCase().contains(
-//				"are you pondering what i'm pondering")) {
-//				int i = this.rand.nextInt(amusement.aypwips.size());
-//				this.sendMessage(channel,
-//					String.format(amusement.aypwips.get(i), sender));
-//				return;
 //			} else {
-//				} else if (Pattern.matches("(?i)" + this.getNick() + ".*[?]",
-//					message)) {
-//					int r = this.rand.nextInt(100);
-//
-//					if (r < 50) {
-//						amusement.eightball(channel, sender, false);
-//						return;
-//					}
-//				} else if (Pattern.matches("(?i).*markhov test.*", message)) {
-//					this.sendDelayedMessage(channel, markhov.generate_markhov("say"), this.rand.nextInt(1500));
-//					return;
-//				}
 //			}
 //
 //			if (!sender.equals(this.getNick()) && !"".equals(channel)) {
-//				this.interact(sender, channel, message, "say");
-//				if (cdata.doMarkhov) {
-//					markhov.process_markhov(message, "say");
-//				}
 //			}
 //		}
 //	}
 //
-//	private void doAdmin( String channel, String sender, char c, String message ) {
-//		// Method for processing admin commands.
-//		if (this.admin_list.contains(sender.toLowerCase()) || this.admin_list.contains(channel.toLowerCase())) {
-//			String command;
-//			String[] args = null;
-//
-//			int space = message.indexOf(" ");
-//			if (space > 0) {
-//				command = message.substring(0, space).toLowerCase();
-//				args = message.substring(space + 1).split(" ", 0);
-//			} else {
-//				command = message.substring(0).toLowerCase();
-//			}
-//
-//			if (command.equals("setadultflag")) {
-//				if (args != null && args.length == 2) {
-//					String target = args[0].toLowerCase();
-//					if (this.channel_data.containsKey(target)) {
-//						boolean flag = false;
-//						if (!"0".equals(args[1])) {
-//							flag = true;
-//						}
-//
-//						this.setChannelAdultFlag(target, flag);
-//						this.sendMessage(channel, sender + ": Channel adult flag updated for " + target);
-//					} else {
-//						this.sendMessage(channel, "I don't know about " + target);
-//					}
-//				} else {
-//					this.sendMessage(channel,
-//						"Use: $setadultflag <#channel> <0/1>");
-//				}
-//			} else if (command.equals("setmuzzleflag")) {
-//				if (args != null && args.length == 2) {
-//					String target = args[0].toLowerCase();
-//					if (this.channel_data.containsKey(target)) {
-//						boolean flag = false;
-//						if (!"0".equals(args[1])) {
-//							flag = true;
-//						}
-//
-//						this.setChannelMuzzledFlag(target, flag);
-//						this.sendMessage(channel, sender + ": Channel muzzle flag updated for " + target);
-//					} else {
-//						this.sendMessage(channel, "I don't know about " + target);
-//					}
-//				} else {
-//					this.sendMessage(channel, "Usage: $setmuzzleflag <#channel> <0/1>");
-//				}
-//			} else if (command.equals("shutdown")) {
-//				this.sendMessage(channel, "Shutting down...");
-//				this.shutdown = true;
-//				this.quitServer("I am shutting down! Bye!");
-//				System.exit(0);
-//			} else if (command.equals("reload") || command.equals("refreshdb")) {
-//				this.sendMessage(channel, "Reading database tables ...");
-//				this.refreshDbLists();
-//				this.sendDelayedMessage(channel, "Tables reloaded.", 1000);
-//			} else if (command.equals("reset")) {
-//				this.sendMessage(channel, "Restarting internal timer...");
-//
-//				try {
-//					this.warticker.cancel();
-//					this.warticker = null;
-//
-//					this.ticker.cancel();
-//					this.ticker = null;
-//				} catch (Exception e) {
-//				}
-//
-//				this.warticker = new WarClockThread(this);
-//				this.ticker = new Timer(true);
-//				this.ticker.scheduleAtFixedRate(this.warticker, 0, 1000);
-//				this.refreshDbLists();
-//
-//				this.sendDelayedMessage(channel, "Can you hear me now?", 2000);
-//			} else if (command.equals("ignore")) {
-//				if (args != null && args.length > 0) {
-//					String users = "";
-//					for (int i = 0; i < args.length; ++i) {
-//						users += " " + args[i];
-//						this.ignore_list.add(args[i]);
-//						this.setIgnore(args[i]);
-//					}
-//					this.sendMessage(channel,
-//						"The following users have been ignored:" + users);
-//				} else {
-//					this.sendMessage(channel,
-//						"Usage: $ignore <user 1> [ <user 2> [<user 3> [...] ] ]");
-//				}
-//			} else if (command.equals("unignore")) {
-//				if (args != null && args.length > 0) {
-//					String users = "";
-//					for (int i = 0; i < args.length; ++i) {
-//						users += " " + args[i];
-//						this.ignore_list.remove(args[i]);
-//						this.removeIgnore(args[i]);
-//					}
-//					this.sendMessage(channel,
-//						"The following users have been unignored:" + users);
-//				} else {
-//					this.sendMessage(channel,
-//						"Usage: $unignore <user 1> [ <user 2> [<user 3> [...] ] ]");
-//				}
-//			} else if (command.equals("listignores")) {
-//				this.sendMessage(channel,
-//					"There are " + this.ignore_list.size()
-//					+ " users ignored.");
-//				Iterator<String> iter = this.ignore_list.iterator();
-//				while (iter.hasNext()) {
-//					this.sendMessage(channel, iter.next());
-//				}
-//			} else if (command.equals("help")) {
-//				this.printAdminCommandList(sender, channel);
-//			} else if (this.amusement.parseAdminCommand(channel, sender, message)) {
-//			} else if (this.story.parseAdminCommand(channel, sender, message)) {
-//			} else if (this.challenge.parseAdminCommand(channel, sender, message)) {
-//			} else if (this.markhov.parseAdminCommand(channel, sender, message)) {
-//			} else {
-//				this.sendMessage(channel, "$" + command + " is not a valid admin command - try $help");
-//			}
-//		} else {
-//			// The sender is NOT an admin
-//			this.sendMessage(
-//				this.debugChannel,
-//				String.format(
-//				"User %s in channel %s attempted to use an admin command (%s)!",
-//				sender, channel, message));
-//			this.sendMessage(
-//				channel,
-//				String.format(
-//				"%s: You are not an admin. Only Admins have access to that command.",
-//				sender));
-//		}
-//	}
-//
-//	private void interact( String sender, String channel, String message, String type ) {
-//		ChannelInfo cdata = this.channel_data.get(channel.toLowerCase());
-//
-//		long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
-//		long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
-//		if (odds > cdata.chatterMaxBaseOdds) {
-//			odds = cdata.chatterMaxBaseOdds;
-//		}
-//
-//		if (message.toLowerCase().contains(this.getNick().toLowerCase())) {
-//			odds = odds * cdata.chatterNameMultiplier;
-//		}
-//
-//		if (this.rand.nextInt(100) < odds) {
-//			String[] actions;
-//
-//			if (cdata.doMarkhov && !cdata.doRandomActions) {
-//				actions = new String[] {
-//					"markhov"
-//				};
-//			} else if (cdata.doMarkhov && cdata.doRandomActions) {
-//				actions = new String[] {
-//					"markhov",
-//					"challenge",
-//					"amusement",
-//					"amusement",
-//				};
-//			} else if (cdata.doMarkhov && cdata.doRandomActions) {
-//				actions = new String[] {
-//					"challenge",
-//					"amusement",
-//					"amusement",
-//				};
-//			} else {
-//				return;
-//			}
-//
-//			String action = actions[rand.nextInt(actions.length)];
-//			
-//			if ("markhov".equals(action)) {
-//				markhov.randomAction(sender, channel, message, type);
-//			} else if ("challenge".equals(action)) {
-//				challenge.randomAction(sender, channel, message, type);
-//			} else if ("amusement".equals(action)) {
-//				amusement.randomAction(sender, channel, message, type);
-//			}
-//
-//			cdata.chatterTimer += this.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
-//			channelLog("Chattered On: " + cdata.Name + "   Odds: " + Long.toString(odds) + "%");
-//		}
-//	}
 //
 //	@Override
 //	protected void onPrivateMessage( String sender, String login,
@@ -534,37 +308,4 @@ public class Tim {
 //			}
 //		}
 //	}
-//
-//	public void doCommand( String channel, String sender, String prefix,
-//						   String message ) {
-//	}
-//
-//
-//	private void printAdminCommandList( String target, String channel ) {
-//		this.sendAction(channel, "whispers in " + target + "'s ear. (Check for a new windor or tab with the help text.)");
-//
-//		String[] helplines = {"Core Admin Commands:",
-//							  "    $setadultflag <#channel> <0/1> - clears/sets adult flag on channel",
-//							  "    $setmuzzleflag <#channel> <0/1> - clears/sets muzzle flag on channel",
-//							  "    $shutdown - Forces bot to exit",
-//							  "    $reload - Reloads data from MySQL (also $refreshdb)",
-//							  "    $reset - Resets internal timer for wars, and reloads data from MySQL",
-//							  "    $listitems [ <page #> ] - lists all currently approved !get/!getfor items",
-//							  "    $listpending [ <page #> ] - lists all unapproved !get/!getfor items",
-//							  "    $approveitem <item # from $listpending> - removes item from pending list and marks as approved for !get/!getfor",
-//							  "    $disapproveitem <item # from $listitems> - removes item from approved list and marks as pending for !get/!getfor",
-//							  "    $deleteitem <item # from $listpending> - permanently removes an item from the pending list for !get/!getfor",
-//							  "    $ignore <username> - Places user on the bot's ignore list",
-//							  "    $unignore <username> - Removes user from bot's ignore list",
-//							  "    $listignores - Prints the list of ignored users"
-//		};
-//
-//		for (int i = 0; i < helplines.length; ++i) {
-//			this.sendNotice(target, helplines[i]);
-//		}
-//
-//		this.challenge.adminHelpSection(target, channel);
-//		this.markhov.adminHelpSection(target, channel);
-//	}
-//
 }

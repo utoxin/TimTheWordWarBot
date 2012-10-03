@@ -18,6 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.pircbotx.Colors;
 import org.pircbotx.hooks.events.MessageEvent;
 
 /**
@@ -38,17 +39,15 @@ public class ChainStory {
 	 *
 	 * @return True if message was handled, false otherwise.
 	 */
-	public boolean parseUserCommand( MessageEvent event ) {
-		String message = event.getMessage();
+	public boolean parseUserCommand(MessageEvent event) {
+		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString = "";
-		String[] args = null;
 
 		int space = message.indexOf(" ");
 		if (space > 0) {
 			command = message.substring(1, space).toLowerCase();
 			argsString = message.substring(space + 1);
-			args = argsString.split(" ", 0);
 		} else {
 			command = message.substring(1).toLowerCase();
 		}
@@ -67,21 +66,7 @@ public class ChainStory {
 		return false;
 	}
 
-	/**
-	 * Parses admin-level commands passed from the main class. Returns true if the message was handled, false if it was
-	 * not.
-	 *
-	 * @param channel What channel this came from
-	 * @param sender  Who sent the command
-	 * @param message What was the actual content of the message.
-	 *
-	 * @return True if message was handled, false otherwise
-	 */
-	public boolean parseAdminCommand( String channel, String sender, String message ) {
-		return false;
-	}
-
-	protected void helpSection( MessageEvent event ) {
+	protected void helpSection(MessageEvent event) {
 		String[] strs = {
 			"Chain Story Commands:",
 			"    !chaininfo - General info about the current status of my navel.",
@@ -96,7 +81,7 @@ public class ChainStory {
 	public void refreshDbLists() {
 	}
 
-	public void info( MessageEvent event ) {
+	public void info(MessageEvent event) {
 		Connection con;
 		String word_count = "", last_line = "", author_count = "";
 		ResultSet rs;
@@ -137,7 +122,7 @@ public class ChainStory {
 		}
 	}
 
-	public void showLast( MessageEvent event ) {
+	public void showLast(MessageEvent event) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -157,7 +142,7 @@ public class ChainStory {
 		}
 	}
 
-	public void addNew( MessageEvent event, String message ) {
+	public void addNew(MessageEvent event, String message) {
 		Connection con;
 		if ("".equals(message)) {
 			Tim.bot.sendAction(event.getChannel(), "blinks, and looks confused. \"But there's nothing there. That won't help my wordcount!\"");

@@ -20,6 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.pircbotx.Channel;
+import org.pircbotx.Colors;
+import org.pircbotx.User;
+import org.pircbotx.hooks.events.ActionEvent;
 import org.pircbotx.hooks.events.MessageEvent;
 
 /**
@@ -42,23 +46,21 @@ public class Challenge {
 	 *
 	 * @return True if message was handled, false otherwise.
 	 */
-	public boolean parseUserCommand( MessageEvent event ) {
-		String message = event.getMessage();
+	public boolean parseUserCommand(MessageEvent event) {
+		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString = "";
-		String[] args = null;
 
 		int space = message.indexOf(" ");
 		if (space > 0) {
 			command = message.substring(1, space).toLowerCase();
 			argsString = message.substring(space + 1);
-			args = argsString.split(" ", 0);
 		} else {
 			command = message.substring(1).toLowerCase();
 		}
 
 		if (command.equals("challenge")) {
-			issueChallenge(event, event.getUser().getNick(), argsString);
+			issueChallenge(event.getChannel(), event.getUser().getNick(), argsString);
 			return true;
 		} else if (command.equals("challengefor")) {
 			String target;
@@ -71,7 +73,7 @@ public class Challenge {
 				argsString = "";
 			}
 
-			issueChallenge(event, target, argsString);
+			issueChallenge(event.getChannel(), target, argsString);
 			return true;
 		}
 
@@ -88,7 +90,8 @@ public class Challenge {
 	 *
 	 * @return True if message was handled, false otherwise
 	 */
-	public boolean parseAdminCommand( String channel, String sender, String message ) {
+	public boolean parseAdminCommand(MessageEvent event) {
+		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString;
 		String[] args = null;
@@ -110,8 +113,7 @@ public class Challenge {
 					try {
 						wantPage = Integer.parseInt(args[1]) - 1;
 					} catch (NumberFormatException ex) {
-						Tim.bot.sendMessage(channel,
-							"Page number was not numeric.");
+						event.respond("Page number was not numeric.");
 						return true;
 					}
 				}
@@ -121,13 +123,9 @@ public class Challenge {
 				}
 
 				int list_idx = wantPage * 10;
-				Tim.bot.sendMessage(channel, String.format(
-					"Showing page %d of %d (%d challenges total)", wantPage + 1,
-					pages, this.approved.size()));
-				for (int i = 0; i < 10 && list_idx < this.approved.size(); ++i, list_idx = wantPage
-																						   * 10 + i) {
-					Tim.bot.sendMessage(channel, String.format("%d: %s", list_idx,
-						this.approved.get(list_idx)));
+				event.respond(String.format("Showing page %d of %d (%d challenges total)", wantPage + 1, pages, this.approved.size()));
+				for (int i = 0; i < 10 && list_idx < this.approved.size(); ++i, list_idx = wantPage * 10 + i) {
+					event.respond(String.format("%d: %s", list_idx, this.approved.get(list_idx)));
 				}
 				return true;
 			} else if (args[0].equals("pending")) {
@@ -137,8 +135,7 @@ public class Challenge {
 					try {
 						wantPage = Integer.parseInt(args[1]) - 1;
 					} catch (NumberFormatException ex) {
-						Tim.bot.sendMessage(channel,
-							"Page number was not numeric.");
+						event.respond("Page number was not numeric.");
 						return true;
 					}
 				}
@@ -148,13 +145,9 @@ public class Challenge {
 				}
 
 				int list_idx = wantPage * 10;
-				Tim.bot.sendMessage(channel, String.format(
-					"Showing page %d of %d (%d challenges total)", wantPage + 1,
-					pages, this.pending.size()));
-				for (int i = 0; i < 10 && list_idx < this.pending.size(); ++i, list_idx = wantPage
-																						  * 10 + i) {
-					Tim.bot.sendMessage(channel, String.format("%d: %s", list_idx,
-						this.pending.get(list_idx)));
+				event.respond(String.format("Showing page %d of %d (%d challenges total)", wantPage + 1, pages, this.pending.size()));
+				for (int i = 0; i < 10 && list_idx < this.pending.size(); ++i, list_idx = wantPage * 10 + i) {
+					event.respond(String.format("%d: %s", list_idx, this.pending.get(list_idx)));
 				}
 				return true;
 			} else if (args[0].equals("approve")) {
@@ -177,8 +170,7 @@ public class Challenge {
 						this.pending.remove(idx);
 						this.approved.add(challenge);
 					} else {
-						Tim.bot.sendMessage(channel, String.format(
-							"Challenge %s is not pending approval.", args[1]));
+						event.respond(String.format("Challenge %s is not pending approval.", args[1]));
 					}
 				}
 				return true;
@@ -202,8 +194,7 @@ public class Challenge {
 						this.pending.add(challenge);
 						this.approved.remove(idx);
 					} else {
-						Tim.bot.sendMessage(channel, String.format(
-							"Challenge %s is not pending approval.", args[1]));
+						event.respond(String.format("Challenge %s is not pending approval.", args[1]));
 					}
 					return true;
 				}
@@ -226,8 +217,7 @@ public class Challenge {
 						this.removeChallenge(challenge);
 						this.pending.remove(challenge);
 					} else {
-						Tim.bot.sendMessage(channel, String.format(
-							"Challenge %s is not pending approval.", args[0]));
+						event.respond(String.format("Challenge %s is not pending approval.", args[0]));
 					}
 					return true;
 				}
@@ -237,7 +227,7 @@ public class Challenge {
 		return false;
 	}
 
-	protected void helpSection( MessageEvent event ) {
+	protected void helpSection(MessageEvent event) {
 		String[] strs = {
 			"Challenge Commands:",
 			"    !challenge - Request a challenge",
@@ -250,7 +240,7 @@ public class Challenge {
 		}
 	}
 
-	protected void adminHelpSection( MessageEvent event ) {
+	protected void adminHelpSection(MessageEvent event) {
 		String[] strs = {
 			"Challenge Commands:",
 			"    $challenge pending [<page>] - List a page of pending items",
@@ -269,19 +259,27 @@ public class Challenge {
 		this.getPendingChallenges();
 	}
 
-	protected void randomAction( String sender, String channel, String message, String type ) {
+	public void randomActionWrapper(MessageEvent event) {
+		randomAction(event.getUser(), event.getChannel());
+	}
+
+	public void randomActionWrapper(ActionEvent event) {
+		randomAction(event.getUser(), event.getChannel());
+	}
+
+	protected void randomAction(User sender, Channel channel) {
 		String[] actions = {
 			"challenge"
 		};
 
 		String action = actions[Tim.rand.nextInt(actions.length)];
-		
+
 		if ("challenge".equals(action)) {
-			issueChallenge(channel, sender, null);
+			issueChallenge(channel, sender.getNick(), null);
 		}
 	}
 
-	public void issueChallenge( MessageEvent event, String target, String challenge ) {
+	public void issueChallenge(Channel channel, String target, String challenge) {
 		if (challenge != null && !( "".equals(challenge) )) {
 			if (!( this.approved.contains(challenge) || this.pending.contains(challenge) ) && challenge.length() < 300) {
 				this.insertPendingChallenge(challenge);
@@ -293,7 +291,7 @@ public class Challenge {
 			challenge = this.approved.get(i);
 		}
 
-		Tim.bot.sendAction(event.getChannel(), String.format("challenges %s: %s", target, challenge));
+		Tim.bot.sendAction(channel, String.format("challenges %s: %s", target, challenge));
 	}
 
 	private void getApprovedChallenges() {
@@ -337,7 +335,7 @@ public class Challenge {
 		}
 	}
 
-	private void insertPendingChallenge( String challenge ) {
+	private void insertPendingChallenge(String challenge) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -352,7 +350,7 @@ public class Challenge {
 		}
 	}
 
-	private void setChallengeApproved( String challenge, Boolean approved ) {
+	private void setChallengeApproved(String challenge, Boolean approved) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -368,7 +366,7 @@ public class Challenge {
 		}
 	}
 
-	private void removeChallenge( String challenge ) {
+	private void removeChallenge(String challenge) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);

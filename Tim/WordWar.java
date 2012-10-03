@@ -28,8 +28,7 @@ public class WordWar {
 	public long remaining;
 	public long time_to_start;
 
-	public WordWar( long time, long to_start, String warname,
-					User startingUser, Channel hosting_channel ) {
+	public WordWar(long time, long to_start, String warname, User startingUser, Channel hosting_channel) {
 		this.starter = startingUser;
 		this.time_to_start = to_start;
 		this.duration = this.remaining = time;
