@@ -534,7 +534,8 @@ public class Amusement {
 			Tim.bot.sendMessage(channel, "Righto...");
 		}
 
-		int time = 1000 + Tim.rand.nextInt(1000);
+		int time;
+		time = Tim.rand.nextInt(500) + 1500;
 
 		Tim.sendDelayedAction(channel, "looks back and forth, then slinks off...", time);
 
@@ -564,7 +565,7 @@ public class Amusement {
 			act = "trips and drops a" + colour + " fridge on himself";
 		}
 
-		time = Tim.rand.nextInt(10) * 250 + 500;
+		time = Tim.rand.nextInt(500) + 1500;
 		Tim.sendDelayedAction(channel, act, time);
 	}
 
@@ -585,7 +586,8 @@ public class Amusement {
 			Tim.bot.sendMessage(channel, "Righto...");
 		}
 
-		int time = 1000 + Tim.rand.nextInt(1000);
+		int time;
+		time = Tim.rand.nextInt(500) + 1500;
 
 		Tim.sendDelayedAction(channel, "looks around for a convenient window, then slinks off...", time);
 
@@ -602,7 +604,7 @@ public class Amusement {
 			act = "trips and falls out the window!";
 		}
 
-		time = Tim.rand.nextInt(10) * 250 + 500;
+		time = Tim.rand.nextInt(500) + 1500;
 		Tim.sendDelayedAction(channel, act, time);
 	}
 
@@ -618,7 +620,8 @@ public class Amusement {
 			Tim.bot.sendMessage(channel, "Righto...");
 		}
 
-		int time = 1000 + Tim.rand.nextInt(1000);
+		int time;
+		time = Tim.rand.nextInt(500) + 1500;
 		Tim.sendDelayedAction(channel, "prepares the summoning circle required to bring " + target + " into the world...", time);
 
 		int i = Tim.rand.nextInt(100);
@@ -633,7 +636,7 @@ public class Amusement {
 			act = "attempts to summon " + target + ", but something goes horribly wrong. After the smoke clears, " + target2 + " is left standing on the smoldering remains of the summoning circle.";
 		}
 
-		time = Tim.rand.nextInt(10) * 250 + 500;
+		time = Tim.rand.nextInt(500) + 1500;
 
 		Tim.sendDelayedAction(channel, act, time);
 	}
