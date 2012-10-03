@@ -153,11 +153,11 @@ public class WarTicker {
 	}
 
 	private void beginWar( WordWar war ) {
-		Tim.bot.sendNotice(war.getChannel(), "WordWar: '" + war.getName() + " 'starts now! (" + war.getDuration() / 60 + " minutes)");
+		Tim.bot.sendMessage(war.getChannel(), "WordWar '" + war.getName() + "' starts now! (" + war.getDuration() / 60 + " minutes)");
 	}
 
 	private void endWar( WordWar war ) {
-		Tim.bot.sendNotice(war.getChannel(), "WordWar: '" + war.getName() + "' is over!");
+		Tim.bot.sendMessage(war.getChannel(), "WordWar '" + war.getName() + "' is over!");
 		this.wars.remove(war.getName().toLowerCase());
 	}
 
