@@ -67,7 +67,7 @@ public class DBAccess {
 		return instance;
 	}
 
-	public void deleteChannel(String channel) {
+	public void deleteChannel( String channel ) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -85,7 +85,7 @@ public class DBAccess {
 		}
 	}
 
-	public void deleteIgnore(String username) {
+	public void deleteIgnore( String username ) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -202,7 +202,7 @@ public class DBAccess {
 		}
 	}
 
-	public String getSetting(String key) {
+	public String getSetting( String key ) {
 		Connection con;
 		String value = "";
 
@@ -226,7 +226,7 @@ public class DBAccess {
 		return value;
 	}
 
-	public boolean isChannelAdult(Channel channel) {
+	public boolean isChannelAdult( Channel channel ) {
 		boolean val = false;
 		ChannelInfo cdata = this.channel_data.get(channel.getName().toLowerCase());
 		if (cdata != null) {
@@ -235,7 +235,7 @@ public class DBAccess {
 		return val;
 	}
 
-	public void saveChannel(String channel) {
+	public void saveChannel( String channel ) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -254,7 +254,7 @@ public class DBAccess {
 		}
 	}
 
-	public void saveIgnore(String username) {
+	public void saveIgnore( String username ) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -269,7 +269,7 @@ public class DBAccess {
 		}
 	}
 
-	public void setChannelAdultFlag(String channel, boolean adult) {
+	public void setChannelAdultFlag( String channel, boolean adult ) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -291,7 +291,7 @@ public class DBAccess {
 		}
 	}
 
-	public void setChannelMuzzledFlag(String channel, boolean muzzled) {
+	public void setChannelMuzzledFlag( String channel, boolean muzzled ) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);

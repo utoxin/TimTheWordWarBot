@@ -35,7 +35,7 @@ public class ServerListener extends ListenerAdapter {
 	}
 
 	@Override
-	public void onInvite (InviteEvent event) {
+	public void onInvite( InviteEvent event ) {
 		if (!Tim.db.ignore_list.contains(event.getUser())) {
 			if (!Tim.db.channel_data.containsKey(event.getChannel())) {
 				Tim.bot.joinChannel(event.getChannel());
@@ -43,7 +43,7 @@ public class ServerListener extends ListenerAdapter {
 			}
 		}
 	}
-	
+
 	@Override
 	public void onPart( PartEvent event ) {
 		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
@@ -59,11 +59,11 @@ public class ServerListener extends ListenerAdapter {
 	public void onJoin( JoinEvent event ) {
 		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
 			String message = String.format(Tim.db.greetings.get(Tim.rand.nextInt(Tim.db.greetings.size())), event.getUser().getNick());
-			
+
 			if (Tim.warticker.wars.size() > 0) {
 				int warscount = 0;
 				String winfo = "";
-				
+
 				for (Map.Entry<String, WordWar> wm : Tim.warticker.wars.entrySet()) {
 					if (wm.getValue().getChannel().equals(event.getChannel())) {
 						winfo += wm.getValue().getDescription();
@@ -73,20 +73,20 @@ public class ServerListener extends ListenerAdapter {
 						warscount++;
 					}
 				}
-				
+
 				if (warscount > 0) {
 					boolean plural = warscount >= 2;
-					message += " There " + ( plural ? "are" : "is" ) + " " + warscount + " war" + (plural ? "S" : "")
-						+ " currently running in this channel: " + winfo;
+					message += " There " + ( plural ? "are" : "is" ) + " " + warscount + " war" + ( plural ? "S" : "" )
+							   + " currently running in this channel: " + winfo;
 				}
 			}
-			
+
 			Tim.sendDelayedMessage(event.getChannel(), message, 500);
 
 			if (Pattern.matches("(?i)mib_......", event.getUser().getNick()) || Pattern.matches("(?i)guest.*", event.getUser().getNick())) {
 				Tim.sendDelayedMessage(
-					event.getChannel(), 
-					String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", event.getUser().getNick()), 
+					event.getChannel(),
+					String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", event.getUser().getNick()),
 					500);
 			}
 

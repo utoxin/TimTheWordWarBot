@@ -46,7 +46,7 @@ public class Challenge {
 	 *
 	 * @return True if message was handled, false otherwise.
 	 */
-	public boolean parseUserCommand(MessageEvent event) {
+	public boolean parseUserCommand( MessageEvent event ) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString = "";
@@ -90,7 +90,7 @@ public class Challenge {
 	 *
 	 * @return True if message was handled, false otherwise
 	 */
-	public boolean parseAdminCommand(MessageEvent event) {
+	public boolean parseAdminCommand( MessageEvent event ) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString;
@@ -230,7 +230,7 @@ public class Challenge {
 		return false;
 	}
 
-	protected void helpSection(MessageEvent event) {
+	protected void helpSection( MessageEvent event ) {
 		String[] strs = {
 			"Challenge Commands:",
 			"    !challenge - Request a challenge",
@@ -243,7 +243,7 @@ public class Challenge {
 		}
 	}
 
-	protected void adminHelpSection(MessageEvent event) {
+	protected void adminHelpSection( MessageEvent event ) {
 		String[] strs = {
 			"Challenge Commands:",
 			"    $challenge pending [<page>] - List a page of pending items",
@@ -262,15 +262,15 @@ public class Challenge {
 		this.getPendingChallenges();
 	}
 
-	public void randomActionWrapper(MessageEvent event) {
+	public void randomActionWrapper( MessageEvent event ) {
 		randomAction(event.getUser(), event.getChannel());
 	}
 
-	public void randomActionWrapper(ActionEvent event) {
+	public void randomActionWrapper( ActionEvent event ) {
 		randomAction(event.getUser(), event.getChannel());
 	}
 
-	protected void randomAction(User sender, Channel channel) {
+	protected void randomAction( User sender, Channel channel ) {
 		String[] actions = {
 			"challenge"
 		};
@@ -282,7 +282,7 @@ public class Challenge {
 		}
 	}
 
-	public void issueChallenge(Channel channel, String target, String challenge) {
+	public void issueChallenge( Channel channel, String target, String challenge ) {
 		if (challenge != null && !( "".equals(challenge) )) {
 			if (!( this.approved.contains(challenge) || this.pending.contains(challenge) ) && challenge.length() < 300) {
 				this.insertPendingChallenge(challenge);
@@ -338,7 +338,7 @@ public class Challenge {
 		}
 	}
 
-	private void insertPendingChallenge(String challenge) {
+	private void insertPendingChallenge( String challenge ) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -353,7 +353,7 @@ public class Challenge {
 		}
 	}
 
-	private void setChallengeApproved(String challenge, Boolean approved) {
+	private void setChallengeApproved( String challenge, Boolean approved ) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -369,7 +369,7 @@ public class Challenge {
 		}
 	}
 
-	private void removeChallenge(String challenge) {
+	private void removeChallenge( String challenge ) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);

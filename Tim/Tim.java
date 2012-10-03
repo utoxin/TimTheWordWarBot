@@ -36,7 +36,7 @@ public class Tim {
 	public static ChainStory story;
 	public static WarTicker warticker = WarTicker.getInstance();
 
-	public static void main(String[] args) {
+	public static void main( String[] args ) {
 		instance = new Tim();
 	}
 
@@ -53,7 +53,7 @@ public class Tim {
 		bot.getListenerManager().addListener(new UserCommandListener());
 		bot.getListenerManager().addListener(new ReactionListener());
 		bot.getListenerManager().addListener(new ServerListener());
-		
+
 		bot.setEncoding(Charset.forName("UTF-8"));
 		bot.setLogin("WarMech");
 		bot.setMessageDelay(Long.parseLong(db.getSetting("max_rate")));
@@ -94,7 +94,7 @@ public class Tim {
 		return instance;
 	}
 
-	public static void sendDelayedMessage(Channel channel, String message, int delay) {
+	public static void sendDelayedMessage( Channel channel, String message, int delay ) {
 		try {
 			Thread.sleep(delay);
 		} catch (InterruptedException ex) {
@@ -104,7 +104,7 @@ public class Tim {
 		bot.sendMessage(channel, message);
 	}
 
-	public static void sendDelayedAction(Channel channel, String message, int delay) {
+	public static void sendDelayedAction( Channel channel, String message, int delay ) {
 		try {
 			Thread.sleep(delay);
 		} catch (InterruptedException ex) {
@@ -114,7 +114,7 @@ public class Tim {
 		bot.sendAction(channel, message);
 	}
 
-	public static void sendDelayedNotice(User user, String message, int delay) {
+	public static void sendDelayedNotice( User user, String message, int delay ) {
 		try {
 			Thread.sleep(delay);
 		} catch (InterruptedException ex) {

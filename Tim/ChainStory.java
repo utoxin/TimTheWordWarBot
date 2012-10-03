@@ -39,7 +39,7 @@ public class ChainStory {
 	 *
 	 * @return True if message was handled, false otherwise.
 	 */
-	public boolean parseUserCommand(MessageEvent event) {
+	public boolean parseUserCommand( MessageEvent event ) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString = "";
@@ -66,7 +66,7 @@ public class ChainStory {
 		return false;
 	}
 
-	protected void helpSection(MessageEvent event) {
+	protected void helpSection( MessageEvent event ) {
 		String[] strs = {
 			"Chain Story Commands:",
 			"    !chaininfo - General info about the current status of my navel.",
@@ -81,7 +81,7 @@ public class ChainStory {
 	public void refreshDbLists() {
 	}
 
-	public void info(MessageEvent event) {
+	public void info( MessageEvent event ) {
 		Connection con;
 		String word_count = "", last_line = "", author_count = "";
 		ResultSet rs;
@@ -122,7 +122,7 @@ public class ChainStory {
 		}
 	}
 
-	public void showLast(MessageEvent event) {
+	public void showLast( MessageEvent event ) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -142,7 +142,7 @@ public class ChainStory {
 		}
 	}
 
-	public void addNew(MessageEvent event, String message) {
+	public void addNew( MessageEvent event, String message ) {
 		Connection con;
 		if ("".equals(message)) {
 			Tim.bot.sendAction(event.getChannel(), "blinks, and looks confused. \"But there's nothing there. That won't help my wordcount!\"");

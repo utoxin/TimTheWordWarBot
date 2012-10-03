@@ -24,7 +24,7 @@ import org.pircbotx.hooks.events.MessageEvent;
  */
 public class UserCommandListener extends ListenerAdapter {
 	@Override
-	public void onMessage(MessageEvent event) {
+	public void onMessage( MessageEvent event ) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 
 		if (!Tim.db.ignore_list.contains(event.getUser().getNick())) {
@@ -90,7 +90,7 @@ public class UserCommandListener extends ListenerAdapter {
 		}
 	}
 
-	private void printCommandList(MessageEvent event) {
+	private void printCommandList( MessageEvent event ) {
 		Tim.bot.sendAction(event.getChannel(), "whispers something to " + event.getUser().getNick() + ". (Check for a new window or tab with the help text.)");
 
 		String[] strs = {"I am a robot trained by the WordWar Monks of Honolulu. You have "

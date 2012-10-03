@@ -1,18 +1,14 @@
 /**
- *  This file is part of Timmy, the Wordwar Bot.
+ * This file is part of Timmy, the Wordwar Bot.
  *
- *  Timmy is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * Timmy is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
  *
- *  Timmy is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Timmy is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with Timmy.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with Timmy. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package Tim;
 
@@ -36,7 +32,7 @@ public class AppConfig extends XMLConfiguration {
 	 *
 	 * @param fileName Configuration file name.
 	 */
-	private AppConfig(String fileName) {
+	private AppConfig( String fileName ) {
 		init(fileName);
 	}
 
@@ -45,7 +41,7 @@ public class AppConfig extends XMLConfiguration {
 	 *
 	 * @param fileName Configuration file name.
 	 */
-	private void init(String fileName) {
+	private void init( String fileName ) {
 		setFileName(fileName);
 		try {
 			load();
@@ -63,7 +59,7 @@ public class AppConfig extends XMLConfiguration {
 		return instance;
 	}
 
-	public static void main(String args[]) {
+	public static void main( String args[] ) {
 		AppConfig config = AppConfig.getInstance();
 		System.out.println(config.getString("database.user-name"));
 		System.out.println(config.getString("database.password"));

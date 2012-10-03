@@ -28,13 +28,13 @@ import org.pircbotx.hooks.events.ServerPingEvent;
  */
 public class ReactionListener extends ListenerAdapter {
 	@Override
-	public void onMessage(MessageEvent event) {
+	public void onMessage( MessageEvent event ) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		PircBotX bot = event.getBot();
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 
 		if (!Tim.db.ignore_list.contains(event.getUser().getNick())) {
-			if (message.charAt(0) != '$' && message.charAt(0) != '!' ) {
+			if (message.charAt(0) != '$' && message.charAt(0) != '!') {
 				if (message.toLowerCase().contains("how many lights")) {
 					bot.sendMessage(event.getChannel(), "There are FOUR LIGHTS!");
 				} else if (message.contains(":(") || message.contains("):")) {
@@ -63,7 +63,7 @@ public class ReactionListener extends ListenerAdapter {
 	}
 
 	@Override
-	public void onAction(ActionEvent event) {
+	public void onAction( ActionEvent event ) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		PircBotX bot = event.getBot();
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
@@ -103,16 +103,16 @@ public class ReactionListener extends ListenerAdapter {
 	}
 
 	@Override
-	public void onServerPing(ServerPingEvent event) {
+	public void onServerPing( ServerPingEvent event ) {
 		/**
-		 * This loop is used to reduce the chatter odds on idle channels, by periodically triggering idle chatter
-		 * in channels. If they currently have chatter turned off, this simply decreases their timer, and then
-		 * goes on. That way, the odds don't build up to astronomical levels while people are idle or away, resulting
-		 * in lots of spam when they come back.
+		 * This loop is used to reduce the chatter odds on idle channels, by periodically triggering idle chatter in
+		 * channels. If they currently have chatter turned off, this simply decreases their timer, and then goes on.
+		 * That way, the odds don't build up to astronomical levels while people are idle or away, resulting in lots of
+		 * spam when they come back.
 		 */
 		for (ChannelInfo cdata : Tim.db.channel_data.values()) {
 			cdata = Tim.db.channel_data.get(cdata.Name);
-			
+
 			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 			long odds = (long) Math.log(elapsed) * cdata.chatterTimeMultiplier;
 			if (odds < cdata.chatterMaxBaseOdds) {
@@ -181,20 +181,18 @@ public class ReactionListener extends ListenerAdapter {
 					"markhov",
 					"challenge",
 					"amusement",
-					"amusement",
-				};
+					"amusement",};
 			} else if (!cdata.doMarkhov && cdata.doRandomActions) {
 				actions = new String[] {
 					"challenge",
 					"amusement",
-					"amusement",
-				};
+					"amusement",};
 			} else {
 				return;
 			}
 
 			String action = actions[Tim.rand.nextInt(actions.length)];
-			
+
 			if ("markhov".equals(action)) {
 				Tim.markhov.randomAction(channel, type);
 			} else if ("challenge".equals(action)) {

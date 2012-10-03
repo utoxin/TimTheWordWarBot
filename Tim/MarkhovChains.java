@@ -38,7 +38,7 @@ public class MarkhovChains extends ListenerAdapter {
 	private long timeout = 3000;
 
 	@Override
-	public void onMessage(MessageEvent event) {
+	public void onMessage( MessageEvent event ) {
 		PircBotX bot = event.getBot();
 
 		ChannelInfo cdata = db.channel_data.get(event.getChannel().getName().toLowerCase());
@@ -51,7 +51,7 @@ public class MarkhovChains extends ListenerAdapter {
 	}
 
 	@Override
-	public void onAction(ActionEvent event) {
+	public void onAction( ActionEvent event ) {
 		PircBotX bot = event.getBot();
 
 		ChannelInfo cdata = db.channel_data.get(event.getChannel().getName().toLowerCase());
@@ -74,7 +74,7 @@ public class MarkhovChains extends ListenerAdapter {
 	 *
 	 * @return True if message was handled, false otherwise.
 	 */
-	public boolean parseUserCommand(String channel, String sender, String prefix, String message) {
+	public boolean parseUserCommand( String channel, String sender, String prefix, String message ) {
 		return false;
 	}
 
@@ -88,7 +88,7 @@ public class MarkhovChains extends ListenerAdapter {
 	 *
 	 * @return True if message was handled, false otherwise
 	 */
-	public boolean parseAdminCommand(MessageEvent event) {
+	public boolean parseAdminCommand( MessageEvent event ) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString;
@@ -113,7 +113,7 @@ public class MarkhovChains extends ListenerAdapter {
 		return false;
 	}
 
-	protected void adminHelpSection(MessageEvent event) {
+	protected void adminHelpSection( MessageEvent event ) {
 		String[] strs = {
 			"Markhov Chain Commands:",
 			"    $badword <word> - Add <word> to the 'bad word' list, and purge from the chain data.",};
@@ -126,19 +126,19 @@ public class MarkhovChains extends ListenerAdapter {
 	public void refreshDbLists() {
 	}
 
-	public void randomActionWrapper(MessageEvent event) {
+	public void randomActionWrapper( MessageEvent event ) {
 		randomAction(event.getChannel(), "say");
 	}
 
-	public void randomActionWrapper(ActionEvent event) {
+	public void randomActionWrapper( ActionEvent event ) {
 		randomAction(event.getChannel(), "emote");
 	}
 
-	public void randomActionWrapper(ServerPingEvent event, String channel) {
+	public void randomActionWrapper( ServerPingEvent event, String channel ) {
 		randomAction(event.getBot().getChannel(channel), "say");
 	}
 
-	protected void randomAction(Channel channel, String type) {
+	protected void randomAction( Channel channel, String type ) {
 		String[] actions = {
 			"markhov"
 		};
@@ -154,7 +154,7 @@ public class MarkhovChains extends ListenerAdapter {
 		}
 	}
 
-	public void addBadWord(String word, Channel channel) {
+	public void addBadWord( String word, Channel channel ) {
 		Connection con;
 		if ("".equals(word)) {
 			Tim.bot.sendMessage(channel, "I can't add nothing. Please provide the bad word.");
@@ -188,7 +188,7 @@ public class MarkhovChains extends ListenerAdapter {
 		}
 	}
 
-	public String generate_markhov(String type) {
+	public String generate_markhov( String type ) {
 		Connection con = null;
 		String sentence = "";
 		try {
@@ -299,7 +299,7 @@ public class MarkhovChains extends ListenerAdapter {
 	 * @param type    What type of message was it (say or emote)
 	 *
 	 */
-	public void process_markhov(String message, String type) {
+	public void process_markhov( String message, String type ) {
 		Connection con = null;
 		String first;
 		String second = "";
@@ -361,7 +361,7 @@ public class MarkhovChains extends ListenerAdapter {
 		}
 	}
 
-	private boolean skipMarkhovWord(String word) {
+	private boolean skipMarkhovWord( String word ) {
 		Connection con = null;
 		boolean foundBadWord = false;
 		try {
