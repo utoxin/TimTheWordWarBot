@@ -67,17 +67,17 @@ public class DBAccess {
 		return instance;
 	}
 
-	public void deleteChannel( String channel ) {
+	public void deleteChannel( Channel channel ) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("DELETE FROM `channels` WHERE `channel` = ?");
-			s.setString(1, channel.toLowerCase());
+			s.setString(1, channel.getName());
 			s.executeUpdate();
 
 			// Will do nothing if the channel is not in the list.
-			this.channel_data.remove(channel.toLowerCase());
+			this.channel_data.remove(channel.getName());
 
 			con.close();
 		} catch (SQLException ex) {
@@ -124,7 +124,7 @@ public class DBAccess {
 	public void getChannelList() {
 		Connection con;
 		ChannelInfo ci;
-		String channel;
+		Channel channel;
 
 		this.channel_data.clear();
 
@@ -135,7 +135,7 @@ public class DBAccess {
 			ResultSet rs = s.executeQuery("SELECT * FROM `channels`");
 
 			while (rs.next()) {
-				channel = rs.getString("channel").toLowerCase();
+				channel = Tim.bot.getChannel(rs.getString("channel"));
 				ci = new ChannelInfo(channel, rs.getBoolean("adult"), rs.getBoolean("markhov"), rs.getBoolean("random"), rs.getBoolean("command"));
 				ci.setChatterTimers(
 					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
@@ -143,7 +143,7 @@ public class DBAccess {
 					Integer.parseInt(getSetting("chatterTimeMultiplier")),
 					Integer.parseInt(getSetting("chatterTimeDivisor")));
 
-				this.channel_data.put(channel, ci);
+				this.channel_data.put(channel.getName(), ci);
 			}
 
 			con.close();
@@ -235,24 +235,24 @@ public class DBAccess {
 		return val;
 	}
 
-	public void saveChannel( String channel ) {
+	public void saveChannel( Channel channel ) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("INSERT INTO `channels` (`channel`, `adult`, `markhov`, `random`, `command`) VALUES (?, 0, 1, 1, 1)");
-			s.setString(1, channel.toLowerCase());
+			s.setString(1, channel.getName());
 			s.executeUpdate();
 
-			if (!this.channel_data.containsKey(channel.toLowerCase())) {
-				ChannelInfo new_channel = new ChannelInfo(channel.toLowerCase());
+			if (!this.channel_data.containsKey(channel.getName())) {
+				ChannelInfo new_channel = new ChannelInfo(channel);
 				new_channel.setChatterTimers(
 					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
 					Integer.parseInt(getSetting("chatterNameMultiplier")),
 					Integer.parseInt(getSetting("chatterTimeMultiplier")),
 					Integer.parseInt(getSetting("chatterTimeDivisor")));
 
-				this.channel_data.put(channel.toLowerCase(), new_channel);
+				this.channel_data.put(channel.getName(), new_channel);
 			}
 
 			con.close();
@@ -276,20 +276,20 @@ public class DBAccess {
 		}
 	}
 
-	public void setChannelAdultFlag( String channel, boolean adult ) {
+	public void setChannelAdultFlag( Channel channel, boolean adult ) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET adult = ? WHERE `channel` = ?");
 			s.setBoolean(1, adult);
-			s.setString(2, channel.toLowerCase());
+			s.setString(2, channel.getName());
 			s.executeUpdate();
 
 			if (adult) {
-				this.channel_data.get(channel.toLowerCase()).isAdult = true;
+				this.channel_data.get(channel.getName()).isAdult = true;
 			} else {
-				this.channel_data.get(channel.toLowerCase()).isAdult = false;
+				this.channel_data.get(channel.getName()).isAdult = false;
 			}
 
 			con.close();
@@ -298,7 +298,7 @@ public class DBAccess {
 		}
 	}
 
-	public void setChannelMuzzledFlag( String channel, boolean muzzled ) {
+	public void setChannelMuzzledFlag( Channel channel, boolean muzzled ) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -307,12 +307,12 @@ public class DBAccess {
 			s.setBoolean(1, muzzled);
 			s.setBoolean(2, muzzled);
 			s.setBoolean(3, muzzled);
-			s.setString(2, channel.toLowerCase());
+			s.setString(2, channel.getName());
 			s.executeUpdate();
 
-			this.channel_data.get(channel.toLowerCase()).doMarkhov = muzzled;
-			this.channel_data.get(channel.toLowerCase()).doCommandActions = muzzled;
-			this.channel_data.get(channel.toLowerCase()).doRandomActions = muzzled;
+			this.channel_data.get(channel.getName()).doMarkhov = muzzled;
+			this.channel_data.get(channel.getName()).doCommandActions = muzzled;
+			this.channel_data.get(channel.getName()).doRandomActions = muzzled;
 
 			con.close();
 		} catch (SQLException ex) {

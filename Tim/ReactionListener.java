@@ -123,7 +123,7 @@ public class ReactionListener extends ListenerAdapter {
 		 * spam when they come back.
 		 */
 		for (ChannelInfo cdata : Tim.db.channel_data.values()) {
-			cdata = Tim.db.channel_data.get(cdata.Name);
+			cdata = Tim.db.channel_data.get(cdata.channel.getName());
 
 			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 			long odds = Math.round(Math.sqrt(elapsed) / 3);
@@ -165,16 +165,16 @@ public class ReactionListener extends ListenerAdapter {
 				String action = actions[Tim.rand.nextInt(actions.length)];
 
 				if ("markhov".equals(action)) {
-					Tim.markhov.randomAction(Tim.bot.getChannel(cdata.Name), "say");
+					Tim.markhov.randomAction(cdata.channel, "say");
 				} else if ("amusement".equals(action)) {
-					Tim.amusement.randomAction(null, Tim.bot.getChannel(cdata.Name));
+					Tim.amusement.randomAction(null, cdata.channel);
 				}
 			}
 		}
 	}
 
 	private void interact( User sender, Channel channel, String message, String type ) {
-		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName().toLowerCase());
+		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName());
 
 		long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 		long odds = Math.round(Math.sqrt(elapsed) / 3);

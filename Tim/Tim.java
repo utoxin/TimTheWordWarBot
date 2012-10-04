@@ -79,7 +79,7 @@ public class Tim {
 
 		// Join our channels
 		for (Map.Entry<String, ChannelInfo> entry : db.channel_data.entrySet()) {
-			bot.joinChannel(entry.getValue().Name);
+			bot.joinChannel(entry.getValue().channel.getName());
 		}
 	}
 

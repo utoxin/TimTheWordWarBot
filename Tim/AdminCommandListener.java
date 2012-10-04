@@ -48,7 +48,7 @@ public class AdminCommandListener extends ListenerAdapter {
 								flag = true;
 							}
 
-							Tim.db.setChannelAdultFlag(target, flag);
+							Tim.db.setChannelAdultFlag(Tim.bot.getChannel(target), flag);
 							event.respond("Channel adult flag updated for " + target);
 						} else {
 							event.respond("I don't know about " + target);
@@ -65,7 +65,7 @@ public class AdminCommandListener extends ListenerAdapter {
 								flag = true;
 							}
 
-							Tim.db.setChannelMuzzledFlag(target, flag);
+							Tim.db.setChannelMuzzledFlag(Tim.bot.getChannel(target), flag);
 							event.respond("Channel muzzle flag updated for " + target);
 						} else {
 							event.respond("I don't know about " + target);

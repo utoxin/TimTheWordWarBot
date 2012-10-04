@@ -4,12 +4,14 @@
  */
 package Tim;
 
+import org.pircbotx.Channel;
+
 /**
  *
  * @author mwalker
  */
 public class ChannelInfo {
-	public String Name;
+	public Channel channel;
 	public boolean isAdult;
 	public boolean doMarkhov;
 	public boolean doRandomActions;
@@ -25,8 +27,8 @@ public class ChannelInfo {
 	 *
 	 * @param name What is the name of the channel
 	 */
-	public ChannelInfo( String name ) {
-		this.Name = name;
+	public ChannelInfo( Channel channel ) {
+		this.channel = channel;
 		this.isAdult = false;
 		this.doCommandActions = true;
 		this.doRandomActions = true;
@@ -42,8 +44,8 @@ public class ChannelInfo {
 	 * @param random  Should random actions happen on this channel
 	 * @param command Should 'fun' commands be processed on channel
 	 */
-	public ChannelInfo( String name, boolean adult, boolean markhov, boolean random, boolean command ) {
-		this.Name = name;
+	public ChannelInfo( Channel channel, boolean adult, boolean markhov, boolean random, boolean command ) {
+		this.channel = channel;
 		this.isAdult = adult;
 		this.doRandomActions = random;
 		this.doCommandActions = command;

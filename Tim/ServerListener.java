@@ -32,7 +32,7 @@ public class ServerListener extends ListenerAdapter {
 	@Override
 	public void onKick( KickEvent event ) {
 		if (!event.getSource().getNick().equals(Tim.bot.getNick())) {
-			Tim.db.deleteChannel(event.getChannel().getName());
+			Tim.db.deleteChannel(event.getChannel());
 		}
 	}
 
@@ -41,7 +41,7 @@ public class ServerListener extends ListenerAdapter {
 		if (!Tim.db.ignore_list.contains(event.getUser())) {
 			if (!Tim.db.channel_data.containsKey(event.getChannel())) {
 				Tim.bot.joinChannel(event.getChannel());
-				Tim.db.saveChannel(event.getChannel());
+				Tim.db.saveChannel(Tim.bot.getChannel(event.getChannel()));
 			}
 		}
 	}
@@ -52,7 +52,7 @@ public class ServerListener extends ListenerAdapter {
 			Set<User> userlist = event.getChannel().getUsers();
 			if (userlist.size() <= 1) {
 				Tim.bot.partChannel(event.getChannel());
-				Tim.db.deleteChannel(event.getChannel().getName());
+				Tim.db.deleteChannel(event.getChannel());
 			}
 		}
 	}
