@@ -139,21 +139,25 @@ public class ReactionListener extends ListenerAdapter {
 				if (newDivisor > 1) {
 					newDivisor -= 1;
 				}
+				cdata.chatterTimer += Tim.rand.nextInt((int) elapsed / newDivisor);
+				elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 				cdata.chatterTimer += Math.round(elapsed / 2);
+
+				if (50 < Tim.rand.nextInt(100)) {
+					continue;
+				}
 
 				if (cdata.doMarkhov && !cdata.doRandomActions) {
 					actions = new String[] {
-						"markhov"
-					};
+						"markhov",};
 				} else if (cdata.doMarkhov && cdata.doRandomActions) {
 					actions = new String[] {
 						"markhov",
-						"amusement"
-					};
+						"amusement",
+						"amusement",};
 				} else if (!cdata.doMarkhov && cdata.doRandomActions) {
 					actions = new String[] {
-						"amusement"
-					};
+						"amusement",};
 				} else {
 					continue;
 				}
@@ -187,17 +191,19 @@ public class ReactionListener extends ListenerAdapter {
 
 			if (cdata.doMarkhov && !cdata.doRandomActions) {
 				actions = new String[] {
-					"markhov"
-				};
+					"markhov",};
 			} else if (cdata.doMarkhov && cdata.doRandomActions) {
 				actions = new String[] {
 					"markhov",
+					"markhov",
 					"challenge",
+					"amusement",
 					"amusement",
 					"amusement",};
 			} else if (!cdata.doMarkhov && cdata.doRandomActions) {
 				actions = new String[] {
 					"challenge",
+					"amusement",
 					"amusement",
 					"amusement",};
 			} else {

@@ -188,7 +188,7 @@ public class MarkhovChains extends ListenerAdapter {
 
 				con.close();
 			} catch (SQLException ex) {
-				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+				Logger.getLogger(MarkhovChains.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 	}
