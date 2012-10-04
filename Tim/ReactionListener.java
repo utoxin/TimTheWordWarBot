@@ -12,6 +12,8 @@
  */
 package Tim;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.pircbotx.Channel;
 import org.pircbotx.Colors;
@@ -47,7 +49,12 @@ public class ReactionListener extends ListenerAdapter {
 					int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
 					Tim.bot.sendMessage(event.getChannel(), String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
 				} else if (Pattern.matches("(?i).*markhov test.*", message)) {
-					Tim.sendDelayedMessage(event.getChannel(), Tim.markhov.generate_markhov("say"), Tim.rand.nextInt(500) + 500);
+					try {
+						Thread.sleep(Tim.rand.nextInt(500) + 500);
+						Tim.bot.sendMessage(event.getChannel(), Tim.markhov.generate_markhov("say"));
+					} catch (InterruptedException ex) {
+						Logger.getLogger(ReactionListener.class.getName()).log(Level.SEVERE, null, ex);
+					}
 				} else {
 					if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && Tim.rand.nextInt(100) < 50) {
 						Tim.amusement.eightball(event.getChannel(), event.getUser(), false);
@@ -88,7 +95,12 @@ public class ReactionListener extends ListenerAdapter {
 				int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
 				Tim.bot.sendMessage(event.getChannel(), String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
 			} else if (Pattern.matches("(?i).*markhov test.*", message)) {
-				Tim.sendDelayedMessage(event.getChannel(), Tim.markhov.generate_markhov("emote"), Tim.rand.nextInt(500) + 500);
+				try {
+					Thread.sleep(Tim.rand.nextInt(500) + 500);
+					Tim.bot.sendMessage(event.getChannel(), Tim.markhov.generate_markhov("emote"));
+				} catch (InterruptedException ex) {
+					Logger.getLogger(ReactionListener.class.getName()).log(Level.SEVERE, null, ex);
+				}
 			} else {
 				if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && Tim.rand.nextInt(100) < 50) {
 					Tim.amusement.eightball(event.getChannel(), event.getUser(), false);
@@ -127,7 +139,7 @@ public class ReactionListener extends ListenerAdapter {
 				if (newDivisor > 1) {
 					newDivisor -= 1;
 				}
-				cdata.chatterTimer += Tim.rand.nextInt((int) elapsed / newDivisor);
+				cdata.chatterTimer += Math.round(elapsed / 2);
 
 				if (cdata.doMarkhov && !cdata.doRandomActions) {
 					actions = new String[] {

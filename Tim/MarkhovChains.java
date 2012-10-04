@@ -146,10 +146,15 @@ public class MarkhovChains extends ListenerAdapter {
 		String action = actions[Tim.rand.nextInt(actions.length)];
 
 		if ("markhov".equals(action)) {
-			if ("say".equals(type)) {
-				Tim.sendDelayedMessage(channel, generate_markhov(type), Tim.rand.nextInt(1500));
-			} else {
-				Tim.sendDelayedAction(channel, generate_markhov(type), Tim.rand.nextInt(1500));
+			try {
+				Thread.sleep(Tim.rand.nextInt(1000) + 500);
+				if ("say".equals(type)) {
+					Tim.bot.sendMessage(channel, generate_markhov(type));
+				} else {
+					Tim.bot.sendAction(channel, generate_markhov(type));
+				}
+			} catch (InterruptedException ex) {
+				Logger.getLogger(MarkhovChains.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 	}

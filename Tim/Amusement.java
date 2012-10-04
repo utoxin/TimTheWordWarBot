@@ -386,13 +386,18 @@ public class Amusement {
 	}
 
 	protected void eightball( Channel channel, User sender, boolean mutter ) {
-		int r = Tim.rand.nextInt(this.eightballs.size());
-		int delay = Tim.rand.nextInt(500) + 500;
+		try {
+			int r = Tim.rand.nextInt(this.eightballs.size());
+			int delay = Tim.rand.nextInt(1000) + 1000;
+			Thread.sleep(delay);
 
-		if (mutter) {
-			Tim.sendDelayedAction(channel, "mutters under his breath, \"" + this.eightballs.get(r) + "\"", delay);
-		} else {
-			Tim.sendDelayedMessage(channel, sender.getNick() + ": " + this.eightballs.get(r), delay);
+			if (mutter) {
+				Tim.bot.sendAction(channel, "mutters under his breath, \"" + this.eightballs.get(r) + "\"");
+			} else {
+				Tim.bot.sendMessage(channel, sender.getNick() + ": " + this.eightballs.get(r));
+			}
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
@@ -420,12 +425,15 @@ public class Amusement {
 			songNameRes.next();
 
 			String songName = songNameRes.getString("name");
-			r = Tim.rand.nextInt(500) + 500;
 			con.close();
 
-			Tim.sendDelayedAction(channel, String.format(response, songName), r);
+			r = Tim.rand.nextInt(500) + 500;
+			Thread.sleep(r);
+			Tim.bot.sendAction(channel, String.format(response, songName));
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
@@ -452,10 +460,14 @@ public class Amusement {
 			danceNameRes = danceName.executeQuery();
 			danceNameRes.next();
 
-			Tim.sendDelayedAction(channel, String.format(response, danceNameRes.getString("name")), Tim.rand.nextInt(1500));
+			int delay = Tim.rand.nextInt(500) + 500;
+			Thread.sleep(delay);
+			Tim.bot.sendAction(channel, String.format(response, danceNameRes.getString("name")));
 			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
@@ -518,168 +530,188 @@ public class Amusement {
 	}
 
 	protected void throwFridge( Channel channel, User sender, String[] args, Boolean righto ) {
-		String target = sender.getNick();
-		if (args != null && args.length > 0) {
-			target = StringUtils.join(args, "") + " ";
+		try {
+			String target = sender.getNick();
+			if (args != null && args.length > 0) {
+				target = StringUtils.join(args, "") + " ";
 
-			for (User t : channel.getUsers()) {
-				if (t.canEqual(target)) {
-					target = t.getNick();
-					break;
+				for (User t : channel.getUsers()) {
+					if (t.canEqual(target)) {
+						target = t.getNick();
+						break;
+					}
 				}
 			}
+
+			if (righto) {
+				Tim.bot.sendMessage(channel, "Righto...");
+			}
+
+			int time;
+			time = Tim.rand.nextInt(1500) + 1500;
+			Thread.sleep(time);
+			Tim.bot.sendAction(channel, "looks back and forth, then slinks off...");
+
+			String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
+			switch (colour.charAt(0)) {
+				case 'a':
+				case 'e':
+				case 'i':
+				case 'o':
+				case 'u':
+					colour = "n " + colour;
+					break;
+				default:
+					colour = " " + colour;
+			}
+
+			int i = Tim.rand.nextInt(100);
+
+			String act;
+
+			if (i > 33) {
+				act = "hurls a" + colour + " coloured fridge at " + target;
+			} else if (i > 11) {
+				target = sender.getNick();
+				act = "hurls a" + colour + " coloured fridge at " + target + " and runs away giggling";
+			} else {
+				act = "trips and drops a" + colour + " fridge on himself";
+			}
+
+			time = Tim.rand.nextInt(3000) + 2000;
+			Thread.sleep(time);
+			Tim.bot.sendAction(channel, act);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
-
-		if (righto) {
-			Tim.bot.sendMessage(channel, "Righto...");
-		}
-
-		int time;
-		time = Tim.rand.nextInt(500) + 1500;
-
-		Tim.sendDelayedAction(channel, "looks back and forth, then slinks off...", time);
-
-		String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
-		switch (colour.charAt(0)) {
-			case 'a':
-			case 'e':
-			case 'i':
-			case 'o':
-			case 'u':
-				colour = "n " + colour;
-				break;
-			default:
-				colour = " " + colour;
-		}
-
-		int i = Tim.rand.nextInt(100);
-
-		String act;
-
-		if (i > 33) {
-			act = "hurls a" + colour + " coloured fridge at " + target;
-		} else if (i > 11) {
-			target = sender.getNick();
-			act = "hurls a" + colour + " coloured fridge at " + target + " and runs away giggling";
-		} else {
-			act = "trips and drops a" + colour + " fridge on himself";
-		}
-
-		time = Tim.rand.nextInt(500) + 1500;
-		Tim.sendDelayedAction(channel, act, time);
 	}
 
 	protected void defenestrate( Channel channel, User sender, String[] args, Boolean righto ) {
-		String target = sender.getNick();
-		if (args != null && args.length > 0) {
-			target = StringUtils.join(args, "");
+		try {
+			String target = sender.getNick();
+			if (args != null && args.length > 0) {
+				target = StringUtils.join(args, "");
 
-			for (User t : channel.getUsers()) {
-				if (t.canEqual(target)) {
-					target = t.getNick();
-					break;
+				for (User t : channel.getUsers()) {
+					if (t.canEqual(target)) {
+						target = t.getNick();
+						break;
+					}
 				}
 			}
+
+			if (righto) {
+				Tim.bot.sendMessage(channel, "Righto...");
+			}
+
+			int time;
+			time = Tim.rand.nextInt(1500) + 1500;
+			Thread.sleep(time);
+			Tim.bot.sendAction(channel, "looks around for a convenient window, then slinks off...");
+
+			int i = Tim.rand.nextInt(100);
+
+			String act;
+			String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
+			if (i > 33) {
+				act = "throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
+			} else if (i > 11) {
+				target = sender.getNick();
+				act = "laughs maniacally then throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
+			} else {
+				act = "trips and falls out the window!";
+			}
+
+			time = Tim.rand.nextInt(3000) + 2000;
+			Thread.sleep(time);
+			Tim.bot.sendAction(channel, act);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
-
-		if (righto) {
-			Tim.bot.sendMessage(channel, "Righto...");
-		}
-
-		int time;
-		time = Tim.rand.nextInt(500) + 1500;
-
-		Tim.sendDelayedAction(channel, "looks around for a convenient window, then slinks off...", time);
-
-		int i = Tim.rand.nextInt(100);
-
-		String act;
-		String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
-		if (i > 33) {
-			act = "throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
-		} else if (i > 11) {
-			target = sender.getNick();
-			act = "laughs maniacally then throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
-		} else {
-			act = "trips and falls out the window!";
-		}
-
-		time = Tim.rand.nextInt(500) + 1500;
-		Tim.sendDelayedAction(channel, act, time);
 	}
 
 	protected void summon( Channel channel, String[] args, Boolean righto ) {
-		String target;
-		if (args == null || args.length == 0) {
-			target = this.deities.get(Tim.rand.nextInt(this.deities.size()));
-		} else {
-			target = StringUtils.join(args, " ");
+		try {
+			String target;
+			if (args == null || args.length == 0) {
+				target = this.deities.get(Tim.rand.nextInt(this.deities.size()));
+			} else {
+				target = StringUtils.join(args, " ");
+			}
+
+			if (righto) {
+				Tim.bot.sendMessage(channel, "Righto...");
+			}
+
+			int time;
+			time = Tim.rand.nextInt(1500) + 1500;
+			Thread.sleep(time);
+			Tim.bot.sendAction(channel, "prepares the summoning circle required to bring " + target + " into the world...");
+
+			int i = Tim.rand.nextInt(100);
+			String act;
+
+			if (i > 50) {
+				act = "completes the ritual successfully, drawing " + target + " through, and binding them into the summoning circle!";
+			} else if (i > 30) {
+				act = "completes the ritual, drawing " + target + " through, but something goes wrong and they fade away after just a few moments.";
+			} else {
+				String target2 = this.deities.get(Tim.rand.nextInt(this.deities.size()));
+				act = "attempts to summon " + target + ", but something goes horribly wrong. After the smoke clears, " + target2 + " is left standing on the smoldering remains of the summoning circle.";
+			}
+
+			time = Tim.rand.nextInt(3000) + 2000;
+			Thread.sleep(time);
+			Tim.bot.sendAction(channel, act);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
-
-		if (righto) {
-			Tim.bot.sendMessage(channel, "Righto...");
-		}
-
-		int time;
-		time = Tim.rand.nextInt(500) + 1500;
-		Tim.sendDelayedAction(channel, "prepares the summoning circle required to bring " + target + " into the world...", time);
-
-		int i = Tim.rand.nextInt(100);
-		String act;
-
-		if (i > 50) {
-			act = "completes the ritual successfully, drawing " + target + " through, and binding them into the summoning circle!";
-		} else if (i > 30) {
-			act = "completes the ritual, drawing " + target + " through, but something goes wrong and they fade away after just a few moments.";
-		} else {
-			String target2 = this.deities.get(Tim.rand.nextInt(this.deities.size()));
-			act = "attempts to summon " + target + ", but something goes horribly wrong. After the smoke clears, " + target2 + " is left standing on the smoldering remains of the summoning circle.";
-		}
-
-		time = Tim.rand.nextInt(500) + 1500;
-
-		Tim.sendDelayedAction(channel, act, time);
 	}
 
 	protected void foof( Channel channel, User sender, String[] args,
 						 Boolean righto ) {
-		String target = sender.getNick();
-		if (args != null && args.length > 0) {
-			target = StringUtils.join(args, "");
+		try {
+			String target = sender.getNick();
+			if (args != null && args.length > 0) {
+				target = StringUtils.join(args, "");
 
-			for (User t : channel.getUsers()) {
-				if (t.canEqual(target)) {
-					target = t.getNick();
-					break;
+				for (User t : channel.getUsers()) {
+					if (t.canEqual(target)) {
+						target = t.getNick();
+						break;
+					}
 				}
 			}
+
+			if (righto) {
+				Tim.bot.sendMessage(channel, "Righto...");
+			}
+
+			int time = Tim.rand.nextInt(1500) + 1500;
+			Thread.sleep(time);
+			Tim.bot.sendAction(channel, "surreptitiously works his way over to the couch, looking ever so casual...");
+			int i = Tim.rand.nextInt(100);
+			String act;
+			String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
+
+			if (i > 33) {
+				act = "grabs a " + colour + " pillow, and throws it at " + target
+					  + ", hitting them squarely in the back of the head.";
+			} else if (i > 11) {
+				target = sender.getNick();
+				act = "laughs maniacally then throws a " + colour + " pillow at "
+					  + target
+					  + ", then runs off and hides behind the nearest couch.";
+			} else {
+				act = "trips and lands on a " + colour + " pillow. Oof!";
+			}
+
+			time = Tim.rand.nextInt(3000) + 2000;
+			Thread.sleep(time);
+			Tim.bot.sendAction(channel, act);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
-
-		if (righto) {
-			Tim.bot.sendMessage(channel, "Righto...");
-		}
-
-		int time = 1000 + Tim.rand.nextInt(1000);
-
-		Tim.sendDelayedAction(channel, "surreptitiously works his way over to the couch, looking ever so casual...", time);
-		int i = Tim.rand.nextInt(100);
-		String act;
-		String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
-
-		if (i > 33) {
-			act = "grabs a " + colour + " pillow, and throws it at " + target
-				  + ", hitting them squarely in the back of the head.";
-		} else if (i > 11) {
-			target = sender.getNick();
-			act = "laughs maniacally then throws a " + colour + " pillow at "
-				  + target
-				  + ", then runs off and hides behind the nearest couch.";
-		} else {
-			act = "trips and lands on a " + colour + " pillow. Oof!";
-		}
-
-		time = Tim.rand.nextInt(10) * 250 + 1000;
-		Tim.sendDelayedAction(channel, act, time);
 	}
 
 	protected void getApprovedItems() {

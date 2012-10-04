@@ -18,9 +18,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.pircbotx.Channel;
 import org.pircbotx.PircBotX;
-import org.pircbotx.User;
 import org.pircbotx.exception.IrcException;
 import org.pircbotx.exception.NickAlreadyInUseException;
 
@@ -92,35 +90,5 @@ public class Tim {
 	 */
 	public static Tim getInstance() {
 		return instance;
-	}
-
-	public static void sendDelayedMessage( Channel channel, String message, int delay ) {
-		try {
-			Thread.sleep(delay);
-		} catch (InterruptedException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-		bot.sendMessage(channel, message);
-	}
-
-	public static void sendDelayedAction( Channel channel, String message, int delay ) {
-		try {
-			Thread.sleep(delay);
-		} catch (InterruptedException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-		bot.sendAction(channel, message);
-	}
-
-	public static void sendDelayedNotice( User user, String message, int delay ) {
-		try {
-			Thread.sleep(delay);
-		} catch (InterruptedException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-		bot.sendNotice(user, message);
 	}
 }

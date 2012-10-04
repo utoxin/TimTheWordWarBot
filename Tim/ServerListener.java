@@ -14,6 +14,8 @@ package Tim;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.pircbotx.User;
 import org.pircbotx.hooks.ListenerAdapter;
@@ -58,43 +60,49 @@ public class ServerListener extends ListenerAdapter {
 	@Override
 	public void onJoin( JoinEvent event ) {
 		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
-			String message = String.format(Tim.db.greetings.get(Tim.rand.nextInt(Tim.db.greetings.size())), event.getUser().getNick());
+			try {
+				String message = String.format(Tim.db.greetings.get(Tim.rand.nextInt(Tim.db.greetings.size())), event.getUser().getNick());
 
-			if (Tim.warticker.wars.size() > 0) {
-				int warscount = 0;
-				String winfo = "";
+				if (Tim.warticker.wars.size() > 0) {
+					int warscount = 0;
+					String winfo = "";
 
-				for (Map.Entry<String, WordWar> wm : Tim.warticker.wars.entrySet()) {
-					if (wm.getValue().getChannel().equals(event.getChannel())) {
-						winfo += wm.getValue().getDescription();
-						if (warscount > 0) {
-							winfo += " || ";
+					for (Map.Entry<String, WordWar> wm : Tim.warticker.wars.entrySet()) {
+						if (wm.getValue().getChannel().equals(event.getChannel())) {
+							winfo += wm.getValue().getDescription();
+							if (warscount > 0) {
+								winfo += " || ";
+							}
+							warscount++;
 						}
-						warscount++;
+					}
+
+					if (warscount > 0) {
+						boolean plural = warscount >= 2;
+						message += " There " + ( plural ? "are" : "is" ) + " " + warscount + " war" + ( plural ? "S" : "" )
+								   + " currently running in this channel: " + winfo;
 					}
 				}
 
-				if (warscount > 0) {
-					boolean plural = warscount >= 2;
-					message += " There " + ( plural ? "are" : "is" ) + " " + warscount + " war" + ( plural ? "S" : "" )
-							   + " currently running in this channel: " + winfo;
+				Thread.sleep(500);
+				Tim.bot.sendMessage(event.getChannel(), message);
+
+				if (Pattern.matches("(?i)mib_......", event.getUser().getNick()) || Pattern.matches("(?i)guest.*", event.getUser().getNick())) {
+					Thread.sleep(500);
+					Tim.bot.sendMessage(
+						event.getChannel(),
+						String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", event.getUser().getNick()));
 				}
-			}
 
-			Tim.sendDelayedMessage(event.getChannel(), message, 500);
+				int r = Tim.rand.nextInt(100);
 
-			if (Pattern.matches("(?i)mib_......", event.getUser().getNick()) || Pattern.matches("(?i)guest.*", event.getUser().getNick())) {
-				Tim.sendDelayedMessage(
-					event.getChannel(),
-					String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", event.getUser().getNick()),
-					500);
-			}
-
-			int r = Tim.rand.nextInt(100);
-
-			if (r < 15) {
-				r = Tim.rand.nextInt(Tim.db.extra_greetings.size());
-				Tim.sendDelayedMessage(event.getChannel(), Tim.db.extra_greetings.get(r), 500);
+				if (r < 15) {
+					r = Tim.rand.nextInt(Tim.db.extra_greetings.size());
+					Thread.sleep(500);
+					Tim.bot.sendMessage(event.getChannel(), Tim.db.extra_greetings.get(r));
+				}
+			} catch (InterruptedException ex) {
+				Logger.getLogger(ServerListener.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 	}
