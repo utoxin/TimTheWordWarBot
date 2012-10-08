@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.pircbotx.Colors;
@@ -52,13 +53,28 @@ public class ChainStory {
 			command = message.substring(1).toLowerCase();
 		}
 
+		Calendar cal = Calendar.getInstance();
+		boolean isNovember = (10 == cal.get(Calendar.MONTH));
+		
 		if (command.equals("chainlast")) {
+			if (!isNovember) {
+				event.respond("Sorry, that command won't work outside November!");
+				return true;
+			}
 			showLast(event);
 			return true;
 		} else if (command.equals("chainnew")) {
+			if (!isNovember) {
+				event.respond("Sorry, that command won't work outside November!");
+				return true;
+			}
 			addNew(event, argsString);
 			return true;
 		} else if (command.equals("chaininfo")) {
+			if (!isNovember) {
+				event.respond("Sorry, that command won't work outside November!");
+				return true;
+			}
 			info(event);
 			return true;
 		}
