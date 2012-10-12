@@ -27,6 +27,10 @@ public class AdminCommandListener extends ListenerAdapter {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 
 		if (message.charAt(0) == '$') {
+			if (message.startsWith("$skynet")) {
+				return;
+			}
+
 			if (Tim.db.admin_list.contains(event.getUser().getNick().toLowerCase()) || Tim.db.admin_list.contains(event.getChannel().getName().toLowerCase())) {
 				String command;
 				String[] args = null;
