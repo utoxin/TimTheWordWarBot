@@ -45,7 +45,7 @@ public class ReactionListener extends ListenerAdapter {
 					bot.sendAction(event.getChannel(), "passes " + event.getUser().getNick() + " a tissue.");
 				} else if (Pattern.matches("(?i).*how do i (change|set) my (nick|name).*", message)) {
 					event.respond("To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere");
-				} else if (message.toLowerCase().contains("are you thinking what i'm thinking") || message.toLowerCase().contains("are you pondering what i'm pondering")) {
+				} else if (Pattern.matches("(?i).*are you (thinking|pondering) what i.*m (thinking|pondering).*", message)) {
 					int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
 					Tim.bot.sendMessage(event.getChannel(), String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
 				} else if (Pattern.matches("(?i).*markhov test.*", message)) {
