@@ -29,6 +29,10 @@ public class UserCommandListener extends ListenerAdapter {
 
 		if (!Tim.db.ignore_list.contains(event.getUser().getNick())) {
 			if (message.charAt(0) == '!') {
+				if (message.startsWith("!skynet")) {
+					return;
+				}
+
 				String command;
 				String[] args = null;
 
