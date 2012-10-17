@@ -18,6 +18,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -35,6 +36,7 @@ import org.pircbotx.hooks.events.ServerPingEvent;
  */
 public class MarkhovChains extends ListenerAdapter {
 	private DBAccess db = DBAccess.getInstance();
+	protected HashMap<String, Pattern> badwordPatterns = new HashMap<String, Pattern>();
 	private long timeout = 3000;
 
 	@Override
@@ -124,6 +126,7 @@ public class MarkhovChains extends ListenerAdapter {
 	}
 
 	public void refreshDbLists() {
+		getBadwords();
 	}
 
 	public void randomActionWrapper( MessageEvent event ) {
@@ -172,17 +175,21 @@ public class MarkhovChains extends ListenerAdapter {
 				s.executeUpdate();
 				s.close();
 
-				s = con.prepareStatement("DELETE FROM markhov_say_data WHERE first = ? OR second = ?");
-				s.setString(1, word);
-				s.setString(2, word);
+				s = con.prepareStatement("DELETE FROM markhov_say_data WHERE first COLLATE utf8_general_ci REGEXP ? OR second COLLATE utf8_general_ci REGEXP ?");
+				s.setString(1, "^[[:punct:]]*"+ word +"[[:punct:]]*$");
+				s.setString(2, "^[[:punct:]]*"+ word +"[[:punct:]]*$");
 				s.executeUpdate();
 				s.close();
 
-				s = con.prepareStatement("DELETE FROM markhov_emote_data WHERE first = ? OR second = ?");
-				s.setString(1, word);
-				s.setString(2, word);
+				s = con.prepareStatement("DELETE FROM markhov_emote_data WHERE first COLLATE utf8_general_ci REGEXP ? OR second COLLATE utf8_general_ci REGEXP ?");
+				s.setString(1, "^[[:punct:]]*"+ word +"[[:punct:]]*$");
+				s.setString(2, "^[[:punct:]]*"+ word +"[[:punct:]]*$");
 				s.executeUpdate();
 				s.close();
+
+				if (badwordPatterns.get(word) == null) {
+					badwordPatterns.put(word, Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word) + "(?:\\W|\\b)"));
+				}
 
 				Tim.bot.sendAction(channel, "quickly goes through his records, and purges all knowledge of that horrible word.");
 
@@ -294,6 +301,32 @@ public class MarkhovChains extends ListenerAdapter {
 		return sentence;
 	}
 
+	public void getBadwords() {
+		Connection con;
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("SELECT `word` FROM `bad_words`");
+			s.executeQuery();
+
+			ResultSet rs = s.getResultSet();
+			String word;
+			
+			badwordPatterns.clear();
+			while (rs.next()) {
+				word = rs.getString("word");
+
+				if (badwordPatterns.get(word) == null) {
+					badwordPatterns.put(word, Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word) + "(?:\\W|\\b)"));
+				}
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
 	/**
 	 * Process a message to populate the Markhov data tables
 	 *
@@ -367,37 +400,12 @@ public class MarkhovChains extends ListenerAdapter {
 	}
 
 	private boolean skipMarkhovWord( String word ) {
-		Connection con = null;
-		boolean foundBadWord = false;
-		try {
-			con = db.pool.getConnection(timeout);
-			PreparedStatement checkBad = con.prepareStatement("SELECT count(*) as matched FROM bad_words WHERE word LIKE ?");
-			ResultSet checkBadRes;
-
-			checkBad.setString(1, word);
-			checkBadRes = checkBad.executeQuery();
-			checkBadRes.next();
-
-			if (checkBadRes.getInt("matched") > 0) {
-				foundBadWord = true;
-			}
-
-			checkBadRes.close();
-			checkBad.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				con.close();
-			} catch (SQLException ex) {
-				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-			}
-
-			if (foundBadWord) {
+		for (Pattern pattern : badwordPatterns.values()) {
+			if (pattern.matcher(word).find()) {
 				return true;
 			}
 		}
-
+		
 		// If email, skip
 		if (Pattern.matches("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$", word)) {
 			return true;

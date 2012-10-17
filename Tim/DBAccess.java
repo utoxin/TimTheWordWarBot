@@ -332,5 +332,6 @@ public class DBAccess {
 		Tim.amusement.refreshDbLists();
 		Tim.story.refreshDbLists();
 		Tim.challenge.refreshDbLists();
+		Tim.markhov.refreshDbLists();
 	}
 }
