@@ -45,7 +45,7 @@ public class TwitterIntegration extends StatusAdapter {
 				} else if (status.getUser().getScreenName().equals("BotTimmy")) {
 					colorString = Colors.BOLD + Colors.RED;
 				} else {
-					colorString = Colors.BOLD + Colors.DARK_GRAY;
+					return;
 				}
 
 				String message = colorString + "@" + status.getUser().getScreenName() + ": " + Colors.NORMAL + status.getText();
