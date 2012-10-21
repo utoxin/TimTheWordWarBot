@@ -139,7 +139,7 @@ public class DBAccess {
 
 			while (rs.next()) {
 				channel = Tim.bot.getChannel(rs.getString("channel"));
-				ci = new ChannelInfo(channel, rs.getBoolean("adult"), rs.getBoolean("markhov"), rs.getBoolean("random"), rs.getBoolean("command"));
+				ci = new ChannelInfo(channel, rs.getBoolean("adult"), rs.getBoolean("markhov"), rs.getBoolean("random"), rs.getBoolean("command"), rs.getBoolean("relayTwitter"));
 				ci.setChatterTimers(
 					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
 					Integer.parseInt(getSetting("chatterNameMultiplier")),
@@ -316,6 +316,24 @@ public class DBAccess {
 			this.channel_data.get(channel.getName()).doMarkhov = muzzled;
 			this.channel_data.get(channel.getName()).doCommandActions = muzzled;
 			this.channel_data.get(channel.getName()).doRandomActions = muzzled;
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	public void setRelayTwitterFlag( Channel channel, boolean relay ) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `relaytwitter` = ? WHERE `channel` = ?");
+			s.setBoolean(1, relay);
+			s.setString(2, channel.getName());
+			s.executeUpdate();
+
+			this.channel_data.get(channel.getName()).relayTwitter = relay;
 
 			con.close();
 		} catch (SQLException ex) {

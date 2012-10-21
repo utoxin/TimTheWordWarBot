@@ -33,6 +33,7 @@ public class Tim {
 	public static Random rand;
 	public static ChainStory story;
 	public static WarTicker warticker = WarTicker.getInstance();
+	public static TwitterIntegration twitterstream;
 
 	public static void main( String[] args ) {
 		instance = new Tim();
@@ -81,6 +82,9 @@ public class Tim {
 		for (Map.Entry<String, ChannelInfo> entry : db.channel_data.entrySet()) {
 			bot.joinChannel(entry.getValue().channel.getName());
 		}
+
+		twitterstream = new TwitterIntegration();
+		twitterstream.startStream();
 	}
 
 	/**

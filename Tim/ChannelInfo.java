@@ -16,6 +16,7 @@ public class ChannelInfo {
 	public boolean doMarkhov;
 	public boolean doRandomActions;
 	public boolean doCommandActions;
+	public boolean relayTwitter;
 	public long chatterTimer;
 	public int chatterMaxBaseOdds;
 	public int chatterNameMultiplier;
@@ -33,6 +34,7 @@ public class ChannelInfo {
 		this.doCommandActions = true;
 		this.doRandomActions = true;
 		this.doMarkhov = true;
+		this.relayTwitter = false;
 	}
 
 	/**
@@ -44,12 +46,13 @@ public class ChannelInfo {
 	 * @param random  Should random actions happen on this channel
 	 * @param command Should 'fun' commands be processed on channel
 	 */
-	public ChannelInfo( Channel channel, boolean adult, boolean markhov, boolean random, boolean command ) {
+	public ChannelInfo( Channel channel, boolean adult, boolean markhov, boolean random, boolean command, boolean relay ) {
 		this.channel = channel;
 		this.isAdult = adult;
 		this.doRandomActions = random;
 		this.doCommandActions = command;
 		this.doMarkhov = markhov;
+		this.relayTwitter = relay;
 	}
 
 	public void setChatterTimers( int maxBaseOdds, int nameMultiplier, int timeMultiplier, int timeDivisor ) {
