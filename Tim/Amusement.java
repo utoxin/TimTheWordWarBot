@@ -35,7 +35,7 @@ public class Amusement {
 	private List<String> approved_items = new ArrayList<String>();
 	private List<String> pending_items = new ArrayList<String>();
 	private List<String> colours = new ArrayList<String>();
-	private List<String> eightballs = new ArrayList<String>();
+	protected List<String> eightballs = new ArrayList<String>();
 	private List<String> commandments = new ArrayList<String>();
 	protected List<String> aypwips = new ArrayList<String>();
 	private List<String> flavours = new ArrayList<String>();

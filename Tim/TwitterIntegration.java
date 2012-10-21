@@ -17,20 +17,27 @@ import twitter4j.auth.AccessToken;
 public class TwitterIntegration extends StatusAdapter {
 	Twitter twitter;
 	AccessToken token;
+	static User NaNoWriMo;
+	static User NaNoWordSprints;
+	static User BotTimmy;
 	
 	public TwitterIntegration() {
 		token = new AccessToken(Tim.db.getSetting("twitter_access_key"), Tim.db.getSetting("twitter_access_secret"));
 		twitter = new TwitterFactory().getInstance();
 		twitter.setOAuthConsumer(Tim.db.getSetting("twitter_consumer_key"), Tim.db.getSetting("twitter_consumer_secret"));
 		twitter.setOAuthAccessToken(token);
+
+		try {
+			NaNoWriMo = twitter.showUser("NaNoWriMo");
+			NaNoWordSprints = twitter.showUser("NaNoWordSprints");
+			BotTimmy = twitter.showUser("BotTimmy");
+		} catch (TwitterException ex) {
+			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 	
 	public void startStream() {
-		TwitterStream twitterStream = new TwitterStreamFactory().getInstance();
-		twitterStream.setOAuthConsumer(Tim.db.getSetting("twitter_consumer_key"), Tim.db.getSetting("twitter_consumer_secret"));
-		twitterStream.setOAuthAccessToken(token);
-
-		StatusListener listener = new StatusListener() {
+		StatusListener publicListener = new StatusListener() {
 			public void onStatus( Status status ) {
 				String colorString;
 
@@ -70,20 +77,99 @@ public class TwitterIntegration extends StatusAdapter {
 			}
 
 		};
-			
-		try {
-			User NaNoWriMo = twitter.showUser("NaNoWriMo");
-			User NaNoWordsprints = twitter.showUser("NaNoWordsprints");
-			User BotTimmy = twitter.showUser("BotTimmy");
 
-			long[] userIds = {NaNoWriMo.getId(), NaNoWordsprints.getId(), BotTimmy.getId()};
-			
-			FilterQuery filter = new FilterQuery(0, userIds);
-			
-			twitterStream.addListener(listener);
-			twitterStream.filter(filter);
-		} catch (TwitterException ex) {
-			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
-		}
+		StatusListener userListener = new UserStreamListener() {
+			public void onStatus( Status status ) {
+				if (status.getInReplyToUserId() == TwitterIntegration.BotTimmy.getId()) {
+					try {
+						int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
+						StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r));
+						reply.setInReplyToStatusId(status.getId());
+						twitter.updateStatus(reply);
+					} catch (TwitterException ex) {
+						Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+					}
+				}
+			}
+
+			public void onDeletionNotice( StatusDeletionNotice sdn ) {
+			}
+
+			public void onTrackLimitationNotice( int i ) {
+			}
+
+			public void onScrubGeo( long l, long l1 ) {
+			}
+
+			public void onException( Exception excptn ) {
+			}
+
+			public void onDeletionNotice( long l, long l1 ) {
+			}
+
+			public void onFriendList( long[] longs ) {
+			}
+
+			public void onFavorite( User user, User user1, Status status ) {
+			}
+
+			public void onUnfavorite( User user, User user1, Status status ) {
+			}
+
+			public void onFollow( User user, User user1 ) {
+			}
+
+			public void onRetweet( User user, User user1, Status status ) {
+			}
+
+			public void onDirectMessage( DirectMessage dm ) {
+			}
+
+			public void onUserListMemberAddition( User user, User user1, UserList ul ) {
+			}
+
+			public void onUserListMemberDeletion( User user, User user1, UserList ul ) {
+			}
+
+			public void onUserListSubscription( User user, User user1, UserList ul ) {
+			}
+
+			public void onUserListUnsubscription( User user, User user1, UserList ul ) {
+			}
+
+			public void onUserListCreation( User user, UserList ul ) {
+			}
+
+			public void onUserListUpdate( User user, UserList ul ) {
+			}
+
+			public void onUserListDeletion( User user, UserList ul ) {
+			}
+
+			public void onUserProfileUpdate( User user ) {
+			}
+
+			public void onBlock( User user, User user1 ) {
+			}
+
+			public void onUnblock( User user, User user1 ) {
+			}
+		};
+
+		long[] userIds = {NaNoWriMo.getId(), NaNoWordSprints.getId(), BotTimmy.getId()};
+
+		FilterQuery filter = new FilterQuery(0, userIds);
+
+		TwitterStream publicStream = new TwitterStreamFactory().getInstance();
+		publicStream.setOAuthConsumer(Tim.db.getSetting("twitter_consumer_key"), Tim.db.getSetting("twitter_consumer_secret"));
+		publicStream.setOAuthAccessToken(token);
+		publicStream.addListener(publicListener);
+		publicStream.filter(filter);
+
+		TwitterStream userStream = new TwitterStreamFactory().getInstance();
+		userStream.setOAuthConsumer(Tim.db.getSetting("twitter_consumer_key"), Tim.db.getSetting("twitter_consumer_secret"));
+		userStream.setOAuthAccessToken(token);
+		userStream.addListener(userListener);
+		userStream.user();
 	}
 }
