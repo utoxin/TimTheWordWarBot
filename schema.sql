@@ -85,10 +85,64 @@ INSERT INTO `aypwips` (`id`, `string`) VALUES
 (72, 'I think so %s, but ''instant karma'' always gets so lumpy.'),
 (73, 'Umm, I think so %s, but a show about two talking lab mice? It''ll never get on the air!');
 
+CREATE TABLE IF NOT EXISTS `bad_words` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `word` char(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `word` (`word`)
+) DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `box_of_doom` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `difficulty` enum('easy','average','hard') NOT NULL,
+  `challenge` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8;
+
+INSERT INTO `box_of_doom` (`id`, `difficulty`, `challenge`) VALUES
+(NULL, 'easy', '15'),
+(NULL, 'easy', '17.5'),
+(NULL, 'easy', '20'),
+(NULL, 'easy', '22.5'),
+(NULL, 'easy', '25'),
+(NULL, 'easy', '27.5'),
+(NULL, 'easy', '30'),
+(NULL, 'easy', '32.5'),
+(NULL, 'average', '27.5'),
+(NULL, 'average', '30'),
+(NULL, 'average', '32.5'),
+(NULL, 'average', '35'),
+(NULL, 'average', '37.5'),
+(NULL, 'average', '40'),
+(NULL, 'average', '42.5'),
+(NULL, 'average', '45'),
+(NULL, 'hard', '42.5'),
+(NULL, 'hard', '45'),
+(NULL, 'hard', '47.5'),
+(NULL, 'hard', '50'),
+(NULL, 'hard', '52.5'),
+(NULL, 'hard', '55'),
+(NULL, 'hard', '57.5'),
+(NULL, 'hard', '60'),
+(NULL, 'hard', '62.5'),
+(NULL, 'hard', '65'),
+(NULL, 'hard', '67.5');
+
+CREATE TABLE IF NOT EXISTS `challenges` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `challenge` varchar(300) NOT NULL,
+  `approved` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS `channels` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `channel` varchar(255) NOT NULL,
   `adult` tinyint(1) NOT NULL,
+  `markhov` tinyint(1) NOT NULL,
+  `random` tinyint(1) NOT NULL,
+  `command` tinyint(1) NOT NULL,
+  `relaytwitter` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) DEFAULT CHARSET=utf8;
 
@@ -168,6 +222,93 @@ INSERT INTO `commandments` (`id`, `string`) VALUES
 (10, '10. <<WRITE THIS LATER>>'),
 (11, '11. Thou shalt back up thy writing often, for it is displeasing in the eyes of Baty that you should lose it.'),
 (12, '12. No narrative? No botheration!');
+
+CREATE TABLE IF NOT EXISTS `dances` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8;
+
+INSERT INTO `dances` (`id`, `name`) VALUES
+(NULL, 'Agadoo'),
+(NULL, 'The Alligator'),
+(NULL, 'Algorithm March'),
+(NULL, 'Batusi'),
+(NULL, 'Bomba'),
+(NULL, 'The Bump'),
+(NULL, 'Bunny Hop'),
+(NULL, 'The Cabbage Patch'),
+(NULL, 'Carioca'),
+(NULL, 'The Carlton Dance'),
+(NULL, 'Cha Cha Slide'),
+(NULL, 'Chicken Dance'),
+(NULL, 'The Chicken Walk'),
+(NULL, 'Chicken Noodle Soup'),
+(NULL, 'Cotton-Eyed Joe'),
+(NULL, 'Crank That'),
+(NULL, 'The Creep'),
+(NULL, 'Cupid Shuffle'),
+(NULL, 'Do the Bartman'),
+(NULL, 'Dougie'),
+(NULL, 'Electric Slide'),
+(NULL, 'The Fly'),
+(NULL, 'The Freddy'),
+(NULL, 'The Frug'),
+(NULL, 'The Grizzly Bear'),
+(NULL, 'Gangnam Style'),
+(NULL, 'The Hammer'),
+(NULL, 'Hitch hike'),
+(NULL, 'Hokey Pokey'),
+(NULL, 'Hully Gully'),
+(NULL, 'The Humpty Dance'),
+(NULL, 'The Hunch'),
+(NULL, 'Hustle'),
+(NULL, 'Jerk'),
+(NULL, 'Jerkin'''),
+(NULL, 'Jump On It'),
+(NULL, 'The Ketchup Song'),
+(NULL, 'Laffy Taffy'),
+(NULL, 'Lambada'),
+(NULL, 'Lean Back'),
+(NULL, 'Snap Dance'),
+(NULL, 'Letkajenkka'),
+(NULL, 'Limbo'),
+(NULL, 'The Loco-Motion'),
+(NULL, 'Locomia'),
+(NULL, 'Macarena'),
+(NULL, 'Mashed Potato'),
+(NULL, 'Madison'),
+(NULL, 'The Meatstick'),
+(NULL, 'Monkey'),
+(NULL, 'The Moonwalk'),
+(NULL, 'Muscle'),
+(NULL, 'Nutbush City Limits'),
+(NULL, 'Oops Upside Your Head'),
+(NULL, 'Peanut Butter Jelly Time'),
+(NULL, 'Pee-wee Herman dance'),
+(NULL, 'Pony'),
+(NULL, 'The Roger Rabbit'),
+(NULL, 'The Running Man'),
+(NULL, 'The Safety Dance'),
+(NULL, 'Saturday Night'),
+(NULL, 'Shimmy'),
+(NULL, 'Shoulder Lean'),
+(NULL, 'Single Ladies'),
+(NULL, 'The Smurf'),
+(NULL, 'Stanky Leg'),
+(NULL, 'Suzie Q'),
+(NULL, 'Thizzle Dance'),
+(NULL, 'Thunder Clap'),
+(NULL, 'Time Warp'),
+(NULL, 'Tragedy'),
+(NULL, 'The Twist'),
+(NULL, 'The Urkel'),
+(NULL, 'Voguing'),
+(NULL, 'Walk It Out'),
+(NULL, 'The Wobble'),
+(NULL, 'Watusi'),
+(NULL, 'YMCA'),
+(NULL, 'Cozy Jig');
 
 CREATE TABLE IF NOT EXISTS `deities` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -488,6 +629,20 @@ INSERT INTO `eightballs` (`id`, `string`) VALUES
 (72, '42'),
 (73, '101010');
 
+CREATE TABLE IF NOT EXISTS `extra_greetings` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `string` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8;
+
+INSERT INTO `extra_greetings` (`id`, `string`) VALUES
+(NULL, 'Welcome to the Congregation of Chris T. Baty!'),
+(NULL, 'Have you backed up your writing today?'),
+(NULL, 'Have you thanked an ML or Staff member recently?'),
+(NULL, 'Have you donated yet this year?'),
+(NULL, 'Fact: Donators are more likely to win.'),
+(NULL, 'I just lost The Game.');
+
 CREATE TABLE IF NOT EXISTS `flavours` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `string` varchar(255) NOT NULL,
@@ -545,11 +700,47 @@ CREATE TABLE IF NOT EXISTS `greetings` (
 ) DEFAULT CHARSET=utf8;
 
 INSERT INTO `greetings` (`id`, `string`) VALUES
-(1, 'Welcome to the Congregation of Chris Baty!'),
-(2, 'Have you backed up your writing today?'),
-(3, 'Have you thanked an ML or Staff member recently?'),
-(4, 'Have you donated yet this year?'),
-(5, 'Fact: Donators are more likely to win.');
+(NULL, 'Grüß Gott, %s!'),
+(NULL, 'Zdraveite, %s!'),
+(NULL, 'Dobar dan, %s!'),
+(NULL, 'Nazdar, %s!'),
+(NULL, 'Goddag, %s!'),
+(NULL, 'Goedendag, %s!'),
+(NULL, 'Hello, %s!'),
+(NULL, 'Tere päevast, %s!'),
+(NULL, 'Hyvää päivää, %s!'),
+(NULL, 'Bonjour, %s!'),
+(NULL, 'Guten Tag, %s!'),
+(NULL, 'Kalimera, %s!'),
+(NULL, 'Aloha, %s!'),
+(NULL, 'Shalom, %s!'),
+(NULL, 'Namaste, %s!'),
+(NULL, 'Szia, %s!'),
+(NULL, 'Góðan dag, %s!'),
+(NULL, 'Selamat pagi, %s!'),
+(NULL, 'Dia duit, %s!'),
+(NULL, 'Buon giorno, %s!'),
+(NULL, 'Konnichiwa, %s!'),
+(NULL, 'An-nyong Ha-se-yo, %s!'),
+(NULL, 'Labdien, %s!'),
+(NULL, 'Laba diena, %s!'),
+(NULL, 'Moïen, %s!'),
+(NULL, 'Selamat datang, %s!'),
+(NULL, 'Merhba, %s!'),
+(NULL, 'Ni hao, %s!'),
+(NULL, 'Kia ora, %s!'),
+(NULL, 'Hallo, %s!'),
+(NULL, 'Dzien dobry, %s!'),
+(NULL, 'Olá, %s!'),
+(NULL, 'Bunã ziua, %s!'),
+(NULL, 'Zdravstvuyte, %s!'),
+(NULL, 'Hola, %s!'),
+(NULL, 'God dag, %s!'),
+(NULL, 'Grüzi, %s!'),
+(NULL, 'Magandang tanghali po, %s!'),
+(NULL, 'Li-ho, %s!'),
+(NULL, 'Merhaba, %s!'),
+(NULL, 'Shwmae, %s!');
 
 CREATE TABLE IF NOT EXISTS `ignores` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -576,6 +767,22 @@ INSERT INTO `items` (`id`, `item`, `approved`) VALUES
 (9, 'androids with plungers', 1),
 (10, 'a box that is bigger on the inside', 1);
 
+CREATE TABLE IF NOT EXISTS `markhov_emote_data` (
+  `first` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `second` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `count` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`first`,`second`),
+  KEY `word_count` (`first`,`count`)
+) DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `markhov_say_data` (
+  `first` char(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `second` char(100) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `count` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`first`,`second`),
+  KEY `word_count` (`first`,`count`)
+) DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS `settings` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `key` varchar(255) NOT NULL,
@@ -589,3 +796,68 @@ INSERT INTO `settings` (`id`, `key`, `value`) VALUES
 (3, 'password', ''),
 (4, 'backup_nickname', 'Warmech'),
 (5, 'backup_password', '');
+
+CREATE TABLE IF NOT EXISTS `songs` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8;
+
+INSERT INTO `songs` (`id`, `name`) VALUES
+(NULL, 'Foxy Doubts'),
+(NULL, 'No Such Things As Accusations'),
+(NULL, 'Epic Blessings'),
+(NULL, 'California Junk'),
+(NULL, 'Drowsy Madman'),
+(NULL, 'Forget The Risks'),
+(NULL, 'Ability Is Fun'),
+(NULL, 'Secrets Of The Explosion'),
+(NULL, 'Whip Me Up Some Scandal'),
+(NULL, 'Illegal Mistakes'),
+(NULL, 'Check Out The Rainbow'),
+(NULL, 'Envy Don''t Cost A Penny'),
+(NULL, 'Holy Fantasies'),
+(NULL, 'Drowsy Twister'),
+(NULL, 'Jet Fueled Ambition'),
+(NULL, 'Giant Confusion'),
+(NULL, 'Just Another Bunch Of Losses'),
+(NULL, 'Burning Sell Out'),
+(NULL, 'Trust Will Lead The Way'),
+(NULL, 'Introvert Skill'),
+(NULL, 'Mad Rules'),
+(NULL, 'Loose Interference'),
+(NULL, 'Bag Of Illusions'),
+(NULL, 'Explosive Intentions'),
+(NULL, 'Turning My Back On Persuasion'),
+(NULL, 'Death Of The Loneliness'),
+(NULL, 'Symptoms Are Ringing In My Ears'),
+(NULL, 'How Many More Lyrics'),
+(NULL, 'The New Face Of War'),
+(NULL, 'Automatic Diversity'),
+(NULL, 'Illusion Is The In-Thing'),
+(NULL, 'Whats Left Of Friendship'),
+(NULL, 'Pacific Limo'),
+(NULL, 'Whispering Mojo'),
+(NULL, '10 Things You Didn''t Know About Guilt'),
+(NULL, 'Forgotten Car'),
+(NULL, 'Unbelievable Storm'),
+(NULL, 'Silent Crusade'),
+(NULL, 'Sick Smart Mouth'),
+(NULL, 'Can Of Demands'),
+(NULL, 'Day Of The Tears'),
+(NULL, 'Hands Off My Sweatshirt'),
+(NULL, 'Friendship Remixed'),
+(NULL, 'Information Confessions'),
+(NULL, 'Thoughts On The Run'),
+(NULL, 'Running Out Of Destiny'),
+(NULL, 'Rampant Urges'),
+(NULL, 'Whispering Crusade'),
+(NULL, 'Potent Shadow');
+
+CREATE TABLE IF NOT EXISTS `story` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `string` text NOT NULL,
+  `author` varchar(255) NOT NULL,
+  `created` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8;
