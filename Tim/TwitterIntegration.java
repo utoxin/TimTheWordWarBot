@@ -43,7 +43,7 @@ public class TwitterIntegration extends StatusAdapter {
 				} else if (status.getUser().getScreenName().equals("NaNoWordsprints")) {
 					colorString = Colors.BOLD + Colors.DARK_GREEN;
 				} else if (status.getUser().getScreenName().equals("BotTimmy")) {
-					colorString = Colors.BOLD + Colors.DARK_GREEN;
+					colorString = Colors.BOLD + Colors.RED;
 				} else {
 					colorString = Colors.BOLD + Colors.DARK_GRAY;
 				}
