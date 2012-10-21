@@ -83,7 +83,7 @@ public class TwitterIntegration extends StatusAdapter {
 				if (status.getInReplyToUserId() == TwitterIntegration.BotTimmy.getId()) {
 					try {
 						int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
-						StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r));
+						StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r) + " #NaNoWriMo #FearTimmy");
 						reply.setInReplyToStatusId(status.getId());
 						twitter.updateStatus(reply);
 					} catch (TwitterException ex) {
