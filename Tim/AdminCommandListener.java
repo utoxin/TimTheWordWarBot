@@ -77,6 +77,23 @@ public class AdminCommandListener extends ListenerAdapter {
 					} else {
 						event.respond("Usage: $setmuzzleflag <#channel> <0/1>");
 					}
+				} else if (command.equals("relaytwitter")) {
+					if (args != null && args.length == 2) {
+						String target = args[0].toLowerCase();
+						if (Tim.db.channel_data.containsKey(target)) {
+							boolean flag = false;
+							if (!"0".equals(args[1])) {
+								flag = true;
+							}
+
+							Tim.db.setRelayTwitterFlag(Tim.bot.getChannel(target), flag);
+							event.respond("Relay twitter flag updated for " + target);
+						} else {
+							event.respond("I don't know about " + target);
+						}
+					} else {
+						event.respond("Usage: $relaytwitter <#channel> <0/1>");
+					}
 				} else if (command.equals("shutdown")) {
 					event.respond("Shutting down...");
 					Tim.bot.shutdown();
@@ -152,8 +169,6 @@ public class AdminCommandListener extends ListenerAdapter {
 		Tim.bot.sendAction(event.getChannel(), "whispers something to " + event.getUser().getNick() + ". (Check for a new window or tab with the help text.)");
 
 		String[] helplines = {"Core Admin Commands:",
-							  "    $setadultflag <#channel> <0/1> - clears/sets adult flag on channel",
-							  "    $setmuzzleflag <#channel> <0/1> - clears/sets muzzle flag on channel",
 							  "    $shutdown - Forces bot to exit",
 							  "    $reload - Reloads data from MySQL (also $refreshdb)",
 							  "    $reset - Resets internal timer for wars, and reloads data from MySQL",
@@ -164,7 +179,11 @@ public class AdminCommandListener extends ListenerAdapter {
 							  "    $deleteitem <item # from $listpending> - permanently removes an item from the pending list for !get/!getfor",
 							  "    $ignore <username> - Places user on the bot's ignore list",
 							  "    $unignore <username> - Removes user from bot's ignore list",
-							  "    $listignores - Prints the list of ignored users"
+							  "    $listignores - Prints the list of ignored users",
+							  "Channel Setting Commands:",
+							  "    $setadultflag <#channel> <0/1>  - clears/sets adult flag on channel",
+							  "    $setmuzzleflag <#channel> <0/1> - clears/sets muzzle flag on channel",
+							  "    $relaytwitter <#channel> <0/1>  - clears/sets whether to relay tweets from @NaNoWordsprints and @NaNoWriMo",
 		};
 
 		for (int i = 0; i < helplines.length; ++i) {
