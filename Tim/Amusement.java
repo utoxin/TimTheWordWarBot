@@ -533,7 +533,7 @@ public class Amusement {
 		try {
 			String target = sender.getNick();
 			if (args != null && args.length > 0) {
-				target = StringUtils.join(args, "") + " ";
+				target = StringUtils.join(args, " ");
 
 				for (User t : channel.getUsers()) {
 					if (t.canEqual(target)) {

@@ -52,6 +52,19 @@ public class TwitterIntegration extends StatusAdapter {
 				} else if (status.getUser().getScreenName().equals("BotTimmy")) {
 					colorString = Colors.BOLD + Colors.RED;
 				} else {
+					if (status.getText().contains("?") && status.getText().toLowerCase().contains("#nanowrimo")) {
+						if (Tim.rand.nextInt(100) < 10) {
+							try {
+								int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
+								StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r) + " #NaNoWriMo #FearTimmy");
+								reply.setInReplyToStatusId(status.getId());
+								twitter.updateStatus(reply);
+							} catch (TwitterException ex) {
+								Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+							}
+						}
+					}
+
 					return;
 				}
 
@@ -157,8 +170,9 @@ public class TwitterIntegration extends StatusAdapter {
 		};
 
 		long[] userIds = {NaNoWriMo.getId(), NaNoWordSprints.getId(), BotTimmy.getId()};
+		String[] hashtags = {"#NaNoWriMo"};
 
-		FilterQuery filter = new FilterQuery(0, userIds);
+		FilterQuery filter = new FilterQuery(0, userIds, hashtags);
 
 		TwitterStream publicStream = new TwitterStreamFactory().getInstance();
 		publicStream.setOAuthConsumer(Tim.db.getSetting("twitter_consumer_key"), Tim.db.getSetting("twitter_consumer_secret"));
