@@ -40,28 +40,22 @@ public class TwitterIntegration extends StatusAdapter {
 		StatusListener publicListener = new StatusListener() {
 			public void onStatus( Status status ) {
 				String colorString;
-
-				if (status.getInReplyToUserId() != -1) {
-					return;
-				}
-
-				if (status.getUser().getScreenName().equals("NaNoWriMo")) {
+				
+				if (status.getUser().getScreenName().equals("NaNoWriMo") && status.getInReplyToUserId() == -1) {
 					colorString = Colors.BOLD + Colors.DARK_BLUE;
-				} else if (status.getUser().getScreenName().equals("NaNoWordsprints")) {
+				} else if (status.getUser().getScreenName().equals("NaNoWordsprints") && status.getInReplyToUserId() == -1) {
 					colorString = Colors.BOLD + Colors.DARK_GREEN;
-				} else if (status.getUser().getScreenName().equals("BotTimmy")) {
+				} else if (status.getUser().getScreenName().equals("BotTimmy") && status.getInReplyToUserId() == -1) {
 					colorString = Colors.BOLD + Colors.RED;
 				} else {
-					if (status.getText().contains("?") && status.getText().toLowerCase().contains("#nanowrimo")) {
-						if (Tim.rand.nextInt(100) < 10) {
-							try {
-								int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
-								StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r) + " #NaNoWriMo #FearTimmy");
-								reply.setInReplyToStatusId(status.getId());
-								twitter.updateStatus(reply);
-							} catch (TwitterException ex) {
-								Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
-							}
+					if (status.getText().toLowerCase().contains("#nanowrimo") && Tim.rand.nextInt(100) < 3) {
+						try {
+							int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
+							StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r) + " #NaNoWriMo #FearTimmy");
+							reply.setInReplyToStatusId(status.getId());
+							twitter.updateStatus(reply);
+						} catch (TwitterException ex) {
+							Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 						}
 					}
 
