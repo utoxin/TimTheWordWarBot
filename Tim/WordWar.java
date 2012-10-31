@@ -85,6 +85,6 @@ public class WordWar {
 	}
 
 	public String getDescriptionWithChannel() {
-		return this.getDescription() + " in " + this.channel;
+		return this.getDescription() + " in " + this.channel.getName();
 	}
 }
