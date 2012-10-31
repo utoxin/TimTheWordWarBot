@@ -76,11 +76,11 @@ public class DBAccess {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("DELETE FROM `channels` WHERE `channel` = ?");
-			s.setString(1, channel.getName());
+			s.setString(1, channel.getName().toLowerCase());
 			s.executeUpdate();
 
 			// Will do nothing if the channel is not in the list.
-			this.channel_data.remove(channel.getName());
+			this.channel_data.remove(channel.getName().toLowerCase());
 
 			con.close();
 		} catch (SQLException ex) {
@@ -146,7 +146,7 @@ public class DBAccess {
 					Integer.parseInt(getSetting("chatterTimeMultiplier")),
 					Integer.parseInt(getSetting("chatterTimeDivisor")));
 
-				this.channel_data.put(channel.getName(), ci);
+				this.channel_data.put(channel.getName().toLowerCase(), ci);
 			}
 
 			con.close();
@@ -244,7 +244,7 @@ public class DBAccess {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("INSERT INTO `channels` (`channel`, `adult`, `markhov`, `random`, `command`) VALUES (?, 0, 1, 1, 1)");
-			s.setString(1, channel.getName());
+			s.setString(1, channel.getName().toLowerCase());
 			s.executeUpdate();
 
 			if (!this.channel_data.containsKey(channel.getName())) {
@@ -255,7 +255,7 @@ public class DBAccess {
 					Integer.parseInt(getSetting("chatterTimeMultiplier")),
 					Integer.parseInt(getSetting("chatterTimeDivisor")));
 
-				this.channel_data.put(channel.getName(), new_channel);
+				this.channel_data.put(channel.getName().toLowerCase(), new_channel);
 			}
 
 			con.close();
@@ -310,7 +310,7 @@ public class DBAccess {
 			s.setBoolean(1, muzzled);
 			s.setBoolean(2, muzzled);
 			s.setBoolean(3, muzzled);
-			s.setString(2, channel.getName());
+			s.setString(4, channel.getName());
 			s.executeUpdate();
 
 			this.channel_data.get(channel.getName()).doMarkhov = muzzled;

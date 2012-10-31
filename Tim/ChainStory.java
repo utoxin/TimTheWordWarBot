@@ -85,7 +85,7 @@ public class ChainStory {
 	protected void helpSection( MessageEvent event ) {
 		String[] strs = {
 			"Chain Story Commands:",
-			"    !chaininfo - General info about the current status of my navel.",
+			"    !chaininfo - General info about the current status of my novel.",
 			"    !chainlast - The last paragraph of my novel, so you have something to base the next one one.",
 			"    !chainnew <paragraph> - Provide the next paragraph of my great cyberspace novel!",};
 

@@ -31,7 +31,7 @@ import org.pircbotx.hooks.events.PartEvent;
 public class ServerListener extends ListenerAdapter {
 	@Override
 	public void onKick( KickEvent event ) {
-		if (!event.getSource().getNick().equals(Tim.bot.getNick())) {
+		if (event.getSource().getNick().equals(Tim.bot.getNick())) {
 			Tim.db.deleteChannel(event.getChannel());
 		}
 	}

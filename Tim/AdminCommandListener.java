@@ -169,9 +169,8 @@ public class AdminCommandListener extends ListenerAdapter {
 		Tim.bot.sendAction(event.getChannel(), "whispers something to " + event.getUser().getNick() + ". (Check for a new window or tab with the help text.)");
 
 		String[] helplines = {"Core Admin Commands:",
-							  "    $shutdown - Forces bot to exit",
+							  "    $shutdown - Forces bot to exit - DO NOT USE THIS COMMAND",
 							  "    $reload - Reloads data from MySQL (also $refreshdb)",
-							  "    $reset - Resets internal timer for wars, and reloads data from MySQL",
 							  "    $listitems [ <page #> ] - lists all currently approved !get/!getfor items",
 							  "    $listpending [ <page #> ] - lists all unapproved !get/!getfor items",
 							  "    $approveitem <item # from $listpending> - removes item from pending list and marks as approved for !get/!getfor",

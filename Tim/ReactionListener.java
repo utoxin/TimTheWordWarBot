@@ -123,7 +123,7 @@ public class ReactionListener extends ListenerAdapter {
 		 * spam when they come back.
 		 */
 		for (ChannelInfo cdata : Tim.db.channel_data.values()) {
-			cdata = Tim.db.channel_data.get(cdata.channel.getName());
+			cdata = Tim.db.channel_data.get(cdata.channel.getName().toLowerCase());
 
 			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 			long odds = Math.round(Math.sqrt(elapsed) / 3);
@@ -174,7 +174,7 @@ public class ReactionListener extends ListenerAdapter {
 	}
 
 	private void interact( User sender, Channel channel, String message, String type ) {
-		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName());
+		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName().toLowerCase());
 
 		long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 		long odds = Math.round(Math.sqrt(elapsed) / 3);

@@ -41,22 +41,24 @@ public class TwitterIntegration extends StatusAdapter {
 			public void onStatus( Status status ) {
 				String colorString;
 				
+				Tim.bot.log("@" + status.getUser().getScreenName() + ": " + status.getText());
+				
 				if (status.getUser().getScreenName().equals("NaNoWriMo") && status.getInReplyToUserId() == -1) {
 					colorString = Colors.BOLD + Colors.DARK_BLUE;
-				} else if (status.getUser().getScreenName().equals("NaNoWordsprints") && status.getInReplyToUserId() == -1) {
+				} else if (status.getUser().getScreenName().equals("NaNoWordSprints") && status.getInReplyToUserId() == -1) {
 					colorString = Colors.BOLD + Colors.DARK_GREEN;
 				} else if (status.getUser().getScreenName().equals("BotTimmy") && status.getInReplyToUserId() == -1) {
 					colorString = Colors.BOLD + Colors.RED;
 				} else {
-					if (status.getText().toLowerCase().contains("#nanowrimo") && Tim.rand.nextInt(100) < 3) {
-						try {
+					try {
+						if (status.getText().toLowerCase().contains("#nanowrimo") && Tim.rand.nextInt(100) < 3 && twitter.existsFriendship(status.getUser().getScreenName(), "BotTimmy")) {
 							int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
 							StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r) + " #NaNoWriMo #FearTimmy");
 							reply.setInReplyToStatusId(status.getId());
 							twitter.updateStatus(reply);
-						} catch (TwitterException ex) {
-							Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 						}
+					} catch (TwitterException ex) {
+						Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 					}
 
 					return;
@@ -90,6 +92,7 @@ public class TwitterIntegration extends StatusAdapter {
 				if (status.getInReplyToUserId() == TwitterIntegration.BotTimmy.getId()) {
 					try {
 						int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
+						Tim.bot.log("@" + status.getUser().getScreenName() + ": " + status.getText());
 						StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r) + " #NaNoWriMo #FearTimmy");
 						reply.setInReplyToStatusId(status.getId());
 						twitter.updateStatus(reply);
