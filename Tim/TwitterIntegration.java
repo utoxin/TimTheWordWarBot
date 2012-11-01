@@ -17,9 +17,10 @@ import twitter4j.auth.AccessToken;
 public class TwitterIntegration extends StatusAdapter {
 	Twitter twitter;
 	AccessToken token;
-	static User NaNoWriMo;
-	static User NaNoWordSprints;
 	static User BotTimmy;
+	static User NaNoWordSprints;
+	static User NaNoWriMo;
+	static User officeduckfrank;
 	
 	public TwitterIntegration() {
 		token = new AccessToken(Tim.db.getSetting("twitter_access_key"), Tim.db.getSetting("twitter_access_secret"));
@@ -28,9 +29,10 @@ public class TwitterIntegration extends StatusAdapter {
 		twitter.setOAuthAccessToken(token);
 
 		try {
-			NaNoWriMo = twitter.showUser("NaNoWriMo");
-			NaNoWordSprints = twitter.showUser("NaNoWordSprints");
 			BotTimmy = twitter.showUser("BotTimmy");
+			NaNoWordSprints = twitter.showUser("NaNoWordSprints");
+			NaNoWriMo = twitter.showUser("NaNoWriMo");
+			officeduckfrank = twitter.showUser("officeduckfrank");
 		} catch (TwitterException ex) {
 			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -49,6 +51,8 @@ public class TwitterIntegration extends StatusAdapter {
 					colorString = Colors.BOLD + Colors.DARK_GREEN;
 				} else if (status.getUser().getScreenName().equals("BotTimmy") && status.getInReplyToUserId() == -1) {
 					colorString = Colors.BOLD + Colors.RED;
+				} else if (status.getUser().getScreenName().equals("officeduckfrank") && status.getInReplyToUserId() == -1) {
+					colorString = Colors.BOLD + Colors.MAGENTA;
 				} else {
 					try {
 						if (status.getText().toLowerCase().contains("#nanowrimo") && Tim.rand.nextInt(100) < 3 && twitter.existsFriendship(status.getUser().getScreenName(), "BotTimmy")) {
@@ -67,7 +71,13 @@ public class TwitterIntegration extends StatusAdapter {
 				String message = colorString + "@" + status.getUser().getScreenName() + ": " + Colors.NORMAL + status.getText();
 
 				for (ChannelInfo channel : Tim.db.channel_data.values()) {
-					if (channel.relayTwitter) {
+					if (status.getUser().getId() == NaNoWriMo.getId() && channel.relayNaNoWriMo) {
+						Tim.bot.sendMessage(channel.channel, message);
+					} else if (status.getUser().getId() == NaNoWordSprints.getId() && channel.relayNaNoWordSprints) {
+						Tim.bot.sendMessage(channel.channel, message);
+					} else if (status.getUser().getId() == BotTimmy.getId() && channel.relayBotTimmy) {
+						Tim.bot.sendMessage(channel.channel, message);
+					} else if (status.getUser().getId() == officeduckfrank.getId() && channel.relayofficeduckfrank) {
 						Tim.bot.sendMessage(channel.channel, message);
 					}
 				}
@@ -166,7 +176,7 @@ public class TwitterIntegration extends StatusAdapter {
 			}
 		};
 
-		long[] userIds = {NaNoWriMo.getId(), NaNoWordSprints.getId(), BotTimmy.getId()};
+		long[] userIds = {NaNoWriMo.getId(), NaNoWordSprints.getId(), BotTimmy.getId(), officeduckfrank.getId()};
 		String[] hashtags = {"#NaNoWriMo"};
 
 		FilterQuery filter = new FilterQuery(0, userIds, hashtags);

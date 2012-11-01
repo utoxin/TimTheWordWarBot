@@ -46,7 +46,7 @@ public class MarkhovChains extends ListenerAdapter {
 		ChannelInfo cdata = db.channel_data.get(event.getChannel().getName().toLowerCase());
 
 		if (!event.getUser().getNick().equals("Skynet") && !event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
-			if (cdata.doMarkhov) {
+			if (cdata.doMarkov) {
 				process_markhov(Colors.removeFormattingAndColors(event.getMessage()), "say");
 			}
 		}
@@ -59,7 +59,7 @@ public class MarkhovChains extends ListenerAdapter {
 		ChannelInfo cdata = db.channel_data.get(event.getChannel().getName().toLowerCase());
 
 		if (!event.getUser().getNick().equals("Skynet") && !event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
-			if (cdata.doMarkhov) {
+			if (cdata.doMarkov) {
 				process_markhov(Colors.removeFormattingAndColors(event.getMessage()), "emote");
 			}
 		}

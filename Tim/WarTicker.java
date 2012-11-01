@@ -240,7 +240,7 @@ public class WarTicker {
 	public void listWars( MessageEvent event, boolean all ) {
 		if (this.wars != null && this.wars.size() > 0) {
 			for (Map.Entry<String, WordWar> wm : this.wars.entrySet()) {
-				if (all || wm.getValue().getChannel().canEqual(event.getChannel())) {
+				if (all || wm.getValue().getChannel().getName().equals(event.getChannel().getName())) {
 					event.respond(all ? wm.getValue().getDescriptionWithChannel() : wm.getValue().getDescription());
 				}
 			}

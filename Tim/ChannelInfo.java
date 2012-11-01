@@ -13,10 +13,13 @@ import org.pircbotx.Channel;
 public class ChannelInfo {
 	public Channel channel;
 	public boolean isAdult;
-	public boolean doMarkhov;
+	public boolean doMarkov;
 	public boolean doRandomActions;
 	public boolean doCommandActions;
-	public boolean relayTwitter;
+	public boolean relayBotTimmy;
+	public boolean relayNaNoWordSprints;
+	public boolean relayNaNoWriMo;
+	public boolean relayofficeduckfrank;
 	public long chatterTimer;
 	public int chatterMaxBaseOdds;
 	public int chatterNameMultiplier;
@@ -33,8 +36,11 @@ public class ChannelInfo {
 		this.isAdult = false;
 		this.doCommandActions = true;
 		this.doRandomActions = true;
-		this.doMarkhov = true;
-		this.relayTwitter = false;
+		this.doMarkov = true;
+		this.relayBotTimmy = false;
+		this.relayNaNoWordSprints = false;
+		this.relayNaNoWriMo = false;
+		this.relayofficeduckfrank = false;
 	}
 
 	/**
@@ -42,17 +48,20 @@ public class ChannelInfo {
 	 *
 	 * @param name    What is the name of the channel
 	 * @param adult   Is the channel considered 'adult'
-	 * @param markhov Should markhov chain processing and generation happen on channel
+	 * @param markhov Should markov chain processing and generation happen on channel
 	 * @param random  Should random actions happen on this channel
 	 * @param command Should 'fun' commands be processed on channel
 	 */
-	public ChannelInfo( Channel channel, boolean adult, boolean markhov, boolean random, boolean command, boolean relay ) {
+	public ChannelInfo( Channel channel, boolean adult, boolean markhov, boolean random, boolean command, boolean relayBotTimmy, boolean relayNaNoWordSprints, boolean relayNaNoWriMo, boolean relayofficeduckfrank ) {
 		this.channel = channel;
 		this.isAdult = adult;
 		this.doRandomActions = random;
 		this.doCommandActions = command;
-		this.doMarkhov = markhov;
-		this.relayTwitter = relay;
+		this.doMarkov = markhov;
+		this.relayBotTimmy = relayBotTimmy;
+		this.relayNaNoWordSprints = relayNaNoWordSprints;
+		this.relayNaNoWriMo = relayNaNoWriMo;
+		this.relayofficeduckfrank = relayofficeduckfrank;
 	}
 
 	public void setChatterTimers( int maxBaseOdds, int nameMultiplier, int timeMultiplier, int timeDivisor ) {
@@ -78,5 +87,22 @@ public class ChannelInfo {
 		}
 
 		this.chatterTimer = System.currentTimeMillis() / 1000;
+	}
+	
+	@Override
+	public String toString() {
+		String description;
+	
+		description = "Name: " + this.channel.getName();
+		description += "  adult: " + isAdult;
+		description += "  random: " + doRandomActions;
+		description += "  command: " + doCommandActions;
+		description += "  markov: " + doMarkov;
+		description += "  bottimmy: " + relayBotTimmy;
+		description += "  wordsprints: " + relayNaNoWordSprints;
+		description += "  nanowrimo: " + relayNaNoWriMo;
+		description += "  officeduck: " + relayofficeduckfrank;
+		
+		return description;
 	}
 }

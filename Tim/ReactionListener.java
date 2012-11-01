@@ -39,6 +39,8 @@ public class ReactionListener extends ListenerAdapter {
 			if (message.charAt(0) != '$' && message.charAt(0) != '!') {
 				if (message.toLowerCase().contains("how many lights")) {
 					bot.sendMessage(event.getChannel(), "There are FOUR LIGHTS!");
+				} else if (message.toLowerCase().equals("test") || message.toLowerCase().equals("testing")) {
+					event.respond(pickGrade());
 				} else if (message.contains(":(") || message.contains("):")) {
 					bot.sendAction(event.getChannel(), "gives " + event.getUser().getNick() + " a hug.");
 				} else if (message.contains(":'(")) {
@@ -61,7 +63,7 @@ public class ReactionListener extends ListenerAdapter {
 					}
 
 					this.interact(event.getUser(), event.getChannel(), message, "say");
-					if (cdata.doMarkhov) {
+					if (cdata.doMarkov) {
 						Tim.markhov.process_markhov(message, "say");
 					}
 				}
@@ -87,6 +89,8 @@ public class ReactionListener extends ListenerAdapter {
 				bot.sendMessage(event.getChannel(), "There are FOUR LIGHTS!");
 			} else if (message.contains(":(") || message.contains("):")) {
 				bot.sendAction(event.getChannel(), "gives " + event.getUser().getNick() + " a hug.");
+			} else if (message.toLowerCase().equals("tests")) {
+				event.respond(pickGrade());
 			} else if (message.contains(":'(")) {
 				bot.sendAction(event.getChannel(), "passes " + event.getUser().getNick() + " a tissue.");
 			} else if (Pattern.matches("(?i).*how do i (change|set) my (nick|name).*", message)) {
@@ -107,7 +111,7 @@ public class ReactionListener extends ListenerAdapter {
 				}
 
 				this.interact(event.getUser(), event.getChannel(), message, "emote");
-				if (cdata.doMarkhov) {
+				if (cdata.doMarkov) {
 					Tim.markhov.process_markhov(message, "emote");
 				}
 			}
@@ -147,15 +151,15 @@ public class ReactionListener extends ListenerAdapter {
 					continue;
 				}
 
-				if (cdata.doMarkhov && !cdata.doRandomActions) {
+				if (cdata.doMarkov && !cdata.doRandomActions) {
 					actions = new String[] {
 						"markhov",};
-				} else if (cdata.doMarkhov && cdata.doRandomActions) {
+				} else if (cdata.doMarkov && cdata.doRandomActions) {
 					actions = new String[] {
 						"markhov",
 						"amusement",
 						"amusement",};
-				} else if (!cdata.doMarkhov && cdata.doRandomActions) {
+				} else if (!cdata.doMarkov && cdata.doRandomActions) {
 					actions = new String[] {
 						"amusement",};
 				} else {
@@ -189,10 +193,10 @@ public class ReactionListener extends ListenerAdapter {
 		if (Tim.rand.nextInt(100) < odds) {
 			String[] actions;
 
-			if (cdata.doMarkhov && !cdata.doRandomActions) {
+			if (cdata.doMarkov && !cdata.doRandomActions) {
 				actions = new String[] {
 					"markhov",};
-			} else if (cdata.doMarkhov && cdata.doRandomActions) {
+			} else if (cdata.doMarkov && cdata.doRandomActions) {
 				actions = new String[] {
 					"markhov",
 					"markhov",
@@ -200,7 +204,7 @@ public class ReactionListener extends ListenerAdapter {
 					"amusement",
 					"amusement",
 					"amusement",};
-			} else if (!cdata.doMarkhov && cdata.doRandomActions) {
+			} else if (!cdata.doMarkov && cdata.doRandomActions) {
 				actions = new String[] {
 					"challenge",
 					"amusement",
@@ -221,6 +225,38 @@ public class ReactionListener extends ListenerAdapter {
 			}
 
 			cdata.chatterTimer += Tim.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+		}
+	}
+	
+	private String pickGrade() {
+		int grade = Tim.rand.nextInt(50) + 50;
+		
+		if (grade < 60) {
+			return "F";
+		} else if (grade < 63) {
+			return "D-";
+		} else if (grade < 67) {
+			return "D";
+		} else if (grade < 70) {
+			return "D+";
+		} else if (grade < 73) {
+			return "C-";
+		} else if (grade < 77) {
+			return "C";
+		} else if (grade < 80) {
+			return "C+";
+		} else if (grade < 83) {
+			return "B-";
+		} else if (grade < 87) {
+			return "B";
+		} else if (grade < 90) {
+			return "B+";
+		} else if (grade < 93) {
+			return "A-";
+		} else if (grade < 97) {
+			return "A";
+		} else {
+			return "A+";
 		}
 	}
 }

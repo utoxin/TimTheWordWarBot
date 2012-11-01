@@ -78,7 +78,7 @@ public class AdminCommandListener extends ListenerAdapter {
 						event.respond("Usage: $setmuzzleflag <#channel> <0/1>");
 					}
 				} else if (command.equals("relaytwitter")) {
-					if (args != null && args.length == 2) {
+					if (args != null && args.length >= 2) {
 						String target = args[0].toLowerCase();
 						if (Tim.db.channel_data.containsKey(target)) {
 							boolean flag = false;
@@ -86,13 +86,27 @@ public class AdminCommandListener extends ListenerAdapter {
 								flag = true;
 							}
 
-							Tim.db.setRelayTwitterFlag(Tim.bot.getChannel(target), flag);
+							if (args.length == 2) {
+								Tim.db.setRelayTwitterFlag(Tim.bot.getChannel(target), flag);
+							} else {
+								String account = args[2].toLowerCase();
+								if (account.charAt(0) == '@') {
+									account = account.substring(1);
+								}
+
+								if (account.equals("nanowrimo") || account.equals("nanowordsprints") || account.equals("bottimmy") || account.equals("officeduckfrank")) {
+									Tim.db.setRelayTwitterFlag(Tim.bot.getChannel(target), flag, account);
+								} else {
+									event.respond("I don't recognize that account.");
+									return;
+								}
+							}
 							event.respond("Relay twitter flag updated for " + target);
 						} else {
 							event.respond("I don't know about " + target);
 						}
 					} else {
-						event.respond("Usage: $relaytwitter <#channel> <0/1>");
+						event.respond("Usage: $relaytwitter <#channel> <0/1> [<account>]");
 					}
 				} else if (command.equals("shutdown")) {
 					if (event.getUser().getNick().equals("Utoxin")) {
@@ -186,7 +200,9 @@ public class AdminCommandListener extends ListenerAdapter {
 							  "Channel Setting Commands:",
 							  "    $setadultflag <#channel> <0/1>  - clears/sets adult flag on channel",
 							  "    $setmuzzleflag <#channel> <0/1> - clears/sets muzzle flag on channel",
-							  "    $relaytwitter <#channel> <0/1>  - clears/sets whether to relay tweets from @NaNoWordsprints and @NaNoWriMo",
+							  "    $relaytwitter <#channel> <0/1> [<account>]", 
+							  "                                    - clears/sets whether to relay tweets from various twitter accounts",
+							  "                                    - Accounts: @NaNoWriMo, @NaNoWordSprints, @BotTimmy, @officeduckfrank"
 		};
 
 		for (int i = 0; i < helplines.length; ++i) {
