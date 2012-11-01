@@ -95,8 +95,12 @@ public class AdminCommandListener extends ListenerAdapter {
 						event.respond("Usage: $relaytwitter <#channel> <0/1>");
 					}
 				} else if (command.equals("shutdown")) {
-					event.respond("Shutting down...");
-					Tim.bot.shutdown();
+					if (event.getUser().getNick().equals("Utoxin")) {
+						event.respond("Shutting down...");
+						Tim.bot.shutdown();
+					} else {
+						event.respond("You're probably looking for the command '/kick Timmy'");
+					}
 				} else if (command.equals("reload") || command.equals("refreshdb")) {
 					event.respond("Reading database tables ...");
 					Tim.db.refreshDbLists();
