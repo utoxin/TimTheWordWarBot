@@ -25,6 +25,7 @@ public class ChannelInfo {
 	public int chatterNameMultiplier;
 	public int chatterTimeMultiplier;
 	public int chatterTimeDivisor;
+	public int chatterLevel;
 
 	/**
 	 * Construct channel with default flags.
@@ -64,11 +65,12 @@ public class ChannelInfo {
 		this.relayofficeduckfrank = relayofficeduckfrank;
 	}
 
-	public void setChatterTimers( int maxBaseOdds, int nameMultiplier, int timeMultiplier, int timeDivisor ) {
+	public void setChatterTimers( int maxBaseOdds, int nameMultiplier, int timeMultiplier, int timeDivisor, int chatterLevel ) {
 		this.chatterMaxBaseOdds = maxBaseOdds;
 		this.chatterNameMultiplier = nameMultiplier;
 		this.chatterTimeMultiplier = timeMultiplier;
 		this.chatterTimeDivisor = timeDivisor;
+		this.chatterLevel = chatterLevel;
 
 		if (this.chatterMaxBaseOdds == 0) {
 			this.chatterMaxBaseOdds = 20;
@@ -85,7 +87,7 @@ public class ChannelInfo {
 		if (this.chatterTimeDivisor == 0) {
 			this.chatterTimeDivisor = 2;
 		}
-
+		
 		this.chatterTimer = System.currentTimeMillis() / 1000;
 	}
 	
@@ -94,6 +96,7 @@ public class ChannelInfo {
 		String description;
 	
 		description = "Name: " + this.channel.getName();
+		description += "  chatter: " + chatterLevel;
 		description += "  adult: " + isAdult;
 		description += "  random: " + doRandomActions;
 		description += "  command: " + doCommandActions;

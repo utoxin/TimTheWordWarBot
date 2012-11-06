@@ -77,6 +77,24 @@ public class AdminCommandListener extends ListenerAdapter {
 					} else {
 						event.respond("Usage: $setmuzzleflag <#channel> <0/1>");
 					}
+				} else if (command.equals("chatterlevel")) {
+					if (args != null && args.length == 2) {
+						String target = args[0].toLowerCase();
+						if (Tim.db.channel_data.containsKey(target)) {
+							int level = Integer.parseInt(args[1]);
+
+							if (level < 0 || level > 4) {
+								event.respond("Chatter level must be between 0 and 4 (inclusive)");
+							} else {
+								Tim.db.setChannelChatterLevel(Tim.bot.getChannel(target), level);
+								event.respond("Chatter level updated for " + target);
+							}
+						} else {
+							event.respond("I don't know about " + target);
+						}
+					} else {
+						event.respond("Usage: $chatterlevel <#channel> <0-4>");
+					}
 				} else if (command.equals("relaytwitter")) {
 					if (args != null && args.length >= 2) {
 						String target = args[0].toLowerCase();
@@ -199,7 +217,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							  "    $listignores - Prints the list of ignored users",
 							  "Channel Setting Commands:",
 							  "    $setadultflag <#channel> <0/1>  - clears/sets adult flag on channel",
-							  "    $setmuzzleflag <#channel> <0/1> - clears/sets muzzle flag on channel",
+							  "    $chatterlevel <#channel> <0-4>  - Set the chatter level for Timmy. 0 is off, 4 is the highest.",
 							  "    $relaytwitter <#channel> <0/1> [<account>]", 
 							  "                                    - clears/sets whether to relay tweets from various twitter accounts",
 							  "                                    - Accounts: @NaNoWriMo, @NaNoWordSprints, @BotTimmy, @officeduckfrank"

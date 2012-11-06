@@ -37,17 +37,17 @@ public class ReactionListener extends ListenerAdapter {
 
 		if (!Tim.db.ignore_list.contains(event.getUser().getNick())) {
 			if (message.charAt(0) != '$' && message.charAt(0) != '!') {
-				if (message.toLowerCase().contains("how many lights")) {
+				if (message.toLowerCase().contains("how many lights") && cdata.chatterLevel > 0) {
 					bot.sendMessage(event.getChannel(), "There are FOUR LIGHTS!");
-				} else if (message.toLowerCase().equals("test") || message.toLowerCase().equals("testing")) {
+				} else if (message.toLowerCase().startsWith("test") && cdata.chatterLevel > 0) {
 					event.respond(pickGrade());
-				} else if (message.contains(":(") || message.contains("):")) {
+				} else if ((message.contains(":(") || message.contains("):")) && cdata.chatterLevel > 0) {
 					bot.sendAction(event.getChannel(), "gives " + event.getUser().getNick() + " a hug.");
-				} else if (message.contains(":'(")) {
+				} else if (message.contains(":'(") && cdata.chatterLevel > 0) {
 					bot.sendAction(event.getChannel(), "passes " + event.getUser().getNick() + " a tissue.");
 				} else if (Pattern.matches("(?i).*how do i (change|set) my (nick|name).*", message)) {
 					event.respond("To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere");
-				} else if (Pattern.matches("(?i).*are you (thinking|pondering) what i.*m (thinking|pondering).*", message)) {
+				} else if (Pattern.matches("(?i).*are you (thinking|pondering) what i.*m (thinking|pondering).*", message) && cdata.chatterLevel > 0) {
 					int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
 					Tim.bot.sendMessage(event.getChannel(), String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
 				} else if (Pattern.matches("(?i).*markhov test.*", message)) {
@@ -58,8 +58,9 @@ public class ReactionListener extends ListenerAdapter {
 						Logger.getLogger(ReactionListener.class.getName()).log(Level.SEVERE, null, ex);
 					}
 				} else {
-					if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && Tim.rand.nextInt(100) < 50) {
+					if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && Tim.rand.nextInt(100) < 75 && cdata.chatterLevel > 0) {
 						Tim.amusement.eightball(event.getChannel(), event.getUser(), false);
+						return;
 					}
 
 					this.interact(event.getUser(), event.getChannel(), message, "say");
@@ -85,17 +86,17 @@ public class ReactionListener extends ListenerAdapter {
 		}
 
 		if (!Tim.db.ignore_list.contains(event.getUser().getNick())) {
-			if (message.toLowerCase().contains("how many lights")) {
+			if (message.toLowerCase().contains("how many lights") && cdata.chatterLevel > 0) {
 				bot.sendMessage(event.getChannel(), "There are FOUR LIGHTS!");
-			} else if (message.contains(":(") || message.contains("):")) {
+			} else if ((message.contains(":(") || message.contains("):")) && cdata.chatterLevel > 0) {
 				bot.sendAction(event.getChannel(), "gives " + event.getUser().getNick() + " a hug.");
-			} else if (message.toLowerCase().equals("tests")) {
+			} else if (message.toLowerCase().startsWith("tests") && cdata.chatterLevel > 0) {
 				event.respond(pickGrade());
-			} else if (message.contains(":'(")) {
+			} else if (message.contains(":'(") && cdata.chatterLevel > 0) {
 				bot.sendAction(event.getChannel(), "passes " + event.getUser().getNick() + " a tissue.");
 			} else if (Pattern.matches("(?i).*how do i (change|set) my (nick|name).*", message)) {
 				event.respond("To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere");
-			} else if (message.toLowerCase().contains("are you thinking what i'm thinking") || message.toLowerCase().contains("are you pondering what i'm pondering")) {
+			} else if (Pattern.matches("(?i).*are you (thinking|pondering) what i.*m (thinking|pondering).*", message) && cdata.chatterLevel > 0) {
 				int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
 				Tim.bot.sendMessage(event.getChannel(), String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
 			} else if (Pattern.matches("(?i).*markhov test.*", message)) {
@@ -106,8 +107,9 @@ public class ReactionListener extends ListenerAdapter {
 					Logger.getLogger(ReactionListener.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			} else {
-				if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && Tim.rand.nextInt(100) < 50) {
+				if ((Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && Tim.rand.nextInt(100) < 75) && cdata.chatterLevel > 0) {
 					Tim.amusement.eightball(event.getChannel(), event.getUser(), false);
+					return;
 				}
 
 				this.interact(event.getUser(), event.getChannel(), message, "emote");
@@ -130,9 +132,9 @@ public class ReactionListener extends ListenerAdapter {
 			cdata = Tim.db.channel_data.get(cdata.channel.getName().toLowerCase());
 
 			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
-			long odds = Math.round(Math.sqrt(elapsed) / 3);
+			long odds = Math.round(Math.sqrt(elapsed) / (6 - cdata.chatterLevel));
 
-			if (odds < cdata.chatterMaxBaseOdds) {
+			if (odds < (cdata.chatterLevel * 4)) {
 				continue;
 			}
 
@@ -147,7 +149,7 @@ public class ReactionListener extends ListenerAdapter {
 				elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 				cdata.chatterTimer += Math.round(elapsed / 2);
 
-				if (50 < Tim.rand.nextInt(100)) {
+				if (50 < Tim.rand.nextInt(100) || cdata.chatterLevel == 0) {
 					continue;
 				}
 
@@ -180,10 +182,14 @@ public class ReactionListener extends ListenerAdapter {
 	private void interact( User sender, Channel channel, String message, String type ) {
 		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName().toLowerCase());
 
+		if (cdata.chatterLevel == 0) {
+			return;
+		}
+		
 		long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
-		long odds = Math.round(Math.sqrt(elapsed) / 3);
-		if (odds > cdata.chatterMaxBaseOdds) {
-			odds = cdata.chatterMaxBaseOdds;
+		long odds = Math.round(Math.sqrt(elapsed) / (6 - cdata.chatterLevel));
+		if (odds > (cdata.chatterLevel * 4)) {
+			odds = (cdata.chatterLevel * 4);
 		}
 
 		if (message.toLowerCase().contains(Tim.bot.getNick().toLowerCase())) {
@@ -192,6 +198,8 @@ public class ReactionListener extends ListenerAdapter {
 
 		if (Tim.rand.nextInt(100) < odds) {
 			String[] actions;
+
+			cdata.chatterTimer += Tim.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
 
 			if (cdata.doMarkov && !cdata.doRandomActions) {
 				actions = new String[] {
@@ -223,8 +231,6 @@ public class ReactionListener extends ListenerAdapter {
 			} else if ("amusement".equals(action)) {
 				Tim.amusement.randomAction(sender, channel);
 			}
-
-			cdata.chatterTimer += Tim.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
 		}
 	}
 	

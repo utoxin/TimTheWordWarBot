@@ -32,7 +32,7 @@ public class Tim {
 	public static MarkhovChains markhov;
 	public static Random rand;
 	public static ChainStory story;
-	public static WarTicker warticker = WarTicker.getInstance();
+	public static WarTicker warticker;
 	public static TwitterIntegration twitterstream;
 
 	public static void main( String[] args ) {
@@ -85,6 +85,8 @@ public class Tim {
 
 		twitterstream = new TwitterIntegration();
 		twitterstream.startStream();
+
+		warticker = WarTicker.getInstance();
 	}
 
 	/**

@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.pircbotx.Channel;
+import org.pircbotx.User;
 import snaq.db.ConnectionPool;
 import snaq.db.Select1Validator;
 
@@ -81,6 +82,21 @@ public class DBAccess {
 
 			// Will do nothing if the channel is not in the list.
 			this.channel_data.remove(channel.getName().toLowerCase());
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	public void deleteWar( int id ) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("DELETE FROM `wars` WHERE `id` = ?");
+			s.setInt(1, id);
+			s.executeUpdate();
 
 			con.close();
 		} catch (SQLException ex) {
@@ -155,7 +171,8 @@ public class DBAccess {
 					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
 					Integer.parseInt(getSetting("chatterNameMultiplier")),
 					Integer.parseInt(getSetting("chatterTimeMultiplier")),
-					Integer.parseInt(getSetting("chatterTimeDivisor")));
+					Integer.parseInt(getSetting("chatterTimeDivisor")),
+					rs.getInt("chatter_level"));
 
 				this.channel_data.put(channel.getName().toLowerCase(), ci);
 			}
@@ -264,7 +281,8 @@ public class DBAccess {
 					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
 					Integer.parseInt(getSetting("chatterNameMultiplier")),
 					Integer.parseInt(getSetting("chatterTimeMultiplier")),
-					Integer.parseInt(getSetting("chatterTimeDivisor")));
+					Integer.parseInt(getSetting("chatterTimeDivisor")),
+					3);
 
 				this.channel_data.put(channel.getName().toLowerCase(), new_channel);
 			}
@@ -305,6 +323,24 @@ public class DBAccess {
 			} else {
 				this.channel_data.get(channel.getName()).isAdult = false;
 			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	public void setChannelChatterLevel( Channel channel, int level ) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET chatter_level = ? WHERE `channel` = ?");
+			s.setInt(1, level);
+			s.setString(2, channel.getName());
+			s.executeUpdate();
+
+			this.channel_data.get(channel.getName()).chatterLevel = level;
 
 			con.close();
 		} catch (SQLException ex) {
@@ -389,5 +425,88 @@ public class DBAccess {
 		Tim.story.refreshDbLists();
 		Tim.challenge.refreshDbLists();
 		Tim.markhov.refreshDbLists();
+	}
+
+	public int create_war(Channel channel, User starter, String name, long duration, long remaining, long time_to_start) {
+		int id = 0;
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("INSERT INTO `wars` (`channel`, `starter`, `name`, `duration`, `remaining`, `time_to_start`) VALUES (?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			s.setString(1, channel.getName().toLowerCase());
+			s.setString(2, starter.getNick());
+			s.setString(3, name);
+			s.setLong(4, duration);
+			s.setLong(5, remaining);
+			s.setLong(6, time_to_start);
+			s.executeUpdate();
+
+			ResultSet rs = s.getGeneratedKeys();
+			
+			if (rs.next()) {
+				id = rs.getInt(1);
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		
+		return id;
+	}
+
+	public void update_war(int db_id, long remaining, long time_to_start) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("UPDATE `wars` SET `remaining` = ?, `time_to_start` = ? WHERE id = ?");
+			s.setLong(1, remaining);
+			s.setLong(2, time_to_start);
+			s.setInt(3, db_id);
+			s.executeUpdate();
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	public Map<String, WordWar> loadWars() {
+		Connection con;
+		Channel channel;
+		User user;
+		Map<String, WordWar> wars = Collections.synchronizedMap(new HashMap<String, WordWar>());
+
+		try {
+			con = pool.getConnection(timeout);
+
+			Statement s = con.createStatement();
+			ResultSet rs = s.executeQuery("SELECT * FROM `wars`");
+
+			while (rs.next()) {
+				channel = Tim.bot.getChannel(rs.getString("channel"));
+				user = Tim.bot.getUser(rs.getString("starter"));
+
+				WordWar war = new WordWar(
+					rs.getLong("duration"),
+					rs.getLong("remaining"),
+					rs.getLong("time_to_start"),
+					rs.getString("name"),
+					user,
+					channel,
+					rs.getInt("id")
+				);
+
+				wars.put(war.getName().toLowerCase(), war);
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		
+		return wars;
 	}
 }

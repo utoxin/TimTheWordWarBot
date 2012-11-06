@@ -23,10 +23,11 @@ import org.pircbotx.User;
 public class WordWar {
 	private Channel channel;
 	private User starter;
-	private long duration;
 	private String name;
+	private long duration;
 	public long remaining;
 	public long time_to_start;
+	private int db_id;
 
 	public WordWar( long time, long to_start, String warname, User startingUser, Channel hosting_channel ) {
 		this.starter = startingUser;
@@ -34,8 +35,30 @@ public class WordWar {
 		this.duration = this.remaining = time;
 		this.name = warname;
 		this.channel = hosting_channel;
+		
+		db_id = Tim.db.create_war(hosting_channel, startingUser, warname, time, time, to_start);
+	}
+	
+	public WordWar( long duration, long remaining, long to_start, String warname, User startingUser, Channel hosting_channel, int db_id ) {
+		this.starter = startingUser;
+		this.time_to_start = to_start;
+		this.duration = duration;
+		this.remaining = remaining;
+		this.name = warname;
+		this.channel = hosting_channel;
+		this.db_id = db_id;
 	}
 
+	protected void endWar() {
+		if (db_id > 0) {
+			Tim.db.deleteWar(db_id);
+		}
+	}
+
+	public void updateDb() {
+		Tim.db.update_war(db_id, remaining, time_to_start);
+	}
+	
 	public Channel getChannel() {
 		return this.channel;
 	}

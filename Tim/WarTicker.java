@@ -33,7 +33,7 @@ public class WarTicker {
 	}
 
 	public WarTicker() {
-		this.wars = Collections.synchronizedMap(new Hashtable<String, WordWar>());
+		this.wars = Tim.db.loadWars();
 
 		this.warticker = new WarClockThread(this);
 		this.wars_lock = new Semaphore(1, true);
@@ -126,6 +126,7 @@ public class WarTicker {
 								break;
 						}
 					}
+					war.updateDb();
 				}
 				this.wars_lock.release();
 			} catch (Throwable e) {
@@ -159,6 +160,7 @@ public class WarTicker {
 	private void endWar( WordWar war ) {
 		Tim.bot.sendMessage(war.getChannel(), "WordWar '" + war.getName() + "' is over!");
 		this.wars.remove(war.getName().toLowerCase());
+		war.endWar();
 	}
 
 	// !endwar <name>
@@ -170,6 +172,7 @@ public class WarTicker {
 					|| Tim.db.admin_list.contains(event.getUser().getNick())
 					|| Tim.db.admin_list.contains(event.getChannel().getName().toLowerCase())) {
 					WordWar war = this.wars.remove(name.toLowerCase());
+					war.endWar();
 					event.respond("The war '" + war.getName() + "' has been ended.");
 				} else {
 					event.respond("Only the starter of a war can end it early.");
