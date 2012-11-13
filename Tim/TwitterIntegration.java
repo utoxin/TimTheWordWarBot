@@ -42,9 +42,7 @@ public class TwitterIntegration extends StatusAdapter {
 		StatusListener publicListener = new StatusListener() {
 			public void onStatus( Status status ) {
 				String colorString;
-				
-				Tim.bot.log("@" + status.getUser().getScreenName() + ": " + status.getText());
-				
+
 				if (status.getUser().getScreenName().equals("NaNoWriMo") && status.getInReplyToUserId() == -1) {
 					colorString = Colors.BOLD + Colors.DARK_BLUE;
 				} else if (status.getUser().getScreenName().equals("NaNoWordSprints") && status.getInReplyToUserId() == -1) {
@@ -99,10 +97,18 @@ public class TwitterIntegration extends StatusAdapter {
 
 		StatusListener userListener = new UserStreamListener() {
 			public void onStatus( Status status ) {
+				boolean sendReply = false;
 				if (status.getInReplyToUserId() == TwitterIntegration.BotTimmy.getId()) {
+					sendReply = true;
+				} else if (status.getText().toLowerCase().contains("@bottimmy") && Tim.rand.nextInt(100) < 75) {
+					sendReply = true;
+				} else if (Tim.rand.nextInt(100) < 5) {
+					sendReply = true;
+				}
+
+				if (sendReply) {
 					try {
 						int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
-						Tim.bot.log("@" + status.getUser().getScreenName() + ": " + status.getText());
 						StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r) + " #NaNoWriMo #FearTimmy");
 						reply.setInReplyToStatusId(status.getId());
 						twitter.updateStatus(reply);
