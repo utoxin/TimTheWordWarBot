@@ -32,9 +32,9 @@ import org.pircbotx.hooks.events.ServerPingEvent;
  */
 public class Amusement {
 	private long timeout = 3000;
-	private List<String> approved_items = new ArrayList<String>();
+	protected List<String> approved_items = new ArrayList<String>();
 	private List<String> pending_items = new ArrayList<String>();
-	private List<String> colours = new ArrayList<String>();
+	protected List<String> colours = new ArrayList<String>();
 	protected List<String> eightballs = new ArrayList<String>();
 	private List<String> commandments = new ArrayList<String>();
 	protected List<String> aypwips = new ArrayList<String>();
@@ -355,7 +355,7 @@ public class Amusement {
 				this.pending_items.add(item);
 			}
 
-			if (Tim.rand.nextInt(100) < 50) {
+			if (Tim.rand.nextInt(100) < 25) {
 				item = args[0];
 				for (int i = 1; i < args.length; ++i) {
 					item = item + " " + args[i];

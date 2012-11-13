@@ -98,18 +98,38 @@ public class TwitterIntegration extends StatusAdapter {
 		StatusListener userListener = new UserStreamListener() {
 			public void onStatus( Status status ) {
 				boolean sendReply = false;
+				boolean getItem = false;
 				if (status.getInReplyToUserId() == TwitterIntegration.BotTimmy.getId()) {
 					sendReply = true;
-				} else if (status.getText().toLowerCase().contains("@bottimmy") && Tim.rand.nextInt(100) < 75) {
+					if (Tim.rand.nextInt(100) < 15) {
+						getItem = true;
+					}
+				} else if (status.getText().toLowerCase().contains("@bottimmy") && Tim.rand.nextInt(100) < 50) {
 					sendReply = true;
-				} else if (Tim.rand.nextInt(100) < 5) {
+					if (Tim.rand.nextInt(100) < 25) {
+						getItem = true;
+					}
+				} else if (Tim.rand.nextInt(100) < 2) {
 					sendReply = true;
+					if (Tim.rand.nextInt(100) < 50) {
+						getItem = true;
+					}
+				}
+
+				if (status.getUser().getId() == TwitterIntegration.BotTimmy.getId()) {
+					sendReply = false;
 				}
 
 				if (sendReply) {
 					try {
-						int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
-						StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r) + " #NaNoWriMo #FearTimmy");
+						StatusUpdate reply;
+						if (getItem) {
+							int r = Tim.rand.nextInt(Tim.amusement.approved_items.size());
+							reply = new StatusUpdate("@" + status.getUser().getScreenName() + " Here, have " + Tim.amusement.approved_items.get(r) + " #NaNoWriMo #FearTimmy");
+						} else {
+							int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
+							reply = new StatusUpdate("@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r) + " #NaNoWriMo #FearTimmy");
+						}
 						reply.setInReplyToStatusId(status.getId());
 						twitter.updateStatus(reply);
 					} catch (TwitterException ex) {
