@@ -355,7 +355,7 @@ public class Amusement {
 				this.pending_items.add(item);
 			}
 
-			if (Tim.rand.nextInt(100) < 25) {
+			if (Tim.rand.nextInt(100) < 75) {
 				item = args[0];
 				for (int i = 1; i < args.length; ++i) {
 					item = item + " " + args[i];

@@ -186,4 +186,20 @@ public class ChainStory {
 			}
 		}
 	}
+	
+	public void storeLine(String line, String author) {
+		Connection con;
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("INSERT INTO story SET string = ?, author = ?, created = NOW()");
+			s.setString(1, line);
+			s.setString(2, author);
+			s.executeUpdate();
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
 }

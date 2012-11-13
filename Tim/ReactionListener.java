@@ -122,6 +122,22 @@ public class ReactionListener extends ListenerAdapter {
 
 	@Override
 	public void onServerPing( ServerPingEvent event ) {
+		if (Tim.rand.nextInt(100) < 10) {
+			String new_text;
+			if (Tim.rand.nextBoolean()) {
+				new_text = "\"" + Tim.markhov.generate_markhov("say") + ",\" Timmy said.";
+			} else {
+				new_text = "Timmy " + Tim.markhov.generate_markhov("emote") + ".";
+			}
+			
+			Tim.story.storeLine(new_text, "Timmy");
+			for (ChannelInfo cdata : Tim.db.channel_data.values()) {
+				if (Tim.rand.nextInt(100) < 25) {
+					Tim.bot.sendAction(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words.");
+				}
+			}
+		}
+		
 		/**
 		 * This loop is used to reduce the chatter odds on idle channels, by periodically triggering idle chatter in
 		 * channels. If they currently have chatter turned off, this simply decreases their timer, and then goes on.
