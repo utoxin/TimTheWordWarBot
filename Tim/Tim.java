@@ -33,6 +33,7 @@ public class Tim {
 	public static Random rand;
 	public static ChainStory story;
 	public static WarTicker warticker;
+	public static DeIdler deidler;
 	public static TwitterIntegration twitterstream;
 
 	public static void main( String[] args ) {
@@ -87,6 +88,7 @@ public class Tim {
 		twitterstream.startStream();
 
 		warticker = WarTicker.getInstance();
+		deidler = DeIdler.getInstance();
 	}
 
 	/**
