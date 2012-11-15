@@ -44,7 +44,7 @@ public class ReactionListener extends ListenerAdapter {
 					bot.sendAction(event.getChannel(), "gives " + event.getUser().getNick() + " a hug.");
 				} else if (message.contains(":'(") && cdata.chatterLevel > 0) {
 					bot.sendAction(event.getChannel(), "passes " + event.getUser().getNick() + " a tissue.");
-				} else if (Pattern.matches("(?i).*how do i (change|set) my (nick|name).*", message)) {
+				} else if (Pattern.matches("(?i).*how do (i|you) (change|set) ?(my|your)? (nick|name).*", message)) {
 					event.respond("To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere");
 				} else if (Pattern.matches("(?i).*are you (thinking|pondering) what i.*m (thinking|pondering).*", message) && cdata.chatterLevel > 0) {
 					int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
@@ -93,7 +93,7 @@ public class ReactionListener extends ListenerAdapter {
 				event.respond(pickGrade());
 			} else if (message.contains(":'(") && cdata.chatterLevel > 0) {
 				bot.sendAction(event.getChannel(), "passes " + event.getUser().getNick() + " a tissue.");
-			} else if (Pattern.matches("(?i).*how do i (change|set) my (nick|name).*", message)) {
+			} else if (Pattern.matches("(?i).*how do (i|you) (change|set) ?(my|your)? (nick|name).*", message)) {
 				event.respond("To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere");
 			} else if (Pattern.matches("(?i).*are you (thinking|pondering) what i.*m (thinking|pondering).*", message) && cdata.chatterLevel > 0) {
 				int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());

@@ -54,7 +54,7 @@ public class DeIdler {
 	}
 
 	public void _tick() {
-		if (Tim.rand.nextInt(100) < 3) {
+		if (Tim.rand.nextInt(100) < 7) {
 			String new_text;
 			if (Tim.rand.nextBoolean()) {
 				new_text = "\"" + Tim.markhov.generate_markhov("say") + ",\" Timmy said.";
@@ -64,8 +64,8 @@ public class DeIdler {
 			
 			Tim.story.storeLine(new_text, "Timmy");
 			for (ChannelInfo cdata : Tim.db.channel_data.values()) {
-				if (Tim.rand.nextInt(100) < 25) {
-					Tim.bot.sendAction(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words.");
+				if (Tim.rand.nextInt(100) < 10) {
+					Tim.bot.sendAction(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)");
 				}
 			}
 		}
