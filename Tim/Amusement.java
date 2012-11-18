@@ -488,8 +488,8 @@ public class Amusement {
 			return;
 		}
 
-		if (!Pattern.matches("(?i)easy|average|hard", args[0])) {
-			event.respond("Difficulty must be one of: easy, average, hard");
+		if (!Pattern.matches("(?i)((extra)?easy)|average|hard|extreme", args[0])) {
+			event.respond("Difficulty must be one of: extraeasy, easy, average, hard, extreme");
 			return;
 		}
 
@@ -499,12 +499,19 @@ public class Amusement {
 			event.respond("Duration must be greater than or equal to 1.");
 			return;
 		}
+		
+		String difficulty = args[0];
+		if (difficulty.equals("extraeasy")) {
+			difficulty = "easy";
+		} else if (difficulty.equals("extreme")) {
+			difficulty = "hard";
+		}
 
 		String value = "";
 		try {
 			con = Tim.db.pool.getConnection(timeout);
 			PreparedStatement s = con.prepareStatement("SELECT `challenge` FROM `box_of_doom` WHERE `difficulty` = ? ORDER BY rand() LIMIT 1");
-			s.setString(1, args[0]);
+			s.setString(1, difficulty);
 			s.executeQuery();
 
 			ResultSet rs = s.getResultSet();
@@ -518,6 +525,13 @@ public class Amusement {
 		}
 
 		base_wpm = (long) Double.parseDouble(value);
+		
+		if (args[0].equals("extraeasy")) {
+			base_wpm *= 0.65;
+		} else if (args[0].equals("extreme")) {
+			base_wpm *= 1.4;
+		}
+		
 		modifier = 1.0 / Math.log(duration + 1.0) / 1.5 + 0.68;
 		goal = (int) ( duration * base_wpm * modifier / 10 ) * 10;
 
