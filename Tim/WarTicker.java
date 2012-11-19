@@ -12,6 +12,7 @@
  */
 package Tim;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 import org.apache.commons.lang.StringUtils;
@@ -140,7 +141,11 @@ public class WarTicker {
 			Tim.bot.sendMessage(war.getChannel(), war.getName() + ": Starting in " + war.time_to_start + ( war.time_to_start == 1 ? " second" : " seconds" ) + "!");
 		} else {
 			int time_to_start = (int) war.time_to_start / 60;
-			Tim.bot.sendMessage(war.getChannel(), war.getName() + ": Starting in " + time_to_start + ( time_to_start == 1 ? " minute" : " minutes" ) + "!");
+			if (time_to_start * 60 == war.time_to_start) {
+				Tim.bot.sendMessage(war.getChannel(), war.getName() + ": Starting in " + time_to_start + ( time_to_start == 1 ? " minute" : " minutes" ) + "!");
+			} else {
+				Tim.bot.sendMessage(war.getChannel(), war.getName() + ": Starting in " + new DecimalFormat("###.#").format(war.time_to_start / 60.0) + " minutes!");
+			}
 		}
 	}
 
@@ -159,8 +164,16 @@ public class WarTicker {
 
 	private void endWar( WordWar war ) {
 		Tim.bot.sendMessage(war.getChannel(), "WordWar '" + war.getName() + "' is over!");
-		this.wars.remove(war.getName().toLowerCase());
-		war.endWar();
+		if (war.current_chain >= war.total_chains) {
+			this.wars.remove(war.getName(false).toLowerCase());
+			war.endWar();
+		} else {
+			war.current_chain++;
+			war.remaining = war.duration;
+			war.time_to_start = (long) ( (war.duration * 0.5) + (war.duration * ((Tim.rand.nextInt(50) - 25)/100.0) ) );
+			war.updateDb();
+			warStartCount(war);
+		}
 	}
 
 	// !endwar <name>
@@ -185,9 +198,60 @@ public class WarTicker {
 		}
 	}
 
+	public void startChainWar( MessageEvent event, String[] args ) {
+		long time;
+		long to_start = 60;
+		int total_chains = 1;
+		String warname;
+
+		try {
+			time = (long) ( Double.parseDouble(args[0]) * 60 );
+		} catch (Exception e) {
+			event.respond("I could not understand the duration parameter. Was it numeric?");
+			return;
+		}
+
+		try {
+			total_chains = Integer.parseInt(args[1]);
+		} catch (Exception e) {
+			if (args[1].equalsIgnoreCase("now")) {
+				to_start = 0;
+			} else {
+				event.respond("I could not understand the time to start parameter. Was it numeric?");
+				return;
+			}
+		}
+
+		if (time < 60) {
+			event.respond("Duration must be at least 1 minute.");
+			return;
+		}
+
+		if (args.length >= 3) {
+			warname = args[2];
+			for (int i = 3; i < args.length; i++) {
+				warname = warname + " " + args[i];
+			}
+		} else {
+			warname = event.getUser().getNick() + "'s War";
+		}
+
+		if (!this.wars.containsKey(warname.toLowerCase())) {
+			WordWar war = new WordWar(time, to_start, total_chains, 1, warname, event.getUser(), event.getChannel());
+			this.wars.put(war.getName(false).toLowerCase(), war);
+			if (to_start > 0) {
+				event.respond("Your wordwar will start in " + to_start / 60.0 + " minutes.");
+			} else {
+				this.beginWar(war);
+			}
+		} else {
+			event.respond("There is already a war with the name '" + warname + "'");
+		}
+	}
+	
 	public void startWar( MessageEvent event, String[] args ) {
 		long time;
-		long to_start = 5000;
+		long to_start = 60;
 		String warname;
 		try {
 			time = (long) ( Double.parseDouble(args[0]) * 60 );
@@ -220,12 +284,12 @@ public class WarTicker {
 				warname = warname + " " + args[i];
 			}
 		} else {
-			warname = event.getUser().getNick() + "'s war";
+			warname = event.getUser().getNick() + "'s War";
 		}
 
 		if (!this.wars.containsKey(warname.toLowerCase())) {
-			WordWar war = new WordWar(time, to_start, warname, event.getUser(), event.getChannel());
-			this.wars.put(war.getName().toLowerCase(), war);
+			WordWar war = new WordWar(time, to_start, 1, 1, warname, event.getUser(), event.getChannel());
+			this.wars.put(war.getName(false).toLowerCase(), war);
 			if (to_start > 0) {
 				event.respond("Your wordwar will start in " + to_start / 60.0 + " minutes.");
 			} else {

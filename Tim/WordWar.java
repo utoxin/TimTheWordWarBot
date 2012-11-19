@@ -24,26 +24,32 @@ public class WordWar {
 	private Channel channel;
 	private User starter;
 	private String name;
-	private long duration;
+	protected long duration;
 	public long remaining;
 	public long time_to_start;
+	public int total_chains;
+	public int current_chain;
 	private int db_id;
 
-	public WordWar( long time, long to_start, String warname, User startingUser, Channel hosting_channel ) {
+	public WordWar( long time, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel ) {
 		this.starter = startingUser;
 		this.time_to_start = to_start;
+		this.total_chains = total_chains;
+		this.current_chain = current_chain;
 		this.duration = this.remaining = time;
 		this.name = warname;
 		this.channel = hosting_channel;
 		
-		db_id = Tim.db.create_war(hosting_channel, startingUser, warname, time, time, to_start);
+		db_id = Tim.db.create_war(hosting_channel, startingUser, warname, time, time, to_start, total_chains, current_chain);
 	}
 	
-	public WordWar( long duration, long remaining, long to_start, String warname, User startingUser, Channel hosting_channel, int db_id ) {
+	public WordWar( long duration, long remaining, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel, int db_id ) {
 		this.starter = startingUser;
 		this.time_to_start = to_start;
 		this.duration = duration;
 		this.remaining = remaining;
+		this.total_chains = total_chains;
+		this.current_chain = current_chain;
 		this.name = warname;
 		this.channel = hosting_channel;
 		this.db_id = db_id;
@@ -56,7 +62,7 @@ public class WordWar {
 	}
 
 	public void updateDb() {
-		Tim.db.update_war(db_id, remaining, time_to_start);
+		Tim.db.update_war(db_id, remaining, time_to_start, current_chain);
 	}
 	
 	public Channel getChannel() {
@@ -68,9 +74,21 @@ public class WordWar {
 	}
 
 	public String getName() {
-		return name;
+		if (total_chains > 1) {
+			return name + " (" + current_chain + " / " + total_chains + ")";
+		} else {
+			return name;
+		}
 	}
 
+	public String getName(boolean includeCounter) {
+		if (includeCounter) {
+			return getName();
+		} else {
+			return name;
+		}
+	}
+	
 	public User getStarter() {
 		return starter;
 	}
@@ -80,11 +98,9 @@ public class WordWar {
 	}
 
 	public String getDescription() {
-		int count = 0;
 		long minutes;
 		long seconds;
 
-		count++;
 		String about = "WordWar '" + this.getName() + "':";
 		if (this.time_to_start > 0) {
 			minutes = this.time_to_start / 60;

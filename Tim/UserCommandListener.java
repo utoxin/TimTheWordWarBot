@@ -45,10 +45,16 @@ public class UserCommandListener extends ListenerAdapter {
 				}
 
 				if (command.equals("startwar")) {
-					if (args != null && args.length > 1) {
+					if (args != null && args.length >= 1) {
 						Tim.warticker.startWar(event, args);
 					} else {
 						event.respond("Usage: !startwar <duration in min> [<time to start in min> [<name>]]");
+					}
+				} else if (command.equals("chainwar")) {
+					if (args != null && args.length > 1) {
+						Tim.warticker.startChainWar(event, args);
+					} else {
+						event.respond("Usage: !chainwar <duration in min> <war count> [<name>]");
 					}
 				} else if (command.equals("endwar")) {
 					Tim.warticker.endWar(event, args);
@@ -101,6 +107,7 @@ public class UserCommandListener extends ListenerAdapter {
 						 + "never heard of them. It is because they are awesome.",
 						 "Core Commands:",
 						 "    !startwar <duration> <time to start> <an optional name> - Starts a word war",
+						 "    !chainwar <base duration> <war count> - Starts a series of wars, with some randomness",
 						 "    !listwars - I will tell you about the wars currently in progress.",
 						 "    !boxodoom <difficulty> <duration> - Difficulty is extraeasy/easy/average/hard/extreme, duration in minutes.",
 						 "    !eggtimer <time> - I will send you a message after <time> minutes.",
