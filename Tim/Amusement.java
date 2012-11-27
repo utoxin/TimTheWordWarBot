@@ -308,22 +308,28 @@ public class Amusement {
 	}
 
 	protected void randomAction( User sender, Channel channel ) {
-		if (sender == null) {
-			Set<User> users = channel.getUsers();
-			int r = Tim.rand.nextInt(users.size());
-			int i = 0;
-
-			for (User user : users) {
-				if (i == r) {
-					sender = user;
-				}
-				i++;
-			}
-		}
-
 		String[] actions = new String[] {
 			"item", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper"
 		};
+
+		if (sender == null) {
+			Set<User> users = channel.getUsers();
+			if (users.size() > 0) {
+				int r = Tim.rand.nextInt(users.size());
+				int i = 0;
+
+				for (User user : users) {
+					if (i == r) {
+						sender = user;
+					}
+					i++;
+				}
+			} else {
+				actions = new String[] {
+					"eightball", "sing", "dance", "summon"
+				};
+			}
+		}
 
 		String action = actions[Tim.rand.nextInt(actions.length)];
 
@@ -343,6 +349,8 @@ public class Amusement {
 			dance(channel);
 		} else if ("summon".equals(action)) {
 			summon(channel, null, false);
+		} else if ("creeper".equals(action)) {
+			creeper(channel, sender, null, false);
 		}
 	}
 
