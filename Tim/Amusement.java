@@ -15,6 +15,7 @@ package Tim;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -115,6 +116,9 @@ public class Amusement {
 			return true;
 		} else if (command.equals("foof")) {
 			foof(event.getChannel(), event.getUser(), args, true);
+			return true;
+		} else if (command.equals("creeper")) {
+			creeper(event.getChannel(), event.getUser(), args, true);
 			return true;
 		}
 
@@ -304,16 +308,22 @@ public class Amusement {
 	}
 
 	protected void randomAction( User sender, Channel channel ) {
-		String[] actions;
 		if (sender == null) {
-			actions = new String[] {
-				"eightball", "sing", "dance", "summon"
-			};
-		} else {
-			actions = new String[] {
-				"item", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon"
-			};
+			Set<User> users = channel.getUsers();
+			int r = Tim.rand.nextInt(users.size());
+			int i = 0;
+
+			for (User user : users) {
+				if (i == r) {
+					sender = user;
+				}
+				i++;
+			}
 		}
+
+		String[] actions = new String[] {
+			"item", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper"
+		};
 
 		String action = actions[Tim.rand.nextInt(actions.length)];
 
@@ -687,19 +697,11 @@ public class Amusement {
 		}
 	}
 
-	protected void foof( Channel channel, User sender, String[] args,
-						 Boolean righto ) {
+	protected void foof( Channel channel, User sender, String[] args, Boolean righto ) {
 		try {
 			String target = sender.getNick();
 			if (args != null && args.length > 0) {
 				target = StringUtils.join(args, " ");
-
-				for (User t : channel.getUsers()) {
-					if (t.canEqual(target)) {
-						target = t.getNick();
-						break;
-					}
-				}
 			}
 
 			if (righto) {
@@ -728,6 +730,45 @@ public class Amusement {
 			time = Tim.rand.nextInt(3000) + 2000;
 			Thread.sleep(time);
 			Tim.bot.sendAction(channel, act);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	protected void creeper( Channel channel, User sender, String[] args, Boolean righto ) {
+		try {
+			String target = sender.getNick();
+			if (args != null && args.length > 0) {
+				target = StringUtils.join(args, " ");
+			}
+
+			if (righto) {
+				Tim.bot.sendMessage(channel, "Righto...");
+			}
+
+			int time = Tim.rand.nextInt(1500) + 1500;
+			Thread.sleep(time);
+			Tim.bot.sendAction(channel, "falls suspiciously silent, and turns green...");
+			int i = Tim.rand.nextInt(100);
+			String act;
+			String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
+
+			if (i > 33) {
+				act = "ssssidles up to " + target + ". That'ssss a very nice novel you've got there...";
+			} else if (i > 11) {
+				target = sender.getNick();
+				act = "sidlessss up to " + target + ". Ssssso, you were looking for a creeper?";
+			} else {
+				act = "sneaksssss up on a " + colour + " fridge...";
+			}
+
+			time = Tim.rand.nextInt(3000) + 2000;
+			Thread.sleep(time);
+			Tim.bot.sendAction(channel, act);
+			
+			time = Tim.rand.nextInt(2000) + 1000;
+			Thread.sleep(time);
+			Tim.bot.sendAction(channel, "explodessss! *BOOM*");
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}

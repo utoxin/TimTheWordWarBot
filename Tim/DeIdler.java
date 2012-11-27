@@ -73,6 +73,10 @@ public class DeIdler {
 				}
 			}
 		}
+
+		if (Tim.rand.nextInt(100) < 1) {
+			Tim.twitterstream.sendTweet(Tim.markhov.generate_markhov("say"));
+		}
 		
 		/**
 		 * This loop is used to reduce the chatter odds on idle channels, by periodically triggering idle chatter in

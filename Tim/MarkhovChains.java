@@ -14,10 +14,7 @@ package Tim;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -175,15 +172,8 @@ public class MarkhovChains extends ListenerAdapter {
 				s.executeUpdate();
 				s.close();
 
-				s = con.prepareStatement("DELETE FROM markhov_say_data WHERE first COLLATE utf8_general_ci REGEXP ? OR second COLLATE utf8_general_ci REGEXP ?");
+				s = con.prepareStatement("DELETE FROM markov_words WHERE word COLLATE utf8_general_ci REGEXP ?");
 				s.setString(1, "^[[:punct:]]*"+ word +"[[:punct:]]*$");
-				s.setString(2, "^[[:punct:]]*"+ word +"[[:punct:]]*$");
-				s.executeUpdate();
-				s.close();
-
-				s = con.prepareStatement("DELETE FROM markhov_emote_data WHERE first COLLATE utf8_general_ci REGEXP ? OR second COLLATE utf8_general_ci REGEXP ?");
-				s.setString(1, "^[[:punct:]]*"+ word +"[[:punct:]]*$");
-				s.setString(2, "^[[:punct:]]*"+ word +"[[:punct:]]*$");
 				s.executeUpdate();
 				s.close();
 
@@ -208,11 +198,11 @@ public class MarkhovChains extends ListenerAdapter {
 			PreparedStatement nextList, getTotal;
 
 			if ("emote".equals(type)) {
-				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markhov_emote_data WHERE first = ?");
-				nextList = con.prepareStatement("SELECT first, second, count FROM markhov_emote_data WHERE first = ? ORDER BY count ASC");
+				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markov_emote_data med INNER JOIN markov_words mw ON (med.first_id = mw.id) WHERE word = ?");
+				nextList = con.prepareStatement("SELECT mw1.word first, mw2.word second, count FROM markov_emote_data med INNER JOIN markov_words mw1 ON (med.first_id = mw1.id) INNER JOIN markov_words mw2 ON (med.second_id = mw2.id) WHERE mw1.word = ? ORDER BY count ASC");
 			} else {
-				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markhov_say_data WHERE first = ?");
-				nextList = con.prepareStatement("SELECT first, second, count FROM markhov_say_data WHERE first = ? ORDER BY count ASC");
+				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markov_say_data med INNER JOIN markov_words mw ON (med.first_id = mw.id) WHERE word = ?");
+				nextList = con.prepareStatement("SELECT mw1.word first, mw2.word second, count FROM markov_say_data med INNER JOIN markov_words mw1 ON (med.first_id = mw1.id) INNER JOIN markov_words mw2 ON (med.second_id = mw2.id) WHERE mw1.word = ? ORDER BY count ASC");
 			}
 
 			getTotal.setString(1, "");
@@ -339,17 +329,18 @@ public class MarkhovChains extends ListenerAdapter {
 	 */
 	public void process_markhov( String message, String type ) {
 		Connection con = null;
-		String first;
-		String second = "";
+		int first;
+		int second = getMarkovWordId("");
 
 		String[] words = message.split(" ");
 		try {
 			con = db.pool.getConnection(timeout);
 			PreparedStatement addPair;
+
 			if ("emote".equals(type)) {
-				addPair = con.prepareStatement("INSERT INTO markhov_emote_data (first, second, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
+				addPair = con.prepareStatement("INSERT INTO markov_emote_data (first_id, second_id, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
 			} else {
-				addPair = con.prepareStatement("INSERT INTO markhov_say_data (first, second, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
+				addPair = con.prepareStatement("INSERT INTO markov_say_data (first_id, second_id, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
 			}
 
 			for (int i = 0; i < ( words.length - 1 ); i++) {
@@ -358,11 +349,11 @@ public class MarkhovChains extends ListenerAdapter {
 				}
 
 				if (i == 0) {
-					first = "";
-					second = words[i];
+					first = getMarkovWordId("");
+					second = getMarkovWordId(words[i]);
 
-					addPair.setString(1, first);
-					addPair.setString(2, second);
+					addPair.setInt(1, first);
+					addPair.setInt(2, second);
 
 					addPair.executeUpdate();
 				}
@@ -371,18 +362,18 @@ public class MarkhovChains extends ListenerAdapter {
 					continue;
 				}
 
-				first = words[i];
-				second = words[i + 1];
+				first = getMarkovWordId(words[i]);
+				second = getMarkovWordId(words[i + 1]);
 
-				addPair.setString(1, first);
-				addPair.setString(2, second);
+				addPair.setInt(1, first);
+				addPair.setInt(2, second);
 
 				addPair.executeUpdate();
 			}
 
-			if (!second.isEmpty()) {
-				addPair.setString(1, second);
-				addPair.setString(2, "");
+			if (second != getMarkovWordId("")) {
+				addPair.setInt(1, second);
+				addPair.setInt(2, getMarkovWordId(""));
 
 				addPair.executeUpdate();
 			}
@@ -397,6 +388,42 @@ public class MarkhovChains extends ListenerAdapter {
 				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
+	}
+	
+	private int getMarkovWordId( String word ) {
+		Connection con = null;
+
+		try {
+			con = db.pool.getConnection(timeout);
+			PreparedStatement checkword, addword;
+
+			checkword = con.prepareStatement("SELECT id FROM markov_words WHERE word = ?");
+			addword = con.prepareStatement("INSERT INTO markov_words SET word = ?", Statement.RETURN_GENERATED_KEYS);
+
+			checkword.setString(1, "");
+			ResultSet checkRes = checkword.executeQuery();
+			if (checkRes.next()) {
+				return checkRes.getInt("id");
+			} else {
+				addword.setString(1, word);
+				addword.executeUpdate();
+				ResultSet rs = addword.getGeneratedKeys();
+
+				if (rs.next()) {
+					return rs.getInt(1);
+				}
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(MarkhovChains.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				con.close();
+			} catch (SQLException ex) {
+				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+
+		return 0;
 	}
 
 	private boolean skipMarkhovWord( String word ) {

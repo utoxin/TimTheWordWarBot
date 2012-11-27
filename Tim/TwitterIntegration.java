@@ -38,6 +38,19 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 	}
 	
+	public void sendTweet(String message) {
+		try {
+			if (message.length() > 118) {
+				message = message.substring(0, 115) + "...";
+			}
+
+			StatusUpdate status = new StatusUpdate(message + " #NaNoWriMo #FearTimmy");
+			twitter.updateStatus(status);
+		} catch (TwitterException ex) {
+			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+	
 	public void startStream() {
 		StatusListener publicListener = new StatusListener() {
 			public void onStatus( Status status ) {
