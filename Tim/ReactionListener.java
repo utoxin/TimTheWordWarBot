@@ -39,7 +39,7 @@ public class ReactionListener extends ListenerAdapter {
 				if (message.toLowerCase().contains("how many lights") && cdata.chatterLevel > 0) {
 					bot.sendMessage(event.getChannel(), "There are FOUR LIGHTS!");
 				} else if (message.toLowerCase().startsWith("test") && cdata.chatterLevel > 0) {
-					event.respond(pickGrade());
+					event.respond("After due consideration, your test earned a: " + pickGrade());
 				} else if ((message.contains(":(") || message.contains("):")) && cdata.chatterLevel > 0) {
 					bot.sendAction(event.getChannel(), "gives " + event.getUser().getNick() + " a hug.");
 				} else if (message.contains(":'(") && cdata.chatterLevel > 0) {
@@ -90,7 +90,7 @@ public class ReactionListener extends ListenerAdapter {
 			} else if ((message.contains(":(") || message.contains("):")) && cdata.chatterLevel > 0) {
 				bot.sendAction(event.getChannel(), "gives " + event.getUser().getNick() + " a hug.");
 			} else if (message.toLowerCase().startsWith("tests") && cdata.chatterLevel > 0) {
-				event.respond(pickGrade());
+				event.respond("considers, and gives " + event.getUser().getNick() + " a grade: " + pickGrade());
 			} else if (message.contains(":'(") && cdata.chatterLevel > 0) {
 				bot.sendAction(event.getChannel(), "passes " + event.getUser().getNick() + " a tissue.");
 			} else if (Pattern.matches("(?i).*how do (i|you) (change|set) ?(my|your)? (nick|name).*", message)) {
@@ -175,7 +175,7 @@ public class ReactionListener extends ListenerAdapter {
 	}
 	
 	private String pickGrade() {
-		int grade = Tim.rand.nextInt(50) + 50;
+		int grade = Tim.rand.nextInt(50) + 51;
 		
 		if (grade < 60) {
 			return "F";

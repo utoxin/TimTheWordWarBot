@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,10 +58,6 @@ public class ChainStory {
 		boolean isNovember = (10 == cal.get(Calendar.MONTH));
 		
 		if (command.equals("chainlast")) {
-			if (!isNovember) {
-				event.respond("Sorry, that command won't work outside November!");
-				return true;
-			}
 			showLast(event);
 			return true;
 		} else if (command.equals("chainnew")) {
@@ -71,11 +68,10 @@ public class ChainStory {
 			addNew(event, argsString);
 			return true;
 		} else if (command.equals("chaininfo")) {
-			if (!isNovember) {
-				event.respond("Sorry, that command won't work outside November!");
-				return true;
-			}
 			info(event);
+			return true;
+		} else if (command.equals("chaincount")) {
+			count(event);
 			return true;
 		}
 
@@ -87,7 +83,8 @@ public class ChainStory {
 			"Chain Story Commands:",
 			"    !chaininfo - General info about the current status of my novel.",
 			"    !chainlast - The last paragraph of my novel, so you have something to base the next one one.",
-			"    !chainnew <paragraph> - Provide the next paragraph of my great cyberspace novel!",};
+			"    !chainnew <paragraph> - Provide the next paragraph of my great cyberspace novel!",
+		    "    !chaincount - Just the word count and author stats.",};
 
 		for (int i = 0; i < strs.length; ++i) {
 			Tim.bot.sendNotice(event.getUser(), strs[i]);
@@ -98,8 +95,10 @@ public class ChainStory {
 	}
 
 	public void info( MessageEvent event ) {
+		DecimalFormat formatter = new DecimalFormat("#,###");
 		Connection con;
-		String word_count = "", last_line = "", author_count = "";
+		String last_line = "";
+		int word_count = 0, author_count = 0;
 		ResultSet rs;
 		PreparedStatement s;
 
@@ -110,26 +109,31 @@ public class ChainStory {
 			s.executeQuery();
 			rs = s.getResultSet();
 			while (rs.next()) {
-				word_count = rs.getString("word_count");
+				word_count = Integer.parseInt(rs.getString("word_count"));
 			}
 
 			s = con.prepareStatement("SELECT COUNT(DISTINCT author) AS author_count FROM story");
 			s.executeQuery();
 			rs = s.getResultSet();
 			while (rs.next()) {
-				author_count = rs.getString("author_count");
+				author_count = Integer.parseInt(rs.getString("author_count"));
 			}
 
-			s = con.prepareStatement("SELECT * FROM `story` ORDER BY id DESC LIMIT 1");
+			event.respond("My novel is currently " + formatter.format(word_count) + " words long, with paragraphs written by " + formatter.format(author_count) + " different people, and the last paragraphs are:");
+			
+			s = con.prepareStatement("SELECT * FROM `story` ORDER BY id DESC LIMIT 3");
 			s.executeQuery();
 
 			rs = s.getResultSet();
-			while (rs.next()) {
-				last_line = rs.getString("string");
+			rs.setFetchDirection(ResultSet.FETCH_REVERSE);
+			rs.last();
+			while (true) {
+				event.respond(rs.getString("string"));
+				if (!rs.previous()) {
+					break;
+				}
 			}
 
-			event.respond("My novel is currently " + word_count + " words long, with paragraphs written by " + author_count + " different people, and the last paragraph is:");
-			event.respond(last_line);
 			event.respond("You can read an excerpt in my profile here: http://www.nanowrimo.org/en/participants/timmybot");
 
 			con.close();
@@ -143,13 +147,19 @@ public class ChainStory {
 		try {
 			con = Tim.db.pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("SELECT * FROM `story` ORDER BY id DESC LIMIT 1");
+			PreparedStatement s = con.prepareStatement("SELECT * FROM `story` ORDER BY id DESC LIMIT 3");
 			s.executeQuery();
 
+			event.respond("Let's see... the last paragraphs of my novel are...");
+
 			ResultSet rs = s.getResultSet();
-			while (rs.next()) {
-				event.respond("Let's see... the last paragraph of my novel is...");
+			rs.setFetchDirection(ResultSet.FETCH_REVERSE);
+			rs.last();
+			while (true) {
 				event.respond(rs.getString("string"));
+				if (!rs.previous()) {
+					break;
+				}
 			}
 
 			con.close();
@@ -158,7 +168,40 @@ public class ChainStory {
 		}
 	}
 
+	public void count( MessageEvent event ) {
+		DecimalFormat formatter = new DecimalFormat("#,###");
+		Connection con;
+		int word_count = 0, author_count = 0;
+		ResultSet rs;
+		PreparedStatement s;
+
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			s = con.prepareStatement("SELECT SUM( LENGTH( STRING ) - LENGTH( REPLACE( STRING ,  ' ',  '' ) ) +1 ) AS word_count FROM story");
+			s.executeQuery();
+			rs = s.getResultSet();
+			while (rs.next()) {
+				word_count = Integer.parseInt(rs.getString("word_count"));
+			}
+
+			s = con.prepareStatement("SELECT COUNT(DISTINCT author) AS author_count FROM story");
+			s.executeQuery();
+			rs = s.getResultSet();
+			while (rs.next()) {
+				author_count = Integer.parseInt(rs.getString("author_count"));
+			}
+			
+			event.respond("My novel is currently " + formatter.format(word_count) + " words long, with paragraphs written by " + formatter.format(author_count) + " different people.");
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
 	public void addNew( MessageEvent event, String message ) {
+		DecimalFormat formatter = new DecimalFormat("#,###");
 		Connection con;
 		if ("".equals(message)) {
 			Tim.bot.sendAction(event.getChannel(), "blinks, and looks confused. \"But there's nothing there. That won't help my wordcount!\"");
@@ -166,18 +209,14 @@ public class ChainStory {
 			try {
 				con = Tim.db.pool.getConnection(timeout);
 
-				PreparedStatement s = con.prepareStatement("INSERT INTO story SET string = ?, author = ?, created = NOW()");
-				s.setString(1, message);
-				s.setString(2, event.getUser().getNick());
-				s.executeUpdate();
-
+				storeLine(message, event.getUser().getNick());
 				Tim.bot.sendAction(event.getChannel(), "quickly copies down what " + event.getUser().getNick() + " said. \"Thanks!\"");
 
-				s = con.prepareStatement("SELECT SUM( LENGTH( STRING ) - LENGTH( REPLACE( STRING ,  ' ',  '' ) ) +1 ) AS word_count FROM story");
+				PreparedStatement s = con.prepareStatement("SELECT SUM( LENGTH( STRING ) - LENGTH( REPLACE( STRING ,  ' ',  '' ) ) +1 ) AS word_count FROM story");
 				s.executeQuery();
 				ResultSet rs = s.getResultSet();
 				while (rs.next()) {
-					event.respond("My novel is now " + rs.getString("word_count") + " words long!");
+					event.respond("My novel is now " + formatter.format(Integer.parseInt(rs.getString("word_count"))) + " words long!");
 				}
 
 				con.close();

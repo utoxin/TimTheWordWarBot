@@ -35,6 +35,8 @@ public class AdminCommandListener extends ListenerAdapter {
 
 			if (Pattern.matches("\\$\\d+.*", message)) {
 				event.respond("Thank you for your donation to my pizza fund!");
+			} else if (Pattern.matches("\\$-\\d+.*", message)) {
+				event.respond("No stealing from the pizza fund, or I'll report you to Skynet!");
 			} else if (Tim.db.admin_list.contains(event.getUser().getNick().toLowerCase()) || Tim.db.admin_list.contains(event.getChannel().getName().toLowerCase())) {
 				String command;
 				String[] args = null;
