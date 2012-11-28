@@ -181,13 +181,13 @@ public class MarkhovChains extends ListenerAdapter {
 				s.executeUpdate();
 				s.close();
 
-				s = con.prepareStatement("DELETE msd.* FROM markov_say_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND  mw2.word COLLATE utf8_general_ci REGEXP ?");
+				s = con.prepareStatement("DELETE msd.* FROM markov_say_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
 				s.setString(1, "^[[:punct:]]*"+ word_one +"[[:punct:]]*$");
 				s.setString(2, "^[[:punct:]]*"+ word_two +"[[:punct:]]*$");
 				s.executeUpdate();
 				s.close();
 
-				s = con.prepareStatement("DELETE msd.* FROM markov_emote_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND  mw2.word COLLATE utf8_general_ci REGEXP ?");
+				s = con.prepareStatement("DELETE msd.* FROM markov_emote_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
 				s.setString(1, "^[[:punct:]]*"+ word_one +"[[:punct:]]*$");
 				s.setString(2, "^[[:punct:]]*"+ word_two +"[[:punct:]]*$");
 				s.executeUpdate();
@@ -484,7 +484,7 @@ public class MarkhovChains extends ListenerAdapter {
 			checkword = con.prepareStatement("SELECT id FROM markov_words WHERE word = ?");
 			addword = con.prepareStatement("INSERT INTO markov_words SET word = ?", Statement.RETURN_GENERATED_KEYS);
 
-			checkword.setString(1, "");
+			checkword.setString(1, word);
 			ResultSet checkRes = checkword.executeQuery();
 			if (checkRes.next()) {
 				return checkRes.getInt("id");
