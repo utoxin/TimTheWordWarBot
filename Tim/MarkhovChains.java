@@ -34,6 +34,7 @@ import org.pircbotx.hooks.events.ServerPingEvent;
 public class MarkhovChains extends ListenerAdapter {
 	private DBAccess db = DBAccess.getInstance();
 	protected HashMap<String, Pattern> badwordPatterns = new HashMap<String, Pattern>();
+	protected HashMap<String, Pattern[]> badpairPatterns = new HashMap<String, Pattern[]>();
 	private long timeout = 3000;
 
 	@Override
@@ -107,6 +108,11 @@ public class MarkhovChains extends ListenerAdapter {
 				addBadWord(args[0], event.getChannel());
 				return true;
 			}
+        } else if (command.equals("badpair")) {
+			if (args != null && args.length == 2) {
+				addBadPair(args[0], args[1], event.getChannel());
+				return true;
+			}
 		}
 
 		return false;
@@ -115,7 +121,8 @@ public class MarkhovChains extends ListenerAdapter {
 	protected void adminHelpSection( MessageEvent event ) {
 		String[] strs = {
 			"Markhov Chain Commands:",
-			"    $badword <word> - Add <word> to the 'bad word' list, and purge from the chain data.",};
+			"    $badword <word> - Add <word> to the 'bad word' list, and purge from the chain data.",
+			"    $badpair <word> <word> - Add pair to the 'bad pair' list, and purge from the chain data.",};
 
 		for (int i = 0; i < strs.length; ++i) {
 			Tim.bot.sendNotice(event.getUser(), strs[i]);
@@ -124,6 +131,7 @@ public class MarkhovChains extends ListenerAdapter {
 
 	public void refreshDbLists() {
 		getBadwords();
+		getBadpairs();
 	}
 
 	public void randomActionWrapper( MessageEvent event ) {
@@ -159,6 +167,48 @@ public class MarkhovChains extends ListenerAdapter {
 		}
 	}
 
+    public void addBadPair( String word_one, String word_two, Channel channel ) {
+		Connection con;
+		if ("".equals(word_one)) {
+			Tim.bot.sendMessage(channel, "I can't add nothing. Please provide the bad word.");
+		} else {
+			try {
+				con = db.pool.getConnection(timeout);
+
+				PreparedStatement s = con.prepareStatement("REPLACE INTO bad_pairs SET word_one = ?, word_two = ?");
+				s.setString(1, word_one);
+				s.setString(2, word_two);
+				s.executeUpdate();
+				s.close();
+
+				s = con.prepareStatement("DELETE msd.* FROM markov_say_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND  mw2.word COLLATE utf8_general_ci REGEXP ?");
+				s.setString(1, "^[[:punct:]]*"+ word_one +"[[:punct:]]*$");
+				s.setString(2, "^[[:punct:]]*"+ word_two +"[[:punct:]]*$");
+				s.executeUpdate();
+				s.close();
+
+				s = con.prepareStatement("DELETE msd.* FROM markov_emote_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND  mw2.word COLLATE utf8_general_ci REGEXP ?");
+				s.setString(1, "^[[:punct:]]*"+ word_one +"[[:punct:]]*$");
+				s.setString(2, "^[[:punct:]]*"+ word_two +"[[:punct:]]*$");
+				s.executeUpdate();
+				s.close();
+
+				if (badpairPatterns.get(word_one + ":" + word_two) == null) {
+					badpairPatterns.put(word_one + ":" + word_two, new Pattern[] {
+                            Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_one) + "(?:\\W|\\b)"),
+                            Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_two) + "(?:\\W|\\b)"),
+                                    });
+				}
+
+				Tim.bot.sendAction(channel, "quickly goes through his records, and purges all knowledge of that horrible phrase.");
+
+				con.close();
+			} catch (SQLException ex) {
+				Logger.getLogger(MarkhovChains.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+    }
+        
 	public void addBadWord( String word, Channel channel ) {
 		Connection con;
 		if ("".equals(word)) {
@@ -317,6 +367,36 @@ public class MarkhovChains extends ListenerAdapter {
 		}
 	}
 
+	public void getBadpairs() {
+		Connection con;
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("SELECT `word_one`, `word_two` FROM `bad_pairs`");
+			s.executeQuery();
+
+			ResultSet rs = s.getResultSet();
+			String word_one, word_two;
+			
+			badwordPatterns.clear();
+			while (rs.next()) {
+				word_one = rs.getString("word_one");
+				word_two = rs.getString("word_two");
+
+				if (badpairPatterns.get(word_one + ":" + word_two) == null) {
+					badpairPatterns.put(word_one + ":" + word_two, new Pattern[] {
+                            Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_one) + "(?:\\W|\\b)"),
+                            Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_two) + "(?:\\W|\\b)"),
+                                    });
+				}
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
 	/**
 	 * Process a message to populate the Markhov data tables
 	 *
@@ -362,6 +442,10 @@ public class MarkhovChains extends ListenerAdapter {
 					continue;
 				}
 
+                if (skipMarkovPair(words[i], words[i + 1])) {
+                    continue;
+                }
+                    
 				first = getMarkovWordId(words[i]);
 				second = getMarkovWordId(words[i + 1]);
 
@@ -426,6 +510,16 @@ public class MarkhovChains extends ListenerAdapter {
 		return 0;
 	}
 
+    private boolean skipMarkovPair( String word_one, String word_two ) {
+        for (Pattern[] patterns : badpairPatterns.values()) {
+            if (patterns[0].matcher(word_one).find() && patterns[1].matcher(word_two).find()) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
 	private boolean skipMarkhovWord( String word ) {
 		for (Pattern pattern : badwordPatterns.values()) {
 			if (pattern.matcher(word).find()) {
