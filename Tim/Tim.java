@@ -29,7 +29,7 @@ public class Tim {
 	public static AppConfig config = AppConfig.getInstance();
 	public static DBAccess db = DBAccess.getInstance();
 	public static Tim instance;
-	public static MarkhovChains markhov;
+	public static MarkovChains markov;
 	public static Random rand;
 	public static ChainStory story;
 	public static WarTicker warticker;
@@ -41,12 +41,6 @@ public class Tim {
 	}
 
 	public Tim() {
-		rand = new Random();
-		story = new ChainStory();
-		challenge = new Challenge();
-		markhov = new MarkhovChains();
-		amusement = new Amusement();
-
 		bot = new PircBotX();
 
 		bot.getListenerManager().addListener(new AdminCommandListener());
@@ -89,6 +83,12 @@ public class Tim {
 
 		warticker = WarTicker.getInstance();
 		deidler = DeIdler.getInstance();
+
+		rand = new Random();
+		story = new ChainStory();
+		challenge = new Challenge();
+		markov = new MarkovChains();
+		amusement = new Amusement();
 	}
 
 	/**

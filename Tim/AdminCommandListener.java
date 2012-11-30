@@ -181,7 +181,7 @@ public class AdminCommandListener extends ListenerAdapter {
 					this.printAdminCommandList(event);
 				} else if (Tim.amusement.parseAdminCommand(event)) {
 				} else if (Tim.challenge.parseAdminCommand(event)) {
-				} else if (Tim.markhov.parseAdminCommand(event)) {
+				} else if (Tim.markov.parseAdminCommand(event)) {
 				} else {
 					event.respond("$" + command + " is not a valid admin command - try $help");
 				}
@@ -238,6 +238,6 @@ public class AdminCommandListener extends ListenerAdapter {
 		}
 
 		Tim.challenge.adminHelpSection(event);
-		Tim.markhov.adminHelpSection(event);
+		Tim.markov.adminHelpSection(event);
 	}
 }

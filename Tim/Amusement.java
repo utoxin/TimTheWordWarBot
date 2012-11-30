@@ -42,6 +42,19 @@ public class Amusement {
 	private List<String> flavours = new ArrayList<String>();
 	private List<String> deities = new ArrayList<String>();
 
+	public Amusement() {
+		Tim.deidler.registerCommand("!eightball", "amusement");
+		Tim.deidler.registerCommand("!sing", "amusement");
+		Tim.deidler.registerCommand("!get", "amusement");
+		Tim.deidler.registerCommand("!fridge", "amusement");
+		Tim.deidler.registerCommand("!dance", "amusement");
+		Tim.deidler.registerCommand("!lick", "amusement");
+		Tim.deidler.registerCommand("!defenestrate", "amusement");
+		Tim.deidler.registerCommand("!summon", "amusement");
+		Tim.deidler.registerCommand("!foof", "amusement");
+		Tim.deidler.registerCommand("!creeper", "amusement");
+	}
+	
 	/**
 	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
 	 * not.

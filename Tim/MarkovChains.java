@@ -31,17 +31,20 @@ import org.pircbotx.hooks.events.ServerPingEvent;
  *
  * @author mwalker
  */
-public class MarkhovChains extends ListenerAdapter {
+public class MarkovChains extends ListenerAdapter {
 	private DBAccess db = DBAccess.getInstance();
 	protected HashMap<String, Pattern> badwordPatterns = new HashMap<String, Pattern>();
 	protected HashMap<String, Pattern[]> badpairPatterns = new HashMap<String, Pattern[]>();
 	private long timeout = 3000;
 
+	public MarkovChains() {
+		Tim.deidler.registerCommand("!say", "markhov");
+		Tim.deidler.registerCommand("!action", "markhov");
+	}
+	
 	@Override
 	public void onMessage( MessageEvent event ) {
 		PircBotX bot = event.getBot();
-
-		ChannelInfo cdata = db.channel_data.get(event.getChannel().getName().toLowerCase());
 
 		if (!event.getUser().getNick().equals("Skynet") && !event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
 			process_markhov(Colors.removeFormattingAndColors(event.getMessage()), "say");
@@ -51,8 +54,6 @@ public class MarkhovChains extends ListenerAdapter {
 	@Override
 	public void onAction( ActionEvent event ) {
 		PircBotX bot = event.getBot();
-
-		ChannelInfo cdata = db.channel_data.get(event.getChannel().getName().toLowerCase());
 
 		if (!event.getUser().getNick().equals("Skynet") && !event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
 			process_markhov(Colors.removeFormattingAndColors(event.getMessage()), "emote");
@@ -158,7 +159,7 @@ public class MarkhovChains extends ListenerAdapter {
 					Tim.bot.sendAction(channel, generate_markhov(type));
 				}
 			} catch (InterruptedException ex) {
-				Logger.getLogger(MarkhovChains.class.getName()).log(Level.SEVERE, null, ex);
+				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 	}
@@ -200,7 +201,7 @@ public class MarkhovChains extends ListenerAdapter {
 
 				con.close();
 			} catch (SQLException ex) {
-				Logger.getLogger(MarkhovChains.class.getName()).log(Level.SEVERE, null, ex);
+				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
     }
@@ -231,7 +232,7 @@ public class MarkhovChains extends ListenerAdapter {
 
 				con.close();
 			} catch (SQLException ex) {
-				Logger.getLogger(MarkhovChains.class.getName()).log(Level.SEVERE, null, ex);
+				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 	}
@@ -494,7 +495,7 @@ public class MarkhovChains extends ListenerAdapter {
 				}
 			}
 		} catch (SQLException ex) {
-			Logger.getLogger(MarkhovChains.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
 		} finally {
 			try {
 				con.close();

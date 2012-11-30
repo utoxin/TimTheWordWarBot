@@ -52,7 +52,7 @@ public class ReactionListener extends ListenerAdapter {
 				} else if (Pattern.matches("(?i).*markhov test.*", message)) {
 					try {
 						Thread.sleep(Tim.rand.nextInt(500) + 500);
-						Tim.bot.sendMessage(event.getChannel(), Tim.markhov.generate_markhov("say"));
+						Tim.bot.sendMessage(event.getChannel(), Tim.markov.generate_markhov("say"));
 					} catch (InterruptedException ex) {
 						Logger.getLogger(ReactionListener.class.getName()).log(Level.SEVERE, null, ex);
 					}
@@ -64,7 +64,7 @@ public class ReactionListener extends ListenerAdapter {
 
 					this.interact(event.getUser(), event.getChannel(), message, "say");
 					if (cdata.doMarkov) {
-						Tim.markhov.process_markhov(message, "say");
+						Tim.markov.process_markhov(message, "say");
 					}
 				}
 			}
@@ -101,7 +101,7 @@ public class ReactionListener extends ListenerAdapter {
 			} else if (Pattern.matches("(?i).*markhov test.*", message)) {
 				try {
 					Thread.sleep(Tim.rand.nextInt(500) + 500);
-					Tim.bot.sendMessage(event.getChannel(), Tim.markhov.generate_markhov("emote"));
+					Tim.bot.sendMessage(event.getChannel(), Tim.markov.generate_markhov("emote"));
 				} catch (InterruptedException ex) {
 					Logger.getLogger(ReactionListener.class.getName()).log(Level.SEVERE, null, ex);
 				}
@@ -113,7 +113,7 @@ public class ReactionListener extends ListenerAdapter {
 
 				this.interact(event.getUser(), event.getChannel(), message, "emote");
 				if (cdata.doMarkov) {
-					Tim.markhov.process_markhov(message, "emote");
+					Tim.markov.process_markhov(message, "emote");
 				}
 			}
 		}
@@ -165,7 +165,7 @@ public class ReactionListener extends ListenerAdapter {
 			String action = actions[Tim.rand.nextInt(actions.length)];
 
 			if ("markhov".equals(action)) {
-				Tim.markhov.randomAction(channel, type);
+				Tim.markov.randomAction(channel, type);
 			} else if ("challenge".equals(action)) {
 				Tim.challenge.randomAction(sender, channel);
 			} else if ("amusement".equals(action)) {

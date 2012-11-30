@@ -29,6 +29,7 @@ public class ChannelInfo {
 	 */
 	public HashMap<String, Boolean> command_flags = new HashMap<String, Boolean>();
 	public HashMap<String, Boolean> reaction_flags = new HashMap<String, Boolean>();
+	public HashMap<String, Boolean> mute_flags = new HashMap<String, Boolean>();
 	public HashMap<String, Boolean> idle_flags = new HashMap<String, Boolean>();
 	public HashMap<String, Boolean> twitter_relays = new HashMap<String, Boolean>();
 
@@ -58,6 +59,8 @@ public class ChannelInfo {
 			command_flags.put(key, value);
 		} else if ("reaction".equals(set)) {
 			reaction_flags.put(key, value);
+		} else if ("mute".equals(set)) {
+			mute_flags.put(key, value);
 		} else if ("idle".equals(set)) {
 			idle_flags.put(key, value);
 		} else if ("twitter".equals(set)) {
@@ -70,24 +73,54 @@ public class ChannelInfo {
 	}
 
 	public boolean checkFlag(String set, String key) {
-		if (muzzledUntil > (System.currentTimeMillis() / 1000)) {
-			return false;
-		}
-		
-		if ("command".equals(set) && command_flags.get(key) != null) {
-			return command_flags.get(key);
-		} else if ("reaction".equals(set) && reaction_flags.get(key) != null) {
-			return reaction_flags.get(key);
-		} else if ("idle".equals(set) && idle_flags.get(key) != null) {
-			return idle_flags.get(key);
-		} else if ("twitter".equals(set)) {
-			/**
-			 * Handle Twitter as a special case, since it should default to off, not on.
-			 */
-			if (twitter_relays.get(key) != null) {
-				return twitter_relays.get(key);
+		boolean muted = muzzledUntil > (System.currentTimeMillis() / 1000);
+
+		if ("command".equals(set)) {
+			if (muted) {
+				if (mute_flags.get(key) == null) {
+					if (mute_flags.get("default") == null) {
+						updateFlag("mute", "default", false);
+					}
+					return mute_flags.get("default");
+				} else {
+					return mute_flags.get(key);
+				}
 			} else {
-				return false;
+				if (command_flags.get(key) == null) {
+					if (command_flags.get("default") == null) {
+						updateFlag(set, "default", true);
+					}
+					return command_flags.get("default");
+				} else {
+					return command_flags.get(key);
+				}
+			}
+		} else if ("reaction".equals(set)) {
+			if (reaction_flags.get(key) == null) {
+				if (reaction_flags.get("default") == null) {
+					updateFlag(set, "default", true);
+				}
+				return reaction_flags.get("default");
+			} else {
+				return reaction_flags.get(key);
+			}
+		} else if ("idle".equals(set)) {
+			if (idle_flags.get(key) == null) {
+				if (idle_flags.get("default") == null) {
+					updateFlag(set, "default", true);
+				}
+				return idle_flags.get("default");
+			} else {
+				return idle_flags.get(key);
+			}
+		} else if ("twitter".equals(set)) {
+			if (twitter_relays.get(key) == null) {
+				if (twitter_relays.get("default") == null) {
+					updateFlag(set, "default", false);
+				}
+				return twitter_relays.get("default");
+			} else {
+				return twitter_relays.get(key);
 			}
 		}
 

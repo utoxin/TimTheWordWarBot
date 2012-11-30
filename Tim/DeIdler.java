@@ -4,7 +4,10 @@
  */
 package Tim;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -16,6 +19,7 @@ public class DeIdler {
 	private static DeIdler instance;
 	public DeIdler.IdleClockThread idleticker;
 	private Timer ticker;
+	protected HashMap<String, String> command_registry = new HashMap<String, String>();
 
 	static {
 		instance = new DeIdler();
@@ -54,6 +58,10 @@ public class DeIdler {
 		}
 	}
 
+	public void registerCommand(String command, String location) {
+		command_registry.put(command, location);
+	}
+	
 	public void _tick() {
 		Calendar cal = Calendar.getInstance();
 		boolean isNovember = (10 == cal.get(Calendar.MONTH));
@@ -61,9 +69,9 @@ public class DeIdler {
 		if (isNovember && Tim.rand.nextInt(100) < 5) {
 			String new_text;
 			if (Tim.rand.nextBoolean()) {
-				new_text = "\"" + Tim.markhov.generate_markhov("say") + ",\" Timmy said.";
+				new_text = "\"" + Tim.markov.generate_markhov("say") + ",\" Timmy said.";
 			} else {
-				new_text = "Timmy " + Tim.markhov.generate_markhov("emote") + ".";
+				new_text = "Timmy " + Tim.markov.generate_markhov("emote") + ".";
 			}
 			
 			Tim.story.storeLine(new_text, "Timmy");
@@ -75,7 +83,7 @@ public class DeIdler {
 		}
 
 		if (Tim.rand.nextInt(100) < 1) {
-			Tim.twitterstream.sendTweet(Tim.markhov.generate_markhov("say"));
+			Tim.twitterstream.sendTweet(Tim.markov.generate_markhov("say"));
 		}
 		
 		/**
@@ -95,8 +103,6 @@ public class DeIdler {
 			}
 
 			if (Tim.rand.nextInt(100) < odds) {
-				String[] actions;
-
 				int newDivisor = cdata.chatterTimeDivisor;
 				if (newDivisor > 1) {
 					newDivisor -= 1;
@@ -109,25 +115,26 @@ public class DeIdler {
 					continue;
 				}
 
-				if (cdata.doMarkov && !cdata.doRandomActions) {
-					actions = new String[] {
-						"markhov",};
-				} else if (cdata.doMarkov && cdata.doRandomActions) {
-					actions = new String[] {
-						"markhov",
-						"amusement",
-						"amusement",};
-				} else if (!cdata.doMarkov && cdata.doRandomActions) {
-					actions = new String[] {
-						"amusement",};
-				} else {
+				List<String> command_list = new ArrayList<String>();
+				
+				for (String command : cdata.idle_flags.keySet()) {
+					if (command_registry.containsKey(command)) {
+						if (cdata.idle_flags.get(command) || (cdata.idle_flags.get("default") && cdata.idle_flags.get(command) == null) ) {
+							if (command_list.contains(command_registry.get(command))) {
+								command_list.add(command_registry.get(command));
+							}
+						}
+					}
+				}
+
+				if (command_list.isEmpty()) {
 					continue;
 				}
 
-				String action = actions[Tim.rand.nextInt(actions.length)];
+				String action = command_list.get(Tim.rand.nextInt(command_list.size()));
 
 				if ("markhov".equals(action)) {
-					Tim.markhov.randomAction(cdata.channel, "say");
+					Tim.markov.randomAction(cdata.channel, "say");
 				} else if ("amusement".equals(action)) {
 					Tim.amusement.randomAction(null, cdata.channel);
 				}
