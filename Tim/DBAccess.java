@@ -71,6 +71,24 @@ public class DBAccess {
 		return instance;
 	}
 
+	public void updateChannelFlag( Channel channel, String set, String key, boolean value ) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("REPLACE INTO `channel_flags` SET `channel` = ?, `set` = ?, `key` = ?, `value` = ?");
+			s.setString(1, channel.getName().toLowerCase());
+			s.setString(2, set);
+			s.setString(3, key);
+			s.setBoolean(4, value);
+			s.executeUpdate();
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
 	public void deleteChannel( Channel channel ) {
 		Connection con;
 		try {
@@ -155,17 +173,7 @@ public class DBAccess {
 
 			while (rs.next()) {
 				channel = Tim.bot.getChannel(rs.getString("channel"));
-				ci = new ChannelInfo(
-					channel, 
-					rs.getBoolean("adult"), 
-					rs.getBoolean("markhov"), 
-					rs.getBoolean("random"), 
-					rs.getBoolean("command"), 
-					rs.getBoolean("relay_nanowrimo"),
-					rs.getBoolean("relay_nanowordsprints"),
-					rs.getBoolean("relay_bottimmy"),
-					rs.getBoolean("relay_officeduckfrank")
-				);
+				ci = new ChannelInfo(channel);
 
 				ci.setChatterTimers(
 					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
@@ -257,15 +265,6 @@ public class DBAccess {
 		return value;
 	}
 
-	public boolean isChannelAdult( Channel channel ) {
-		boolean val = false;
-		ChannelInfo cdata = this.channel_data.get(channel.getName().toLowerCase());
-		if (cdata != null) {
-			val = cdata.isAdult;
-		}
-		return val;
-	}
-
 	public void saveChannel( Channel channel ) {
 		Connection con;
 		try {
@@ -308,28 +307,6 @@ public class DBAccess {
 		}
 	}
 
-	public void setChannelAdultFlag( Channel channel, boolean adult ) {
-		Connection con;
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET adult = ? WHERE `channel` = ?");
-			s.setBoolean(1, adult);
-			s.setString(2, channel.getName());
-			s.executeUpdate();
-
-			if (adult) {
-				this.channel_data.get(channel.getName()).isAdult = true;
-			} else {
-				this.channel_data.get(channel.getName()).isAdult = false;
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
 	public void setChannelChatterLevel( Channel channel, int level ) {
 		Connection con;
 		try {
@@ -341,73 +318,6 @@ public class DBAccess {
 			s.executeUpdate();
 
 			this.channel_data.get(channel.getName()).chatterLevel = level;
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	public void setChannelMuzzledFlag( Channel channel, boolean muzzled ) {
-		Connection con;
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `markhov` = ?, `random` = ?, `command` = ? WHERE `channel` = ?");
-			s.setBoolean(1, muzzled);
-			s.setBoolean(2, muzzled);
-			s.setBoolean(3, muzzled);
-			s.setString(4, channel.getName());
-			s.executeUpdate();
-
-			this.channel_data.get(channel.getName()).doMarkov = muzzled;
-			this.channel_data.get(channel.getName()).doCommandActions = muzzled;
-			this.channel_data.get(channel.getName()).doRandomActions = muzzled;
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	public void setRelayTwitterFlag( Channel channel, boolean relay) {
-		setRelayTwitterFlag(channel, relay, "all");
-	}
-
-	public void setRelayTwitterFlag( Channel channel, boolean relay, String account ) {
-		Connection con;		
-		try {
-			con = pool.getConnection(timeout);
-
-			if (account.equals("all")) {
-				PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `relay_nanowrimo` = ?, `relay_nanowordsprints` = ?, `relay_bottimmy` = ?, `relay_officeduckfrank` = ? WHERE `channel` = ?");
-				s.setBoolean(1, relay);
-				s.setBoolean(2, relay);
-				s.setBoolean(3, relay);
-				s.setBoolean(4, relay);
-				s.setString(5, channel.getName());
-				s.executeUpdate();
-
-				this.channel_data.get(channel.getName()).relayBotTimmy = relay;
-				this.channel_data.get(channel.getName()).relayNaNoWordSprints = relay;
-				this.channel_data.get(channel.getName()).relayNaNoWriMo = relay;
-				this.channel_data.get(channel.getName()).relayofficeduckfrank = relay;
-			} else {
-				PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `relay_" + account + "` = ? WHERE `channel` = ?");
-				s.setBoolean(1, relay);
-				s.setString(2, channel.getName());
-				s.executeUpdate();
-				
-				if (account.equals("nanowrimo")) {
-					this.channel_data.get(channel.getName()).relayNaNoWriMo = relay;
-				} else if (account.equals("nanowordsprints")) {
-					this.channel_data.get(channel.getName()).relayNaNoWordSprints = relay;
-				} else if (account.equals("bottimmy")) {
-					this.channel_data.get(channel.getName()).relayBotTimmy = relay;
-				} else if (account.equals("officeduckfrank")) {
-					this.channel_data.get(channel.getName()).relayofficeduckfrank = relay;
-				}
-			}
 
 			con.close();
 		} catch (SQLException ex) {

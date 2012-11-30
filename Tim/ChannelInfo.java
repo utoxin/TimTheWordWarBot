@@ -4,6 +4,7 @@
  */
 package Tim;
 
+import java.util.HashMap;
 import org.pircbotx.Channel;
 
 /**
@@ -12,20 +13,32 @@ import org.pircbotx.Channel;
  */
 public class ChannelInfo {
 	public Channel channel;
-	public boolean isAdult;
-	public boolean doMarkov;
-	public boolean doRandomActions;
-	public boolean doCommandActions;
-	public boolean relayBotTimmy;
-	public boolean relayNaNoWordSprints;
-	public boolean relayNaNoWriMo;
-	public boolean relayofficeduckfrank;
 	public long chatterTimer;
 	public int chatterMaxBaseOdds;
 	public int chatterNameMultiplier;
 	public int chatterTimeMultiplier;
 	public int chatterTimeDivisor;
 	public int chatterLevel;
+	
+	/**
+	 * Flag maps for storing various channel settings.
+	 * 
+	 * These are used to store the various settings for channels. The keys are command names or twitter accounts
+	 * and if the boolean is true, it will function for this channel. If the boolean is false, it will not. There
+	 * is also support for a 'default' key that will be used if no matching hash is found.
+	 */
+	public HashMap<String, Boolean> command_flags = new HashMap<String, Boolean>();
+	public HashMap<String, Boolean> reaction_flags = new HashMap<String, Boolean>();
+	public HashMap<String, Boolean> idle_flags = new HashMap<String, Boolean>();
+	public HashMap<String, Boolean> twitter_relays = new HashMap<String, Boolean>();
+
+	/**
+	 * Used for temporarily muzzling Timmy in a channel.
+	 * 
+	 * If this is is greater than the current epoch, none of his reactions or idlers will function. Direct command 
+	 * usage will not be affected.
+	 */
+	public long muzzledUntil = 0;
 
 	/**
 	 * Construct channel with default flags.
@@ -34,37 +47,53 @@ public class ChannelInfo {
 	 */
 	public ChannelInfo( Channel channel ) {
 		this.channel = channel;
-		this.isAdult = false;
-		this.doCommandActions = true;
-		this.doRandomActions = true;
-		this.doMarkov = true;
-		this.relayBotTimmy = false;
-		this.relayNaNoWordSprints = false;
-		this.relayNaNoWriMo = false;
-		this.relayofficeduckfrank = false;
 	}
 
-	/**
-	 * Construct channel by specifying values for flags.
-	 *
-	 * @param name    What is the name of the channel
-	 * @param adult   Is the channel considered 'adult'
-	 * @param markhov Should markov chain processing and generation happen on channel
-	 * @param random  Should random actions happen on this channel
-	 * @param command Should 'fun' commands be processed on channel
-	 */
-	public ChannelInfo( Channel channel, boolean adult, boolean markhov, boolean random, boolean command, boolean relayBotTimmy, boolean relayNaNoWordSprints, boolean relayNaNoWriMo, boolean relayofficeduckfrank ) {
-		this.channel = channel;
-		this.isAdult = adult;
-		this.doRandomActions = random;
-		this.doCommandActions = command;
-		this.doMarkov = markhov;
-		this.relayBotTimmy = relayBotTimmy;
-		this.relayNaNoWordSprints = relayNaNoWordSprints;
-		this.relayNaNoWriMo = relayNaNoWriMo;
-		this.relayofficeduckfrank = relayofficeduckfrank;
+	public void updateFlag(String set, String key, boolean value) {
+		updateFlag(set, key, value, true);
 	}
 
+	public void updateFlag(String set, String key, boolean value, boolean updateDB) {
+		if ("command".equals(set)) {
+			command_flags.put(key, value);
+		} else if ("reaction".equals(set)) {
+			reaction_flags.put(key, value);
+		} else if ("idle".equals(set)) {
+			idle_flags.put(key, value);
+		} else if ("twitter".equals(set)) {
+			twitter_relays.put(key, value);
+		}
+
+		if (updateDB) {
+			Tim.db.updateChannelFlag(channel, set, key, value);
+		}
+	}
+
+	public boolean checkFlag(String set, String key) {
+		if (muzzledUntil > (System.currentTimeMillis() / 1000)) {
+			return false;
+		}
+		
+		if ("command".equals(set) && command_flags.get(key) != null) {
+			return command_flags.get(key);
+		} else if ("reaction".equals(set) && reaction_flags.get(key) != null) {
+			return reaction_flags.get(key);
+		} else if ("idle".equals(set) && idle_flags.get(key) != null) {
+			return idle_flags.get(key);
+		} else if ("twitter".equals(set)) {
+			/**
+			 * Handle Twitter as a special case, since it should default to off, not on.
+			 */
+			if (twitter_relays.get(key) != null) {
+				return twitter_relays.get(key);
+			} else {
+				return false;
+			}
+		}
+
+		return true;
+	}
+	
 	public void setChatterTimers( int maxBaseOdds, int nameMultiplier, int timeMultiplier, int timeDivisor, int chatterLevel ) {
 		this.chatterMaxBaseOdds = maxBaseOdds;
 		this.chatterNameMultiplier = nameMultiplier;
@@ -89,23 +118,5 @@ public class ChannelInfo {
 		}
 		
 		this.chatterTimer = System.currentTimeMillis() / 1000;
-	}
-	
-	@Override
-	public String toString() {
-		String description;
-	
-		description = "Name: " + this.channel.getName();
-		description += "  chatter: " + chatterLevel;
-		description += "  adult: " + isAdult;
-		description += "  random: " + doRandomActions;
-		description += "  command: " + doCommandActions;
-		description += "  markov: " + doMarkov;
-		description += "  bottimmy: " + relayBotTimmy;
-		description += "  wordsprints: " + relayNaNoWordSprints;
-		description += "  nanowrimo: " + relayNaNoWriMo;
-		description += "  officeduck: " + relayofficeduckfrank;
-		
-		return description;
 	}
 }
