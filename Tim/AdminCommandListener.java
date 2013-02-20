@@ -173,6 +173,12 @@ public class AdminCommandListener extends ListenerAdapter {
 					for (String item : Tim.db.ignore_list) {
 						event.respond(item);
 					}
+				} else if (command.equals("listbadwords")) {
+					event.respond("There are " + Tim.markov.badwordPatterns.keySet().size() + " total bad words.");
+					
+					for (String key : Tim.markov.badwordPatterns.keySet()) {
+						event.respond("Key: " + key + "  Pattern: " + Tim.markov.badwordPatterns.get(key).toString());
+					}
 				} else if (command.equals("shout")) {
 					for (ChannelInfo cdata : Tim.db.channel_data.values()) {
 						Tim.bot.sendMessage(cdata.channel, event.getUser().getNick() + " shouts: " + StringUtils.join(args, " "));
@@ -181,7 +187,7 @@ public class AdminCommandListener extends ListenerAdapter {
 					this.printAdminCommandList(event);
 				} else if (Tim.amusement.parseAdminCommand(event)) {
 				} else if (Tim.challenge.parseAdminCommand(event)) {
-				} else if (Tim.markhov.parseAdminCommand(event)) {
+				} else if (Tim.markov.parseAdminCommand(event)) {
 				} else {
 					event.respond("$" + command + " is not a valid admin command - try $help");
 				}
@@ -238,6 +244,6 @@ public class AdminCommandListener extends ListenerAdapter {
 		}
 
 		Tim.challenge.adminHelpSection(event);
-		Tim.markhov.adminHelpSection(event);
+		Tim.markov.adminHelpSection(event);
 	}
 }

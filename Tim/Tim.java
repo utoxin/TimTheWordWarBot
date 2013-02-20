@@ -29,7 +29,7 @@ public class Tim {
 	public static AppConfig config = AppConfig.getInstance();
 	public static DBAccess db = DBAccess.getInstance();
 	public static Tim instance;
-	public static MarkhovChains markhov;
+	public static MarkovChains markov;
 	public static Random rand;
 	public static ChainStory story;
 	public static WarTicker warticker;
@@ -44,7 +44,7 @@ public class Tim {
 		rand = new Random();
 		story = new ChainStory();
 		challenge = new Challenge();
-		markhov = new MarkhovChains();
+		markov = new MarkovChains();
 		amusement = new Amusement();
 
 		bot = new PircBotX();

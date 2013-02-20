@@ -61,9 +61,9 @@ public class DeIdler {
 		if (isNovember && Tim.rand.nextInt(100) < 5) {
 			String new_text;
 			if (Tim.rand.nextBoolean()) {
-				new_text = "\"" + Tim.markhov.generate_markhov("say") + ",\" Timmy said.";
+				new_text = "\"" + Tim.markov.generate_markhov("say") + ",\" Timmy said.";
 			} else {
-				new_text = "Timmy " + Tim.markhov.generate_markhov("emote") + ".";
+				new_text = "Timmy " + Tim.markov.generate_markhov("emote") + ".";
 			}
 			
 			Tim.story.storeLine(new_text, "Timmy");
@@ -75,7 +75,7 @@ public class DeIdler {
 		}
 
 		if (Tim.rand.nextInt(100) < 1) {
-			Tim.twitterstream.sendTweet(Tim.markhov.generate_markhov("say"));
+			Tim.twitterstream.sendTweet(Tim.markov.generate_markhov("say"));
 		}
 		
 		/**
@@ -127,7 +127,7 @@ public class DeIdler {
 				String action = actions[Tim.rand.nextInt(actions.length)];
 
 				if ("markhov".equals(action)) {
-					Tim.markhov.randomAction(cdata.channel, "say");
+					Tim.markov.randomAction(cdata.channel, "say");
 				} else if ("amusement".equals(action)) {
 					Tim.amusement.randomAction(null, cdata.channel);
 				}

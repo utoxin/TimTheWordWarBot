@@ -424,7 +424,7 @@ public class DBAccess {
 		Tim.amusement.refreshDbLists();
 		Tim.story.refreshDbLists();
 		Tim.challenge.refreshDbLists();
-		Tim.markhov.refreshDbLists();
+		Tim.markov.refreshDbLists();
 	}
 
 	public int create_war(Channel channel, User starter, String name, long duration, long remaining, long time_to_start, int total_chains, int current_chain) {
