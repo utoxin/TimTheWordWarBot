@@ -89,8 +89,8 @@ public class AdminCommandListener extends ListenerAdapter {
 						if (Tim.db.channel_data.containsKey(target)) {
 							int level = Integer.parseInt(args[1]);
 
-							if (level < 0 || level > 4) {
-								event.respond("Chatter level must be between 0 and 4 (inclusive)");
+							if (level < -1 || level > 4) {
+								event.respond("Chatter level must be between -1 and 4 (inclusive)");
 							} else {
 								Tim.db.setChannelChatterLevel(Tim.bot.getChannel(target), level);
 								event.respond("Chatter level updated for " + target);
@@ -99,7 +99,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							event.respond("I don't know about " + target);
 						}
 					} else {
-						event.respond("Usage: $chatterlevel <#channel> <0-4>");
+						event.respond("Usage: $chatterlevel <#channel> <-1 - 4>");
 					}
 				} else if (command.equals("relaytwitter")) {
 					if (args != null && args.length >= 2) {

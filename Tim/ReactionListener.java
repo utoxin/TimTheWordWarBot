@@ -122,7 +122,7 @@ public class ReactionListener extends ListenerAdapter {
 	private void interact( User sender, Channel channel, String message, String type ) {
 		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName().toLowerCase());
 
-		if (cdata.chatterLevel == 0) {
+		if (cdata.chatterLevel <= 0) {
 			return;
 		}
 		
