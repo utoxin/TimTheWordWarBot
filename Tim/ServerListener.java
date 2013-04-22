@@ -62,12 +62,12 @@ public class ServerListener extends ListenerAdapter {
 		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
 			ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 
+			if (cdata.chatterLevel <= -1) {
+				return;
+			}
+
 			try {
 				String message = String.format(Tim.db.greetings.get(Tim.rand.nextInt(Tim.db.greetings.size())), event.getUser().getNick());
-
-				if (cdata.chatterLevel <= -1) {
-					return;
-				}
 
 				if (Tim.warticker.wars.size() > 0) {
 					int warscount = 0;

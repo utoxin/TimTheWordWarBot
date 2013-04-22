@@ -105,7 +105,7 @@ public class DeIdler {
 				elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 				cdata.chatterTimer += Math.round(elapsed / 2);
 
-				if (50 < Tim.rand.nextInt(100) || cdata.chatterLevel == 0) {
+				if (50 < Tim.rand.nextInt(100) || cdata.chatterLevel <= 0) {
 					continue;
 				}
 
