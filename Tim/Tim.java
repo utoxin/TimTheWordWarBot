@@ -79,11 +79,11 @@ public class Tim {
 			bot.joinChannel(entry.getValue().channel.getName());
 		}
 
-		twitterstream = new TwitterIntegration();
-		twitterstream.startStream();
-
 		warticker = WarTicker.getInstance();
 		deidler = DeIdler.getInstance();
+
+		twitterstream = new TwitterIntegration();
+		twitterstream.startStream();
 	}
 
 	/**
