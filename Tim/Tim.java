@@ -20,7 +20,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
-import org.pircbotx.exception.NickAlreadyInUseException;
 
 public class Tim {
 	public static Amusement amusement;
@@ -62,11 +61,7 @@ public class Tim {
 
 		try {
 			bot.connect(db.getSetting("server"));
-		} catch (IOException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (NickAlreadyInUseException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (IrcException ex) {
+		} catch (IrcException | IOException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
