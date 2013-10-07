@@ -33,14 +33,14 @@ import org.pircbotx.hooks.events.ServerPingEvent;
  */
 public class Amusement {
 	private long timeout = 3000;
-	protected List<String> approved_items = new ArrayList<String>();
-	private List<String> pending_items = new ArrayList<String>();
-	protected List<String> colours = new ArrayList<String>();
-	protected List<String> eightballs = new ArrayList<String>();
-	private List<String> commandments = new ArrayList<String>();
-	protected List<String> aypwips = new ArrayList<String>();
-	private List<String> flavours = new ArrayList<String>();
-	private List<String> deities = new ArrayList<String>();
+	protected List<String> approved_items = new ArrayList<>();
+	private List<String> pending_items = new ArrayList<>();
+	protected List<String> colours = new ArrayList<>();
+	protected List<String> eightballs = new ArrayList<>();
+	private List<String> commandments = new ArrayList<>();
+	protected List<String> aypwips = new ArrayList<>();
+	private List<String> flavours = new ArrayList<>();
+	private List<String> deities = new ArrayList<>();
 
 	/**
 	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
@@ -119,6 +119,17 @@ public class Amusement {
 			return true;
 		} else if (command.equals("creeper")) {
 			creeper(event.getChannel(), event.getUser(), args, true);
+			return true;
+		} else if (command.equals("search")) {
+			if (args != null && args.length > 0) {
+				String target = args[0];
+				for (int i = 1; i < args.length; ++i) {
+					target = target + " " + args[i];
+				}
+				search(event.getChannel(), event.getUser(), target);
+			} else {
+				search(event.getChannel(), event.getUser(), null);
+			}
 			return true;
 		}
 
@@ -392,6 +403,45 @@ public class Amusement {
 		Tim.bot.sendAction(channel, String.format("gets %s %s.", target, item));
 	}
 
+	protected void search( Channel channel, User sender, String target) {
+		String item = "";
+
+		int count = Tim.rand.nextInt(4);
+		if (count == 1) {
+			item = this.approved_items.get(Tim.rand.nextInt(this.approved_items.size()));
+		} else if (count > 1) {
+			for (int i = 0; i < count; i++) {
+				item = item + this.approved_items.get(Tim.rand.nextInt(this.approved_items.size()));
+				if (count > 2 && i < (count - 1)) {
+					item = item + ", ";
+				}
+				
+				if (i == (count - 1)) {
+					item = item + ", and ";
+				}
+			}
+		}
+		
+		if (target != null) {
+			if (Tim.rand.nextInt(100) < 75) {
+				item = args[0];
+				for (int i = 1; i < args.length; ++i) {
+					item = item + " " + args[i];
+				}
+			} else {
+				Tim.bot.sendAction(channel, "rumages around in the back room for a bit, then calls out. \"Sorry... I don't think I have that. Maybe this will do...\"");
+			}
+		}
+
+		if (item.isEmpty()) {
+			// Find a random item.
+			int i = Tim.rand.nextInt(this.approved_items.size());
+			item = this.approved_items.get(i);
+		}
+
+		Tim.bot.sendAction(channel, String.format("gets %s %s.", target, item));
+	}
+
 	protected void lick( MessageEvent event, String[] args ) {
 		if (Tim.db.isChannelAdult(event.getChannel())) {
 			if (args != null && args.length >= 1) {
@@ -453,9 +503,7 @@ public class Amusement {
 			r = Tim.rand.nextInt(500) + 500;
 			Thread.sleep(r);
 			Tim.bot.sendAction(channel, String.format(response, songName));
-		} catch (SQLException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (InterruptedException ex) {
+		} catch (SQLException | InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -487,9 +535,7 @@ public class Amusement {
 			Thread.sleep(delay);
 			Tim.bot.sendAction(channel, String.format(response, danceNameRes.getString("name")));
 			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (InterruptedException ex) {
+		} catch (SQLException | InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}

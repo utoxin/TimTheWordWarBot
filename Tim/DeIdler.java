@@ -1,6 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * This file is part of Timmy, the Wordwar Bot.
+ *
+ * Timmy is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * Timmy is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Timmy. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package Tim;
 
@@ -43,6 +51,7 @@ public class DeIdler {
 			this.parent = parent;
 		}
 
+		@Override
 		public void run() {
 			try {
 				this.parent._tick();
@@ -58,7 +67,7 @@ public class DeIdler {
 		Calendar cal = Calendar.getInstance();
 		boolean isNovember = (10 == cal.get(Calendar.MONTH));
 
-		if (isNovember && Tim.rand.nextInt(100) < 5) {
+		if (isNovember && Tim.rand.nextInt(100) < 3) {
 			String new_text;
 			if (Tim.rand.nextBoolean()) {
 				new_text = "\"" + Tim.markov.generate_markhov("say") + ",\" Timmy said.";
