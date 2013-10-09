@@ -429,6 +429,7 @@ public class Amusement {
 
 		if (target != null && Tim.rand.nextInt(100) > 75) {
 			Tim.bot.sendAction(channel, "decides at the last second to search "+sender.getNick()+"'s things instead...");
+			target = sender.getNick();
 		} else {
 			if (target == null) {
 				target = sender.getNick();
