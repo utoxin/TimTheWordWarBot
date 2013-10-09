@@ -33,8 +33,8 @@ import org.pircbotx.hooks.events.ServerPingEvent;
  */
 public class MarkovChains extends ListenerAdapter {
 	private DBAccess db = DBAccess.getInstance();
-	protected HashMap<String, Pattern> badwordPatterns = new HashMap<String, Pattern>();
-	protected HashMap<String, Pattern[]> badpairPatterns = new HashMap<String, Pattern[]>();
+	protected HashMap<String, Pattern> badwordPatterns = new HashMap<>();
+	protected HashMap<String, Pattern[]> badpairPatterns = new HashMap<>();
 	private long timeout = 3000;
 
 	@Override
@@ -135,15 +135,15 @@ public class MarkovChains extends ListenerAdapter {
 	}
 
 	public void randomActionWrapper( MessageEvent event ) {
-		randomAction(event.getChannel(), "say");
+		randomAction(event.getChannel(), Tim.rand.nextBoolean() ? "say" : "mutter");
 	}
 
 	public void randomActionWrapper( ActionEvent event ) {
-		randomAction(event.getChannel(), "emote");
+		randomAction(event.getChannel(), Tim.rand.nextBoolean() ? "mutter" : "emote");
 	}
 
 	public void randomActionWrapper( ServerPingEvent event, String channel ) {
-		randomAction(event.getBot().getChannel(channel), "say");
+		randomAction(event.getBot().getChannel(channel), Tim.rand.nextBoolean() ? "say" : (Tim.rand.nextBoolean() ? "mutter" : "emote"));
 	}
 
 	protected void randomAction( Channel channel, String type ) {
@@ -158,6 +158,8 @@ public class MarkovChains extends ListenerAdapter {
 				Thread.sleep(Tim.rand.nextInt(1000) + 500);
 				if ("say".equals(type)) {
 					Tim.bot.sendMessage(channel, generate_markhov(type));
+				} else if ("mutter".equals(type)) {
+					Tim.bot.sendAction(channel, "mutters under his breath, \"" + generate_markhov("say") + "\"");
 				} else {
 					Tim.bot.sendAction(channel, generate_markhov(type));
 				}
@@ -253,6 +255,10 @@ public class MarkovChains extends ListenerAdapter {
 	}
 
 	public String generate_markhov( String type ) {
+		return generate_markhov(type, Tim.rand.nextInt(25) + 10);
+	}
+	
+	public String generate_markhov( String type, int maxLength ) {
 		Connection con = null;
 		String sentence = "";
 		try {
@@ -291,7 +297,6 @@ public class MarkovChains extends ListenerAdapter {
 				break;
 			}
 
-			int maxLength = Tim.rand.nextInt(25) + 10;
 			int curWords = 1;
 			boolean keepGoing = true;
 
@@ -332,13 +337,13 @@ public class MarkovChains extends ListenerAdapter {
 					break;
 				}
 
-				if ("".equals(lastWord)) {
+				if ("".equals(lastWord) && Tim.rand.nextBoolean()) {
 					keepGoing = false;
 				}
 
 				curWords++;
 				
-				if (curWords > 50) {
+				if (curWords > (maxLength + 10)) {
 					break;
 				}
 			}

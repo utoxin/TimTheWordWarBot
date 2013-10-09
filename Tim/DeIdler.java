@@ -70,9 +70,11 @@ public class DeIdler {
 		if (isNovember && Tim.rand.nextInt(100) < 3) {
 			String new_text;
 			if (Tim.rand.nextBoolean()) {
-				new_text = "\"" + Tim.markov.generate_markhov("say") + ",\" Timmy said.";
+				new_text = "\"" + Tim.markov.generate_markhov("say", Tim.rand.nextInt(25) + 25) + ",\" Timmy said.";
+			} else if (Tim.rand.nextBoolean()) {
+				new_text = "\"" + Tim.markov.generate_markhov("say", Tim.rand.nextInt(45) + 25) + ",\" Timmy muttered under his breath.";
 			} else {
-				new_text = "Timmy " + Tim.markov.generate_markhov("emote") + ".";
+				new_text = "Timmy " + Tim.markov.generate_markhov("emote", Tim.rand.nextInt(65) + 25) + ".";
 			}
 			
 			Tim.story.storeLine(new_text, "Timmy");
@@ -124,7 +126,6 @@ public class DeIdler {
 				} else if (cdata.doMarkov && cdata.doRandomActions) {
 					actions = new String[] {
 						"markhov",
-						"amusement",
 						"amusement",};
 				} else if (!cdata.doMarkov && cdata.doRandomActions) {
 					actions = new String[] {
@@ -136,7 +137,7 @@ public class DeIdler {
 				String action = actions[Tim.rand.nextInt(actions.length)];
 
 				if ("markhov".equals(action)) {
-					Tim.markov.randomAction(cdata.channel, "say");
+					Tim.markov.randomAction(cdata.channel, Tim.rand.nextBoolean() ? "say" : "emote");
 				} else if ("amusement".equals(action)) {
 					Tim.amusement.randomAction(null, cdata.channel);
 				}

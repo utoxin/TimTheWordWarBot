@@ -320,7 +320,7 @@ public class Amusement {
 
 	protected void randomAction( User sender, Channel channel ) {
 		String[] actions = new String[] {
-			"item", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper"
+			"item", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper", "search"
 		};
 
 		if (sender == null) {
@@ -362,6 +362,8 @@ public class Amusement {
 			summon(channel, null, false);
 		} else if ("creeper".equals(action)) {
 			creeper(channel, sender, null, false);
+		} else if ("search".equals(action)) {
+			search(channel, sender, null);
 		}
 	}
 
@@ -411,35 +413,35 @@ public class Amusement {
 			item = this.approved_items.get(Tim.rand.nextInt(this.approved_items.size()));
 		} else if (count > 1) {
 			for (int i = 0; i < count; i++) {
-				item = item + this.approved_items.get(Tim.rand.nextInt(this.approved_items.size()));
-				if (count > 2 && i < (count - 1)) {
-					item = item + ", ";
+				if (i > 0 && count > 2) {
+					item = item + ",";
 				}
 				
 				if (i == (count - 1)) {
-					item = item + ", and ";
+					item = item + " and ";
+				} else if (i > 0) {
+					item = item + " ";
 				}
-			}
-		}
-		
-		if (target != null) {
-			if (Tim.rand.nextInt(100) < 75) {
-				item = args[0];
-				for (int i = 1; i < args.length; ++i) {
-					item = item + " " + args[i];
-				}
-			} else {
-				Tim.bot.sendAction(channel, "rumages around in the back room for a bit, then calls out. \"Sorry... I don't think I have that. Maybe this will do...\"");
+				
+				item = item + this.approved_items.get(Tim.rand.nextInt(this.approved_items.size()));
 			}
 		}
 
-		if (item.isEmpty()) {
-			// Find a random item.
-			int i = Tim.rand.nextInt(this.approved_items.size());
-			item = this.approved_items.get(i);
+		if (target != null && Tim.rand.nextInt(100) > 75) {
+			Tim.bot.sendAction(channel, "decides at the last second to search "+sender.getNick()+"'s things instead...");
+		} else {
+			if (target == null) {
+				target = sender.getNick();
+			}
+			
+			Tim.bot.sendAction(channel, "searches through "+target+"'s things, looking for contraband...");
 		}
 
-		Tim.bot.sendAction(channel, String.format("gets %s %s.", target, item));
+		if (item.equals("")) {
+			Tim.bot.sendAction(channel, String.format("can't find anything, and grudgingly clears %s.", target));
+		} else {
+			Tim.bot.sendAction(channel, String.format("reports %s to Skynet for possesion of %s.", target, item));
+		}
 	}
 
 	protected void lick( MessageEvent event, String[] args ) {
@@ -467,7 +469,11 @@ public class Amusement {
 			if (mutter) {
 				Tim.bot.sendAction(channel, "mutters under his breath, \"" + this.eightballs.get(r) + "\"");
 			} else {
-				Tim.bot.sendMessage(channel, sender.getNick() + ": " + this.eightballs.get(r));
+				if (Tim.rand.nextInt(100) < 10) {
+					Tim.bot.sendMessage(channel, sender.getNick() + ": " + Tim.markov.generate_markhov("say"));
+				} else {
+					Tim.bot.sendMessage(channel, sender.getNick() + ": " + this.eightballs.get(r));
+				}
 			}
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
