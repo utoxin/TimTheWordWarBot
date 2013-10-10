@@ -72,6 +72,17 @@ public class Amusement {
 		} else if (command.equals("eightball") || command.equals("8-ball")) {
 			eightball(event.getChannel(), event.getUser(), false);
 			return true;
+		} else if (command.equals("expound")) {
+			int which = Tim.rand.nextInt(3);
+			String type = "say";
+			if (which == 1) {
+				type = "mutter";
+			} else if (which == 2) {
+				type = "emote";
+			}
+			
+			Tim.markov.randomAction(event.getChannel(), type);
+			return true;
 		} else if (command.charAt(0) == 'd' && Pattern.matches("d\\d+", command)) {
 			dice(command.substring(1), event);
 			return true;
@@ -386,7 +397,7 @@ public class Amusement {
 				this.pending_items.add(item);
 			}
 
-			if (Tim.rand.nextInt(100) < 75) {
+			if (Tim.rand.nextInt(100) < 65) {
 				item = args[0];
 				for (int i = 1; i < args.length; ++i) {
 					item = item + " " + args[i];
@@ -470,8 +481,8 @@ public class Amusement {
 			if (mutter) {
 				Tim.bot.sendAction(channel, "mutters under his breath, \"" + this.eightballs.get(r) + "\"");
 			} else {
-				if (Tim.rand.nextInt(100) < 10) {
-					Tim.bot.sendMessage(channel, sender.getNick() + ": " + Tim.markov.generate_markhov("say"));
+				if (Tim.rand.nextInt(100) < 5) {
+					Tim.bot.sendMessage(channel, sender.getNick() + ": " + Tim.markov.generate_markov("say"));
 				} else {
 					Tim.bot.sendMessage(channel, sender.getNick() + ": " + this.eightballs.get(r));
 				}
@@ -660,10 +671,10 @@ public class Amusement {
 			String act;
 
 			if (i > 33) {
-				act = "hurls a" + colour + " coloured fridge at " + target;
+				act = "hurls a" + colour + " fridge at " + target;
 			} else if (i > 11) {
 				target = sender.getNick();
-				act = "hurls a" + colour + " coloured fridge at " + target + " and runs away giggling";
+				act = "hurls a" + colour + " fridge at " + target + " and runs away giggling";
 			} else {
 				act = "trips and drops a" + colour + " fridge on himself";
 			}
@@ -704,10 +715,10 @@ public class Amusement {
 			String act;
 			String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
 			if (i > 33) {
-				act = "throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
+				act = "throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " pillows.";
 			} else if (i > 11) {
 				target = sender.getNick();
-				act = "laughs maniacally then throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
+				act = "laughs maniacally then throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " pillows.";
 			} else {
 				act = "trips and falls out the window!";
 			}

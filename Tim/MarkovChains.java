@@ -157,11 +157,11 @@ public class MarkovChains extends ListenerAdapter {
 			try {
 				Thread.sleep(Tim.rand.nextInt(1000) + 500);
 				if ("say".equals(type)) {
-					Tim.bot.sendMessage(channel, generate_markhov(type));
+					Tim.bot.sendMessage(channel, generate_markov(type));
 				} else if ("mutter".equals(type)) {
-					Tim.bot.sendAction(channel, "mutters under his breath, \"" + generate_markhov("say") + "\"");
+					Tim.bot.sendAction(channel, "mutters under his breath, \"" + generate_markov("say") + "\"");
 				} else {
-					Tim.bot.sendAction(channel, generate_markhov(type));
+					Tim.bot.sendAction(channel, generate_markov(type));
 				}
 			} catch (InterruptedException ex) {
 				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
@@ -254,11 +254,11 @@ public class MarkovChains extends ListenerAdapter {
 		}
 	}
 
-	public String generate_markhov( String type ) {
-		return generate_markhov(type, Tim.rand.nextInt(25) + 10);
+	public String generate_markov( String type ) {
+		return generate_markov(type, Tim.rand.nextInt(25) + 10);
 	}
 	
-	public String generate_markhov( String type, int maxLength ) {
+	public String generate_markov( String type, int maxLength ) {
 		Connection con = null;
 		String sentence = "";
 		try {

@@ -70,11 +70,11 @@ public class DeIdler {
 		if (isNovember && Tim.rand.nextInt(100) < 3) {
 			String new_text;
 			if (Tim.rand.nextBoolean()) {
-				new_text = "\"" + Tim.markov.generate_markhov("say", Tim.rand.nextInt(25) + 25) + ",\" Timmy said.";
+				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(25) + 25) + ",\" Timmy said.";
 			} else if (Tim.rand.nextBoolean()) {
-				new_text = "\"" + Tim.markov.generate_markhov("say", Tim.rand.nextInt(45) + 25) + ",\" Timmy muttered under his breath.";
+				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(45) + 25) + ",\" Timmy muttered under his breath.";
 			} else {
-				new_text = "Timmy " + Tim.markov.generate_markhov("emote", Tim.rand.nextInt(65) + 25) + ".";
+				new_text = "Timmy " + Tim.markov.generate_markov("emote", Tim.rand.nextInt(65) + 25) + ".";
 			}
 			
 			Tim.story.storeLine(new_text, "Timmy");
@@ -86,7 +86,7 @@ public class DeIdler {
 		}
 
 		if (Tim.rand.nextInt(100) < 1) {
-			Tim.twitterstream.sendTweet(Tim.markov.generate_markhov("say"));
+			Tim.twitterstream.sendTweet(Tim.markov.generate_markov("say"));
 		}
 		
 		/**
