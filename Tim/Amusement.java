@@ -65,11 +65,13 @@ public class Amusement {
 		} else {
 			command = message.substring(1).toLowerCase();
 		}
+		
+		command = command.replaceAll("\\W", "");
 
 		if (command.equals("sing")) {
 			sing(event.getChannel());
 			return true;
-		} else if (command.equals("eightball") || command.equals("8-ball")) {
+		} else if (command.equals("eightball")) {
 			eightball(event.getChannel(), event.getUser(), false);
 			return true;
 		} else if (command.equals("expound")) {

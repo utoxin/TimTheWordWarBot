@@ -337,13 +337,9 @@ public class MarkovChains extends ListenerAdapter {
 					break;
 				}
 
-				if ("".equals(lastWord) && Tim.rand.nextBoolean()) {
-					keepGoing = false;
-				}
-
 				curWords++;
 				
-				if (curWords > (maxLength + 10)) {
+				if (Tim.rand.nextInt(100) < ((curWords - maxLength) * 10)) {
 					break;
 				}
 			}
