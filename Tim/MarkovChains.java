@@ -284,7 +284,7 @@ public class MarkovChains extends ListenerAdapter {
 			int total = totalRes.getInt("total");
 			int pick = Tim.rand.nextInt(total);
 
-			String lastWord = "";
+			String lastWord;
 
 			nextWord.setInt(1, first);
 			nextWord.setInt(2, second);
@@ -338,7 +338,7 @@ public class MarkovChains extends ListenerAdapter {
 				}
 
 				curWords++;
-				
+
 				if (Tim.rand.nextInt(100) < ((curWords - maxLength) * 10)) {
 					break;
 				}
