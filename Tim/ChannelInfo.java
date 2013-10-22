@@ -30,7 +30,7 @@ public class ChannelInfo {
 	/**
 	 * Construct channel with default flags.
 	 *
-	 * @param name What is the name of the channel
+	 * @param channel
 	 */
 	public ChannelInfo( Channel channel ) {
 		this.channel = channel;
@@ -47,11 +47,15 @@ public class ChannelInfo {
 	/**
 	 * Construct channel by specifying values for flags.
 	 *
-	 * @param name    What is the name of the channel
+	 * @param channel
 	 * @param adult   Is the channel considered 'adult'
 	 * @param markhov Should markov chain processing and generation happen on channel
 	 * @param random  Should random actions happen on this channel
 	 * @param command Should 'fun' commands be processed on channel
+	 * @param relayNaNoWriMo
+	 * @param relayBotTimmy
+	 * @param relayofficeduckfrank
+	 * @param relayNaNoWordSprints
 	 */
 	public ChannelInfo( Channel channel, boolean adult, boolean markhov, boolean random, boolean command, boolean relayBotTimmy, boolean relayNaNoWordSprints, boolean relayNaNoWriMo, boolean relayofficeduckfrank ) {
 		this.channel = channel;

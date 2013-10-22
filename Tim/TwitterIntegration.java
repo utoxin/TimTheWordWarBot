@@ -137,7 +137,6 @@ public class TwitterIntegration extends StatusAdapter {
 		@Override
 		public void onStallWarning(StallWarning sw) {
 		}
-
 	};
 
 	StatusListener userListener = new UserStreamListener() {
@@ -269,14 +268,3 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 	};
 }
-
-/*
- * Exception in thread "main" java.lang.IllegalStateException: UserStreamListener is not set.
-        at twitter4j.TwitterStreamImpl.ensureUserStreamListenerIsSet(TwitterStreamImpl.java:327)
-        at twitter4j.TwitterStreamImpl.user(TwitterStreamImpl.java:196)
-        at twitter4j.TwitterStreamImpl.user(TwitterStreamImpl.java:187)
-        at Tim.TwitterIntegration.startStream(TwitterIntegration.java:271)
-        at Tim.Tim.<init>(Tim.java:86)
-        at Tim.Tim.main(Tim.java:39)
-
- */

@@ -27,13 +27,13 @@ import snaq.db.Select1Validator;
  * @author Matthew Walker
  */
 public class DBAccess {
-	private static DBAccess instance;
-	private long timeout = 3000;
-	protected Set<String> admin_list = new HashSet<String>(16);
-	protected HashMap<String, ChannelInfo> channel_data = new HashMap<String, ChannelInfo>(62);
-	protected List<String> extra_greetings = new ArrayList<String>();
-	protected List<String> greetings = new ArrayList<String>();
-	protected Set<String> ignore_list = new HashSet<String>(16);
+	private static final DBAccess instance;
+	private final long timeout = 3000;
+	protected Set<String> admin_list = new HashSet<>(16);
+	protected HashMap<String, ChannelInfo> channel_data = new HashMap<>(62);
+	protected List<String> extra_greetings = new ArrayList<>();
+	protected List<String> greetings = new ArrayList<>();
+	protected Set<String> ignore_list = new HashSet<>(16);
 	protected ConnectionPool pool;
 
 	static {
@@ -51,7 +51,7 @@ public class DBAccess {
 			c = Class.forName("com.mysql.jdbc.Driver");
 			driver = (Driver) c.newInstance();
 			DriverManager.registerDriver(driver);
-		} catch (Exception ex) {
+		} catch (ClassNotFoundException | IllegalAccessException | InstantiationException | SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
@@ -187,25 +187,25 @@ public class DBAccess {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
-			Statement s = con.createStatement();
-			ResultSet rs;
-
-			s.executeQuery("SELECT `string` FROM `greetings`");
-			rs = s.getResultSet();
-			this.greetings.clear();
-			while (rs.next()) {
-				this.greetings.add(rs.getString("string"));
+			try (Statement s = con.createStatement()) {
+				ResultSet rs;
+				
+				s.executeQuery("SELECT `string` FROM `greetings`");
+				rs = s.getResultSet();
+				this.greetings.clear();
+				while (rs.next()) {
+					this.greetings.add(rs.getString("string"));
+				}
+				rs.close();
+				
+				s.executeQuery("SELECT `string` FROM `extra_greetings`");
+				rs = s.getResultSet();
+				this.extra_greetings.clear();
+				while (rs.next()) {
+					this.extra_greetings.add(rs.getString("string"));
+				}
+				rs.close();
 			}
-			rs.close();
-
-			s.executeQuery("SELECT `string` FROM `extra_greetings`");
-			rs = s.getResultSet();
-			this.extra_greetings.clear();
-			while (rs.next()) {
-				this.extra_greetings.add(rs.getString("string"));
-			}
-			rs.close();
-			s.close();
 
 			con.close();
 		} catch (SQLException ex) {
@@ -250,7 +250,7 @@ public class DBAccess {
 			}
 
 			con.close();
-		} catch (Exception ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
@@ -317,12 +317,7 @@ public class DBAccess {
 			s.setBoolean(1, adult);
 			s.setString(2, channel.getName());
 			s.executeUpdate();
-
-			if (adult) {
-				this.channel_data.get(channel.getName()).isAdult = true;
-			} else {
-				this.channel_data.get(channel.getName()).isAdult = false;
-			}
+			this.channel_data.get(channel.getName()).isAdult = adult;
 
 			con.close();
 		} catch (SQLException ex) {
@@ -397,15 +392,20 @@ public class DBAccess {
 				s.setBoolean(1, relay);
 				s.setString(2, channel.getName());
 				s.executeUpdate();
-				
-				if (account.equals("nanowrimo")) {
-					this.channel_data.get(channel.getName()).relayNaNoWriMo = relay;
-				} else if (account.equals("nanowordsprints")) {
-					this.channel_data.get(channel.getName()).relayNaNoWordSprints = relay;
-				} else if (account.equals("bottimmy")) {
-					this.channel_data.get(channel.getName()).relayBotTimmy = relay;
-				} else if (account.equals("officeduckfrank")) {
-					this.channel_data.get(channel.getName()).relayofficeduckfrank = relay;
+
+				switch (account) {
+					case "nanowrimo":
+						this.channel_data.get(channel.getName()).relayNaNoWriMo = relay;
+						break;
+					case "nanowordsprints":
+						this.channel_data.get(channel.getName()).relayNaNoWordSprints = relay;
+						break;
+					case "bottimmy":
+						this.channel_data.get(channel.getName()).relayBotTimmy = relay;
+						break;
+					case "officeduckfrank":
+						this.channel_data.get(channel.getName()).relayofficeduckfrank = relay;
+						break;
 				}
 			}
 
