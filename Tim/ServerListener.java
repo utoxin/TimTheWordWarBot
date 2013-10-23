@@ -13,16 +13,13 @@
 package Tim;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.pircbotx.User;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.InviteEvent;
 import org.pircbotx.hooks.events.JoinEvent;
 import org.pircbotx.hooks.events.KickEvent;
-import org.pircbotx.hooks.events.PartEvent;
 
 /**
  *
@@ -39,20 +36,9 @@ public class ServerListener extends ListenerAdapter {
 	@Override
 	public void onInvite( InviteEvent event ) {
 		if (!Tim.db.ignore_list.contains(event.getUser())) {
+			Tim.bot.joinChannel(event.getChannel());
 			if (!Tim.db.channel_data.containsKey(event.getChannel())) {
-				Tim.bot.joinChannel(event.getChannel());
-				Tim.db.saveChannel(Tim.bot.getChannel(event.getChannel()));
-			}
-		}
-	}
-
-	@Override
-	public void onPart( PartEvent event ) {
-		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
-			Set<User> userlist = event.getChannel().getUsers();
-			if (userlist.size() <= 1) {
-				Tim.bot.partChannel(event.getChannel());
-				Tim.db.deleteChannel(event.getChannel());
+				Tim.db.joinChannel(Tim.bot.getChannel(event.getChannel()));
 			}
 		}
 	}
@@ -60,6 +46,12 @@ public class ServerListener extends ListenerAdapter {
 	@Override
 	public void onJoin( JoinEvent event ) {
 		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
+			ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
+
+			if (cdata.chatterLevel <= -1) {
+				return;
+			}
+
 			try {
 				String message = String.format(Tim.db.greetings.get(Tim.rand.nextInt(Tim.db.greetings.size())), event.getUser().getNick());
 

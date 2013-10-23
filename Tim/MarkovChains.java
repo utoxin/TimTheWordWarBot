@@ -32,22 +32,17 @@ import org.pircbotx.hooks.events.ServerPingEvent;
  * @author mwalker
  */
 public class MarkovChains extends ListenerAdapter {
-	private DBAccess db = DBAccess.getInstance();
-	protected HashMap<String, Pattern> badwordPatterns = new HashMap<String, Pattern>();
-	protected HashMap<String, Pattern[]> badpairPatterns = new HashMap<String, Pattern[]>();
-	private long timeout = 3000;
+	private final DBAccess db = DBAccess.getInstance();
+	protected HashMap<String, Pattern> badwordPatterns = new HashMap<>();
+	protected HashMap<String, Pattern[]> badpairPatterns = new HashMap<>();
+	private final long timeout = 3000;
 
-	public MarkovChains() {
-		Tim.deidler.registerCommand("!say", "markhov");
-		Tim.deidler.registerCommand("!action", "markhov");
-	}
-	
 	@Override
 	public void onMessage( MessageEvent event ) {
 		PircBotX bot = event.getBot();
 
 		if (!event.getUser().getNick().equals("Skynet") && !event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
-			process_markhov(Colors.removeFormattingAndColors(event.getMessage()), "say");
+			process_markov(Colors.removeFormattingAndColors(event.getMessage()), "say");
 		}
 	}
 
@@ -56,7 +51,7 @@ public class MarkovChains extends ListenerAdapter {
 		PircBotX bot = event.getBot();
 
 		if (!event.getUser().getNick().equals("Skynet") && !event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
-			process_markhov(Colors.removeFormattingAndColors(event.getMessage()), "emote");
+			process_markov(Colors.removeFormattingAndColors(event.getMessage()), "emote");
 		}
 	}
 
@@ -79,10 +74,7 @@ public class MarkovChains extends ListenerAdapter {
 	 * Parses admin-level commands passed from the main class. Returns true if the message was handled, false if it was
 	 * not.
 	 *
-	 * @param channel What channel this came from
-	 * @param sender  Who sent the command
-	 * @param message What was the actual content of the message.
-	 *
+	 * @param event
 	 * @return True if message was handled, false otherwise
 	 */
 	public boolean parseAdminCommand( MessageEvent event ) {
@@ -132,15 +124,15 @@ public class MarkovChains extends ListenerAdapter {
 	}
 
 	public void randomActionWrapper( MessageEvent event ) {
-		randomAction(event.getChannel(), "say");
+		randomAction(event.getChannel(), Tim.rand.nextBoolean() ? "say" : "mutter");
 	}
 
 	public void randomActionWrapper( ActionEvent event ) {
-		randomAction(event.getChannel(), "emote");
+		randomAction(event.getChannel(), Tim.rand.nextBoolean() ? "mutter" : "emote");
 	}
 
 	public void randomActionWrapper( ServerPingEvent event, String channel ) {
-		randomAction(event.getBot().getChannel(channel), "say");
+		randomAction(event.getBot().getChannel(channel), Tim.rand.nextBoolean() ? "say" : (Tim.rand.nextBoolean() ? "mutter" : "emote"));
 	}
 
 	protected void randomAction( Channel channel, String type ) {
@@ -154,9 +146,11 @@ public class MarkovChains extends ListenerAdapter {
 			try {
 				Thread.sleep(Tim.rand.nextInt(1000) + 500);
 				if ("say".equals(type)) {
-					Tim.bot.sendMessage(channel, generate_markhov(type));
+					Tim.bot.sendMessage(channel, generate_markov(type));
+				} else if ("mutter".equals(type)) {
+					Tim.bot.sendAction(channel, "mutters under his breath, \"" + generate_markov("say") + "\"");
 				} else {
-					Tim.bot.sendAction(channel, generate_markhov(type));
+					Tim.bot.sendAction(channel, generate_markov(type));
 				}
 			} catch (InterruptedException ex) {
 				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
@@ -178,13 +172,25 @@ public class MarkovChains extends ListenerAdapter {
 				s.executeUpdate();
 				s.close();
 
-				s = con.prepareStatement("DELETE msd.* FROM markov_say_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
+				s = con.prepareStatement("DELETE msd.* FROM markov3_say_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
 				s.setString(1, "^[[:punct:]]*"+ word_one +"[[:punct:]]*$");
 				s.setString(2, "^[[:punct:]]*"+ word_two +"[[:punct:]]*$");
 				s.executeUpdate();
 				s.close();
 
-				s = con.prepareStatement("DELETE msd.* FROM markov_emote_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
+				s = con.prepareStatement("DELETE msd.* FROM markov3_say_data msd INNER JOIN markov_words mw1 ON (msd.second_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.third_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
+				s.setString(1, "^[[:punct:]]*"+ word_one +"[[:punct:]]*$");
+				s.setString(2, "^[[:punct:]]*"+ word_two +"[[:punct:]]*$");
+				s.executeUpdate();
+				s.close();
+
+				s = con.prepareStatement("DELETE msd.* FROM markov3_emote_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
+				s.setString(1, "^[[:punct:]]*"+ word_one +"[[:punct:]]*$");
+				s.setString(2, "^[[:punct:]]*"+ word_two +"[[:punct:]]*$");
+				s.executeUpdate();
+				s.close();
+
+				s = con.prepareStatement("DELETE msd.* FROM markov3_emote_data msd INNER JOIN markov_words mw1 ON (msd.second_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.third_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
 				s.setString(1, "^[[:punct:]]*"+ word_one +"[[:punct:]]*$");
 				s.setString(2, "^[[:punct:]]*"+ word_two +"[[:punct:]]*$");
 				s.executeUpdate();
@@ -237,52 +243,57 @@ public class MarkovChains extends ListenerAdapter {
 		}
 	}
 
-	public String generate_markhov( String type ) {
+	public String generate_markov( String type ) {
+		return generate_markov(type, Tim.rand.nextInt(25) + 10);
+	}
+	
+	public String generate_markov( String type, int maxLength ) {
 		Connection con = null;
 		String sentence = "";
 		try {
 			con = db.pool.getConnection(timeout);
-			PreparedStatement nextList, getTotal;
+			PreparedStatement nextList, getTotal, nextWord;
 
 			if ("emote".equals(type)) {
-				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markov_emote_data med INNER JOIN markov_words mw ON (med.first_id = mw.id) WHERE word = ?");
-				nextList = con.prepareStatement("SELECT mw1.word first, mw2.word second, count FROM markov_emote_data med INNER JOIN markov_words mw1 ON (med.first_id = mw1.id) INNER JOIN markov_words mw2 ON (med.second_id = mw2.id) WHERE mw1.word = ? ORDER BY count ASC");
+				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markov3_emote_data WHERE first_id = ? AND second_id = ?");
+				nextWord = con.prepareStatement("SELECT markov_words.word, rt FROM (SELECT first_id, second_id, third_id, (@runtot := @runtot + count) AS rt FROM (SELECT * FROM `markov3_emote_data` WHERE first_id = ? AND second_id = ?) derived, (SELECT @runtot := 0) r) derived2 INNER JOIN markov_words ON (derived2.third_id = markov_words.id) HAVING rt > ? LIMIT 1");
 			} else {
-				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markov_say_data med INNER JOIN markov_words mw ON (med.first_id = mw.id) WHERE word = ?");
-				nextList = con.prepareStatement("SELECT mw1.word first, mw2.word second, count FROM markov_say_data med INNER JOIN markov_words mw1 ON (med.first_id = mw1.id) INNER JOIN markov_words mw2 ON (med.second_id = mw2.id) WHERE mw1.word = ? ORDER BY count ASC");
+				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markov3_say_data WHERE first_id = ? AND second_id = ?");
+				nextWord = con.prepareStatement("SELECT markov_words.word, rt FROM (SELECT first_id, second_id, third_id, (@runtot := @runtot + count) AS rt FROM (SELECT * FROM `markov3_say_data` WHERE first_id = ? AND second_id = ?) derived, (SELECT @runtot := 0) r) derived2 INNER JOIN markov_words ON (derived2.third_id = markov_words.id) HAVING rt > ? LIMIT 1");
 			}
 
-			getTotal.setString(1, "");
-			nextList.setString(1, "");
+			int first = getMarkovWordId("");
+			int second = first;
+			
+			getTotal.setInt(1, first);
+			getTotal.setInt(2, second);
 
 			ResultSet totalRes = getTotal.executeQuery();
 			totalRes.next();
 			int total = totalRes.getInt("total");
 			int pick = Tim.rand.nextInt(total);
 
-			String lastWord = "";
-			int check = 0;
+			String lastWord;
 
-			ResultSet nextRes = nextList.executeQuery();
+			nextWord.setInt(1, first);
+			nextWord.setInt(2, second);
+			nextWord.setInt(3, pick);
+
+			ResultSet nextRes = nextWord.executeQuery();
 			while (nextRes.next()) {
-				check += nextRes.getInt("count");
-				if (check > pick) {
-					break;
-				}
-
-				sentence = nextRes.getString("second");
-				lastWord = nextRes.getString("second");
+				sentence = nextRes.getString("word");
+				second = getMarkovWordId(nextRes.getString("word"));
+				break;
 			}
 
-			int maxLength = Tim.rand.nextInt(25) + 10;
 			int curWords = 1;
 			boolean keepGoing = true;
 
 			while (keepGoing || curWords < maxLength) {
 				keepGoing = true;
 
-				getTotal.setString(1, lastWord);
-				nextList.setString(1, lastWord);
+				getTotal.setInt(1, first);
+				getTotal.setInt(2, second);
 
 				totalRes = getTotal.executeQuery();
 				if (totalRes.next()) {
@@ -297,33 +308,34 @@ public class MarkovChains extends ListenerAdapter {
 
 				pick = Tim.rand.nextInt(total);
 
-				check = 0;
+				nextWord.setInt(1, first);
+				nextWord.setInt(2, second);
+				nextWord.setInt(3, pick);
 
-				nextRes = nextList.executeQuery();
+				nextRes = nextWord.executeQuery();
 				while (nextRes.next()) {
-					check += nextRes.getInt("count");
-					if (check > pick) {
-						lastWord = nextRes.getString("second");
+					first = second;
+					second = getMarkovWordId(nextRes.getString("word"));
+					lastWord = nextRes.getString("word");
 
-						if ("".equals(lastWord)) {
-							break;
-						}
-
-						sentence += " " + nextRes.getString("second");
+					if ("".equals(lastWord)) {
 						break;
 					}
-				}
 
-				if ("".equals(lastWord)) {
-					keepGoing = false;
+					sentence += " " + nextRes.getString("word");
+					break;
 				}
 
 				curWords++;
+
+				if (Tim.rand.nextInt(100) < ((curWords - maxLength) * 10)) {
+					break;
+				}
 			}
 
 			nextRes.close();
 			totalRes.close();
-			nextList.close();
+			nextWord.close();
 			getTotal.close();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -352,7 +364,7 @@ public class MarkovChains extends ListenerAdapter {
 			badwordPatterns.clear();
 			while (rs.next()) {
 				word = rs.getString("word");
-
+				
 				if (badwordPatterns.get(word) == null) {
 					badwordPatterns.put(word, Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word) + "(?:\\W|\\b)"));
 				}
@@ -375,7 +387,7 @@ public class MarkovChains extends ListenerAdapter {
 			ResultSet rs = s.getResultSet();
 			String word_one, word_two;
 			
-			badwordPatterns.clear();
+			badpairPatterns.clear();
 			while (rs.next()) {
 				word_one = rs.getString("word_one");
 				word_two = rs.getString("word_two");
@@ -404,62 +416,78 @@ public class MarkovChains extends ListenerAdapter {
 	 * @param type    What type of message was it (say or emote)
 	 *
 	 */
-	public void process_markhov( String message, String type ) {
-		Connection con = null;
-		int first;
-		int second = getMarkovWordId("");
-
+	public void process_markov( String message, String type ) {
 		String[] words = message.split(" ");
+
+		for (int i = -1; i <= words.length; i++) {
+			String word1, word2, word3;
+			
+			int offset1 = i - 1;
+			int offset2 = i;
+			int offset3 = i + 1;
+
+			if (offset1 < 0) {
+				word1 = "";
+			} else if (offset1 >= words.length) {
+				word1 = "";
+			} else {
+				if (skipMarkovWord(words[offset1])) {
+					continue;
+				}
+				word1 = words[offset1];
+			}
+
+			if (offset2 < 0) {
+				word2 = "";
+			} else if (offset2 >= words.length) {
+				word2 = "";
+			} else {
+				if (skipMarkovWord(words[offset2])) {
+					continue;
+				}
+				word2 = words[offset2];
+			}
+
+			if (offset3 < 0) {
+				word3 = "";
+			} else if (offset3 >= words.length) {
+				word3 = "";
+			} else {
+				if (skipMarkovWord(words[offset3])) {
+					continue;
+				}
+				word3 = words[offset3];
+			}
+
+			if (skipMarkovPair(word1, word2) || skipMarkovPair(word2, word3)) {
+				continue;
+			}
+
+			storeTriad(word1, word2, word3, type);
+		}
+	}
+	
+	private void storeTriad(String word1, String word2, String word3, String type) {
+		Connection con = null;
+		int first = getMarkovWordId(word1);
+		int second = getMarkovWordId(word2);
+		int third = getMarkovWordId(word3);
+
 		try {
 			con = db.pool.getConnection(timeout);
-			PreparedStatement addPair;
+			PreparedStatement addTriad;
 
 			if ("emote".equals(type)) {
-				addPair = con.prepareStatement("INSERT INTO markov_emote_data (first_id, second_id, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
+				addTriad = con.prepareStatement("INSERT INTO markov3_emote_data (first_id, second_id, third_id, count) VALUES (?, ?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
 			} else {
-				addPair = con.prepareStatement("INSERT INTO markov_say_data (first_id, second_id, count) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
+				addTriad = con.prepareStatement("INSERT INTO markov3_say_data (first_id, second_id, third_id, count) VALUES (?, ?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
 			}
 
-			for (int i = 0; i < ( words.length - 1 ); i++) {
-				if (skipMarkhovWord(words[i])) {
-					continue;
-				}
-
-				if (i == 0) {
-					first = getMarkovWordId("");
-					second = getMarkovWordId(words[i]);
-
-					addPair.setInt(1, first);
-					addPair.setInt(2, second);
-
-					addPair.executeUpdate();
-				}
-
-				if (skipMarkhovWord(words[i + 1])) {
-					continue;
-				}
-
-                if (skipMarkovPair(words[i], words[i + 1])) {
-                    continue;
-                }
-                    
-				first = getMarkovWordId(words[i]);
-				second = getMarkovWordId(words[i + 1]);
-
-				addPair.setInt(1, first);
-				addPair.setInt(2, second);
-
-				addPair.executeUpdate();
-			}
-
-			if (second != getMarkovWordId("")) {
-				addPair.setInt(1, second);
-				addPair.setInt(2, getMarkovWordId(""));
-
-				addPair.executeUpdate();
-			}
-
-			addPair.close();
+			addTriad.setInt(1, first);
+			addTriad.setInt(2, second);
+			addTriad.setInt(3, third);
+			
+			addTriad.executeUpdate();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		} finally {
@@ -517,7 +545,7 @@ public class MarkovChains extends ListenerAdapter {
         return false;
     }
     
-	private boolean skipMarkhovWord( String word ) {
+	private boolean skipMarkovWord( String word ) {
 		for (Pattern pattern : badwordPatterns.values()) {
 			if (pattern.matcher(word).find()) {
 				return true;

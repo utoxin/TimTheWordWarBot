@@ -20,7 +20,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
-import org.pircbotx.exception.NickAlreadyInUseException;
 
 public class Tim {
 	public static Amusement amusement;
@@ -41,6 +40,12 @@ public class Tim {
 	}
 
 	public Tim() {
+		rand = new Random();
+		story = new ChainStory();
+		challenge = new Challenge();
+		markov = new MarkovChains();
+		amusement = new Amusement();
+
 		bot = new PircBotX();
 
 		bot.getListenerManager().addListener(new AdminCommandListener());
@@ -56,11 +61,7 @@ public class Tim {
 
 		try {
 			bot.connect(db.getSetting("server"));
-		} catch (IOException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (NickAlreadyInUseException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (IrcException ex) {
+		} catch (IrcException | IOException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
@@ -78,17 +79,11 @@ public class Tim {
 			bot.joinChannel(entry.getValue().channel.getName());
 		}
 
-		twitterstream = new TwitterIntegration();
-		twitterstream.startStream();
-
 		warticker = WarTicker.getInstance();
 		deidler = DeIdler.getInstance();
 
-		rand = new Random();
-		story = new ChainStory();
-		challenge = new Challenge();
-		markov = new MarkovChains();
-		amusement = new Amusement();
+		twitterstream = new TwitterIntegration();
+		twitterstream.startStream();
 	}
 
 	/**

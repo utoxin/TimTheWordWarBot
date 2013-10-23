@@ -27,13 +27,13 @@ import snaq.db.Select1Validator;
  * @author Matthew Walker
  */
 public class DBAccess {
-	private static DBAccess instance;
-	private long timeout = 3000;
-	protected Set<String> admin_list = new HashSet<String>(16);
-	protected HashMap<String, ChannelInfo> channel_data = new HashMap<String, ChannelInfo>(62);
-	protected List<String> extra_greetings = new ArrayList<String>();
-	protected List<String> greetings = new ArrayList<String>();
-	protected Set<String> ignore_list = new HashSet<String>(16);
+	private static final DBAccess instance;
+	private final long timeout = 3000;
+	protected Set<String> admin_list = new HashSet<>(16);
+	protected HashMap<String, ChannelInfo> channel_data = new HashMap<>(62);
+	protected List<String> extra_greetings = new ArrayList<>();
+	protected List<String> greetings = new ArrayList<>();
+	protected Set<String> ignore_list = new HashSet<>(16);
 	protected ConnectionPool pool;
 
 	static {
@@ -51,7 +51,7 @@ public class DBAccess {
 			c = Class.forName("com.mysql.jdbc.Driver");
 			driver = (Driver) c.newInstance();
 			DriverManager.registerDriver(driver);
-		} catch (Exception ex) {
+		} catch (ClassNotFoundException | IllegalAccessException | InstantiationException | SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
@@ -69,24 +69,6 @@ public class DBAccess {
 	 */
 	public static DBAccess getInstance() {
 		return instance;
-	}
-
-	public void updateChannelFlag( Channel channel, String set, String key, boolean value ) {
-		Connection con;
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("REPLACE INTO `channel_flags` SET `channel` = ?, `set` = ?, `key` = ?, `value` = ?");
-			s.setString(1, channel.getName().toLowerCase());
-			s.setString(2, set);
-			s.setString(3, key);
-			s.setBoolean(4, value);
-			s.executeUpdate();
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
 	}
 
 	public void deleteChannel( Channel channel ) {
@@ -170,21 +152,63 @@ public class DBAccess {
 
 			Statement s = con.createStatement();
 			ResultSet rs = s.executeQuery("SELECT * FROM `channels`");
+			
+			PreparedStatement s2;
+			ResultSet rs2;
 
 			while (rs.next()) {
 				channel = Tim.bot.getChannel(rs.getString("channel"));
 				ci = new ChannelInfo(channel);
 
 				ci.setChatterTimers(
-					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
-					Integer.parseInt(getSetting("chatterNameMultiplier")),
-					Integer.parseInt(getSetting("chatterTimeMultiplier")),
-					Integer.parseInt(getSetting("chatterTimeDivisor")),
+					rs.getInt("chatter_name_multiplier"),
 					rs.getInt("chatter_level"));
+
+				ci.setTwitterTimers(
+					rs.getFloat("tweet_bucket_max"),
+					rs.getFloat("tweet_bucket_charge_rate"));
+
+				s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_chatter_settings` WHERE `channel` = ?");
+				s2.setString(1, rs.getString("channel"));
+				s2.executeQuery();
+
+				rs2 = s2.getResultSet();
+				while (rs2.next()) {
+					ci.addChatterSetting(rs2.getString("setting"), rs2.getBoolean("value"));
+				}
+
+				s2.close();
+				rs2.close();
+
+				s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_command_settings` WHERE `channel` = ?");
+				s2.setString(1, rs.getString("channel"));
+				s2.executeQuery();
+
+				rs2 = s2.getResultSet();
+				while (rs2.next()) {
+					ci.addCommandSetting(rs2.getString("setting"), rs2.getBoolean("value"));
+				}
+
+				s2.close();
+				rs2.close();
+				
+				s2 = con.prepareStatement("SELECT `account` FROM `channel_twitter_feeds` WHERE `channel` = ?");
+				s2.setString(1, rs.getString("channel"));
+				s2.executeQuery();
+
+				rs2 = s2.getResultSet();
+				while (rs2.next()) {
+					ci.addTwitterAccount(rs2.getString("account"));
+				}
+
+				s2.close();
+				rs2.close();
 
 				this.channel_data.put(channel.getName().toLowerCase(), ci);
 			}
 
+			s.close();
+			rs.close();
 			con.close();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -195,25 +219,25 @@ public class DBAccess {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
-			Statement s = con.createStatement();
-			ResultSet rs;
-
-			s.executeQuery("SELECT `string` FROM `greetings`");
-			rs = s.getResultSet();
-			this.greetings.clear();
-			while (rs.next()) {
-				this.greetings.add(rs.getString("string"));
+			try (Statement s = con.createStatement()) {
+				ResultSet rs;
+				
+				s.executeQuery("SELECT `string` FROM `greetings`");
+				rs = s.getResultSet();
+				this.greetings.clear();
+				while (rs.next()) {
+					this.greetings.add(rs.getString("string"));
+				}
+				rs.close();
+				
+				s.executeQuery("SELECT `string` FROM `extra_greetings`");
+				rs = s.getResultSet();
+				this.extra_greetings.clear();
+				while (rs.next()) {
+					this.extra_greetings.add(rs.getString("string"));
+				}
+				rs.close();
 			}
-			rs.close();
-
-			s.executeQuery("SELECT `string` FROM `extra_greetings`");
-			rs = s.getResultSet();
-			this.extra_greetings.clear();
-			while (rs.next()) {
-				this.extra_greetings.add(rs.getString("string"));
-			}
-			rs.close();
-			s.close();
 
 			con.close();
 		} catch (SQLException ex) {
@@ -258,40 +282,94 @@ public class DBAccess {
 			}
 
 			con.close();
-		} catch (Exception ex) {
+		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
 		return value;
 	}
 
-	public void saveChannel( Channel channel ) {
+	public void joinChannel( Channel channel ) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("INSERT INTO `channels` (`channel`, `adult`, `markhov`, `random`, `command`) VALUES (?, 0, 1, 1, 1)");
+			PreparedStatement s = con.prepareStatement("INSERT INTO `channels` (`channel`) VALUES (?)");
 			s.setString(1, channel.getName().toLowerCase());
 			s.executeUpdate();
 
-			if (!this.channel_data.containsKey(channel.getName())) {
+			if (!this.channel_data.containsKey(channel.getName().toLowerCase())) {
 				ChannelInfo new_channel = new ChannelInfo(channel);
-				new_channel.setChatterTimers(
-					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
-					Integer.parseInt(getSetting("chatterNameMultiplier")),
-					Integer.parseInt(getSetting("chatterTimeMultiplier")),
-					Integer.parseInt(getSetting("chatterTimeDivisor")),
-					3);
+				new_channel.setDefaultOptions();
 
 				this.channel_data.put(channel.getName().toLowerCase(), new_channel);
 			}
 
 			con.close();
+			
+			this.saveChannelSettings( this.channel_data.get(channel.getName().toLowerCase()) );
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
+	public void saveChannelSettings( ChannelInfo channel ) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET chatter_level = ?, chatter_name_multiplier = ?, tweet_bucket_max = ?, tweet_bucket_charge_rate = ? WHERE channel = ?");
+			s.setInt(1, channel.chatterLevel);
+			s.setInt(2, channel.chatterNameMultiplier);
+			s.setFloat(3, channel.tweetBucketMax);
+			s.setFloat(4, channel.tweetBucketChargeRate);
+			s.setString(5, channel.channel.getName().toLowerCase());
+			s.executeUpdate();
+
+			s = con.prepareStatement("DELETE FROM `channel_chatter_settings` WHERE `channel` = ?;");
+			s.setString(1, channel.channel.getName().toLowerCase());
+			s.executeUpdate();
+
+			s = con.prepareStatement("DELETE FROM `channel_command_settings` WHERE `channel` = ?;");
+			s.setString(1, channel.channel.getName().toLowerCase());
+			s.executeUpdate();
+
+			s = con.prepareStatement("DELETE FROM `channel_twitter_feeds` WHERE `channel` = ?;");
+			s.setString(1, channel.channel.getName().toLowerCase());
+			s.executeUpdate();
+
+			s = con.prepareStatement("INSERT INTO channel_chatter_settings SET channel = ?, setting = ?, value = ?");
+			s.setString(1, channel.channel.getName().toLowerCase());
+			
+			for (Map.Entry<String, Boolean> setting : channel.chatter_enabled.entrySet()) {
+				s.setString(2, setting.getKey());
+				s.setBoolean(3, setting.getValue());
+				s.executeUpdate();
+			}
+
+			s = con.prepareStatement("INSERT INTO channel_command_settings SET channel = ?, setting = ?, value = ?");
+			s.setString(1, channel.channel.getName().toLowerCase());
+			
+			for (Map.Entry<String, Boolean> setting : channel.commands_enabled.entrySet()) {
+				s.setString(2, setting.getKey());
+				s.setBoolean(3, setting.getValue());
+				s.executeUpdate();
+			}
+
+			s = con.prepareStatement("INSERT INTO channel_twitter_feeds SET channel = ?, account = ?");
+			s.setString(1, channel.channel.getName().toLowerCase());
+			
+			for (String account : channel.twitter_accounts) {
+				s.setString(2, account);
+				s.executeUpdate();
+			}
+			
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+	
 	public void saveIgnore( String username ) {
 		Connection con;
 		try {

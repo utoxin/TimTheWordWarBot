@@ -1,13 +1,18 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * This file is part of Timmy, the Wordwar Bot.
+ *
+ * Timmy is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * Timmy is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Timmy. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package Tim;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -16,16 +21,17 @@ import java.util.TimerTask;
  * @author Matthew Walker
  */
 public class DeIdler {
-	private static DeIdler instance;
+	private static final DeIdler instance;
 	public DeIdler.IdleClockThread idleticker;
-	private Timer ticker;
-	protected HashMap<String, String> command_registry = new HashMap<String, String>();
+	private final Timer ticker;
+	private Calendar cal;
 
 	static {
 		instance = new DeIdler();
 	}
 
 	public DeIdler() {
+		this.cal = Calendar.getInstance();
 		this.idleticker = new DeIdler.IdleClockThread(this);
 		this.ticker = new Timer(true);
 		this.ticker.scheduleAtFixedRate(this.idleticker, 0, 60000);
@@ -41,12 +47,13 @@ public class DeIdler {
 	}
 
 	public class IdleClockThread extends TimerTask {
-		private DeIdler parent;
+		private final DeIdler parent;
 
 		public IdleClockThread( DeIdler parent ) {
 			this.parent = parent;
 		}
 
+		@Override
 		public void run() {
 			try {
 				this.parent._tick();
@@ -58,32 +65,29 @@ public class DeIdler {
 		}
 	}
 
-	public void registerCommand(String command, String location) {
-		command_registry.put(command, location);
-	}
-	
 	public void _tick() {
-		Calendar cal = Calendar.getInstance();
 		boolean isNovember = (10 == cal.get(Calendar.MONTH));
 
-		if (isNovember && Tim.rand.nextInt(100) < 5) {
+		if (isNovember && Tim.rand.nextInt(100) < 3) {
 			String new_text;
 			if (Tim.rand.nextBoolean()) {
-				new_text = "\"" + Tim.markov.generate_markhov("say") + ",\" Timmy said.";
+				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(25) + 25) + ",\" Timmy said.";
+			} else if (Tim.rand.nextBoolean()) {
+				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(45) + 25) + ",\" Timmy muttered under his breath.";
 			} else {
-				new_text = "Timmy " + Tim.markov.generate_markhov("emote") + ".";
+				new_text = "Timmy " + Tim.markov.generate_markov("emote", Tim.rand.nextInt(65) + 25) + ".";
 			}
 			
 			Tim.story.storeLine(new_text, "Timmy");
 			for (ChannelInfo cdata : Tim.db.channel_data.values()) {
-				if (Tim.rand.nextInt(100) < 25) {
+				if (Tim.rand.nextInt(100) < 25 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled) {
 					Tim.bot.sendAction(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)");
 				}
 			}
 		}
 
 		if (Tim.rand.nextInt(100) < 1) {
-			Tim.twitterstream.sendTweet(Tim.markov.generate_markhov("say"));
+			Tim.twitterstream.sendTweet(Tim.markov.generate_markov("say"));
 		}
 		
 		/**
@@ -103,40 +107,38 @@ public class DeIdler {
 			}
 
 			if (Tim.rand.nextInt(100) < odds) {
-				int newDivisor = cdata.chatterTimeDivisor;
-				if (newDivisor > 1) {
-					newDivisor -= 1;
-				}
-				cdata.chatterTimer += Tim.rand.nextInt((int) elapsed / newDivisor);
+				String[] actions;
+
+				cdata.chatterTimer += Tim.rand.nextInt((int) elapsed);
 				elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 				cdata.chatterTimer += Math.round(elapsed / 2);
 
-				if (50 < Tim.rand.nextInt(100) || cdata.chatterLevel == 0) {
+				if (50 < Tim.rand.nextInt(100) || cdata.chatterLevel <= 0 || cdata.muzzled) {
 					continue;
 				}
 
-				List<String> command_list = new ArrayList<String>();
-				
-				for (String command : cdata.idle_flags.keySet()) {
-					if (command_registry.containsKey(command)) {
-						if (cdata.idle_flags.get(command) || (cdata.idle_flags.get("default") && cdata.idle_flags.get(command) == null) ) {
-							if (command_list.contains(command_registry.get(command))) {
-								command_list.add(command_registry.get(command));
-							}
-						}
-					}
-				}
-
-				if (command_list.isEmpty()) {
+				if (cdata.chatter_enabled.get("markov") && !cdata.doRandomActions) {
+					actions = new String[] {
+						"markhov",};
+				} else if (cdata.doMarkov && cdata.doRandomActions) {
+					actions = new String[] {
+						"markhov",
+						"amusement",};
+				} else if (!cdata.doMarkov && cdata.doRandomActions) {
+					actions = new String[] {
+						"amusement",};
+				} else {
 					continue;
 				}
 
-				String action = command_list.get(Tim.rand.nextInt(command_list.size()));
-
-				if ("markhov".equals(action)) {
-					Tim.markov.randomAction(cdata.channel, "say");
-				} else if ("amusement".equals(action)) {
-					Tim.amusement.randomAction(null, cdata.channel);
+				String action = actions[Tim.rand.nextInt(actions.length)];
+				switch (action) {
+					case "markhov":
+						Tim.markov.randomAction(cdata.channel, Tim.rand.nextBoolean() ? "say" : "emote");
+						break;
+					case "amusement":
+						Tim.amusement.randomAction(null, cdata.channel);
+						break;
 				}
 			}
 		}

@@ -1,155 +1,123 @@
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package Tim;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import org.pircbotx.Channel;
 
 /**
  *
- * @author mwalker
+ * @author Matthew Walker
  */
 public class ChannelInfo {
+
 	public Channel channel;
+
+	public HashMap<String, Boolean> chatter_enabled = new HashMap<>(16);
+	public HashMap<String, Boolean> commands_enabled = new HashMap<>(16);
+	public Set<String> twitter_accounts = new HashSet<>(16);
+
 	public long chatterTimer;
-	public int chatterMaxBaseOdds;
 	public int chatterNameMultiplier;
-	public int chatterTimeMultiplier;
-	public int chatterTimeDivisor;
 	public int chatterLevel;
+
+	public long twitterTimer;
+	public float tweetBucket;
+	public float tweetBucketMax;
+	public float tweetBucketChargeRate;
 	
-	/**
-	 * Flag maps for storing various channel settings.
-	 * 
-	 * These are used to store the various settings for channels. The keys are command names or twitter accounts
-	 * and if the boolean is true, it will function for this channel. If the boolean is false, it will not. There
-	 * is also support for a 'default' key that will be used if no matching hash is found.
-	 */
-	public HashMap<String, Boolean> command_flags = new HashMap<String, Boolean>();
-	public HashMap<String, Boolean> reaction_flags = new HashMap<String, Boolean>();
-	public HashMap<String, Boolean> mute_flags = new HashMap<String, Boolean>();
-	public HashMap<String, Boolean> idle_flags = new HashMap<String, Boolean>();
-	public HashMap<String, Boolean> twitter_relays = new HashMap<String, Boolean>();
+	public boolean muzzled;
 
-	/**
-	 * Used for temporarily muzzling Timmy in a channel.
-	 * 
-	 * If this is is greater than the current epoch, none of his reactions or idlers will function. Direct command 
-	 * usage will not be affected.
-	 */
-	public long muzzledUntil = 0;
-
-	/**
-	 * Construct channel with default flags.
-	 *
-	 * @param name What is the name of the channel
-	 */
-	public ChannelInfo( Channel channel ) {
+	public ChannelInfo(Channel channel) {
 		this.channel = channel;
+		this.muzzled = false;
 	}
 
-	public void updateFlag(String set, String key, boolean value) {
-		updateFlag(set, key, value, true);
+	public void setDefaultOptions() {
+		this.chatterNameMultiplier = 3;
+		this.chatterLevel = 1;
+		
+		this.tweetBucketMax = 10;
+		this.tweetBucketChargeRate = 0.5f;
+
+		this.chatter_enabled.put("greetings", Boolean.TRUE);
+		this.chatter_enabled.put("helpful_reactions", Boolean.TRUE);
+		this.chatter_enabled.put("silly_reactions", Boolean.TRUE);
+		this.chatter_enabled.put("markov", Boolean.TRUE);
+		this.chatter_enabled.put("challenge", Boolean.TRUE);
+		this.chatter_enabled.put("item", Boolean.TRUE);
+		this.chatter_enabled.put("eightball", Boolean.TRUE);
+		this.chatter_enabled.put("fridge", Boolean.TRUE);
+		this.chatter_enabled.put("defenestrate", Boolean.TRUE);
+		this.chatter_enabled.put("sing", Boolean.TRUE);
+		this.chatter_enabled.put("foof", Boolean.TRUE);
+		this.chatter_enabled.put("dance", Boolean.TRUE);
+		this.chatter_enabled.put("summon", Boolean.TRUE);
+		this.chatter_enabled.put("creeper", Boolean.TRUE);
+		this.chatter_enabled.put("search", Boolean.TRUE);
+		this.chatter_enabled.put("chainstory", Boolean.TRUE);
+
+		this.commands_enabled.put("eightball", Boolean.TRUE);
+		this.commands_enabled.put("expound", Boolean.TRUE);
+		this.commands_enabled.put("dice", Boolean.TRUE);
+		this.commands_enabled.put("woot", Boolean.TRUE);
+		this.commands_enabled.put("get", Boolean.TRUE);
+		this.commands_enabled.put("fridge", Boolean.TRUE);
+		this.commands_enabled.put("dance", Boolean.TRUE);
+		this.commands_enabled.put("lick", Boolean.FALSE);
+		this.commands_enabled.put("commandment", Boolean.TRUE);
+		this.commands_enabled.put("defenestrate", Boolean.TRUE);
+		this.commands_enabled.put("summon", Boolean.TRUE);
+		this.commands_enabled.put("foof", Boolean.TRUE);
+		this.commands_enabled.put("creeper", Boolean.TRUE);
+		this.commands_enabled.put("search", Boolean.TRUE);
+		this.commands_enabled.put("challenge", Boolean.TRUE);
+		this.commands_enabled.put("chainstory", Boolean.TRUE);
 	}
 
-	public void updateFlag(String set, String key, boolean value, boolean updateDB) {
-		if ("command".equals(set)) {
-			command_flags.put(key, value);
-		} else if ("reaction".equals(set)) {
-			reaction_flags.put(key, value);
-		} else if ("mute".equals(set)) {
-			mute_flags.put(key, value);
-		} else if ("idle".equals(set)) {
-			idle_flags.put(key, value);
-		} else if ("twitter".equals(set)) {
-			twitter_relays.put(key, value);
-		}
-
-		if (updateDB) {
-			Tim.db.updateChannelFlag(channel, set, key, value);
-		}
-	}
-
-	public boolean checkFlag(String set, String key) {
-		boolean muted = muzzledUntil > (System.currentTimeMillis() / 1000);
-
-		if ("command".equals(set)) {
-			if (muted) {
-				if (mute_flags.get(key) == null) {
-					if (mute_flags.get("default") == null) {
-						updateFlag("mute", "default", false);
-					}
-					return mute_flags.get("default");
-				} else {
-					return mute_flags.get(key);
-				}
-			} else {
-				if (command_flags.get(key) == null) {
-					if (command_flags.get("default") == null) {
-						updateFlag(set, "default", true);
-					}
-					return command_flags.get("default");
-				} else {
-					return command_flags.get(key);
-				}
-			}
-		} else if ("reaction".equals(set)) {
-			if (reaction_flags.get(key) == null) {
-				if (reaction_flags.get("default") == null) {
-					updateFlag(set, "default", true);
-				}
-				return reaction_flags.get("default");
-			} else {
-				return reaction_flags.get(key);
-			}
-		} else if ("idle".equals(set)) {
-			if (idle_flags.get(key) == null) {
-				if (idle_flags.get("default") == null) {
-					updateFlag(set, "default", true);
-				}
-				return idle_flags.get("default");
-			} else {
-				return idle_flags.get(key);
-			}
-		} else if ("twitter".equals(set)) {
-			if (twitter_relays.get(key) == null) {
-				if (twitter_relays.get("default") == null) {
-					updateFlag(set, "default", false);
-				}
-				return twitter_relays.get("default");
-			} else {
-				return twitter_relays.get(key);
-			}
-		}
-
-		return true;
-	}
-	
-	public void setChatterTimers( int maxBaseOdds, int nameMultiplier, int timeMultiplier, int timeDivisor, int chatterLevel ) {
-		this.chatterMaxBaseOdds = maxBaseOdds;
+	public void setChatterTimers( int nameMultiplier, int chatterLevel ) {
 		this.chatterNameMultiplier = nameMultiplier;
-		this.chatterTimeMultiplier = timeMultiplier;
-		this.chatterTimeDivisor = timeDivisor;
 		this.chatterLevel = chatterLevel;
 
-		if (this.chatterMaxBaseOdds == 0) {
-			this.chatterMaxBaseOdds = 20;
-		}
-
-		if (this.chatterNameMultiplier == 0) {
-			this.chatterNameMultiplier = 4;
-		}
-
-		if (this.chatterTimeMultiplier == 0) {
-			this.chatterTimeMultiplier = 4;
-		}
-
-		if (this.chatterTimeDivisor == 0) {
-			this.chatterTimeDivisor = 2;
-		}
-		
 		this.chatterTimer = System.currentTimeMillis() / 1000;
+	}
+	
+	public void setChatterLevel( int chatterLevel ) {
+		this.chatterLevel = chatterLevel;
+
+		this.chatterTimer = System.currentTimeMillis() / 1000;
+	}
+
+	public void setTwitterTimers(float tweetBucketMax, float tweetBucketChargeRate) {
+		this.tweetBucketMax = tweetBucketMax;
+		this.tweetBucketChargeRate = tweetBucketChargeRate;
+
+		this.tweetBucket = 0;
+		this.twitterTimer = System.currentTimeMillis() / 1000;
+	}
+	
+	public void addChatterSetting(String name, Boolean value) {
+		this.chatter_enabled.put(name, value);
+	}
+	
+	public void addCommandSetting(String name, Boolean value) {
+		this.commands_enabled.put(name, value);
+	}
+	
+	public void addTwitterAccount(String name) {
+		this.twitter_accounts.add(name);
+	}
+	
+	public void removeTwitterAccount(String name) {
+		this.twitter_accounts.remove(name);
+	}
+	
+	public void setMuzzleFlag(boolean muzzled) {
+		this.muzzled = muzzled;
 	}
 }

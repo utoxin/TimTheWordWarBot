@@ -21,15 +21,15 @@ import org.pircbotx.User;
  *
  */
 public class WordWar {
-	private Channel channel;
-	private User starter;
-	private String name;
+	private final Channel channel;
+	private final User starter;
+	private final String name;
 	protected long duration;
 	public long remaining;
 	public long time_to_start;
 	public int total_chains;
 	public int current_chain;
-	private int db_id;
+	private final int db_id;
 
 	public WordWar( long time, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel ) {
 		this.starter = startingUser;

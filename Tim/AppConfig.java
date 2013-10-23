@@ -19,7 +19,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 public class AppConfig extends XMLConfiguration {
 	// Need this to make warnings shut up more.
 	private static final long serialVersionUID = -4534296896412602302L;
-	private static AppConfig instance;
+	private static final AppConfig instance;
 	private static final String configFile = "BotConfig.xml";
 
 	// Singleton initialiser
@@ -46,7 +46,6 @@ public class AppConfig extends XMLConfiguration {
 		try {
 			load();
 		} catch (ConfigurationException configEx) {
-			configEx.printStackTrace();
 		}
 	}
 

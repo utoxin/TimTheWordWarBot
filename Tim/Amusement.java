@@ -32,15 +32,17 @@ import org.pircbotx.hooks.events.ServerPingEvent;
  * @author mwalker
  */
 public class Amusement {
-	private long timeout = 3000;
-	protected List<String> approved_items = new ArrayList<String>();
-	private List<String> pending_items = new ArrayList<String>();
-	protected List<String> colours = new ArrayList<String>();
-	protected List<String> eightballs = new ArrayList<String>();
-	private List<String> commandments = new ArrayList<String>();
-	protected List<String> aypwips = new ArrayList<String>();
-	private List<String> flavours = new ArrayList<String>();
-	private List<String> deities = new ArrayList<String>();
+	private final long timeout = 3000;
+
+	private final List<String> pending_items = new ArrayList<>();
+	private final List<String> commandments = new ArrayList<>();
+	private final List<String> flavours = new ArrayList<>();
+	private final List<String> deities = new ArrayList<>();
+
+	protected List<String> approved_items = new ArrayList<>();
+	protected List<String> colours = new ArrayList<>();
+	protected List<String> eightballs = new ArrayList<>();
+	protected List<String> aypwips = new ArrayList<>();
 
 	public Amusement() {
 		Tim.deidler.registerCommand("!eightball", "amusement");
@@ -59,11 +61,7 @@ public class Amusement {
 	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
 	 * not.
 	 *
-	 * @param channel What channel this came from
-	 * @param sender  Who sent the command
-	 * @param prefix  What prefix was on the command
-	 * @param message What was the actual content of the message
-	 *
+	 * @param event
 	 * @return True if message was handled, false otherwise.
 	 */
 	public boolean parseUserCommand( MessageEvent event ) {
@@ -78,12 +76,25 @@ public class Amusement {
 		} else {
 			command = message.substring(1).toLowerCase();
 		}
+		
+		command = command.replaceAll("\\W", "");
 
 		if (command.equals("sing")) {
 			sing(event.getChannel());
 			return true;
-		} else if (command.equals("eightball") || command.equals("8-ball")) {
+		} else if (command.equals("eightball")) {
 			eightball(event.getChannel(), event.getUser(), false);
+			return true;
+		} else if (command.equals("expound")) {
+			int which = Tim.rand.nextInt(3);
+			String type = "say";
+			if (which == 1) {
+				type = "mutter";
+			} else if (which == 2) {
+				type = "emote";
+			}
+			
+			Tim.markov.randomAction(event.getChannel(), type);
 			return true;
 		} else if (command.charAt(0) == 'd' && Pattern.matches("d\\d+", command)) {
 			dice(command.substring(1), event);
@@ -133,6 +144,17 @@ public class Amusement {
 		} else if (command.equals("creeper")) {
 			creeper(event.getChannel(), event.getUser(), args, true);
 			return true;
+		} else if (command.equals("search")) {
+			if (args != null && args.length > 0) {
+				String target = args[0];
+				for (int i = 1; i < args.length; ++i) {
+					target = target + " " + args[i];
+				}
+				search(event.getChannel(), event.getUser(), target);
+			} else {
+				search(event.getChannel(), event.getUser(), null);
+			}
+			return true;
 		}
 
 		return false;
@@ -142,10 +164,7 @@ public class Amusement {
 	 * Parses admin-level commands passed from the main class. Returns true if the message was handled, false if it was
 	 * not.
 	 *
-	 * @param channel What channel this came from
-	 * @param sender  Who sent the command
-	 * @param message What was the actual content of the message.
-	 *
+	 * @param event
 	 * @return True if message was handled, false otherwise
 	 */
 	public boolean parseAdminCommand( MessageEvent event ) {
@@ -322,7 +341,7 @@ public class Amusement {
 
 	protected void randomAction( User sender, Channel channel ) {
 		String[] actions = new String[] {
-			"item", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper"
+			"item", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper", "search"
 		};
 
 		if (sender == null) {
@@ -364,6 +383,8 @@ public class Amusement {
 			summon(channel, null, false);
 		} else if ("creeper".equals(action)) {
 			creeper(channel, sender, null, false);
+		} else if ("search".equals(action)) {
+			search(channel, sender, null);
 		}
 	}
 
@@ -386,7 +407,7 @@ public class Amusement {
 				this.pending_items.add(item);
 			}
 
-			if (Tim.rand.nextInt(100) < 75) {
+			if (Tim.rand.nextInt(100) < 65) {
 				item = args[0];
 				for (int i = 1; i < args.length; ++i) {
 					item = item + " " + args[i];
@@ -405,8 +426,49 @@ public class Amusement {
 		Tim.bot.sendAction(channel, String.format("gets %s %s.", target, item));
 	}
 
+	protected void search( Channel channel, User sender, String target) {
+		String item = "";
+
+		int count = Tim.rand.nextInt(4);
+		if (count == 1) {
+			item = this.approved_items.get(Tim.rand.nextInt(this.approved_items.size()));
+		} else if (count > 1) {
+			for (int i = 0; i < count; i++) {
+				if (i > 0 && count > 2) {
+					item = item + ",";
+				}
+				
+				if (i == (count - 1)) {
+					item = item + " and ";
+				} else if (i > 0) {
+					item = item + " ";
+				}
+				
+				item = item + this.approved_items.get(Tim.rand.nextInt(this.approved_items.size()));
+			}
+		}
+
+		if (target != null && Tim.rand.nextInt(100) > 75) {
+			Tim.bot.sendAction(channel, "decides at the last second to search "+sender.getNick()+"'s things instead...");
+			target = sender.getNick();
+		} else {
+			if (target == null) {
+				target = sender.getNick();
+			}
+			
+			Tim.bot.sendAction(channel, "searches through "+target+"'s things, looking for contraband...");
+		}
+
+		if (item.equals("")) {
+			Tim.bot.sendAction(channel, String.format("can't find anything, and grudgingly clears %s.", target));
+		} else {
+			Tim.bot.sendAction(channel, String.format("reports %s to Skynet for possesion of %s.", target, item));
+		}
+	}
+
 	protected void lick( MessageEvent event, String[] args ) {
-		if (Tim.db.isChannelAdult(event.getChannel())) {
+		ChannelInfo ci = Tim.db.channel_data.get(event.getChannel().toString().toLowerCase());
+		if (ci.commands_enabled.get("lick")) {
 			if (args != null && args.length >= 1) {
 				String argStr = StringUtils.join(args, " ");
 
@@ -430,7 +492,11 @@ public class Amusement {
 			if (mutter) {
 				Tim.bot.sendAction(channel, "mutters under his breath, \"" + this.eightballs.get(r) + "\"");
 			} else {
-				Tim.bot.sendMessage(channel, sender.getNick() + ": " + this.eightballs.get(r));
+				if (Tim.rand.nextInt(100) < 5) {
+					Tim.bot.sendMessage(channel, sender.getNick() + ": " + Tim.markov.generate_markov("say"));
+				} else {
+					Tim.bot.sendMessage(channel, sender.getNick() + ": " + this.eightballs.get(r));
+				}
 			}
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
@@ -466,9 +532,7 @@ public class Amusement {
 			r = Tim.rand.nextInt(500) + 500;
 			Thread.sleep(r);
 			Tim.bot.sendAction(channel, String.format(response, songName));
-		} catch (SQLException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (InterruptedException ex) {
+		} catch (SQLException | InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -500,9 +564,7 @@ public class Amusement {
 			Thread.sleep(delay);
 			Tim.bot.sendAction(channel, String.format(response, danceNameRes.getString("name")));
 			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (InterruptedException ex) {
+		} catch (SQLException | InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -620,10 +682,10 @@ public class Amusement {
 			String act;
 
 			if (i > 33) {
-				act = "hurls a" + colour + " coloured fridge at " + target;
+				act = "hurls a" + colour + " fridge at " + target;
 			} else if (i > 11) {
 				target = sender.getNick();
-				act = "hurls a" + colour + " coloured fridge at " + target + " and runs away giggling";
+				act = "hurls a" + colour + " fridge at " + target + " and runs away giggling";
 			} else {
 				act = "trips and drops a" + colour + " fridge on himself";
 			}
@@ -664,10 +726,10 @@ public class Amusement {
 			String act;
 			String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
 			if (i > 33) {
-				act = "throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
+				act = "throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " pillows.";
 			} else if (i > 11) {
 				target = sender.getNick();
-				act = "laughs maniacally then throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " coloured pillows.";
+				act = "laughs maniacally then throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " pillows.";
 			} else {
 				act = "trips and falls out the window!";
 			}

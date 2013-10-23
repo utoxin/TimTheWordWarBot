@@ -69,7 +69,7 @@ public class UserCommandListener extends ListenerAdapter {
 					if (args != null) {
 						try {
 							time = Double.parseDouble(args[0]);
-						} catch (Exception e) {
+						} catch (NumberFormatException e) {
 							event.respond("Could not understand first parameter. Was it numeric?");
 							return;
 						}
