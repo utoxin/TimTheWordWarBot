@@ -1,115 +1,123 @@
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package Tim;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import org.pircbotx.Channel;
 
 /**
  *
- * @author mwalker
+ * @author Matthew Walker
  */
 public class ChannelInfo {
+
 	public Channel channel;
-	public boolean isAdult;
-	public boolean doMarkov;
-	public boolean doRandomActions;
-	public boolean doCommandActions;
-	public boolean relayBotTimmy;
-	public boolean relayNaNoWordSprints;
-	public boolean relayNaNoWriMo;
-	public boolean relayofficeduckfrank;
+
+	public HashMap<String, Boolean> chatter_enabled = new HashMap<>(16);
+	public HashMap<String, Boolean> commands_enabled = new HashMap<>(16);
+	public Set<String> twitter_accounts = new HashSet<>(16);
+
 	public long chatterTimer;
-	public int chatterMaxBaseOdds;
 	public int chatterNameMultiplier;
-	public int chatterTimeMultiplier;
-	public int chatterTimeDivisor;
 	public int chatterLevel;
 
-	/**
-	 * Construct channel with default flags.
-	 *
-	 * @param channel
-	 */
-	public ChannelInfo( Channel channel ) {
+	public long twitterTimer;
+	public float tweetBucket;
+	public float tweetBucketMax;
+	public float tweetBucketChargeRate;
+	
+	public boolean muzzled;
+
+	public ChannelInfo(Channel channel) {
 		this.channel = channel;
-		this.isAdult = false;
-		this.doCommandActions = true;
-		this.doRandomActions = true;
-		this.doMarkov = true;
-		this.relayBotTimmy = false;
-		this.relayNaNoWordSprints = false;
-		this.relayNaNoWriMo = false;
-		this.relayofficeduckfrank = false;
+		this.muzzled = false;
 	}
 
-	/**
-	 * Construct channel by specifying values for flags.
-	 *
-	 * @param channel
-	 * @param adult   Is the channel considered 'adult'
-	 * @param markhov Should markov chain processing and generation happen on channel
-	 * @param random  Should random actions happen on this channel
-	 * @param command Should 'fun' commands be processed on channel
-	 * @param relayNaNoWriMo
-	 * @param relayBotTimmy
-	 * @param relayofficeduckfrank
-	 * @param relayNaNoWordSprints
-	 */
-	public ChannelInfo( Channel channel, boolean adult, boolean markhov, boolean random, boolean command, boolean relayBotTimmy, boolean relayNaNoWordSprints, boolean relayNaNoWriMo, boolean relayofficeduckfrank ) {
-		this.channel = channel;
-		this.isAdult = adult;
-		this.doRandomActions = random;
-		this.doCommandActions = command;
-		this.doMarkov = markhov;
-		this.relayBotTimmy = relayBotTimmy;
-		this.relayNaNoWordSprints = relayNaNoWordSprints;
-		this.relayNaNoWriMo = relayNaNoWriMo;
-		this.relayofficeduckfrank = relayofficeduckfrank;
+	public void setDefaultOptions() {
+		this.chatterNameMultiplier = 3;
+		this.chatterLevel = 1;
+		
+		this.tweetBucketMax = 10;
+		this.tweetBucketChargeRate = 0.5f;
+
+		this.chatter_enabled.put("greetings", Boolean.TRUE);
+		this.chatter_enabled.put("helpful_reactions", Boolean.TRUE);
+		this.chatter_enabled.put("silly_reactions", Boolean.TRUE);
+		this.chatter_enabled.put("markov", Boolean.TRUE);
+		this.chatter_enabled.put("challenge", Boolean.TRUE);
+		this.chatter_enabled.put("item", Boolean.TRUE);
+		this.chatter_enabled.put("eightball", Boolean.TRUE);
+		this.chatter_enabled.put("fridge", Boolean.TRUE);
+		this.chatter_enabled.put("defenestrate", Boolean.TRUE);
+		this.chatter_enabled.put("sing", Boolean.TRUE);
+		this.chatter_enabled.put("foof", Boolean.TRUE);
+		this.chatter_enabled.put("dance", Boolean.TRUE);
+		this.chatter_enabled.put("summon", Boolean.TRUE);
+		this.chatter_enabled.put("creeper", Boolean.TRUE);
+		this.chatter_enabled.put("search", Boolean.TRUE);
+		this.chatter_enabled.put("chainstory", Boolean.TRUE);
+
+		this.commands_enabled.put("eightball", Boolean.TRUE);
+		this.commands_enabled.put("expound", Boolean.TRUE);
+		this.commands_enabled.put("dice", Boolean.TRUE);
+		this.commands_enabled.put("woot", Boolean.TRUE);
+		this.commands_enabled.put("get", Boolean.TRUE);
+		this.commands_enabled.put("fridge", Boolean.TRUE);
+		this.commands_enabled.put("dance", Boolean.TRUE);
+		this.commands_enabled.put("lick", Boolean.FALSE);
+		this.commands_enabled.put("commandment", Boolean.TRUE);
+		this.commands_enabled.put("defenestrate", Boolean.TRUE);
+		this.commands_enabled.put("summon", Boolean.TRUE);
+		this.commands_enabled.put("foof", Boolean.TRUE);
+		this.commands_enabled.put("creeper", Boolean.TRUE);
+		this.commands_enabled.put("search", Boolean.TRUE);
+		this.commands_enabled.put("challenge", Boolean.TRUE);
+		this.commands_enabled.put("chainstory", Boolean.TRUE);
 	}
 
-	public void setChatterTimers( int maxBaseOdds, int nameMultiplier, int timeMultiplier, int timeDivisor, int chatterLevel ) {
-		this.chatterMaxBaseOdds = maxBaseOdds;
+	public void setChatterTimers( int nameMultiplier, int chatterLevel ) {
 		this.chatterNameMultiplier = nameMultiplier;
-		this.chatterTimeMultiplier = timeMultiplier;
-		this.chatterTimeDivisor = timeDivisor;
 		this.chatterLevel = chatterLevel;
 
-		if (this.chatterMaxBaseOdds == 0) {
-			this.chatterMaxBaseOdds = 20;
-		}
-
-		if (this.chatterNameMultiplier == 0) {
-			this.chatterNameMultiplier = 4;
-		}
-
-		if (this.chatterTimeMultiplier == 0) {
-			this.chatterTimeMultiplier = 4;
-		}
-
-		if (this.chatterTimeDivisor == 0) {
-			this.chatterTimeDivisor = 2;
-		}
-		
 		this.chatterTimer = System.currentTimeMillis() / 1000;
 	}
 	
-	@Override
-	public String toString() {
-		String description;
+	public void setChatterLevel( int chatterLevel ) {
+		this.chatterLevel = chatterLevel;
+
+		this.chatterTimer = System.currentTimeMillis() / 1000;
+	}
+
+	public void setTwitterTimers(float tweetBucketMax, float tweetBucketChargeRate) {
+		this.tweetBucketMax = tweetBucketMax;
+		this.tweetBucketChargeRate = tweetBucketChargeRate;
+
+		this.tweetBucket = 0;
+		this.twitterTimer = System.currentTimeMillis() / 1000;
+	}
 	
-		description = "Name: " + this.channel.getName();
-		description += "  chatter: " + chatterLevel;
-		description += "  adult: " + isAdult;
-		description += "  random: " + doRandomActions;
-		description += "  command: " + doCommandActions;
-		description += "  markov: " + doMarkov;
-		description += "  bottimmy: " + relayBotTimmy;
-		description += "  wordsprints: " + relayNaNoWordSprints;
-		description += "  nanowrimo: " + relayNaNoWriMo;
-		description += "  officeduck: " + relayofficeduckfrank;
-		
-		return description;
+	public void addChatterSetting(String name, Boolean value) {
+		this.chatter_enabled.put(name, value);
+	}
+	
+	public void addCommandSetting(String name, Boolean value) {
+		this.commands_enabled.put(name, value);
+	}
+	
+	public void addTwitterAccount(String name) {
+		this.twitter_accounts.add(name);
+	}
+	
+	public void removeTwitterAccount(String name) {
+		this.twitter_accounts.remove(name);
+	}
+	
+	public void setMuzzleFlag(boolean muzzled) {
+		this.muzzled = muzzled;
 	}
 }

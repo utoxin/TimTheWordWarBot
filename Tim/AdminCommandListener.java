@@ -49,7 +49,7 @@ public class AdminCommandListener extends ListenerAdapter {
 					command = message.substring(1).toLowerCase();
 				}
 
-				if (command.equals("setadultflag")) {
+				if (command.equals("setmuzzleflag")) {
 					if (args != null && args.length == 2) {
 						String target = args[0].toLowerCase();
 						if (Tim.db.channel_data.containsKey(target)) {
@@ -58,24 +58,9 @@ public class AdminCommandListener extends ListenerAdapter {
 								flag = true;
 							}
 
-							Tim.db.setChannelAdultFlag(Tim.bot.getChannel(target), flag);
-							event.respond("Channel adult flag updated for " + target);
-						} else {
-							event.respond("I don't know about " + target);
-						}
-					} else {
-						event.respond("Usage: $setadultflag <#channel> <0/1>");
-					}
-				} else if (command.equals("setmuzzleflag")) {
-					if (args != null && args.length == 2) {
-						String target = args[0].toLowerCase();
-						if (Tim.db.channel_data.containsKey(target)) {
-							boolean flag = false;
-							if (!"0".equals(args[1])) {
-								flag = true;
-							}
+							ChannelInfo ci = Tim.db.channel_data.get(target);
+							ci.setMuzzleFlag(flag);
 
-							Tim.db.setChannelMuzzledFlag(Tim.bot.getChannel(target), flag);
 							event.respond("Channel muzzle flag updated for " + target);
 						} else {
 							event.respond("I don't know about " + target);
@@ -92,7 +77,9 @@ public class AdminCommandListener extends ListenerAdapter {
 							if (level < -1 || level > 4) {
 								event.respond("Chatter level must be between -1 and 4 (inclusive)");
 							} else {
-								Tim.db.setChannelChatterLevel(Tim.bot.getChannel(target), level);
+								ChannelInfo ci = Tim.db.channel_data.get(target);
+								ci.setChatterLevel(level);
+								
 								event.respond("Chatter level updated for " + target);
 							}
 						} else {
@@ -100,37 +87,6 @@ public class AdminCommandListener extends ListenerAdapter {
 						}
 					} else {
 						event.respond("Usage: $chatterlevel <#channel> <-1 - 4>");
-					}
-				} else if (command.equals("relaytwitter")) {
-					if (args != null && args.length >= 2) {
-						String target = args[0].toLowerCase();
-						if (Tim.db.channel_data.containsKey(target)) {
-							boolean flag = false;
-							if (!"0".equals(args[1])) {
-								flag = true;
-							}
-
-							if (args.length == 2) {
-								Tim.db.setRelayTwitterFlag(Tim.bot.getChannel(target), flag);
-							} else {
-								String account = args[2].toLowerCase();
-								if (account.charAt(0) == '@') {
-									account = account.substring(1);
-								}
-
-								if (account.equals("nanowrimo") || account.equals("nanowordsprints") || account.equals("bottimmy") || account.equals("officeduckfrank")) {
-									Tim.db.setRelayTwitterFlag(Tim.bot.getChannel(target), flag, account);
-								} else {
-									event.respond("I don't recognize that account.");
-									return;
-								}
-							}
-							event.respond("Relay twitter flag updated for " + target);
-						} else {
-							event.respond("I don't know about " + target);
-						}
-					} else {
-						event.respond("Usage: $relaytwitter <#channel> <0/1> [<account>]");
 					}
 				} else if (command.equals("shutdown")) {
 					if (event.getUser().getNick().equals("Utoxin")) {

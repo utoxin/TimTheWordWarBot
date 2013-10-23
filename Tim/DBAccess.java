@@ -152,31 +152,63 @@ public class DBAccess {
 
 			Statement s = con.createStatement();
 			ResultSet rs = s.executeQuery("SELECT * FROM `channels`");
+			
+			PreparedStatement s2;
+			ResultSet rs2;
 
 			while (rs.next()) {
 				channel = Tim.bot.getChannel(rs.getString("channel"));
-				ci = new ChannelInfo(
-					channel, 
-					rs.getBoolean("adult"), 
-					rs.getBoolean("markhov"), 
-					rs.getBoolean("random"), 
-					rs.getBoolean("command"), 
-					rs.getBoolean("relay_nanowrimo"),
-					rs.getBoolean("relay_nanowordsprints"),
-					rs.getBoolean("relay_bottimmy"),
-					rs.getBoolean("relay_officeduckfrank")
-				);
+				ci = new ChannelInfo(channel);
 
 				ci.setChatterTimers(
-					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
-					Integer.parseInt(getSetting("chatterNameMultiplier")),
-					Integer.parseInt(getSetting("chatterTimeMultiplier")),
-					Integer.parseInt(getSetting("chatterTimeDivisor")),
+					rs.getInt("chatter_name_multiplier"),
 					rs.getInt("chatter_level"));
+
+				ci.setTwitterTimers(
+					rs.getFloat("tweet_bucket_max"),
+					rs.getFloat("tweet_bucket_charge_rate"));
+
+				s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_chatter_settings` WHERE `channel` = ?");
+				s2.setString(1, rs.getString("channel"));
+				s2.executeQuery();
+
+				rs2 = s2.getResultSet();
+				while (rs2.next()) {
+					ci.addChatterSetting(rs2.getString("setting"), rs2.getBoolean("value"));
+				}
+
+				s2.close();
+				rs2.close();
+
+				s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_command_settings` WHERE `channel` = ?");
+				s2.setString(1, rs.getString("channel"));
+				s2.executeQuery();
+
+				rs2 = s2.getResultSet();
+				while (rs2.next()) {
+					ci.addCommandSetting(rs2.getString("setting"), rs2.getBoolean("value"));
+				}
+
+				s2.close();
+				rs2.close();
+				
+				s2 = con.prepareStatement("SELECT `account` FROM `channel_twitter_feeds` WHERE `channel` = ?");
+				s2.setString(1, rs.getString("channel"));
+				s2.executeQuery();
+
+				rs2 = s2.getResultSet();
+				while (rs2.next()) {
+					ci.addTwitterAccount(rs2.getString("account"));
+				}
+
+				s2.close();
+				rs2.close();
 
 				this.channel_data.put(channel.getName().toLowerCase(), ci);
 			}
 
+			s.close();
+			rs.close();
 			con.close();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -257,42 +289,87 @@ public class DBAccess {
 		return value;
 	}
 
-	public boolean isChannelAdult( Channel channel ) {
-		boolean val = false;
-		ChannelInfo cdata = this.channel_data.get(channel.getName().toLowerCase());
-		if (cdata != null) {
-			val = cdata.isAdult;
-		}
-		return val;
-	}
-
-	public void saveChannel( Channel channel ) {
+	public void joinChannel( Channel channel ) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("INSERT INTO `channels` (`channel`, `adult`, `markhov`, `random`, `command`) VALUES (?, 0, 1, 1, 1)");
+			PreparedStatement s = con.prepareStatement("INSERT INTO `channels` (`channel`) VALUES (?)");
 			s.setString(1, channel.getName().toLowerCase());
 			s.executeUpdate();
 
-			if (!this.channel_data.containsKey(channel.getName())) {
+			if (!this.channel_data.containsKey(channel.getName().toLowerCase())) {
 				ChannelInfo new_channel = new ChannelInfo(channel);
-				new_channel.setChatterTimers(
-					Integer.parseInt(getSetting("chatterMaxBaseOdds")),
-					Integer.parseInt(getSetting("chatterNameMultiplier")),
-					Integer.parseInt(getSetting("chatterTimeMultiplier")),
-					Integer.parseInt(getSetting("chatterTimeDivisor")),
-					3);
+				new_channel.setDefaultOptions();
 
 				this.channel_data.put(channel.getName().toLowerCase(), new_channel);
 			}
 
 			con.close();
+			
+			this.saveChannelSettings( this.channel_data.get(channel.getName().toLowerCase()) );
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
+	public void saveChannelSettings( ChannelInfo channel ) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET chatter_level = ?, chatter_name_multiplier = ?, tweet_bucket_max = ?, tweet_bucket_charge_rate = ? WHERE channel = ?");
+			s.setInt(1, channel.chatterLevel);
+			s.setInt(2, channel.chatterNameMultiplier);
+			s.setFloat(3, channel.tweetBucketMax);
+			s.setFloat(4, channel.tweetBucketChargeRate);
+			s.setString(5, channel.channel.getName().toLowerCase());
+			s.executeUpdate();
+
+			s = con.prepareStatement("DELETE FROM `channel_chatter_settings` WHERE `channel` = ?;");
+			s.setString(1, channel.channel.getName().toLowerCase());
+			s.executeUpdate();
+
+			s = con.prepareStatement("DELETE FROM `channel_command_settings` WHERE `channel` = ?;");
+			s.setString(1, channel.channel.getName().toLowerCase());
+			s.executeUpdate();
+
+			s = con.prepareStatement("DELETE FROM `channel_twitter_feeds` WHERE `channel` = ?;");
+			s.setString(1, channel.channel.getName().toLowerCase());
+			s.executeUpdate();
+
+			s = con.prepareStatement("INSERT INTO channel_chatter_settings SET channel = ?, setting = ?, value = ?");
+			s.setString(1, channel.channel.getName().toLowerCase());
+			
+			for (Map.Entry<String, Boolean> setting : channel.chatter_enabled.entrySet()) {
+				s.setString(2, setting.getKey());
+				s.setBoolean(3, setting.getValue());
+				s.executeUpdate();
+			}
+
+			s = con.prepareStatement("INSERT INTO channel_command_settings SET channel = ?, setting = ?, value = ?");
+			s.setString(1, channel.channel.getName().toLowerCase());
+			
+			for (Map.Entry<String, Boolean> setting : channel.commands_enabled.entrySet()) {
+				s.setString(2, setting.getKey());
+				s.setBoolean(3, setting.getValue());
+				s.executeUpdate();
+			}
+
+			s = con.prepareStatement("INSERT INTO channel_twitter_feeds SET channel = ?, account = ?");
+			s.setString(1, channel.channel.getName().toLowerCase());
+			
+			for (String account : channel.twitter_accounts) {
+				s.setString(2, account);
+				s.executeUpdate();
+			}
+			
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+	
 	public void saveIgnore( String username ) {
 		Connection con;
 		try {
@@ -301,23 +378,6 @@ public class DBAccess {
 			PreparedStatement s = con.prepareStatement("INSERT INTO `ignores` (`name`) VALUES (?);");
 			s.setString(1, username.toLowerCase());
 			s.executeUpdate();
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	public void setChannelAdultFlag( Channel channel, boolean adult ) {
-		Connection con;
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET adult = ? WHERE `channel` = ?");
-			s.setBoolean(1, adult);
-			s.setString(2, channel.getName());
-			s.executeUpdate();
-			this.channel_data.get(channel.getName()).isAdult = adult;
 
 			con.close();
 		} catch (SQLException ex) {
@@ -336,78 +396,6 @@ public class DBAccess {
 			s.executeUpdate();
 
 			this.channel_data.get(channel.getName()).chatterLevel = level;
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	public void setChannelMuzzledFlag( Channel channel, boolean muzzled ) {
-		Connection con;
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `markhov` = ?, `random` = ?, `command` = ? WHERE `channel` = ?");
-			s.setBoolean(1, muzzled);
-			s.setBoolean(2, muzzled);
-			s.setBoolean(3, muzzled);
-			s.setString(4, channel.getName());
-			s.executeUpdate();
-
-			this.channel_data.get(channel.getName()).doMarkov = muzzled;
-			this.channel_data.get(channel.getName()).doCommandActions = muzzled;
-			this.channel_data.get(channel.getName()).doRandomActions = muzzled;
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	public void setRelayTwitterFlag( Channel channel, boolean relay) {
-		setRelayTwitterFlag(channel, relay, "all");
-	}
-
-	public void setRelayTwitterFlag( Channel channel, boolean relay, String account ) {
-		Connection con;		
-		try {
-			con = pool.getConnection(timeout);
-
-			if (account.equals("all")) {
-				PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `relay_nanowrimo` = ?, `relay_nanowordsprints` = ?, `relay_bottimmy` = ?, `relay_officeduckfrank` = ? WHERE `channel` = ?");
-				s.setBoolean(1, relay);
-				s.setBoolean(2, relay);
-				s.setBoolean(3, relay);
-				s.setBoolean(4, relay);
-				s.setString(5, channel.getName());
-				s.executeUpdate();
-
-				this.channel_data.get(channel.getName()).relayBotTimmy = relay;
-				this.channel_data.get(channel.getName()).relayNaNoWordSprints = relay;
-				this.channel_data.get(channel.getName()).relayNaNoWriMo = relay;
-				this.channel_data.get(channel.getName()).relayofficeduckfrank = relay;
-			} else {
-				PreparedStatement s = con.prepareStatement("UPDATE `channels` SET `relay_" + account + "` = ? WHERE `channel` = ?");
-				s.setBoolean(1, relay);
-				s.setString(2, channel.getName());
-				s.executeUpdate();
-
-				switch (account) {
-					case "nanowrimo":
-						this.channel_data.get(channel.getName()).relayNaNoWriMo = relay;
-						break;
-					case "nanowordsprints":
-						this.channel_data.get(channel.getName()).relayNaNoWordSprints = relay;
-						break;
-					case "bottimmy":
-						this.channel_data.get(channel.getName()).relayBotTimmy = relay;
-						break;
-					case "officeduckfrank":
-						this.channel_data.get(channel.getName()).relayofficeduckfrank = relay;
-						break;
-				}
-			}
 
 			con.close();
 		} catch (SQLException ex) {

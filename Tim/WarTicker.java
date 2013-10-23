@@ -23,10 +23,10 @@ import org.pircbotx.hooks.events.MessageEvent;
  * @author mwalker
  */
 public class WarTicker {
-	private static WarTicker instance;
+	private static final WarTicker instance;
 	public WarClockThread warticker;
-	private Semaphore wars_lock;
-	private Timer ticker;
+	private final Semaphore wars_lock;
+	private final Timer ticker;
 	public Map<String, WordWar> wars;
 
 	static {
@@ -52,12 +52,13 @@ public class WarTicker {
 	}
 
 	public class WarClockThread extends TimerTask {
-		private WarTicker parent;
+		private final WarTicker parent;
 
 		public WarClockThread( WarTicker parent ) {
 			this.parent = parent;
 		}
 
+		@Override
 		public void run() {
 			try {
 				this.parent._tick();
@@ -130,7 +131,7 @@ public class WarTicker {
 					war.updateDb();
 				}
 				this.wars_lock.release();
-			} catch (Throwable e) {
+			} catch (InterruptedException e) {
 				this.wars_lock.release();
 			}
 		}
@@ -206,14 +207,14 @@ public class WarTicker {
 
 		try {
 			time = (long) ( Double.parseDouble(args[0]) * 60 );
-		} catch (Exception e) {
+		} catch (NumberFormatException e) {
 			event.respond("I could not understand the duration parameter. Was it numeric?");
 			return;
 		}
 
 		try {
 			total_chains = Integer.parseInt(args[1]);
-		} catch (Exception e) {
+		} catch (NumberFormatException e) {
 			if (args[1].equalsIgnoreCase("now")) {
 				to_start = 0;
 			} else {
@@ -255,7 +256,7 @@ public class WarTicker {
 		String warname;
 		try {
 			time = (long) ( Double.parseDouble(args[0]) * 60 );
-		} catch (Exception e) {
+		} catch (NumberFormatException e) {
 			event.respond("I could not understand the duration parameter. Was it numeric?");
 			return;
 		}
@@ -263,7 +264,7 @@ public class WarTicker {
 		if (args.length >= 2) {
 			try {
 				to_start = (long) ( Double.parseDouble(args[1]) * 60 );
-			} catch (Exception e) {
+			} catch (NumberFormatException e) {
 				if (args[1].equalsIgnoreCase("now")) {
 					to_start = 0;
 				} else {

@@ -38,7 +38,7 @@ public class ServerListener extends ListenerAdapter {
 		if (!Tim.db.ignore_list.contains(event.getUser())) {
 			Tim.bot.joinChannel(event.getChannel());
 			if (!Tim.db.channel_data.containsKey(event.getChannel())) {
-				Tim.db.saveChannel(Tim.bot.getChannel(event.getChannel()));
+				Tim.db.joinChannel(Tim.bot.getChannel(event.getChannel()));
 			}
 		}
 	}

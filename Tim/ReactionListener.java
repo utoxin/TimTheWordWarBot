@@ -35,20 +35,24 @@ public class ReactionListener extends ListenerAdapter {
 	private int aypwip_odds = 100;
 	private int eightball_odds = 100;
 
-	private int max_lights_odds = 100;
-	private int max_fox_odds = 75;
-	private int max_cheeseburger_odds = 50;
-	private int max_test_odds = 100;
-	private int max_hug_odds = 100;
-	private int max_tissue_odds = 100;
-	private int max_aypwip_odds = 100;
-	private int max_eightball_odds = 100;
+	private final int max_lights_odds = 100;
+	private final int max_fox_odds = 75;
+	private final int max_cheeseburger_odds = 50;
+	private final int max_test_odds = 100;
+	private final int max_hug_odds = 100;
+	private final int max_tissue_odds = 100;
+	private final int max_aypwip_odds = 100;
+	private final int max_eightball_odds = 100;
 	
 	@Override
 	public void onMessage( MessageEvent event ) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		PircBotX bot = event.getBot();
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
+
+		if (cdata.muzzled) {
+			return;
+		}
 		
 		if (Tim.rand.nextInt(500) == 0) {
 			if (lights_odds < max_lights_odds) {
@@ -145,6 +149,10 @@ public class ReactionListener extends ListenerAdapter {
 			}
 		}
 
+		if (cdata.muzzled) {
+			return;
+		}
+		
 		if (Tim.rand.nextInt(500) == 0) {
 			if (lights_odds < max_lights_odds) {
 				lights_odds++;
@@ -245,7 +253,7 @@ public class ReactionListener extends ListenerAdapter {
 		if (Tim.rand.nextInt(100) < odds) {
 			String[] actions;
 
-			cdata.chatterTimer += Tim.rand.nextInt((int) elapsed / cdata.chatterTimeDivisor);
+			cdata.chatterTimer += Tim.rand.nextInt((int) elapsed);
 
 			if (cdata.doMarkov && !cdata.doRandomActions) {
 				actions = new String[] {

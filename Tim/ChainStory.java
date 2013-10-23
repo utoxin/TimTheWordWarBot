@@ -28,17 +28,13 @@ import org.pircbotx.hooks.events.MessageEvent;
  * @author mwalker
  */
 public class ChainStory {
-	private long timeout = 3000;
+	private final long timeout = 3000;
 
 	/**
 	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
 	 * not.
 	 *
-	 * @param channel What channel this came from
-	 * @param sender  Who sent the command
-	 * @param prefix  What prefix was on the command
-	 * @param message What was the actual content of the message
-	 *
+	 * @param event
 	 * @return True if message was handled, false otherwise.
 	 */
 	public boolean parseUserCommand( MessageEvent event ) {

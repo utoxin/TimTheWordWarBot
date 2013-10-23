@@ -32,21 +32,17 @@ import org.pircbotx.hooks.events.ServerPingEvent;
  * @author mwalker
  */
 public class MarkovChains extends ListenerAdapter {
-	private DBAccess db = DBAccess.getInstance();
+	private final DBAccess db = DBAccess.getInstance();
 	protected HashMap<String, Pattern> badwordPatterns = new HashMap<>();
 	protected HashMap<String, Pattern[]> badpairPatterns = new HashMap<>();
-	private long timeout = 3000;
+	private final long timeout = 3000;
 
 	@Override
 	public void onMessage( MessageEvent event ) {
 		PircBotX bot = event.getBot();
 
-		ChannelInfo cdata = db.channel_data.get(event.getChannel().getName().toLowerCase());
-
 		if (!event.getUser().getNick().equals("Skynet") && !event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
-			if (cdata.doMarkov) {
-				process_markov(Colors.removeFormattingAndColors(event.getMessage()), "say");
-			}
+			process_markov(Colors.removeFormattingAndColors(event.getMessage()), "say");
 		}
 	}
 
@@ -54,12 +50,8 @@ public class MarkovChains extends ListenerAdapter {
 	public void onAction( ActionEvent event ) {
 		PircBotX bot = event.getBot();
 
-		ChannelInfo cdata = db.channel_data.get(event.getChannel().getName().toLowerCase());
-
 		if (!event.getUser().getNick().equals("Skynet") && !event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
-			if (cdata.doMarkov) {
-				process_markov(Colors.removeFormattingAndColors(event.getMessage()), "emote");
-			}
+			process_markov(Colors.removeFormattingAndColors(event.getMessage()), "emote");
 		}
 	}
 
@@ -82,10 +74,7 @@ public class MarkovChains extends ListenerAdapter {
 	 * Parses admin-level commands passed from the main class. Returns true if the message was handled, false if it was
 	 * not.
 	 *
-	 * @param channel What channel this came from
-	 * @param sender  Who sent the command
-	 * @param message What was the actual content of the message.
-	 *
+	 * @param event
 	 * @return True if message was handled, false otherwise
 	 */
 	public boolean parseAdminCommand( MessageEvent event ) {

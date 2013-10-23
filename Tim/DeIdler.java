@@ -21,15 +21,17 @@ import java.util.TimerTask;
  * @author Matthew Walker
  */
 public class DeIdler {
-	private static DeIdler instance;
+	private static final DeIdler instance;
 	public DeIdler.IdleClockThread idleticker;
-	private Timer ticker;
+	private final Timer ticker;
+	private Calendar cal;
 
 	static {
 		instance = new DeIdler();
 	}
 
 	public DeIdler() {
+		this.cal = Calendar.getInstance();
 		this.idleticker = new DeIdler.IdleClockThread(this);
 		this.ticker = new Timer(true);
 		this.ticker.scheduleAtFixedRate(this.idleticker, 0, 60000);
@@ -45,7 +47,7 @@ public class DeIdler {
 	}
 
 	public class IdleClockThread extends TimerTask {
-		private DeIdler parent;
+		private final DeIdler parent;
 
 		public IdleClockThread( DeIdler parent ) {
 			this.parent = parent;
@@ -64,7 +66,6 @@ public class DeIdler {
 	}
 
 	public void _tick() {
-		Calendar cal = Calendar.getInstance();
 		boolean isNovember = (10 == cal.get(Calendar.MONTH));
 
 		if (isNovember && Tim.rand.nextInt(100) < 3) {
@@ -79,7 +80,7 @@ public class DeIdler {
 			
 			Tim.story.storeLine(new_text, "Timmy");
 			for (ChannelInfo cdata : Tim.db.channel_data.values()) {
-				if (Tim.rand.nextInt(100) < 25) {
+				if (Tim.rand.nextInt(100) < 25 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled) {
 					Tim.bot.sendAction(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)");
 				}
 			}
@@ -108,19 +109,15 @@ public class DeIdler {
 			if (Tim.rand.nextInt(100) < odds) {
 				String[] actions;
 
-				int newDivisor = cdata.chatterTimeDivisor;
-				if (newDivisor > 1) {
-					newDivisor -= 1;
-				}
-				cdata.chatterTimer += Tim.rand.nextInt((int) elapsed / newDivisor);
+				cdata.chatterTimer += Tim.rand.nextInt((int) elapsed);
 				elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 				cdata.chatterTimer += Math.round(elapsed / 2);
 
-				if (50 < Tim.rand.nextInt(100) || cdata.chatterLevel <= 0) {
+				if (50 < Tim.rand.nextInt(100) || cdata.chatterLevel <= 0 || cdata.muzzled) {
 					continue;
 				}
 
-				if (cdata.doMarkov && !cdata.doRandomActions) {
+				if (cdata.chatter_enabled.get("markov") && !cdata.doRandomActions) {
 					actions = new String[] {
 						"markhov",};
 				} else if (cdata.doMarkov && cdata.doRandomActions) {
@@ -135,11 +132,13 @@ public class DeIdler {
 				}
 
 				String action = actions[Tim.rand.nextInt(actions.length)];
-
-				if ("markhov".equals(action)) {
-					Tim.markov.randomAction(cdata.channel, Tim.rand.nextBoolean() ? "say" : "emote");
-				} else if ("amusement".equals(action)) {
-					Tim.amusement.randomAction(null, cdata.channel);
+				switch (action) {
+					case "markhov":
+						Tim.markov.randomAction(cdata.channel, Tim.rand.nextBoolean() ? "say" : "emote");
+						break;
+					case "amusement":
+						Tim.amusement.randomAction(null, cdata.channel);
+						break;
 				}
 			}
 		}
