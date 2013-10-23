@@ -445,7 +445,7 @@ public class DBAccess {
 		
 		return id;
 	}
-
+	
 	public void update_war(int db_id, long remaining, long time_to_start, int current_chain) {
 		Connection con;
 		try {

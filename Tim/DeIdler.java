@@ -24,7 +24,7 @@ public class DeIdler {
 	private static final DeIdler instance;
 	public DeIdler.IdleClockThread idleticker;
 	private final Timer ticker;
-	private Calendar cal;
+	private final Calendar cal;
 
 	static {
 		instance = new DeIdler();
@@ -69,15 +69,16 @@ public class DeIdler {
 		boolean isNovember = (10 == cal.get(Calendar.MONTH));
 
 		if (isNovember && Tim.rand.nextInt(100) < 3) {
+			String name = Tim.story.getRandomName();
 			String new_text;
 			if (Tim.rand.nextBoolean()) {
-				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(25) + 25) + ",\" Timmy said.";
+				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(25) + 25) + ",\" "+name+" said.";
 			} else if (Tim.rand.nextBoolean()) {
-				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(45) + 25) + ",\" Timmy muttered under his breath.";
+				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(45) + 25) + ",\" "+name+" muttered under his breath.";
 			} else {
-				new_text = "Timmy " + Tim.markov.generate_markov("emote", Tim.rand.nextInt(65) + 25) + ".";
+				new_text = name+" " + Tim.markov.generate_markov("emote", Tim.rand.nextInt(65) + 25) + ".";
 			}
-			
+
 			Tim.story.storeLine(new_text, "Timmy");
 			for (ChannelInfo cdata : Tim.db.channel_data.values()) {
 				if (Tim.rand.nextInt(100) < 25 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled) {

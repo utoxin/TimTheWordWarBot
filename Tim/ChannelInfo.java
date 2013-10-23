@@ -39,45 +39,52 @@ public class ChannelInfo {
 	}
 
 	public void setDefaultOptions() {
-		this.chatterNameMultiplier = 3;
-		this.chatterLevel = 1;
+		chatterNameMultiplier = 3;
+		chatterLevel = 1;
 		
-		this.tweetBucketMax = 10;
-		this.tweetBucketChargeRate = 0.5f;
+		tweetBucketMax = 10;
+		tweetBucketChargeRate = 0.5f;
 
-		this.chatter_enabled.put("greetings", Boolean.TRUE);
-		this.chatter_enabled.put("helpful_reactions", Boolean.TRUE);
-		this.chatter_enabled.put("silly_reactions", Boolean.TRUE);
-		this.chatter_enabled.put("markov", Boolean.TRUE);
-		this.chatter_enabled.put("challenge", Boolean.TRUE);
-		this.chatter_enabled.put("item", Boolean.TRUE);
-		this.chatter_enabled.put("eightball", Boolean.TRUE);
-		this.chatter_enabled.put("fridge", Boolean.TRUE);
-		this.chatter_enabled.put("defenestrate", Boolean.TRUE);
-		this.chatter_enabled.put("sing", Boolean.TRUE);
-		this.chatter_enabled.put("foof", Boolean.TRUE);
-		this.chatter_enabled.put("dance", Boolean.TRUE);
-		this.chatter_enabled.put("summon", Boolean.TRUE);
-		this.chatter_enabled.put("creeper", Boolean.TRUE);
-		this.chatter_enabled.put("search", Boolean.TRUE);
-		this.chatter_enabled.put("chainstory", Boolean.TRUE);
+		chatter_enabled.put("greetings", Boolean.TRUE);
+		chatter_enabled.put("helpful_reactions", Boolean.TRUE);
+		chatter_enabled.put("silly_reactions", Boolean.TRUE);
+		chatter_enabled.put("markov", Boolean.TRUE);
+		chatter_enabled.put("challenge", Boolean.TRUE);
+		chatter_enabled.put("item", Boolean.TRUE);
+		chatter_enabled.put("eightball", Boolean.TRUE);
+		chatter_enabled.put("fridge", Boolean.TRUE);
+		chatter_enabled.put("defenestrate", Boolean.TRUE);
+		chatter_enabled.put("sing", Boolean.TRUE);
+		chatter_enabled.put("foof", Boolean.TRUE);
+		chatter_enabled.put("dance", Boolean.TRUE);
+		chatter_enabled.put("summon", Boolean.TRUE);
+		chatter_enabled.put("creeper", Boolean.TRUE);
+		chatter_enabled.put("search", Boolean.TRUE);
+		chatter_enabled.put("chainstory", Boolean.TRUE);
 
-		this.commands_enabled.put("eightball", Boolean.TRUE);
-		this.commands_enabled.put("expound", Boolean.TRUE);
-		this.commands_enabled.put("dice", Boolean.TRUE);
-		this.commands_enabled.put("woot", Boolean.TRUE);
-		this.commands_enabled.put("get", Boolean.TRUE);
-		this.commands_enabled.put("fridge", Boolean.TRUE);
-		this.commands_enabled.put("dance", Boolean.TRUE);
-		this.commands_enabled.put("lick", Boolean.FALSE);
-		this.commands_enabled.put("commandment", Boolean.TRUE);
-		this.commands_enabled.put("defenestrate", Boolean.TRUE);
-		this.commands_enabled.put("summon", Boolean.TRUE);
-		this.commands_enabled.put("foof", Boolean.TRUE);
-		this.commands_enabled.put("creeper", Boolean.TRUE);
-		this.commands_enabled.put("search", Boolean.TRUE);
-		this.commands_enabled.put("challenge", Boolean.TRUE);
-		this.commands_enabled.put("chainstory", Boolean.TRUE);
+		commands_enabled.put("eightball", Boolean.TRUE);
+		commands_enabled.put("expound", Boolean.TRUE);
+		commands_enabled.put("dice", Boolean.TRUE);
+		commands_enabled.put("woot", Boolean.TRUE);
+		commands_enabled.put("get", Boolean.TRUE);
+		commands_enabled.put("fridge", Boolean.TRUE);
+		commands_enabled.put("dance", Boolean.TRUE);
+		commands_enabled.put("lick", Boolean.FALSE);
+		commands_enabled.put("commandment", Boolean.TRUE);
+		commands_enabled.put("defenestrate", Boolean.TRUE);
+		commands_enabled.put("summon", Boolean.TRUE);
+		commands_enabled.put("foof", Boolean.TRUE);
+		commands_enabled.put("creeper", Boolean.TRUE);
+		commands_enabled.put("search", Boolean.TRUE);
+		commands_enabled.put("challenge", Boolean.TRUE);
+		commands_enabled.put("chainstory", Boolean.TRUE);
+	}
+
+	public boolean amusement_chatter_available() {
+		return chatter_enabled.get("item") || chatter_enabled.get("eightball") || chatter_enabled.get("fridge")
+				|| chatter_enabled.get("defenestrate") || chatter_enabled.get("sing") || chatter_enabled.get("foof")
+				|| chatter_enabled.get("dance") || chatter_enabled.get("summon") || chatter_enabled.get("creeper")
+				|| chatter_enabled.get("search");
 	}
 
 	public void setChatterTimers( int nameMultiplier, int chatterLevel ) {

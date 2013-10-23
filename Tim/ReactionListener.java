@@ -128,9 +128,7 @@ public class ReactionListener extends ListenerAdapter {
 					}
 				} else {
 					this.interact(event.getUser(), event.getChannel(), message, "say");
-					if (cdata.doMarkov) {
-						Tim.markov.process_markov(message, "say");
-					}
+					Tim.markov.process_markov(message, "say");
 				}
 			}
 		}
@@ -226,9 +224,7 @@ public class ReactionListener extends ListenerAdapter {
 				}
 			} else {
 				this.interact(event.getUser(), event.getChannel(), message, "emote");
-				if (cdata.doMarkov) {
-					Tim.markov.process_markov(message, "emote");
-				}
+				Tim.markov.process_markov(message, "emote");
 			}
 		}
 	}
