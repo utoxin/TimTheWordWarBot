@@ -450,13 +450,11 @@ public class Amusement {
 			}
 		}
 
-		actions = enabled_actions.toArray(new String[enabled_actions.size()]);
-		
-		if (actions.length == 0) {
+		if (enabled_actions.isEmpty()) {
 			return;
 		}
 
-		String action = actions[Tim.rand.nextInt(actions.length)];
+		String action = enabled_actions.toArray(new String[enabled_actions.size()])[Tim.rand.nextInt(enabled_actions.size())];
 
 		if ("item".equals(action)) {
 			getItem(channel, sender.getNick(), null);
@@ -561,18 +559,14 @@ public class Amusement {
 
 	protected void lick( MessageEvent event, String[] args ) {
 		ChannelInfo ci = Tim.db.channel_data.get(event.getChannel().toString().toLowerCase());
-		if (ci.commands_enabled.get("lick")) {
-			if (args != null && args.length >= 1) {
-				String argStr = StringUtils.join(args, " ");
+		if (args != null && args.length >= 1) {
+			String argStr = StringUtils.join(args, " ");
 
-				Tim.bot.sendAction(
-					event.getChannel(), "licks " + argStr + ". Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
-			} else {
-				Tim.bot.sendAction(
-					event.getChannel(), "licks " + event.getUser().getNick() + "! Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
-			}
+			Tim.bot.sendAction(
+				event.getChannel(), "licks " + argStr + ". Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
 		} else {
-			event.respond("Sorry, I don't do that here.");
+			Tim.bot.sendAction(
+				event.getChannel(), "licks " + event.getUser().getNick() + "! Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
 		}
 	}
 

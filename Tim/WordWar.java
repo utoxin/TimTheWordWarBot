@@ -21,15 +21,18 @@ import org.pircbotx.User;
  *
  */
 public class WordWar {
-	private final Channel channel;
-	private final User starter;
-	private final String name;
-	protected long duration;
 	public long remaining;
 	public long time_to_start;
 	public int total_chains;
 	public int current_chain;
+	public ChannelInfo cdata;
+
+	protected long duration;
+	
 	private final int db_id;
+	private final Channel channel;
+	private final User starter;
+	private final String name;
 
 	public WordWar( long time, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel ) {
 		this.starter = startingUser;
@@ -39,8 +42,13 @@ public class WordWar {
 		this.duration = this.remaining = time;
 		this.name = warname;
 		this.channel = hosting_channel;
+		this.cdata = Tim.db.channel_data.get(hosting_channel.getName().toLowerCase());
 		
 		db_id = Tim.db.create_war(hosting_channel, startingUser, warname, time, time, to_start, total_chains, current_chain);
+
+		if (this.time_to_start <= 0 && (cdata.muzzled == false || cdata.auto_muzzled)) {
+			cdata.setMuzzleFlag(true, true);
+		}
 	}
 	
 	public WordWar( long duration, long remaining, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel, int db_id ) {
@@ -52,12 +60,22 @@ public class WordWar {
 		this.current_chain = current_chain;
 		this.name = warname;
 		this.channel = hosting_channel;
+		this.cdata = Tim.db.channel_data.get(hosting_channel.getName().toLowerCase());
+
 		this.db_id = db_id;
+
+		if (this.time_to_start <= 0 && (cdata.muzzled == false || cdata.auto_muzzled)) {
+			cdata.setMuzzleFlag(true, true);
+		}
 	}
 
 	protected void endWar() {
 		if (db_id > 0) {
 			Tim.db.deleteWar(db_id);
+		}
+
+		if (cdata.auto_muzzled) {
+			cdata.setMuzzleFlag(false, false);
 		}
 	}
 

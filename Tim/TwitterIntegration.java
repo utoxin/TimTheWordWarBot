@@ -21,6 +21,8 @@ public class TwitterIntegration extends StatusAdapter {
 	static User NaNoWordSprints;
 	static User NaNoWriMo;
 	static User officeduckfrank;
+	TwitterStream userStream;
+	TwitterStream publicStream;
 	
 	public TwitterIntegration() {
 		token = new AccessToken(Tim.db.getSetting("twitter_access_key"), Tim.db.getSetting("twitter_access_secret"));
@@ -54,23 +56,28 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 	}
 	
-	public void startStream() {
+	public void startUserStream() {
+		userStream = new TwitterStreamFactory().getInstance();
+		userStream.setOAuthConsumer(Tim.db.getSetting("twitter_consumer_key"), Tim.db.getSetting("twitter_consumer_secret"));
+		userStream.setOAuthAccessToken(token);
+		userStream.addListener(userListener);
+		userStream.user();
+	}
+
+	public void startPublicStream() {
 		long[] userIds = {NaNoWriMo.getId(), NaNoWordSprints.getId(), BotTimmy.getId(), officeduckfrank.getId()};
 		String[] hashtags = {"#NaNoWriMo"};
 
 		FilterQuery filter = new FilterQuery(0, userIds, hashtags);
 
-		TwitterStream publicStream = new TwitterStreamFactory().getInstance();
+		publicStream = new TwitterStreamFactory().getInstance();
 		publicStream.setOAuthConsumer(Tim.db.getSetting("twitter_consumer_key"), Tim.db.getSetting("twitter_consumer_secret"));
 		publicStream.setOAuthAccessToken(token);
+
+		publicStream.cleanUp();
+		
 		publicStream.addListener(publicListener);
 		publicStream.filter(filter);
-
-		TwitterStream userStream = new TwitterStreamFactory().getInstance();
-		userStream.setOAuthConsumer(Tim.db.getSetting("twitter_consumer_key"), Tim.db.getSetting("twitter_consumer_secret"));
-		userStream.setOAuthAccessToken(token);
-		userStream.addListener(userListener);
-		userStream.user();
 	}
 
 	StatusListener publicListener = new StatusListener() {

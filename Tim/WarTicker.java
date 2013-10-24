@@ -161,6 +161,10 @@ public class WarTicker {
 
 	private void beginWar( WordWar war ) {
 		Tim.bot.sendMessage(war.getChannel(), "WordWar '" + war.getName() + "' starts now! (" + war.getDuration() / 60 + " minutes)");
+
+		if ((war.cdata.muzzled == false || war.cdata.auto_muzzled)) {
+			war.cdata.setMuzzleFlag(true, true);
+		}
 	}
 
 	private void endWar( WordWar war ) {
@@ -169,6 +173,10 @@ public class WarTicker {
 			this.wars.remove(war.getName(false).toLowerCase());
 			war.endWar();
 		} else {
+			if (war.cdata.muzzled && war.cdata.auto_muzzled) {
+				war.cdata.setMuzzleFlag(false, false);
+			}
+			
 			war.current_chain++;
 			war.remaining = war.duration;
 			war.time_to_start = (long) ( (war.duration * 0.5) + (war.duration * ((Tim.rand.nextInt(50) - 25)/100.0) ) );

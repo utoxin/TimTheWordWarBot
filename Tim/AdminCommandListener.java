@@ -59,7 +59,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							}
 
 							ChannelInfo ci = Tim.db.channel_data.get(target);
-							ci.setMuzzleFlag(flag);
+							ci.setMuzzleFlag(flag, false);
 
 							event.respond("Channel muzzle flag updated for " + target);
 						} else {

@@ -32,10 +32,12 @@ public class ChannelInfo {
 	public float tweetBucketChargeRate;
 	
 	public boolean muzzled;
+	public boolean auto_muzzled;
 
 	public ChannelInfo(Channel channel) {
 		this.channel = channel;
 		this.muzzled = false;
+		this.auto_muzzled = false;
 	}
 
 	public void setDefaultOptions() {
@@ -124,7 +126,8 @@ public class ChannelInfo {
 		this.twitter_accounts.remove(name);
 	}
 	
-	public void setMuzzleFlag(boolean muzzled) {
+	public void setMuzzleFlag(boolean muzzled, boolean auto) {
 		this.muzzled = muzzled;
+		this.auto_muzzled = auto;
 	}
 }
