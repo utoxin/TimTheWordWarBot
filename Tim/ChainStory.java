@@ -38,6 +38,7 @@ public class ChainStory {
 	 * @return True if message was handled, false otherwise.
 	 */
 	public boolean parseUserCommand( MessageEvent event ) {
+		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString = "";
@@ -54,20 +55,40 @@ public class ChainStory {
 		boolean isNovember = (10 == cal.get(Calendar.MONTH));
 		
 		if (command.equals("chainlast")) {
-			showLast(event);
+			if (cdata.commands_enabled.get("chainstory")) {
+				showLast(event);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		} else if (command.equals("chainnew")) {
-			if (!isNovember) {
-				event.respond("Sorry, that command won't work outside November!");
-				return true;
+			if (cdata.commands_enabled.get("chainstory")) {
+				if (!isNovember) {
+					event.respond("Sorry, that command won't work outside November!");
+					return true;
+				}
+				addNew(event, argsString);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
 			}
-			addNew(event, argsString);
+			
 			return true;
 		} else if (command.equals("chaininfo")) {
-			info(event);
+			if (cdata.commands_enabled.get("chainstory")) {
+				info(event);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		} else if (command.equals("chaincount")) {
-			count(event);
+			if (cdata.commands_enabled.get("chainstory")) {
+				count(event);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+
 			return true;
 		}
 
@@ -176,7 +197,7 @@ public class ChainStory {
 		try {
 			con = Tim.db.pool.getConnection(timeout);
 
-			s = con.prepareStatement("SELECT author FROM story WHERE auther != 'Timmy' ORDER BY rand() LIMIT 1");
+			s = con.prepareStatement("SELECT author FROM story WHERE author != 'Timmy' ORDER BY rand() LIMIT 1");
 			s.executeQuery();
 			rs = s.getResultSet();
 			while (rs.next()) {

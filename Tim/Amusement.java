@@ -14,6 +14,7 @@ package Tim;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -43,6 +44,8 @@ public class Amusement {
 	protected List<String> colours = new ArrayList<>();
 	protected List<String> eightballs = new ArrayList<>();
 	protected List<String> aypwips = new ArrayList<>();
+	
+	private ChannelInfo cdata;
 
 	/**
 	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
@@ -65,82 +68,162 @@ public class Amusement {
 		}
 		
 		command = command.replaceAll("\\W", "");
+		cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 
 		if (command.equals("sing")) {
-			sing(event.getChannel());
-			return true;
-		} else if (command.equals("eightball")) {
-			eightball(event.getChannel(), event.getUser(), false);
-			return true;
-		} else if (command.equals("expound")) {
-			int which = Tim.rand.nextInt(3);
-			String type = "say";
-			if (which == 1) {
-				type = "mutter";
-			} else if (which == 2) {
-				type = "emote";
+			if (cdata.commands_enabled.get("sing")) {
+				sing(event.getChannel());
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
 			}
 			
-			Tim.markov.randomAction(event.getChannel(), type);
+			return true;
+		} else if (command.equals("eightball")) {
+			if (cdata.commands_enabled.get("eightball")) {
+				eightball(event.getChannel(), event.getUser(), false);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
+			return true;
+		} else if (command.equals("expound")) {
+			if (cdata.commands_enabled.get("expound")) {
+				int which = Tim.rand.nextInt(3);
+				String type = "say";
+				if (which == 1) {
+					type = "mutter";
+				} else if (which == 2) {
+					type = "emote";
+				}
+
+				Tim.markov.randomAction(event.getChannel(), type);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		} else if (command.charAt(0) == 'd' && Pattern.matches("d\\d+", command)) {
-			dice(command.substring(1), event);
+			if (cdata.commands_enabled.get("dice")) {
+				dice(command.substring(1), event);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		} else if (command.equals("woot")) {
-			Tim.bot.sendAction(event.getChannel(), "cheers! Hooray!");
+			if (cdata.commands_enabled.get("woot")) {
+				Tim.bot.sendAction(event.getChannel(), "cheers! Hooray!");
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		} else if (command.equals("get")) {
-			getItem(event.getChannel(), event.getUser().getNick(), args);
+			if (cdata.commands_enabled.get("get")) {
+				getItem(event.getChannel(), event.getUser().getNick(), args);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		} else if (command.equals("getfor")) {
 			if (args != null && args.length > 0) {
-				if (args.length > 1) {
-					// Want a new args array less the first old element.
-					String[] newargs = new String[args.length - 1];
-					for (int i = 1; i < args.length; ++i) {
-						newargs[i - 1] = args[i];
+				if (cdata.commands_enabled.get("get")) {
+					if (args.length > 1) {
+						// Want a new args array less the first old element.
+						String[] newargs = new String[args.length - 1];
+						for (int i = 1; i < args.length; ++i) {
+							newargs[i - 1] = args[i];
+						}
+						getItem(event.getChannel(), args[0], newargs);
+					} else {
+						getItem(event.getChannel(), args[0], null);
 					}
-					getItem(event.getChannel(), args[0], newargs);
-					return true;
 				} else {
-					getItem(event.getChannel(), args[0], null);
-					return true;
+					event.respond("I'm sorry. I don't do that here.");
 				}
+
+				return true;
 			}
 		} else if (command.equals("fridge")) {
-			throwFridge(event.getChannel(), event.getUser(), args, true);
+			if (cdata.commands_enabled.get("fridge")) {
+				throwFridge(event.getChannel(), event.getUser(), args, true);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		} else if (command.equals("dance")) {
-			dance(event.getChannel());
+			if (cdata.commands_enabled.get("dance")) {
+				dance(event.getChannel());
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		} else if (command.equals("lick")) {
-			lick(event, args);
+			if (cdata.commands_enabled.get("lick")) {
+				lick(event, args);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		} else if (command.equals("commandment")) {
-			commandment(event.getChannel(), args);
+			if (cdata.commands_enabled.get("commandment")) {
+				commandment(event.getChannel(), args);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		} else if (command.equals("defenestrate")) {
-			defenestrate(event.getChannel(), event.getUser(), args, true);
+			if (cdata.commands_enabled.get("defenestrate")) {
+				defenestrate(event.getChannel(), event.getUser(), args, true);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		} else if (command.equals("summon")) {
-			summon(event.getChannel(), args, true);
+			if (cdata.commands_enabled.get("summon")) {
+				summon(event.getChannel(), args, true);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		} else if (command.equals("foof")) {
-			foof(event.getChannel(), event.getUser(), args, true);
+			if (cdata.commands_enabled.get("foof")) {
+				foof(event.getChannel(), event.getUser(), args, true);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		} else if (command.equals("creeper")) {
-			creeper(event.getChannel(), event.getUser(), args, true);
+			if (cdata.commands_enabled.get("creeper")) {
+				creeper(event.getChannel(), event.getUser(), args, true);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+
 			return true;
 		} else if (command.equals("search")) {
-			if (args != null && args.length > 0) {
-				String target = args[0];
-				for (int i = 1; i < args.length; ++i) {
-					target = target + " " + args[i];
+			if (cdata.commands_enabled.get("search")) {
+				if (args != null && args.length > 0) {
+					String target = args[0];
+					for (int i = 1; i < args.length; ++i) {
+						target = target + " " + args[i];
+					}
+					search(event.getChannel(), event.getUser(), target);
+				} else {
+					search(event.getChannel(), event.getUser(), null);
 				}
-				search(event.getChannel(), event.getUser(), target);
 			} else {
-				search(event.getChannel(), event.getUser(), null);
+				event.respond("I'm sorry. I don't do that here.");
 			}
+
 			return true;
 		}
 
@@ -327,8 +410,10 @@ public class Amusement {
 	}
 
 	protected void randomAction( User sender, Channel channel ) {
+		cdata = Tim.db.channel_data.get(channel.getName().toLowerCase());
+
 		String[] actions = new String[] {
-			"item", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper", "search"
+			"get", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper", "search"
 		};
 
 		if (sender == null) {
@@ -356,6 +441,19 @@ public class Amusement {
 					"eightball", "sing", "dance", "summon"
 				};
 			}
+		}
+		
+		Set<String> enabled_actions = new HashSet<>(16);
+		for (String action : actions) {
+			if (!cdata.chatter_enabled.get(action)) {
+				enabled_actions.add(action);
+			}
+		}
+
+		actions = enabled_actions.toArray(new String[enabled_actions.size()]);
+		
+		if (actions.length == 0) {
+			return;
 		}
 
 		String action = actions[Tim.rand.nextInt(actions.length)];

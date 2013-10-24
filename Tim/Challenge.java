@@ -43,6 +43,7 @@ public class Challenge {
 	 * @return True if message was handled, false otherwise.
 	 */
 	public boolean parseUserCommand( MessageEvent event ) {
+		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString = "";
@@ -56,20 +57,30 @@ public class Challenge {
 		}
 
 		if (command.equals("challenge")) {
-			issueChallenge(event.getChannel(), event.getUser().getNick(), argsString);
-			return true;
-		} else if (command.equals("challengefor")) {
-			String target;
-			space = argsString.indexOf(" ");
-			if (space > 0) {
-				target = argsString.substring(0, space);
-				argsString = argsString.substring(space + 1);
+			if (cdata.commands_enabled.get("chainstory")) {
+				issueChallenge(event.getChannel(), event.getUser().getNick(), argsString);
 			} else {
-				target = argsString;
-				argsString = "";
+				event.respond("I'm sorry. I don't do that here.");
 			}
 
-			issueChallenge(event.getChannel(), target, argsString);
+			return true;
+		} else if (command.equals("challengefor")) {
+			if (cdata.commands_enabled.get("chainstory")) {
+				String target;
+				space = argsString.indexOf(" ");
+				if (space > 0) {
+					target = argsString.substring(0, space);
+					argsString = argsString.substring(space + 1);
+				} else {
+					target = argsString;
+					argsString = "";
+				}
+
+				issueChallenge(event.getChannel(), target, argsString);
+			} else {
+				event.respond("I'm sorry. I don't do that here.");
+			}
+			
 			return true;
 		}
 

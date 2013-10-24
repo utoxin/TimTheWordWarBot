@@ -50,7 +50,7 @@ public class ChannelInfo {
 		chatter_enabled.put("silly_reactions", Boolean.TRUE);
 		chatter_enabled.put("markov", Boolean.TRUE);
 		chatter_enabled.put("challenge", Boolean.TRUE);
-		chatter_enabled.put("item", Boolean.TRUE);
+		chatter_enabled.put("get", Boolean.TRUE);
 		chatter_enabled.put("eightball", Boolean.TRUE);
 		chatter_enabled.put("fridge", Boolean.TRUE);
 		chatter_enabled.put("defenestrate", Boolean.TRUE);
@@ -81,7 +81,7 @@ public class ChannelInfo {
 	}
 
 	public boolean amusement_chatter_available() {
-		return chatter_enabled.get("item") || chatter_enabled.get("eightball") || chatter_enabled.get("fridge")
+		return chatter_enabled.get("get") || chatter_enabled.get("eightball") || chatter_enabled.get("fridge")
 				|| chatter_enabled.get("defenestrate") || chatter_enabled.get("sing") || chatter_enabled.get("foof")
 				|| chatter_enabled.get("dance") || chatter_enabled.get("summon") || chatter_enabled.get("creeper")
 				|| chatter_enabled.get("search");
