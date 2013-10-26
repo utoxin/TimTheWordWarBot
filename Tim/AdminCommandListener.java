@@ -68,6 +68,25 @@ public class AdminCommandListener extends ListenerAdapter {
 					} else {
 						event.respond("Usage: $setmuzzleflag <#channel> <0/1>");
 					}
+				} else if (command.equals("automuzzlewars")) {
+					if (args != null && args.length == 2) {
+						String target = args[0].toLowerCase();
+						if (Tim.db.channel_data.containsKey(target)) {
+							boolean flag = false;
+							if (!"0".equals(args[1])) {
+								flag = true;
+							}
+
+							ChannelInfo ci = Tim.db.channel_data.get(target);
+							ci.setWarAutoMuzzle(flag);
+
+							event.respond("Channel auto muzzle flag updated for " + target);
+						} else {
+							event.respond("I don't know about " + target);
+						}
+					} else {
+						event.respond("Usage: $setmuzzleflag <#channel> <0/1>");
+					}
 				} else if (command.equals("chatterlevel")) {
 					if (args != null && args.length == 2) {
 						String target = args[0].toLowerCase();
@@ -79,7 +98,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							} else {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
 								ci.setChatterLevel(level);
-								
+
 								event.respond("Chatter level updated for " + target);
 							}
 						} else {
@@ -87,6 +106,128 @@ public class AdminCommandListener extends ListenerAdapter {
 						}
 					} else {
 						event.respond("Usage: $chatterlevel <#channel> <-1 - 4>");
+					}
+				} else if (command.equals("chatterflag")) {
+					if (args != null && args.length == 2 && args[0].equals("list")) {
+						String target = args[1].toLowerCase();
+						if (Tim.db.channel_data.containsKey(target)) {
+							ChannelInfo ci = Tim.db.channel_data.get(target);
+
+							event.respond("Current status of chatter settings for " + target);
+
+							for (String setting : ci.chatter_enabled.keySet()) {
+								event.respond(setting + ": " + ci.chatter_enabled.get(setting).toString());
+							}
+						} else {
+							event.respond("I don't know about " + target);
+						}
+					} else if (args != null && args.length == 4 && args[0].equals("set")) {
+						String target = args[1].toLowerCase();
+						if (Tim.db.channel_data.containsKey(target)) {
+							ChannelInfo ci = Tim.db.channel_data.get(target);
+
+							if (ci.chatter_enabled.containsKey(args[2])) {
+								boolean flag = false;
+								if (!"0".equals(args[3])) {
+									flag = true;
+								}
+
+								ci.chatter_enabled.put(args[2], flag);
+
+								event.respond("Chatter flag updated.");
+							} else {
+								event.respond("I'm sorry, but I don't have a setting for " + args[2]);
+							}
+						} else {
+							event.respond("I don't know about " + target);
+						}
+					} else {
+						event.respond("Usage: $chatterflag list <#channel> OR $chatterflag set <#channel> <type> <0/1>");
+						event.respond("Valid Chatter Types: chainstory, challenge, creeper, dance, defenestrate, eightball, foof, fridge, get, greetings, helpful_reactions, markov, search, sing, silly_reactions, summon");
+					}
+				} else if (command.equals("commandflag")) {
+					if (args != null && args.length == 2 && args[0].equals("list")) {
+						String target = args[1].toLowerCase();
+						if (Tim.db.channel_data.containsKey(target)) {
+							ChannelInfo ci = Tim.db.channel_data.get(target);
+
+							event.respond("Current status of command settings for " + target);
+
+							for (String setting : ci.commands_enabled.keySet()) {
+								event.respond(setting + ": " + ci.commands_enabled.get(setting).toString());
+							}
+						} else {
+							event.respond("I don't know about " + target);
+						}
+					} else if (args != null && args.length == 4 && args[0].equals("set")) {
+						String target = args[1].toLowerCase();
+						if (Tim.db.channel_data.containsKey(target)) {
+							ChannelInfo ci = Tim.db.channel_data.get(target);
+
+							if (ci.commands_enabled.containsKey(args[2])) {
+								boolean flag = false;
+								if (!"0".equals(args[3])) {
+									flag = true;
+								}
+
+								ci.commands_enabled.put(args[2], flag);
+
+								event.respond("Command flag updated.");
+							} else {
+								event.respond("I'm sorry, but I don't have a setting for " + args[2]);
+							}
+						} else {
+							event.respond("I don't know about " + target);
+						}
+					} else {
+						event.respond("Usage: $commandflag list <#channel> OR $commandflag set <#channel> <command> <0/1>");
+						event.respond("Valid Commands: chainstory, challenge, commandment, creeper, dance, defenestrate, dice, eightball, expound, foof, fridge, get, lick, markov, search, sing, summon, woot");
+					}
+				} else if (command.equals("twitterrelay")) {
+					if (args != null && args.length == 2 && args[0].equals("list")) {
+						String target = args[1].toLowerCase();
+						if (Tim.db.channel_data.containsKey(target)) {
+							ChannelInfo ci = Tim.db.channel_data.get(target);
+
+							event.respond("Current Twitter accounts relayed for " + target);
+
+							for (String account : ci.twitter_accounts) {
+								event.respond(account);
+							}
+						} else {
+							event.respond("I don't know about " + target);
+						}
+					} else if (args != null && args.length == 3 && (args[0].equals("add") || args[0].equals("remove"))) {
+						String target = args[1].toLowerCase();
+						if (Tim.db.channel_data.containsKey(target)) {
+							ChannelInfo ci = Tim.db.channel_data.get(target);
+
+							if (args[0].equals("add")) {
+								if (Tim.twitterstream.checkAccount(args[2])) {
+									if (ci.twitter_accounts.add(args[2])) {
+										Tim.twitterstream.updateStreamFilters();
+										event.respond("Twitter account added to channel's twitter feed.");
+									} else {
+										event.respond("Twitter account already in the channel feed.");
+									}
+								} else {
+									event.respond("I'm sorry, but that isn't a valid twitter account.");
+								}
+							} else {
+								if (ci.twitter_accounts.remove(args[2])) {
+									Tim.twitterstream.updateStreamFilters();
+									event.respond("Twitter account removed from local feed.");
+								} else {
+									event.respond("Twitter account was not in the channel feed.");
+								}
+							}
+						} else {
+							event.respond("I don't know about " + target);
+						}
+					} else {
+						event.respond("Usage: $twitterrelay list <#channel> OR $twitterrelay <add/remove> <#channel> <account>");
+						event.respond("Suggested Accounts: NaNoWriMo, NaNoWordSprints, officeduckfrank, BotTimmy.");
+						event.respond("Note, no '@' before account names for this command.");
 					}
 				} else if (command.equals("shutdown")) {
 					if (event.getUser().getNick().equals("Utoxin")) {
@@ -131,7 +272,7 @@ public class AdminCommandListener extends ListenerAdapter {
 					}
 				} else if (command.equals("listbadwords")) {
 					event.respond("There are " + Tim.markov.badwordPatterns.keySet().size() + " total bad words.");
-					
+
 					for (String key : Tim.markov.badwordPatterns.keySet()) {
 						event.respond("Key: " + key + "  Pattern: " + Tim.markov.badwordPatterns.get(key).toString());
 					}
@@ -177,22 +318,23 @@ public class AdminCommandListener extends ListenerAdapter {
 		Tim.bot.sendAction(event.getChannel(), "whispers something to " + event.getUser().getNick() + ". (Check for a new window or tab with the help text.)");
 
 		String[] helplines = {"Core Admin Commands:",
-							  "    $shutdown - Forces bot to exit - DO NOT USE THIS COMMAND",
-							  "    $reload - Reloads data from MySQL (also $refreshdb)",
-							  "    $listitems [ <page #> ] - lists all currently approved !get/!getfor items",
+							  "    $listitems [ <page #> ]   - lists all currently approved !get/!getfor items",
 							  "    $listpending [ <page #> ] - lists all unapproved !get/!getfor items",
-							  "    $approveitem <item # from $listpending> - removes item from pending list and marks as approved for !get/!getfor",
-							  "    $disapproveitem <item # from $listitems> - removes item from approved list and marks as pending for !get/!getfor",
-							  "    $deleteitem <item # from $listpending> - permanently removes an item from the pending list for !get/!getfor",
-							  "    $ignore <username> - Places user on the bot's ignore list",
-							  "    $unignore <username> - Removes user from bot's ignore list",
-							  "    $listignores - Prints the list of ignored users",
+							  "    $approveitem <item #>     - removes item from pending list and marks as approved for !get/!getfor",
+							  "    $disapproveitem <item #>  - removes item from approved list and marks as pending for !get/!getfor",
+							  "    $deleteitem <item #>      - permanently removes an item from the pending list for !get/!getfor",
+							  "    $ignore <username>        - Places user on the bot's ignore list",
+							  "    $unignore <username>      - Removes user from bot's ignore list",
+							  "    $listignores              - Prints the list of ignored users",
 							  "Channel Setting Commands:",
-							  "    $setadultflag <#channel> <0/1>  - clears/sets adult flag on channel",
-							  "    $chatterlevel <#channel> <0-4>  - Set the chatter level for Timmy. 0 is off, 4 is the highest.",
-							  "    $relaytwitter <#channel> <0/1> [<account>]", 
-							  "                                    - clears/sets whether to relay tweets from various twitter accounts",
-							  "                                    - Accounts: @NaNoWriMo, @NaNoWordSprints, @BotTimmy, @officeduckfrank"
+							  "    $chatterlevel <#channel> <0-4>   - Set the chatter level for Timmy. 0 is off, 4 is the highest.",
+							  "    $setmuzzleflag <#channel> <0/1>  - Sets the channel's current muzzle state",
+							  "    $automuzzlewars <#channel> <0/1> - Whether to auto-muzzle the channel during wars.",
+							  "    $chatterflag                     - Control Timmy's chatter settings in your channel",
+							  "    $commandflag                     - Control which commands can be used in your channel",
+							  "    $relaytwitter <#channel> <0/1> [<account>]",
+							  "                                     - clears/sets whether to relay tweets from various twitter accounts",
+							  "                                     - Accounts: @NaNoWriMo, @NaNoWordSprints, @BotTimmy, @officeduckfrank"
 		};
 
 		for (int i = 0; i < helplines.length; ++i) {

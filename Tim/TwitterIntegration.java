@@ -49,6 +49,19 @@ public class TwitterIntegration extends StatusAdapter {
 			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
+	
+	public boolean checkAccount(String accountName) {
+		try {
+			User check = twitter.showUser(accountName);
+			if (check.getId() > 0) {
+				return true;
+			}
+		} catch (TwitterException ex) {
+			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		
+		return false;
+	}
 
 	public void sendTweet(String message) {
 		try {
@@ -138,6 +151,10 @@ public class TwitterIntegration extends StatusAdapter {
 		public void onStatus( Status status ) {
 			String colorString;
 			Relationship checkFriendship;
+			
+			if (status.getUser().getScreenName().equals("BotTimmy") && status.getInReplyToUserId() != -1) {
+				return;
+			}
 
 			if (status.getUser().getScreenName().equals("NaNoWriMo") && status.getInReplyToUserId() == -1) {
 				colorString = Colors.BOLD + Colors.DARK_BLUE;

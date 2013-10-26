@@ -110,7 +110,7 @@ public class DeIdler {
 			if (Tim.rand.nextInt(100) < odds) {
 				String[] actions;
 
-				cdata.chatterTimer += Tim.rand.nextInt((int) elapsed);
+				cdata.chatterTimer += Tim.rand.nextInt((int) elapsed / 3);
 				elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 				cdata.chatterTimer += Math.round(elapsed / 2);
 
@@ -121,11 +121,11 @@ public class DeIdler {
 				if (cdata.chatter_enabled.get("markov") && 
 						!cdata.amusement_chatter_available()) {
 					actions = new String[] {
-						"markhov",};
+						"markov",};
 				} else if (cdata.chatter_enabled.get("markov") && 
 						cdata.amusement_chatter_available()) {
 					actions = new String[] {
-						"markhov",
+						"markov",
 						"amusement",};
 				} else if (!cdata.chatter_enabled.get("markov") && 
 						cdata.amusement_chatter_available()) {
@@ -137,7 +137,7 @@ public class DeIdler {
 
 				String action = actions[Tim.rand.nextInt(actions.length)];
 				switch (action) {
-					case "markhov":
+					case "markov":
 						Tim.markov.randomAction(cdata.channel, Tim.rand.nextBoolean() ? "say" : "emote");
 						break;
 					case "amusement":

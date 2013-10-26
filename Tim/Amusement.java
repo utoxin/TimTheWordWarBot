@@ -446,7 +446,7 @@ public class Amusement {
 		
 		Set<String> enabled_actions = new HashSet<>(16);
 		for (String action : actions) {
-			if (!cdata.chatter_enabled.get(action)) {
+			if (cdata.chatter_enabled.get(action)) {
 				enabled_actions.add(action);
 			}
 		}
@@ -457,26 +457,37 @@ public class Amusement {
 
 		String action = enabled_actions.toArray(new String[enabled_actions.size()])[Tim.rand.nextInt(enabled_actions.size())];
 
-		if ("item".equals(action)) {
-			getItem(channel, sender.getNick(), null);
-		} else if ("eightball".equals(action)) {
-			eightball(channel, sender, true);
-		} else if ("fridge".equals(action)) {
-			throwFridge(channel, sender, null, false);
-		} else if ("defenestrate".equals(action)) {
-			defenestrate(channel, sender, null, false);
-		} else if ("sing".equals(action)) {
-			sing(channel);
-		} else if ("foof".equals(action)) {
-			foof(channel, sender, null, false);
-		} else if ("dance".equals(action)) {
-			dance(channel);
-		} else if ("summon".equals(action)) {
-			summon(channel, null, false);
-		} else if ("creeper".equals(action)) {
-			creeper(channel, sender, null, false);
-		} else if ("search".equals(action)) {
-			search(channel, sender, null);
+		switch (action) {
+			case "item":
+				getItem(channel, sender.getNick(), null);
+				break;
+			case "eightball":
+				eightball(channel, sender, true);
+				break;
+			case "fridge":
+				throwFridge(channel, sender, null, false);
+				break;
+			case "defenestrate":
+				defenestrate(channel, sender, null, false);
+				break;
+			case "sing":
+				sing(channel);
+				break;
+			case "foof":
+				foof(channel, sender, null, false);
+				break;
+			case "dance":
+				dance(channel);
+				break;
+			case "summon":
+				summon(channel, null, false);
+				break;
+			case "creeper":
+				creeper(channel, sender, null, false);
+				break;
+			case "search":
+				search(channel, sender, null);
+				break;
 		}
 	}
 
