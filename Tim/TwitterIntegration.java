@@ -4,8 +4,12 @@
  */
 package Tim;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang.ArrayUtils;
 import org.pircbotx.Colors;
 import twitter4j.*;
 import twitter4j.auth.AccessToken;
@@ -17,32 +21,35 @@ import twitter4j.auth.AccessToken;
 public class TwitterIntegration extends StatusAdapter {
 	Twitter twitter;
 	AccessToken token;
-	static User BotTimmy;
-	static User NaNoWordSprints;
-	static User NaNoWriMo;
-	static User officeduckfrank;
 	TwitterStream userStream;
 	TwitterStream publicStream;
-	
+	String accessKey;
+	String accessSecret;
+	String consumerKey;
+	String consumerSecret;
+
+	static User BotTimmy;
+	boolean started = false;
+	HashMap<Long,HashSet<String>> accountsToChannels = new HashMap<>(32);
+
 	public TwitterIntegration() {
-		token = new AccessToken(Tim.db.getSetting("twitter_access_key"), Tim.db.getSetting("twitter_access_secret"));
+		accessKey = Tim.db.getSetting("twitter_access_key");
+		accessSecret = Tim.db.getSetting("twitter_access_secret");
+		consumerKey = Tim.db.getSetting("twitter_consumer_key");
+		consumerSecret = Tim.db.getSetting("twitter_consumer_secret");
+
+		token = new AccessToken(accessKey, accessSecret);
 		twitter = new TwitterFactory().getInstance();
-		twitter.setOAuthConsumer(Tim.db.getSetting("twitter_consumer_key"), Tim.db.getSetting("twitter_consumer_secret"));
+		twitter.setOAuthConsumer(consumerKey, consumerSecret);
 		twitter.setOAuthAccessToken(token);
 
 		try {
 			BotTimmy = twitter.showUser("BotTimmy");
-			Thread.sleep(250);
-			NaNoWordSprints = twitter.showUser("NaNoWordSprints");
-			Thread.sleep(250);
-			NaNoWriMo = twitter.showUser("NaNoWriMo");
-			Thread.sleep(250);
-			officeduckfrank = twitter.showUser("officeduckfrank");
-		} catch (TwitterException | InterruptedException ex) {
+		} catch (TwitterException ex) {
 			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-	
+
 	public void sendTweet(String message) {
 		try {
 			if (message.length() > 118) {
@@ -55,27 +62,73 @@ public class TwitterIntegration extends StatusAdapter {
 			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-	
-	public void startUserStream() {
+
+	private Set<Long> getTwitterIds(String[] usernames) {
+		ResponseList<User> check;
+		Set<Long> userIds = new HashSet<>(128);
+
+		try {
+			check = twitter.lookupUsers(usernames);
+
+			for(User user : check) {
+				userIds.add(user.getId());
+			}
+		} catch (TwitterException ex) {
+			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+		return userIds;
+	}
+
+	public void startStream() {
 		userStream = new TwitterStreamFactory().getInstance();
-		userStream.setOAuthConsumer(Tim.db.getSetting("twitter_consumer_key"), Tim.db.getSetting("twitter_consumer_secret"));
+		userStream.setOAuthConsumer(consumerKey, consumerSecret);
 		userStream.setOAuthAccessToken(token);
 		userStream.addListener(userListener);
 		userStream.user();
-	}
-
-	public void startPublicStream() {
-		long[] userIds = {NaNoWriMo.getId(), NaNoWordSprints.getId(), BotTimmy.getId(), officeduckfrank.getId()};
-		String[] hashtags = {"#NaNoWriMo"};
-
-		FilterQuery filter = new FilterQuery(0, userIds, hashtags);
 
 		publicStream = new TwitterStreamFactory().getInstance();
-		publicStream.setOAuthConsumer(Tim.db.getSetting("twitter_consumer_key"), Tim.db.getSetting("twitter_consumer_secret"));
+		publicStream.setOAuthConsumer(consumerKey, consumerSecret);
 		publicStream.setOAuthAccessToken(token);
+		updateStreamFilters();
+	}
 
-		publicStream.cleanUp();
-		
+	public void updateStreamFilters() {
+		Set<Long> userIds = new HashSet<>(128);
+		Set<Long> tmpUserIds;
+		HashSet<String> tmpAccountHash;
+
+		String[] hashtags = {"#NaNoWriMo"};
+
+		for (ChannelInfo channel : Tim.db.channel_data.values()) {
+			if (channel.twitter_accounts.size() > 0) {
+				tmpUserIds = getTwitterIds(channel.twitter_accounts.toArray(new String[channel.twitter_accounts.size()]));
+
+				for (Long userId : tmpUserIds) {
+					if (!accountsToChannels.containsKey(userId)) {
+						accountsToChannels.put(userId, new HashSet<String>(64));
+					}
+
+					tmpAccountHash = accountsToChannels.get(userId);
+					tmpAccountHash.add(channel.channel.getName().toLowerCase());
+				}
+
+				userIds.addAll(
+					tmpUserIds
+				);
+			}
+		}
+
+		long[] finalUserIds = ArrayUtils.toPrimitive(userIds.toArray(new Long[userIds.size()]));
+
+		FilterQuery filter = new FilterQuery(0, finalUserIds, hashtags);
+
+		if (started) {
+			publicStream.cleanUp();
+		} else {
+			started = true;
+		}
+
 		publicStream.addListener(publicListener);
 		publicStream.filter(filter);
 	}
@@ -95,32 +148,54 @@ public class TwitterIntegration extends StatusAdapter {
 			} else if (status.getUser().getScreenName().equals("officeduckfrank") && status.getInReplyToUserId() == -1) {
 				colorString = Colors.BOLD + Colors.MAGENTA;
 			} else {
+				colorString = Colors.BOLD + Colors.OLIVE;
+			}
+
+			String message = colorString + "@" + status.getUser().getScreenName() + ": " + Colors.NORMAL + status.getText();
+
+			HashSet<String> channels = accountsToChannels.get(status.getUser().getId());
+
+			float timeDiff;
+			for (String channelName : channels) {
+				ChannelInfo channel = Tim.db.channel_data.get(channelName);
+				
+				if (channel.tweetBucket < channel.tweetBucketMax) {
+					timeDiff = (System.currentTimeMillis() - channel.twitterTimer) / 1000f;
+					channel.twitterTimer = System.currentTimeMillis();
+					channel.tweetBucket += (timeDiff / 60f) * channel.tweetBucketChargeRate;
+
+					if (channel.tweetBucket > channel.tweetBucketMax) {
+						channel.tweetBucket = channel.tweetBucketMax;
+					}
+				}
+				
+				if (channel.muzzled) {
+					continue;
+				}
+				
+				if (channel.tweetBucket >= 1) {
+					Tim.bot.sendMessage(channel.channel, message);
+					channel.tweetBucket -= 1f;
+				}
+			}
+
+			if (!status.getUser().getScreenName().equals("BotTimmy")) {
 				try {
 					checkFriendship = twitter.showFriendship(BotTimmy.getId(), status.getUser().getId());
 					if (status.getText().toLowerCase().contains("#nanowrimo") && Tim.rand.nextInt(100) < 3 && checkFriendship.isTargetFollowingSource() ) {
 						int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
-						StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r) + " #NaNoWriMo #FearTimmy");
+						String message2 = "@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r);
+						if (message2.length() > 118) {
+							message2 = message2.substring(0, 115) + "...";
+						}
+
+						StatusUpdate reply = new StatusUpdate(message2 + " #NaNoWriMo #FearTimmy");
+
 						reply.setInReplyToStatusId(status.getId());
 						twitter.updateStatus(reply);
 					}
 				} catch (TwitterException ex) {
 					Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
-				}
-
-				return;
-			}
-
-			String message = colorString + "@" + status.getUser().getScreenName() + ": " + Colors.NORMAL + status.getText();
-
-			for (ChannelInfo channel : Tim.db.channel_data.values()) {
-				if (status.getUser().getId() == NaNoWriMo.getId() && channel.relayNaNoWriMo) {
-					Tim.bot.sendMessage(channel.channel, message);
-				} else if (status.getUser().getId() == NaNoWordSprints.getId() && channel.relayNaNoWordSprints) {
-					Tim.bot.sendMessage(channel.channel, message);
-				} else if (status.getUser().getId() == BotTimmy.getId() && channel.relayBotTimmy) {
-					Tim.bot.sendMessage(channel.channel, message);
-				} else if (status.getUser().getId() == officeduckfrank.getId() && channel.relayofficeduckfrank) {
-					Tim.bot.sendMessage(channel.channel, message);
 				}
 			}
 		}
@@ -146,7 +221,7 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 	};
 
-	StatusListener userListener = new UserStreamListener() {
+	UserStreamListener userListener = new UserStreamListener() {
 		@Override
 		public void onStatus( Status status ) {
 			boolean sendReply = false;
@@ -174,15 +249,22 @@ public class TwitterIntegration extends StatusAdapter {
 
 			if (sendReply) {
 				try {
-					StatusUpdate reply;
+					String message;
 					if (getItem) {
 						int r = Tim.rand.nextInt(Tim.amusement.approved_items.size());
-						reply = new StatusUpdate("@" + status.getUser().getScreenName() + " Here, have " + Tim.amusement.approved_items.get(r) + " #NaNoWriMo #FearTimmy");
+						message = "@" + status.getUser().getScreenName() + " Here, have " + Tim.amusement.approved_items.get(r);
 					} else {
 						int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
-						reply = new StatusUpdate("@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r) + " #NaNoWriMo #FearTimmy");
+						message = "@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r);
 					}
+
+					if (message.length() > 118) {
+						message = message.substring(0, 115) + "...";
+					}
+
+					StatusUpdate reply = new StatusUpdate(message + " #NaNoWriMo #FearTimmy");
 					reply.setInReplyToStatusId(status.getId());
+
 					twitter.updateStatus(reply);
 				} catch (TwitterException ex) {
 					Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);

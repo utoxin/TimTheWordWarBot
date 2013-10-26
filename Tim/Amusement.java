@@ -418,19 +418,20 @@ public class Amusement {
 
 		if (sender == null) {
 			Set<User> users = channel.getUsers();
+			HashSet<User> finalUsers = new HashSet<>(10);
 
 			int size = users.size();
 			for (User user : users) {
-				if (user.getNick().equals("Timmy") || (size > 2 && user.getNick().equals("Skynet"))) {
-					users.remove(user);
+				if (!user.getNick().equals("Timmy") && (size <= 2 || !user.getNick().equals("Skynet"))) {
+					finalUsers.add(user);
 				}
 			}
 
-			if (users.size() > 0) {
-				int r = Tim.rand.nextInt(users.size());
+			if (finalUsers.size() > 0) {
+				int r = Tim.rand.nextInt(finalUsers.size());
 				int i = 0;
 
-				for (User user : users) {
+				for (User user : finalUsers) {
 					if (i == r) {
 						sender = user;
 					}

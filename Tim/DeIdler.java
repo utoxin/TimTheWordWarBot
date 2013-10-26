@@ -118,14 +118,17 @@ public class DeIdler {
 					continue;
 				}
 
-				if (cdata.chatter_enabled.get("markov") && !cdata.amusement_chatter_available()) {
+				if (cdata.chatter_enabled.get("markov") && 
+						!cdata.amusement_chatter_available()) {
 					actions = new String[] {
 						"markhov",};
-				} else if (cdata.chatter_enabled.get("markov") && cdata.amusement_chatter_available()) {
+				} else if (cdata.chatter_enabled.get("markov") && 
+						cdata.amusement_chatter_available()) {
 					actions = new String[] {
 						"markhov",
 						"amusement",};
-				} else if (!cdata.chatter_enabled.get("markov") && cdata.amusement_chatter_available()) {
+				} else if (!cdata.chatter_enabled.get("markov") && 
+						cdata.amusement_chatter_available()) {
 					actions = new String[] {
 						"amusement",};
 				} else {

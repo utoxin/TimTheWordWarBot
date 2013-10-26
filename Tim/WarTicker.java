@@ -162,7 +162,7 @@ public class WarTicker {
 	private void beginWar( WordWar war ) {
 		Tim.bot.sendMessage(war.getChannel(), "WordWar '" + war.getName() + "' starts now! (" + war.getDuration() / 60 + " minutes)");
 
-		if ((war.cdata.muzzled == false || war.cdata.auto_muzzled)) {
+		if (war.cdata.auto_muzzle_wars && (war.cdata.muzzled == false || war.cdata.auto_muzzled)) {
 			war.cdata.setMuzzleFlag(true, true);
 		}
 	}

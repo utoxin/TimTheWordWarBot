@@ -31,13 +31,12 @@ public class ChannelInfo {
 	public float tweetBucketMax;
 	public float tweetBucketChargeRate;
 	
-	public boolean muzzled;
-	public boolean auto_muzzled;
+	public boolean muzzled = false;
+	public boolean auto_muzzle_wars = true;
+	public boolean auto_muzzled = false;
 
 	public ChannelInfo(Channel channel) {
 		this.channel = channel;
-		this.muzzled = false;
-		this.auto_muzzled = false;
 	}
 
 	public void setDefaultOptions() {
@@ -101,13 +100,17 @@ public class ChannelInfo {
 
 		this.chatterTimer = System.currentTimeMillis() / 1000;
 	}
+	
+	public void setWarAutoMuzzle( boolean auto_muzzle_wars ) {
+		this.auto_muzzle_wars = auto_muzzle_wars;
+	}
 
 	public void setTwitterTimers(float tweetBucketMax, float tweetBucketChargeRate) {
 		this.tweetBucketMax = tweetBucketMax;
 		this.tweetBucketChargeRate = tweetBucketChargeRate;
 
 		this.tweetBucket = 0;
-		this.twitterTimer = System.currentTimeMillis() / 1000;
+		this.twitterTimer = System.currentTimeMillis();
 	}
 	
 	public void addChatterSetting(String name, Boolean value) {
@@ -119,7 +122,15 @@ public class ChannelInfo {
 	}
 	
 	public void addTwitterAccount(String name) {
+		addTwitterAccount(name, false);
+	}
+	
+	public void addTwitterAccount(String name, boolean triggerUpdate) {
 		this.twitter_accounts.add(name);
+		
+		if (triggerUpdate) {
+			Tim.twitterstream.updateStreamFilters();
+		}
 	}
 	
 	public void removeTwitterAccount(String name) {

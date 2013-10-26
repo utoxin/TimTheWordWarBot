@@ -159,6 +159,7 @@ public class DBAccess {
 			while (rs.next()) {
 				channel = Tim.bot.getChannel(rs.getString("channel"));
 				ci = new ChannelInfo(channel);
+				ci.setDefaultOptions();
 
 				ci.setChatterTimers(
 					rs.getInt("chatter_name_multiplier"),
@@ -167,6 +168,9 @@ public class DBAccess {
 				ci.setTwitterTimers(
 					rs.getFloat("tweet_bucket_max"),
 					rs.getFloat("tweet_bucket_charge_rate"));
+				
+				ci.setWarAutoMuzzle(
+					rs.getBoolean("auto_muzzle_wars"));
 
 				s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_chatter_settings` WHERE `channel` = ?");
 				s2.setString(1, rs.getString("channel"));
@@ -205,6 +209,8 @@ public class DBAccess {
 				rs2.close();
 
 				this.channel_data.put(channel.getName().toLowerCase(), ci);
+				
+				this.saveChannelSettings(ci);
 			}
 
 			s.close();
@@ -318,12 +324,13 @@ public class DBAccess {
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET chatter_level = ?, chatter_name_multiplier = ?, tweet_bucket_max = ?, tweet_bucket_charge_rate = ? WHERE channel = ?");
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET chatter_level = ?, chatter_name_multiplier = ?, tweet_bucket_max = ?, tweet_bucket_charge_rate = ?, auto_muzzle_wars = ? WHERE channel = ?");
 			s.setInt(1, channel.chatterLevel);
 			s.setInt(2, channel.chatterNameMultiplier);
 			s.setFloat(3, channel.tweetBucketMax);
 			s.setFloat(4, channel.tweetBucketChargeRate);
-			s.setString(5, channel.channel.getName().toLowerCase());
+			s.setBoolean(5, channel.auto_muzzle_wars);
+			s.setString(6, channel.channel.getName().toLowerCase());
 			s.executeUpdate();
 
 			s = con.prepareStatement("DELETE FROM `channel_chatter_settings` WHERE `channel` = ?;");
