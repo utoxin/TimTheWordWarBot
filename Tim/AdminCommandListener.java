@@ -79,6 +79,7 @@ public class AdminCommandListener extends ListenerAdapter {
 
 							ChannelInfo ci = Tim.db.channel_data.get(target);
 							ci.setWarAutoMuzzle(flag);
+							Tim.db.saveChannelSettings(ci);
 
 							event.respond("Channel auto muzzle flag updated for " + target);
 						} else {
@@ -98,6 +99,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							} else {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
 								ci.setChatterLevel(level);
+								Tim.db.saveChannelSettings(ci);
 
 								event.respond("Chatter level updated for " + target);
 							}
@@ -133,6 +135,7 @@ public class AdminCommandListener extends ListenerAdapter {
 								}
 
 								ci.chatter_enabled.put(args[2], flag);
+								Tim.db.saveChannelSettings(ci);
 
 								event.respond("Chatter flag updated.");
 							} else {
@@ -171,6 +174,7 @@ public class AdminCommandListener extends ListenerAdapter {
 								}
 
 								ci.commands_enabled.put(args[2], flag);
+								Tim.db.saveChannelSettings(ci);
 
 								event.respond("Command flag updated.");
 							} else {
@@ -204,23 +208,16 @@ public class AdminCommandListener extends ListenerAdapter {
 
 							if (args[0].equals("add")) {
 								if (Tim.twitterstream.checkAccount(args[2])) {
-									if (ci.twitter_accounts.add(args[2])) {
-										Tim.twitterstream.updateStreamFilters();
-										event.respond("Twitter account added to channel's twitter feed.");
-									} else {
-										event.respond("Twitter account already in the channel feed.");
-									}
+									ci.addTwitterAccount(args[2]);
+									event.respond("Twitter account added to channel's twitter feed.");
 								} else {
 									event.respond("I'm sorry, but that isn't a valid twitter account.");
 								}
 							} else {
-								if (ci.twitter_accounts.remove(args[2])) {
-									Tim.twitterstream.updateStreamFilters();
-									event.respond("Twitter account removed from local feed.");
-								} else {
-									event.respond("Twitter account was not in the channel feed.");
-								}
+								ci.removeTwitterAccount(args[2]);
+								event.respond("Twitter account removed from local feed.");
 							}
+							Tim.db.saveChannelSettings(ci);
 						} else {
 							event.respond("I don't know about " + target);
 						}
@@ -332,9 +329,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							  "    $automuzzlewars <#channel> <0/1> - Whether to auto-muzzle the channel during wars.",
 							  "    $chatterflag                     - Control Timmy's chatter settings in your channel",
 							  "    $commandflag                     - Control which commands can be used in your channel",
-							  "    $relaytwitter <#channel> <0/1> [<account>]",
-							  "                                     - clears/sets whether to relay tweets from various twitter accounts",
-							  "                                     - Accounts: @NaNoWriMo, @NaNoWordSprints, @BotTimmy, @officeduckfrank"
+							  "    $twitterrelay                    - Control Timmy's twitter relays."
 		};
 
 		for (int i = 0; i < helplines.length; ++i) {

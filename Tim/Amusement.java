@@ -14,6 +14,7 @@ package Tim;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -505,16 +506,21 @@ public class Amusement {
 	protected void getItem( Channel channel, String target, String[] args ) {
 		String item = "";
 		if (args != null) {
-			if (!( this.approved_items.contains(item) || this.pending_items.contains(item) ) && item.length() < 300) {
-				this.insertPendingItem(item);
-				this.pending_items.add(item);
-			}
-
 			if (Tim.rand.nextInt(100) < 65) {
 				item = args[0];
 				for (int i = 1; i < args.length; ++i) {
 					item = item + " " + args[i];
 				}
+				
+				if (!( this.approved_items.contains(item) || this.pending_items.contains(item) ) && item.length() < 300) {
+					this.insertPendingItem(item);
+					this.pending_items.add(item);
+				}
+
+				if (item.toLowerCase().contains("spoon")) {
+					item = "";
+					Tim.bot.sendAction(channel, "rumages around in the back room for a bit, then calls out. \"Sorry... there is no spoon. Maybe this will do...\"");
+				}			
 			} else {
 				Tim.bot.sendAction(channel, "rumages around in the back room for a bit, then calls out. \"Sorry... I don't think I have that. Maybe this will do...\"");
 			}

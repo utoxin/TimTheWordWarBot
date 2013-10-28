@@ -103,6 +103,7 @@ public class TwitterIntegration extends StatusAdapter {
 		publicStream = new TwitterStreamFactory().getInstance();
 		publicStream.setOAuthConsumer(consumerKey, consumerSecret);
 		publicStream.setOAuthAccessToken(token);
+		publicStream.addListener(publicListener);
 		updateStreamFilters();
 	}
 
@@ -151,23 +152,29 @@ public class TwitterIntegration extends StatusAdapter {
 		public void onStatus( Status status ) {
 			String colorString;
 			Relationship checkFriendship;
-			
-			if (status.getUser().getScreenName().equals("BotTimmy") && status.getInReplyToUserId() != -1) {
+
+			switch (status.getUser().getScreenName()) {
+				case "NaNoWriMo":
+					colorString = Colors.BOLD + Colors.DARK_BLUE;
+					break;
+				case "NaNoWordSprints":
+					colorString = Colors.BOLD + Colors.DARK_GREEN;
+					break;
+				case "BotTimmy":
+					colorString = Colors.BOLD + Colors.RED;
+					break;
+				case "officeduckfrank":
+					colorString = Colors.BOLD + Colors.MAGENTA;
+					break;
+				default:
+					colorString = Colors.BOLD + Colors.OLIVE;
+					break;
+			}
+
+			if (status.getInReplyToUserId() != -1) {
 				return;
 			}
-
-			if (status.getUser().getScreenName().equals("NaNoWriMo") && status.getInReplyToUserId() == -1) {
-				colorString = Colors.BOLD + Colors.DARK_BLUE;
-			} else if (status.getUser().getScreenName().equals("NaNoWordSprints") && status.getInReplyToUserId() == -1) {
-				colorString = Colors.BOLD + Colors.DARK_GREEN;
-			} else if (status.getUser().getScreenName().equals("BotTimmy") && status.getInReplyToUserId() == -1) {
-				colorString = Colors.BOLD + Colors.RED;
-			} else if (status.getUser().getScreenName().equals("officeduckfrank") && status.getInReplyToUserId() == -1) {
-				colorString = Colors.BOLD + Colors.MAGENTA;
-			} else {
-				colorString = Colors.BOLD + Colors.OLIVE;
-			}
-
+			
 			String message = colorString + "@" + status.getUser().getScreenName() + ": " + Colors.NORMAL + status.getText();
 
 			HashSet<String> channels = accountsToChannels.get(status.getUser().getId());

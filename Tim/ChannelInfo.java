@@ -135,6 +135,7 @@ public class ChannelInfo {
 	
 	public void removeTwitterAccount(String name) {
 		this.twitter_accounts.remove(name);
+		Tim.twitterstream.updateStreamFilters();
 	}
 	
 	public void setMuzzleFlag(boolean muzzled, boolean auto) {
