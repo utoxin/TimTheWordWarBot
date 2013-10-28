@@ -140,10 +140,10 @@ public class TwitterIntegration extends StatusAdapter {
 		if (started) {
 			publicStream.cleanUp();
 		} else {
+			publicStream.addListener(publicListener);
 			started = true;
 		}
 
-		publicStream.addListener(publicListener);
 		publicStream.filter(filter);
 	}
 
@@ -255,7 +255,7 @@ public class TwitterIntegration extends StatusAdapter {
 				if (Tim.rand.nextInt(100) < 15) {
 					getItem = true;
 				}
-			} else if (status.getText().toLowerCase().contains("@bottimmy") && Tim.rand.nextInt(100) < 50) {
+			} else if (status.getText().toLowerCase().contains("@bottimmy") && Tim.rand.nextInt(100) < 80) {
 				sendReply = true;
 				if (Tim.rand.nextInt(100) < 25) {
 					getItem = true;
