@@ -208,14 +208,14 @@ public class AdminCommandListener extends ListenerAdapter {
 
 							if (args[0].equals("add")) {
 								if (Tim.twitterstream.checkAccount(args[2])) {
-									ci.addTwitterAccount(args[2]);
-									event.respond("Twitter account added to channel's twitter feed.");
+									event.respond("Twitter account added to channel's twitter feed. There may be a short delay (up to 90 seconds) before it takes effect.");
+									ci.addTwitterAccount(args[2], true);
 								} else {
 									event.respond("I'm sorry, but that isn't a valid twitter account.");
 								}
 							} else {
+								event.respond("Twitter account removed from local feed. There may be a short delay (up to 90 seconds) before it takes effect.");
 								ci.removeTwitterAccount(args[2]);
-								event.respond("Twitter account removed from local feed.");
 							}
 							Tim.db.saveChannelSettings(ci);
 						} else {

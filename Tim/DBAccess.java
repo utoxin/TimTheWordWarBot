@@ -150,70 +150,68 @@ public class DBAccess {
 		try {
 			con = pool.getConnection(timeout);
 
-			Statement s = con.createStatement();
-			ResultSet rs = s.executeQuery("SELECT * FROM `channels`");
-			
-			PreparedStatement s2;
-			ResultSet rs2;
-
-			while (rs.next()) {
-				channel = Tim.bot.getChannel(rs.getString("channel"));
-				ci = new ChannelInfo(channel);
-				ci.setDefaultOptions();
-
-				ci.setChatterTimers(
-					rs.getInt("chatter_name_multiplier"),
-					rs.getInt("chatter_level"));
-
-				ci.setTwitterTimers(
-					rs.getFloat("tweet_bucket_max"),
-					rs.getFloat("tweet_bucket_charge_rate"));
-				
-				ci.setWarAutoMuzzle(
-					rs.getBoolean("auto_muzzle_wars"));
-
-				s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_chatter_settings` WHERE `channel` = ?");
-				s2.setString(1, rs.getString("channel"));
-				s2.executeQuery();
-
-				rs2 = s2.getResultSet();
-				while (rs2.next()) {
-					ci.addChatterSetting(rs2.getString("setting"), rs2.getBoolean("value"));
+			ResultSet rs;
+			try (Statement s = con.createStatement()) {
+				rs = s.executeQuery("SELECT * FROM `channels`");
+				PreparedStatement s2;
+				ResultSet rs2;
+				while (rs.next()) {
+					channel = Tim.bot.getChannel(rs.getString("channel"));
+					ci = new ChannelInfo(channel);
+					ci.setDefaultOptions();
+					
+					ci.setChatterTimers(
+							rs.getInt("chatter_name_multiplier"),
+							rs.getInt("chatter_level"));
+					
+					ci.setTwitterTimers(
+							rs.getFloat("tweet_bucket_max"),
+							rs.getFloat("tweet_bucket_charge_rate"));
+					
+					ci.setWarAutoMuzzle(
+							rs.getBoolean("auto_muzzle_wars"));
+					
+					s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_chatter_settings` WHERE `channel` = ?");
+					s2.setString(1, rs.getString("channel"));
+					s2.executeQuery();
+					
+					rs2 = s2.getResultSet();
+					while (rs2.next()) {
+						ci.addChatterSetting(rs2.getString("setting"), rs2.getBoolean("value"));
+					}
+					
+					s2.close();
+					rs2.close();
+					
+					s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_command_settings` WHERE `channel` = ?");
+					s2.setString(1, rs.getString("channel"));
+					s2.executeQuery();
+					
+					rs2 = s2.getResultSet();
+					while (rs2.next()) {
+						ci.addCommandSetting(rs2.getString("setting"), rs2.getBoolean("value"));
+					}
+					
+					s2.close();
+					rs2.close();
+					
+					s2 = con.prepareStatement("SELECT `account` FROM `channel_twitter_feeds` WHERE `channel` = ?");
+					s2.setString(1, rs.getString("channel"));
+					s2.executeQuery();
+					
+					rs2 = s2.getResultSet();
+					while (rs2.next()) {
+						ci.addTwitterAccount(rs2.getString("account"));
+					}
+					
+					s2.close();
+					rs2.close();
+					
+					this.channel_data.put(channel.getName().toLowerCase(), ci);
+					
+					this.saveChannelSettings(ci);
 				}
-
-				s2.close();
-				rs2.close();
-
-				s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_command_settings` WHERE `channel` = ?");
-				s2.setString(1, rs.getString("channel"));
-				s2.executeQuery();
-
-				rs2 = s2.getResultSet();
-				while (rs2.next()) {
-					ci.addCommandSetting(rs2.getString("setting"), rs2.getBoolean("value"));
-				}
-
-				s2.close();
-				rs2.close();
-				
-				s2 = con.prepareStatement("SELECT `account` FROM `channel_twitter_feeds` WHERE `channel` = ?");
-				s2.setString(1, rs.getString("channel"));
-				s2.executeQuery();
-
-				rs2 = s2.getResultSet();
-				while (rs2.next()) {
-					ci.addTwitterAccount(rs2.getString("account"));
-				}
-
-				s2.close();
-				rs2.close();
-
-				this.channel_data.put(channel.getName().toLowerCase(), ci);
-				
-				this.saveChannelSettings(ci);
 			}
-
-			s.close();
 			rs.close();
 			con.close();
 		} catch (SQLException ex) {

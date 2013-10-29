@@ -29,7 +29,8 @@ public class TwitterIntegration extends StatusAdapter {
 	String consumerSecret;
 
 	static User BotTimmy;
-	boolean started = false;
+	boolean reconnect_pending = false;
+	long lastConnect;
 	HashMap<Long,HashSet<String>> accountsToChannels = new HashMap<>(32);
 
 	public TwitterIntegration() {
@@ -100,10 +101,6 @@ public class TwitterIntegration extends StatusAdapter {
 		userStream.addListener(userListener);
 		userStream.user();
 
-		publicStream = new TwitterStreamFactory().getInstance();
-		publicStream.setOAuthConsumer(consumerKey, consumerSecret);
-		publicStream.setOAuthAccessToken(token);
-		publicStream.addListener(publicListener);
 		updateStreamFilters();
 	}
 
@@ -134,17 +131,35 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 
 		long[] finalUserIds = ArrayUtils.toPrimitive(userIds.toArray(new Long[userIds.size()]));
+		
+		if (publicStream != null) {
+			if (reconnect_pending == true) {
+				return;
+			} else {
+				reconnect_pending = true;
+				long nextConnect = (lastConnect + 90000) - System.currentTimeMillis();
+				if (nextConnect > 0) {
+					Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, "Sleeping for {0} milliseconds before twitter reconnect.", nextConnect);
+					try {
+						Thread.sleep(nextConnect);
+					} catch (InterruptedException ex) {
+						Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+					}
+				}
+				publicStream.cleanUp();			
+			}
+		}
+		
+		publicStream = new TwitterStreamFactory().getInstance();
+		publicStream.setOAuthConsumer(consumerKey, consumerSecret);
+		publicStream.setOAuthAccessToken(token);
+		publicStream.addListener(publicListener);
 
 		FilterQuery filter = new FilterQuery(0, finalUserIds, hashtags);
-
-		if (started) {
-			publicStream.cleanUp();
-		} else {
-			publicStream.addListener(publicListener);
-			started = true;
-		}
-
 		publicStream.filter(filter);
+
+		lastConnect = System.currentTimeMillis();
+		reconnect_pending = false;
 	}
 
 	StatusListener publicListener = new StatusListener() {
