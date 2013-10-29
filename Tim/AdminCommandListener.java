@@ -207,7 +207,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							ChannelInfo ci = Tim.db.channel_data.get(target);
 
 							if (args[0].equals("add")) {
-								if (Tim.twitterstream.checkAccount(args[2])) {
+								if (Tim.twitterstream.checkAccount(args[2]) > 0) {
 									event.respond("Twitter account added to channel's twitter feed. There may be a short delay (up to 90 seconds) before it takes effect.");
 									ci.addTwitterAccount(args[2], true);
 								} else {

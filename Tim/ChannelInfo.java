@@ -39,6 +39,31 @@ public class ChannelInfo {
 		this.channel = channel;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		String NEW_LINE = System.getProperty("line.separator");
+
+		result.append(this.getClass().getName()).append(" Object {").append(NEW_LINE);
+		result.append(" Channel: ").append(channel).append(NEW_LINE);
+		result.append(" Chatter Settings: ").append(chatter_enabled).append(NEW_LINE);
+		result.append(" Command Settings: ").append(commands_enabled).append(NEW_LINE);
+		result.append(" Twitter Accounts: ").append(twitter_accounts).append(NEW_LINE);
+		result.append(" Chatter Timer: ").append(chatterTimer).append(NEW_LINE);
+		result.append(" Chatter Name *: ").append(chatterNameMultiplier).append(NEW_LINE);
+		result.append(" Chatter Level: ").append(chatterLevel).append(NEW_LINE);
+		result.append(" Twitter Timer: ").append(twitterTimer).append(NEW_LINE);
+		result.append(" Twitter Bucket: ").append(tweetBucket).append(NEW_LINE);
+		result.append(" Twitter Bucket Max: ").append(tweetBucketMax).append(NEW_LINE);
+		result.append(" Twitter Bucket Charge Rate: ").append(tweetBucketChargeRate).append(NEW_LINE);
+		result.append(" Muzzled: ").append(muzzled).append(NEW_LINE);
+		result.append(" Auto Muzzle Wars: ").append(auto_muzzle_wars).append(NEW_LINE);
+
+		result.append("}");
+
+		return result.toString();
+	}
+	
 	public void setDefaultOptions() {
 		chatterNameMultiplier = 3;
 		chatterLevel = 1;
@@ -124,18 +149,18 @@ public class ChannelInfo {
 	public void addTwitterAccount(String name) {
 		addTwitterAccount(name, false);
 	}
-	
+
 	public void addTwitterAccount(String name, boolean triggerUpdate) {
 		this.twitter_accounts.add(name);
-		
+
 		if (triggerUpdate) {
-			Tim.twitterstream.updateStreamFilters();
+			Tim.twitterstream.addAccount(name, this);
 		}
 	}
-	
+
 	public void removeTwitterAccount(String name) {
 		this.twitter_accounts.remove(name);
-		Tim.twitterstream.updateStreamFilters();
+		Tim.twitterstream.removeAccount(name, this);
 	}
 	
 	public void setMuzzleFlag(boolean muzzled, boolean auto) {

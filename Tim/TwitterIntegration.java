@@ -29,8 +29,10 @@ public class TwitterIntegration extends StatusAdapter {
 	String consumerSecret;
 
 	static User BotTimmy;
-	boolean reconnect_pending = false;
+	boolean reconnectPending = false;
+	boolean needFilterUpdate = false;
 	long lastConnect;
+	HashMap<String,Long> accountCache = new HashMap<>(32);
 	HashMap<Long,HashSet<String>> accountsToChannels = new HashMap<>(32);
 
 	public TwitterIntegration() {
@@ -51,17 +53,20 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 	}
 	
-	public boolean checkAccount(String accountName) {
-		try {
-			User check = twitter.showUser(accountName);
-			if (check.getId() > 0) {
-				return true;
+	public long checkAccount(String accountName) {
+		if (accountCache.containsKey(accountName)) {
+			return accountCache.get(accountName);
+		} else {
+			try {
+				User check = twitter.showUser(accountName);
+				accountCache.put(accountName, check.getId());
+				return check.getId();
+			} catch (TwitterException ex) {
+				Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 			}
-		} catch (TwitterException ex) {
-			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+
+			return 0;
 		}
-		
-		return false;
 	}
 
 	public void sendTweet(String message) {
@@ -101,15 +106,13 @@ public class TwitterIntegration extends StatusAdapter {
 		userStream.addListener(userListener);
 		userStream.user();
 
+		initAccountList();
 		updateStreamFilters();
 	}
 
-	public void updateStreamFilters() {
-		Set<Long> userIds = new HashSet<>(128);
-		Set<Long> tmpUserIds;
+	public void initAccountList() {
 		HashSet<String> tmpAccountHash;
-
-		String[] hashtags = {"#NaNoWriMo"};
+		Set<Long> tmpUserIds;
 
 		for (ChannelInfo channel : Tim.db.channel_data.values()) {
 			if (channel.twitter_accounts.size() > 0) {
@@ -123,43 +126,87 @@ public class TwitterIntegration extends StatusAdapter {
 					tmpAccountHash = accountsToChannels.get(userId);
 					tmpAccountHash.add(channel.channel.getName().toLowerCase());
 				}
-
-				userIds.addAll(
-					tmpUserIds
-				);
 			}
+
 		}
 
-		long[] finalUserIds = ArrayUtils.toPrimitive(userIds.toArray(new Long[userIds.size()]));
+		needFilterUpdate = true;
+	}
+	
+	public boolean addAccount(String account, ChannelInfo channel) {
+		long accountId = checkAccount(account);
+		if (accountId == 0) {
+			return false;
+		}
 		
-		if (publicStream != null) {
-			if (reconnect_pending == true) {
-				return;
-			} else {
-				reconnect_pending = true;
-				long nextConnect = (lastConnect + 90000) - System.currentTimeMillis();
-				if (nextConnect > 0) {
-					Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, "Sleeping for {0} milliseconds before twitter reconnect.", nextConnect);
-					try {
-						Thread.sleep(nextConnect);
-					} catch (InterruptedException ex) {
-						Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+		if (!accountsToChannels.containsKey(accountId)) {
+			accountsToChannels.put(accountId, new HashSet<String>(64));
+			needFilterUpdate = true;
+		}
+
+		HashSet<String> tmpAccountHash = accountsToChannels.get(accountId);
+		tmpAccountHash.add(channel.channel.getName().toLowerCase());
+
+		updateStreamFilters();
+		return true;
+	}
+	
+	public void removeAccount(String account, ChannelInfo channel) {
+		long accountId = checkAccount(account);
+		if (accountId == 0) {
+			return;
+		}
+		
+		if (!accountsToChannels.containsKey(accountId)) {
+			return;
+		}
+
+		HashSet<String> tmpAccountHash = accountsToChannels.get(accountId);
+		tmpAccountHash.remove(channel.channel.getName().toLowerCase());
+
+		if (tmpAccountHash.isEmpty()) {
+			accountsToChannels.remove(accountId);
+			needFilterUpdate = true;
+		}
+
+		updateStreamFilters();
+	}
+	
+	public void updateStreamFilters() {
+		if (needFilterUpdate) {
+			if (publicStream != null) {
+				if (reconnectPending == true) {
+					return;
+				} else {
+					reconnectPending = true;
+					long nextConnect = (lastConnect + 90000) - System.currentTimeMillis();
+					if (nextConnect > 0) {
+						Logger.getLogger(TwitterIntegration.class.getName()).log(Level.INFO, "Sleeping for {0} milliseconds before twitter reconnect.", nextConnect);
+						try {
+							Thread.sleep(nextConnect);
+						} catch (InterruptedException ex) {
+							Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+						}
 					}
+					publicStream.cleanUp();			
 				}
-				publicStream.cleanUp();			
 			}
+
+			String[] hashtags = {"#NaNoWriMo"};
+			long[] finalUserIds = ArrayUtils.toPrimitive( accountsToChannels.keySet().toArray(new Long[accountsToChannels.size()]) );
+
+			publicStream = new TwitterStreamFactory().getInstance();
+			publicStream.setOAuthConsumer(consumerKey, consumerSecret);
+			publicStream.setOAuthAccessToken(token);
+			publicStream.addListener(publicListener);
+
+			FilterQuery filter = new FilterQuery(0, finalUserIds, hashtags);
+			publicStream.filter(filter);
+
+			lastConnect = System.currentTimeMillis();
+			reconnectPending = false;
+			needFilterUpdate = false;
 		}
-		
-		publicStream = new TwitterStreamFactory().getInstance();
-		publicStream.setOAuthConsumer(consumerKey, consumerSecret);
-		publicStream.setOAuthAccessToken(token);
-		publicStream.addListener(publicListener);
-
-		FilterQuery filter = new FilterQuery(0, finalUserIds, hashtags);
-		publicStream.filter(filter);
-
-		lastConnect = System.currentTimeMillis();
-		reconnect_pending = false;
 	}
 
 	StatusListener publicListener = new StatusListener() {
@@ -195,6 +242,7 @@ public class TwitterIntegration extends StatusAdapter {
 			HashSet<String> channels = accountsToChannels.get(status.getUser().getId());
 
 			float timeDiff;
+			
 			for (String channelName : channels) {
 				ChannelInfo channel = Tim.db.channel_data.get(channelName);
 				
