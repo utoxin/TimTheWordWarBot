@@ -75,6 +75,7 @@ public class WarTicker {
 	}
 
 	private void _warsUpdate() {
+		Set<String> warsToEnd = new HashSet<>(8);
 		if (this.wars != null && this.wars.size() > 0) {
 			try {
 				this.wars_lock.acquire();
@@ -118,7 +119,10 @@ public class WarTicker {
 								this.warEndCount(war);
 								break;
 							case 0:
-								this.endWar(war);
+								if (war.current_chain >= war.total_chains) {
+									warsToEnd.add(war.getName(false).toLowerCase());
+								}
+								this.endWar(war);								
 								break;
 							default:
 								if ((int) war.remaining % 300 == 0) {
@@ -130,6 +134,11 @@ public class WarTicker {
 					}
 					war.updateDb();
 				}
+				
+				for (String warName : warsToEnd) {
+					this.wars.remove(warName);
+				}
+				
 				this.wars_lock.release();
 			} catch (InterruptedException e) {
 				this.wars_lock.release();
@@ -170,7 +179,6 @@ public class WarTicker {
 	private void endWar( WordWar war ) {
 		Tim.bot.sendMessage(war.getChannel(), "WordWar '" + war.getName() + "' is over!");
 		if (war.current_chain >= war.total_chains) {
-			this.wars.remove(war.getName(false).toLowerCase());
 			war.endWar();
 		} else {
 			if (war.cdata.muzzled && war.cdata.auto_muzzled) {
