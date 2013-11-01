@@ -34,6 +34,7 @@ public class ReactionListener extends ListenerAdapter {
 	private int hug_odds = 100;
 	private int tissue_odds = 100;
 	private int aypwip_odds = 100;
+	private int answer_odds = 65;
 	private int eightball_odds = 100;
 
 	private final int max_lights_odds = 100;
@@ -43,6 +44,7 @@ public class ReactionListener extends ListenerAdapter {
 	private final int max_hug_odds = 100;
 	private final int max_tissue_odds = 100;
 	private final int max_aypwip_odds = 100;
+	private final int max_answer_odds = 65;
 	private final int max_eightball_odds = 100;
 	
 	@Override
@@ -76,6 +78,9 @@ public class ReactionListener extends ListenerAdapter {
 			}
 			if (aypwip_odds < max_aypwip_odds) {
 				aypwip_odds++;
+			}
+			if (answer_odds < max_answer_odds) {
+				answer_odds++;
 			}
 			if (eightball_odds < max_eightball_odds) {
 				eightball_odds++;
@@ -121,6 +126,11 @@ public class ReactionListener extends ListenerAdapter {
 						int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
 						Tim.bot.sendMessage(event.getChannel(), String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
 						aypwip_odds-=5;
+					}
+				} else if (Pattern.matches("(?i).*what.*is.*the.*answer.*", message) && cdata.chatter_enabled.get("silly_reactions")) {
+					if (Tim.rand.nextInt(100) < answer_odds) {
+						event.respond("The answer is 42. Everyone knows that.");
+						answer_odds-=5;
 					}
 				} else if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < eightball_odds) {
@@ -174,6 +184,9 @@ public class ReactionListener extends ListenerAdapter {
 			if (aypwip_odds < max_aypwip_odds) {
 				aypwip_odds++;
 			}
+			if (answer_odds < max_answer_odds) {
+				answer_odds++;
+			}
 			if (eightball_odds < max_eightball_odds) {
 				eightball_odds++;
 			}
@@ -217,6 +230,11 @@ public class ReactionListener extends ListenerAdapter {
 					int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
 					Tim.bot.sendMessage(event.getChannel(), String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
 					aypwip_odds-=5;
+				}
+			} else if (Pattern.matches("(?i).*what.*is.*the.*answer.*", message) && cdata.chatter_enabled.get("silly_reactions")) {
+				if (Tim.rand.nextInt(100) < answer_odds) {
+					event.respond("sighs at the question. \"The answer is 42. I thought you knew that...\"");
+					answer_odds-=5;
 				}
 			} else if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < eightball_odds) {

@@ -226,6 +226,42 @@ public class AdminCommandListener extends ListenerAdapter {
 						event.respond("Suggested Accounts: NaNoWriMo, NaNoWordSprints, officeduckfrank, BotTimmy.");
 						event.respond("Note, no '@' before account names for this command.");
 					}
+				} else if (command.equals("twitterbucket")) {
+					if (args != null && args.length == 2 && args[0].equals("list")) {
+						String target = args[1].toLowerCase();
+						if (Tim.db.channel_data.containsKey(target)) {
+							ChannelInfo ci = Tim.db.channel_data.get(target);
+
+							event.respond(String.format("Current Twitter Bucket settings for %s - Current Bucket: %.2f  Max Bucket: %.1f  Charge Rate / Minute: %.2f", target, ci.tweetBucket, ci.tweetBucketMax, ci.tweetBucketChargeRate));
+
+							for (String account : ci.twitter_accounts) {
+								event.respond(account);
+							}
+						} else {
+							event.respond("I don't know about " + target);
+						}
+					} else if (args != null && args.length == 4 && args[0].equals("set")) {
+						String target = args[1].toLowerCase();
+						if (Tim.db.channel_data.containsKey(target)) {
+							ChannelInfo ci = Tim.db.channel_data.get(target);
+							
+							Float max = Float.parseFloat(args[2]);
+							Float charge = Float.parseFloat(args[3]);
+
+							if (max > 0 && charge > 0) {
+								ci.setTwitterTimers(max, charge);
+								event.respond(String.format("Current Twitter Bucket settings for %s - Current Bucket: %.2f  Max Bucket: %.1f  Charge Rate / Minute: %.2f", target, ci.tweetBucket, ci.tweetBucketMax, ci.tweetBucketChargeRate));
+							} else {
+								event.respond("Max bucket and charge rate must both be greater than 0.");
+							}
+
+							Tim.db.saveChannelSettings(ci);
+						} else {
+							event.respond("I don't know about " + target);
+						}
+					} else {
+						event.respond("Usage: $twitterbucket list <#channel> OR $twitterbucket set <#channel> <max bucket> <charge rate>");
+					}
 				} else if (command.equals("shutdown")) {
 					if (event.getUser().getNick().equals("Utoxin")) {
 						event.respond("Shutting down...");
@@ -329,7 +365,8 @@ public class AdminCommandListener extends ListenerAdapter {
 							  "    $automuzzlewars <#channel> <0/1> - Whether to auto-muzzle the channel during wars.",
 							  "    $chatterflag                     - Control Timmy's chatter settings in your channel",
 							  "    $commandflag                     - Control which commands can be used in your channel",
-							  "    $twitterrelay                    - Control Timmy's twitter relays."
+							  "    $twitterrelay                    - Control Timmy's twitter relays.",
+							  "    $twitterbucket                   - Control the frequency of the twitter relays."
 		};
 
 		for (int i = 0; i < helplines.length; ++i) {

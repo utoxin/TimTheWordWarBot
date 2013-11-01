@@ -74,7 +74,7 @@ public class DeIdler {
 			if (Tim.rand.nextInt(100) < 75) {
 				new_text = name+" " + Tim.markov.generate_markov("emote", Tim.rand.nextInt(150) + 75) + ".";
 			} else if (Tim.rand.nextBoolean()) {
-				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(45) + 25) + ",\" "+name+" muttered under his breath.";
+				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(45) + 25) + ",\" "+name+" muttered quietly.";
 			} else {
 				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(25) + 25) + ",\" "+name+" said.";
 			}

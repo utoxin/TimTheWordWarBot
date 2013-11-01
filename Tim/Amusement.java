@@ -686,8 +686,8 @@ public class Amusement {
 			return;
 		}
 
-		if (!Pattern.matches("(?i)((extra)?easy)|average|hard|extreme", args[0])) {
-			event.respond("Difficulty must be one of: extraeasy, easy, average, hard, extreme");
+		if (!Pattern.matches("(?i)((extra)?easy)|average|hard|extreme|insane|impossible", args[0])) {
+			event.respond("Difficulty must be one of: extraeasy, easy, average, hard, extreme, insane, impossible");
 			return;
 		}
 
@@ -701,7 +701,7 @@ public class Amusement {
 		String difficulty = args[0];
 		if (difficulty.equals("extraeasy")) {
 			difficulty = "easy";
-		} else if (difficulty.equals("extreme")) {
+		} else if (difficulty.equals("extreme") || difficulty.equals("insane") || difficulty.equals("impossible")) {
 			difficulty = "hard";
 		}
 
@@ -723,11 +723,19 @@ public class Amusement {
 		}
 
 		base_wpm = (long) Double.parseDouble(value);
-		
-		if (args[0].equals("extraeasy")) {
-			base_wpm *= 0.65;
-		} else if (args[0].equals("extreme")) {
-			base_wpm *= 1.4;
+		switch (args[0]) {
+			case "extraeasy":
+				base_wpm *= 0.65;
+				break;
+			case "extreme":
+				base_wpm *= 1.4;
+				break;
+			case "insane":
+				base_wpm *= 1.8;
+				break;
+			case "impossible":
+				base_wpm *= 2.2;
+				break;
 		}
 		
 		modifier = 1.0 / Math.log(duration + 1.0) / 1.5 + 0.68;

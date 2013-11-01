@@ -15,6 +15,8 @@ package Tim;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
 import org.pircbotx.hooks.events.MessageEvent;
 
@@ -201,9 +203,15 @@ public class WarTicker {
 				if (event.getUser().canEqual(this.wars.get(name.toLowerCase()).getStarter())
 					|| Tim.db.admin_list.contains(event.getUser().getNick())
 					|| Tim.db.admin_list.contains(event.getChannel().getName().toLowerCase())) {
-					WordWar war = this.wars.remove(name.toLowerCase());
-					war.endWar();
-					event.respond("The war '" + war.getName() + "' has been ended.");
+					try {
+						this.wars_lock.acquire();
+						WordWar war = this.wars.remove(name.toLowerCase());
+						this.wars_lock.release();
+						war.endWar();
+						event.respond("The war '" + war.getName() + "' has been ended.");
+					} catch (InterruptedException ex) {
+						Logger.getLogger(WarTicker.class.getName()).log(Level.SEVERE, null, ex);
+					}
 				} else {
 					event.respond("Only the starter of a war can end it early.");
 				}

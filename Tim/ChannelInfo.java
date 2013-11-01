@@ -69,6 +69,7 @@ public class ChannelInfo {
 		chatterLevel = 1;
 		
 		tweetBucketMax = 10;
+		tweetBucket = 5;
 		tweetBucketChargeRate = 0.5f;
 
 		chatter_enabled.put("greetings", Boolean.TRUE);
@@ -104,6 +105,7 @@ public class ChannelInfo {
 		commands_enabled.put("search", Boolean.TRUE);
 		commands_enabled.put("challenge", Boolean.TRUE);
 		commands_enabled.put("chainstory", Boolean.TRUE);
+		commands_enabled.put("sing", Boolean.TRUE);
 	}
 
 	public boolean amusement_chatter_available() {
@@ -134,7 +136,7 @@ public class ChannelInfo {
 		this.tweetBucketMax = tweetBucketMax;
 		this.tweetBucketChargeRate = tweetBucketChargeRate;
 
-		this.tweetBucket = 0;
+		this.tweetBucket = tweetBucketMax / 2;
 		this.twitterTimer = System.currentTimeMillis();
 	}
 	
