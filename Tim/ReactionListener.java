@@ -59,31 +59,31 @@ public class ReactionListener extends ListenerAdapter {
 		
 		if (Tim.rand.nextInt(500) == 0) {
 			if (lights_odds < max_lights_odds) {
-				lights_odds++;
+				lights_odds += Tim.rand.nextInt(5);
 			}
-			if (fox_odds < max_fox_odds && Tim.rand.nextBoolean()) {
-				fox_odds++;
+			if (fox_odds < max_fox_odds) {
+				fox_odds += Tim.rand.nextInt(5);
 			}
-			if (cheeseburger_odds < max_cheeseburger_odds && Tim.rand.nextBoolean()) {
-				cheeseburger_odds++;
+			if (cheeseburger_odds < max_cheeseburger_odds) {
+				cheeseburger_odds += Tim.rand.nextInt(5);
 			}
 			if (test_odds < max_test_odds) {
-				test_odds++;
+				test_odds += Tim.rand.nextInt(5);
 			}
-			if (hug_odds < max_hug_odds && Tim.rand.nextBoolean()) {
-				hug_odds++;
+			if (hug_odds < max_hug_odds) {
+				hug_odds += Tim.rand.nextInt(5);
 			}
-			if (tissue_odds < max_tissue_odds && Tim.rand.nextBoolean()) {
-				tissue_odds++;
+			if (tissue_odds < max_tissue_odds) {
+				tissue_odds += Tim.rand.nextInt(5);
 			}
 			if (aypwip_odds < max_aypwip_odds) {
-				aypwip_odds++;
+				aypwip_odds += Tim.rand.nextInt(5);
 			}
 			if (answer_odds < max_answer_odds) {
-				answer_odds++;
+				answer_odds += Tim.rand.nextInt(5);
 			}
 			if (eightball_odds < max_eightball_odds) {
-				eightball_odds++;
+				eightball_odds += Tim.rand.nextInt(5);
 			}
 		}
 
@@ -92,32 +92,32 @@ public class ReactionListener extends ListenerAdapter {
 				if (message.toLowerCase().contains("how many lights") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < lights_odds) {
 						bot.sendMessage(event.getChannel(), "There are FOUR LIGHTS!");
-						lights_odds-=5;
+						lights_odds -= Tim.rand.nextInt(5);
 					}
 				} else if (message.toLowerCase().contains("what does the fox say") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < fox_odds) {
 						event.respond("Foxes don't talk. Sheesh.");
-						fox_odds-=5;
+						fox_odds -= Tim.rand.nextInt(5);
 					}
 				} else if (message.toLowerCase().contains("cheeseburger") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < cheeseburger_odds) {
 						event.respond("I can has cheezburger?");
-						cheeseburger_odds-=5;
+						cheeseburger_odds -= Tim.rand.nextInt(5);
 					}
 				} else if (message.toLowerCase().startsWith("test") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < test_odds) {
 						event.respond("After due consideration, your test earned a: " + pickGrade());
-						test_odds-=5;
+						test_odds -= Tim.rand.nextInt(5);
 					}
 				} else if ((message.contains(":(") || message.contains("):")) && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < hug_odds) {
 						bot.sendAction(event.getChannel(), "gives " + event.getUser().getNick() + " a hug.");
-						hug_odds-=5;
+						hug_odds -= Tim.rand.nextInt(5);
 					}
 				} else if (message.contains(":'(") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < tissue_odds) {
 						bot.sendAction(event.getChannel(), "passes " + event.getUser().getNick() + " a tissue.");
-						tissue_odds-=5;
+						tissue_odds -= Tim.rand.nextInt(5);
 					}
 				} else if (Pattern.matches("(?i).*how do (i|you) (change|set) ?(my|your)? (nick|name).*", message) && cdata.chatter_enabled.get("helpful_reactions")) {
 					event.respond("To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere");
@@ -125,17 +125,17 @@ public class ReactionListener extends ListenerAdapter {
 					if (Tim.rand.nextInt(100) < aypwip_odds) {
 						int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
 						Tim.bot.sendMessage(event.getChannel(), String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
-						aypwip_odds-=5;
+						aypwip_odds -= Tim.rand.nextInt(5);
 					}
 				} else if (Pattern.matches("(?i).*what.*is.*the.*answer.*", message) && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < answer_odds) {
 						event.respond("The answer is 42. Everyone knows that.");
-						answer_odds-=5;
+						answer_odds -= Tim.rand.nextInt(5);
 					}
 				} else if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < eightball_odds) {
 						Tim.amusement.eightball(event.getChannel(), event.getUser(), false);
-						eightball_odds-=5;
+						eightball_odds -= Tim.rand.nextInt(5);
 					}
 				} else {
 					this.interact(event.getUser(), event.getChannel(), message, "say");
@@ -166,29 +166,29 @@ public class ReactionListener extends ListenerAdapter {
 			if (lights_odds < max_lights_odds) {
 				lights_odds++;
 			}
-			if (fox_odds < max_fox_odds && Tim.rand.nextBoolean()) {
-				fox_odds++;
+			if (fox_odds < max_fox_odds) {
+				fox_odds += Tim.rand.nextInt(5);
 			}
-			if (cheeseburger_odds < max_cheeseburger_odds && Tim.rand.nextBoolean()) {
-				cheeseburger_odds++;
+			if (cheeseburger_odds < max_cheeseburger_odds) {
+				cheeseburger_odds += Tim.rand.nextInt(5);
 			}
 			if (test_odds < max_test_odds) {
-				test_odds++;
+				test_odds += Tim.rand.nextInt(5);
 			}
-			if (hug_odds < max_hug_odds && Tim.rand.nextBoolean()) {
-				hug_odds++;
+			if (hug_odds < max_hug_odds) {
+				hug_odds += Tim.rand.nextInt(5);
 			}
-			if (tissue_odds < max_tissue_odds && Tim.rand.nextBoolean()) {
-				tissue_odds++;
+			if (tissue_odds < max_tissue_odds) {
+				tissue_odds += Tim.rand.nextInt(5);
 			}
 			if (aypwip_odds < max_aypwip_odds) {
-				aypwip_odds++;
+				aypwip_odds += Tim.rand.nextInt(5);
 			}
 			if (answer_odds < max_answer_odds) {
-				answer_odds++;
+				answer_odds += Tim.rand.nextInt(5);
 			}
 			if (eightball_odds < max_eightball_odds) {
-				eightball_odds++;
+				eightball_odds += Tim.rand.nextInt(5);
 			}
 		}
 
@@ -196,32 +196,32 @@ public class ReactionListener extends ListenerAdapter {
 			if (message.toLowerCase().contains("how many lights") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < lights_odds) {
 					bot.sendMessage(event.getChannel(), "There are FOUR LIGHTS!");
-					lights_odds-=5;
+					lights_odds -= Tim.rand.nextInt(5);
 				}
 			} else if (message.toLowerCase().contains("what does the fox say") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < fox_odds) {
 					event.respond("mutters under his breath. \"Foxes don't talk. Sheesh.\"");
-					fox_odds-=5;
+					fox_odds -= Tim.rand.nextInt(5);
 				}
 			} else if (message.toLowerCase().contains("cheeseburger") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < cheeseburger_odds) {
 					event.respond("sniffs the air, and peers around. \"Can has cheezburger?\"");
-					cheeseburger_odds-=5;
+					cheeseburger_odds -= Tim.rand.nextInt(5);
 				}
 			} else if ((message.contains(":(") || message.contains("):")) && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < hug_odds) {
 					bot.sendAction(event.getChannel(), "gives " + event.getUser().getNick() + " a hug.");
-					hug_odds-=5;
+					hug_odds -= Tim.rand.nextInt(5);
 				}
 			} else if (message.toLowerCase().startsWith("tests") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < test_odds) {
 					event.respond("considers, and gives " + event.getUser().getNick() + " a grade: " + pickGrade());
-					test_odds-=5;
+					test_odds -= Tim.rand.nextInt(5);
 				}
 			} else if (message.contains(":'(") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < tissue_odds) {
 					bot.sendAction(event.getChannel(), "passes " + event.getUser().getNick() + " a tissue.");
-					tissue_odds-=5;
+					tissue_odds -= Tim.rand.nextInt(5);
 				}
 			} else if (Pattern.matches("(?i).*how do (i|you) (change|set) ?(my|your)? (nick|name).*", message) && cdata.chatter_enabled.get("helpful_reactions")) {
 				event.respond("To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere");
@@ -229,17 +229,17 @@ public class ReactionListener extends ListenerAdapter {
 				if (Tim.rand.nextInt(100) < aypwip_odds) {
 					int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
 					Tim.bot.sendMessage(event.getChannel(), String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
-					aypwip_odds-=5;
+					aypwip_odds -= Tim.rand.nextInt(5);
 				}
 			} else if (Pattern.matches("(?i).*what.*is.*the.*answer.*", message) && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < answer_odds) {
 					event.respond("sighs at the question. \"The answer is 42. I thought you knew that...\"");
-					answer_odds-=5;
+					answer_odds -= Tim.rand.nextInt(5);
 				}
 			} else if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < eightball_odds) {
 					Tim.amusement.eightball(event.getChannel(), event.getUser(), false);
-					eightball_odds-=5;
+					eightball_odds -= Tim.rand.nextInt(5);
 				}
 			} else {
 				this.interact(event.getUser(), event.getChannel(), message, "emote");

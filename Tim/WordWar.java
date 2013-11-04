@@ -100,15 +100,48 @@ public class WordWar {
 			nameString = name;
 		}
 		
-		return nameString + " [" + this.duration / 60 + " Min]";
+		return nameString + " [" + getDurationText() + "]";
 	}
 
 	public String getName(boolean includeCounter) {
 		if (includeCounter) {
 			return getName();
 		} else {
-			return name + " [" + this.duration / 60 + " Min]";
+			return name + " [" + getDurationText() + "]";
 		}
+	}
+
+	public String getDurationText() {
+		String text = "";
+		long hours = 0, minutes = 0, seconds, tmp;
+
+		tmp = duration;
+		
+		if (tmp > (60*60)) {
+			hours = tmp / (60*60);
+			tmp = tmp % (60*60);
+		}
+		
+		if (tmp > 60) {
+			minutes = tmp / 60;
+			tmp = tmp % 60;
+		}
+
+		seconds = tmp;
+
+		if (hours > 0) {
+			text += hours + "H ";
+		}
+		
+		if (minutes > 0 || (seconds > 0 && hours > 0)) {
+			text += minutes + "M ";
+		}
+
+		if (seconds > 0) {
+			text += seconds + "S";
+		}
+		
+		return text.trim();
 	}
 	
 	public User getStarter() {
