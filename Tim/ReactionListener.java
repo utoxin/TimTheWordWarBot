@@ -57,7 +57,7 @@ public class ReactionListener extends ListenerAdapter {
 			return;
 		}
 		
-		if (Tim.rand.nextInt(500) == 0) {
+		if (Tim.rand.nextInt(250) == 0) {
 			if (lights_odds < max_lights_odds) {
 				lights_odds += Tim.rand.nextInt(5);
 			}

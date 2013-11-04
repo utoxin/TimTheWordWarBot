@@ -115,10 +115,10 @@ public class AdminCommandListener extends ListenerAdapter {
 						if (Tim.db.channel_data.containsKey(target)) {
 							ChannelInfo ci = Tim.db.channel_data.get(target);
 
-							event.respond("Current status of chatter settings for " + target);
+							event.respond("Sending status of chatter settings for " + target + " via private message.");
 
 							for (String setting : ci.chatter_enabled.keySet()) {
-								event.respond(setting + ": " + ci.chatter_enabled.get(setting).toString());
+								event.getUser().sendMessage(setting + ": " + ci.chatter_enabled.get(setting).toString());
 							}
 						} else {
 							event.respond("I don't know about " + target);
@@ -154,10 +154,10 @@ public class AdminCommandListener extends ListenerAdapter {
 						if (Tim.db.channel_data.containsKey(target)) {
 							ChannelInfo ci = Tim.db.channel_data.get(target);
 
-							event.respond("Current status of command settings for " + target);
+							event.respond("Sending status of command settings for " + target + " via private message.");
 
 							for (String setting : ci.commands_enabled.keySet()) {
-								event.respond(setting + ": " + ci.commands_enabled.get(setting).toString());
+								event.getUser().sendMessage(setting + ": " + ci.commands_enabled.get(setting).toString());
 							}
 						} else {
 							event.respond("I don't know about " + target);
@@ -193,10 +193,10 @@ public class AdminCommandListener extends ListenerAdapter {
 						if (Tim.db.channel_data.containsKey(target)) {
 							ChannelInfo ci = Tim.db.channel_data.get(target);
 
-							event.respond("Current Twitter accounts relayed for " + target);
+							event.respond("Sending Twitter accounts relayed for " + target + " via private message.");
 
 							for (String account : ci.twitter_accounts) {
-								event.respond(account);
+								event.getUser().sendMessage(account);
 							}
 						} else {
 							event.respond("I don't know about " + target);

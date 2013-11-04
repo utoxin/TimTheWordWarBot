@@ -84,6 +84,18 @@ public class Tim {
 
 		twitterstream = new TwitterIntegration();
 		twitterstream.startStream();
+		
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				if (Tim.bot.isConnected()) {
+					Tim.warticker.warticker.cancel();
+					Tim.deidler.idleticker.cancel();
+					Tim.bot.quitServer("HELP! Utoxin just murdered me! (Again!!!)");
+					Tim.bot.shutdown(true);
+				}
+			}
+		});
 	}
 
 	/**

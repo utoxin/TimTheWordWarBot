@@ -98,7 +98,7 @@ public class WarTicker {
 							// 0 seconds until start. Don't say a damn thing.
 							break;
 						default:
-							if ((int) war.time_to_start % 300 == 0) {
+							if ((war.time_to_start <= (60*20) && war.time_to_start % 300 == 0) || (war.time_to_start % 600 == 0)) {
 								this.warStartCount(war);
 							}
 							break;
@@ -124,7 +124,7 @@ public class WarTicker {
 							this.endWar(war);								
 							break;
 						default:
-							if ((int) war.remaining % 300 == 0) {
+							if ((war.remaining <= (60*20) && war.remaining % 300 == 0) || (war.remaining % 600 == 0)) {
 								this.warEndCount(war);
 							}
 							// do nothing
@@ -180,8 +180,10 @@ public class WarTicker {
 			}
 			
 			war.current_chain++;
+
+			war.duration = (long) (war.base_duration + (war.base_duration * ((Tim.rand.nextInt(20) - 10)/100.0) ));
 			war.remaining = war.duration;
-			war.time_to_start = (long) ( (war.duration * 0.5) + (war.duration * ((Tim.rand.nextInt(50) - 25)/100.0) ) );
+			war.time_to_start = (long) ( (war.base_duration * 0.5) + (war.base_duration * ((Tim.rand.nextInt(20) - 10)/100.0) ) );
 			war.updateDb();
 			warStartCount(war);
 		}

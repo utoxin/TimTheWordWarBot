@@ -421,21 +421,22 @@ public class DBAccess {
 		Tim.markov.refreshDbLists();
 	}
 
-	public int create_war(Channel channel, User starter, String name, long duration, long remaining, long time_to_start, int total_chains, int current_chain) {
+	public int create_war(Channel channel, User starter, String name, long base_duration, long duration, long remaining, long time_to_start, int total_chains, int current_chain) {
 		int id = 0;
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("INSERT INTO `wars` (`channel`, `starter`, `name`, `duration`, `remaining`, `time_to_start`, `total_chains`, `current_chain`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement s = con.prepareStatement("INSERT INTO `wars` (`channel`, `starter`, `name`, `base_duration`, `duration`, `remaining`, `time_to_start`, `total_chains`, `current_chain`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			s.setString(1, channel.getName().toLowerCase());
 			s.setString(2, starter.getNick());
 			s.setString(3, name);
-			s.setLong(4, duration);
-			s.setLong(5, remaining);
-			s.setLong(6, time_to_start);
-			s.setInt(7, total_chains);
-			s.setInt(8, current_chain);
+			s.setLong(4, base_duration);
+			s.setLong(5, duration);
+			s.setLong(6, remaining);
+			s.setLong(7, time_to_start);
+			s.setInt(8, total_chains);
+			s.setInt(9, current_chain);
 			s.executeUpdate();
 
 			ResultSet rs = s.getGeneratedKeys();
@@ -452,16 +453,17 @@ public class DBAccess {
 		return id;
 	}
 	
-	public void update_war(int db_id, long remaining, long time_to_start, int current_chain) {
+	public void update_war(int db_id, long duration, long remaining, long time_to_start, int current_chain) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("UPDATE `wars` SET `remaining` = ?, `time_to_start` = ?, `current_chain` = ? WHERE id = ?");
-			s.setLong(1, remaining);
-			s.setLong(2, time_to_start);
-			s.setInt(3, current_chain);
-			s.setInt(4, db_id);
+			PreparedStatement s = con.prepareStatement("UPDATE `wars` SET `duration` = ? ,`remaining` = ?, `time_to_start` = ?, `current_chain` = ? WHERE id = ?");
+			s.setLong(1, duration);
+			s.setLong(2, remaining);
+			s.setLong(3, time_to_start);
+			s.setInt(4, current_chain);
+			s.setInt(5, db_id);
 			s.executeUpdate();
 
 			con.close();
@@ -487,6 +489,7 @@ public class DBAccess {
 				user = Tim.bot.getUser(rs.getString("starter"));
 
 				WordWar war = new WordWar(
+					rs.getLong("base_duration"),
 					rs.getLong("duration"),
 					rs.getLong("remaining"),
 					rs.getLong("time_to_start"),

@@ -28,6 +28,7 @@ public class WordWar {
 	public ChannelInfo cdata;
 
 	protected long duration;
+	protected long base_duration;
 	
 	private final int db_id;
 	private final Channel channel;
@@ -39,21 +40,30 @@ public class WordWar {
 		this.time_to_start = to_start;
 		this.total_chains = total_chains;
 		this.current_chain = current_chain;
-		this.duration = this.remaining = time;
+		this.base_duration = time;
 		this.name = warname;
 		this.channel = hosting_channel;
 		this.cdata = Tim.db.channel_data.get(hosting_channel.getName().toLowerCase());
 		
-		db_id = Tim.db.create_war(hosting_channel, startingUser, warname, time, time, to_start, total_chains, current_chain);
+		if (total_chains > 1) {
+			this.duration = base_duration + (Tim.rand.nextInt((int) Math.floor(base_duration * 0.2))) - ((long) Math.floor(base_duration * 0.1));
+		} else {
+			this.duration = this.base_duration;
+		}
+		
+		this.remaining = this.duration;
+		
+		db_id = Tim.db.create_war(hosting_channel, startingUser, warname, base_duration, duration, remaining, to_start, total_chains, current_chain);
 
 		if (this.time_to_start <= 0 && (cdata.muzzled == false || cdata.auto_muzzled)) {
 			cdata.setMuzzleFlag(true, true);
 		}
 	}
 	
-	public WordWar( long duration, long remaining, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel, int db_id ) {
+	public WordWar( long base_duration, long duration, long remaining, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel, int db_id ) {
 		this.starter = startingUser;
 		this.time_to_start = to_start;
+		this.base_duration = base_duration;
 		this.duration = duration;
 		this.remaining = remaining;
 		this.total_chains = total_chains;
@@ -62,6 +72,10 @@ public class WordWar {
 		this.channel = hosting_channel;
 		this.cdata = Tim.db.channel_data.get(hosting_channel.getName().toLowerCase());
 
+		if (this.base_duration == 0) {
+			this.base_duration = duration;
+		}
+		
 		this.db_id = db_id;
 
 		if (this.time_to_start <= 0 && (cdata.muzzled == false || cdata.auto_muzzled)) {
@@ -80,7 +94,7 @@ public class WordWar {
 	}
 
 	public void updateDb() {
-		Tim.db.update_war(db_id, remaining, time_to_start, current_chain);
+		Tim.db.update_war(db_id, duration, remaining, time_to_start, current_chain);
 	}
 	
 	public Channel getChannel() {
