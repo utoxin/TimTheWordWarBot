@@ -92,18 +92,22 @@ public class WordWar {
 	}
 
 	public String getName() {
+		String nameString;
+		
 		if (total_chains > 1) {
-			return name + " (" + current_chain + " / " + total_chains + ")";
+			nameString = name + " (" + current_chain + " / " + total_chains + ")";
 		} else {
-			return name;
+			nameString = name;
 		}
+		
+		return nameString + " [" + this.duration / 60 + " Min]";
 	}
 
 	public String getName(boolean includeCounter) {
 		if (includeCounter) {
 			return getName();
 		} else {
-			return name;
+			return name + " [" + this.duration / 60 + " Min]";
 		}
 	}
 	
@@ -119,7 +123,7 @@ public class WordWar {
 		long minutes;
 		long seconds;
 
-		String about = "WordWar '" + this.getName() + "':";
+		String about = "WordWar '" + this.getName() + ":";
 		if (this.time_to_start > 0) {
 			minutes = this.time_to_start / 60;
 			seconds = this.time_to_start % 60;
