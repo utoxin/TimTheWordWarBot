@@ -114,10 +114,33 @@ public class ChainStory {
 	public void refreshDbLists() {
 	}
 
+	public int wordcount () {
+		Connection con;
+		ResultSet rs;
+		PreparedStatement s;
+		int word_count = 0;
+
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			s = con.prepareStatement("SELECT SUM( LENGTH( STRING ) - LENGTH( REPLACE( STRING ,  ' ',  '' ) ) +1 ) AS word_count FROM story");
+			s.executeQuery();
+			rs = s.getResultSet();
+			while (rs.next()) {
+				word_count = Integer.parseInt(rs.getString("word_count"));
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+		return word_count;
+	}
+	
 	public void info( MessageEvent event ) {
 		DecimalFormat formatter = new DecimalFormat("#,###");
 		Connection con;
-		String last_line = "";
 		int word_count = 0, author_count = 0;
 		ResultSet rs;
 		PreparedStatement s;
@@ -139,7 +162,7 @@ public class ChainStory {
 				author_count = Integer.parseInt(rs.getString("author_count"));
 			}
 
-			event.respond("My novel is currently " + formatter.format(word_count) + " words long, with paragraphs written by " + formatter.format(author_count) + " different people, and the last paragraphs are:");
+			event.respond("My novel is currently " + formatter.format(word_count) + " words long, with paragraphs written by " + formatter.format(author_count) + " different people, and I sent you the last three paragraphs are in a private message... They're too awesome for everyone to see!");
 			
 			s = con.prepareStatement("SELECT * FROM `story` ORDER BY id DESC LIMIT 3");
 			s.executeQuery();
@@ -148,7 +171,7 @@ public class ChainStory {
 			rs.setFetchDirection(ResultSet.FETCH_REVERSE);
 			rs.last();
 			while (true) {
-				event.respond(rs.getString("string"));
+				event.getUser().sendMessage(rs.getString("string"));
 				if (!rs.previous()) {
 					break;
 				}
@@ -170,13 +193,13 @@ public class ChainStory {
 			PreparedStatement s = con.prepareStatement("SELECT * FROM `story` ORDER BY id DESC LIMIT 3");
 			s.executeQuery();
 
-			event.respond("Let's see... the last paragraphs of my novel are...");
+			event.respond("I sent you the last three paragraphs in a private message... They're too awesome for everyone to see!");
 
 			ResultSet rs = s.getResultSet();
 			rs.setFetchDirection(ResultSet.FETCH_REVERSE);
 			rs.last();
 			while (true) {
-				event.respond(rs.getString("string"));
+				event.getUser().sendMessage(rs.getString("string"));
 				if (!rs.previous()) {
 					break;
 				}

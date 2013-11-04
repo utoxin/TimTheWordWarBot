@@ -67,8 +67,9 @@ public class DeIdler {
 
 	public void _tick() {
 		boolean isNovember = (10 == cal.get(Calendar.MONTH));
+		boolean aheadOfPace = ((cal.get(Calendar.DAY_OF_MONTH) * (50000/30)) < Tim.story.wordcount());
 
-		if (isNovember && Tim.rand.nextInt(100) < 2) {
+		if (isNovember && ((!aheadOfPace && Tim.rand.nextInt(100) < 3) || (aheadOfPace && Tim.rand.nextInt(100) < 1))) {
 			String name = Tim.story.getRandomName();
 			String new_text;
 			if (Tim.rand.nextInt(100) < 75) {

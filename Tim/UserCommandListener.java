@@ -56,6 +56,8 @@ public class UserCommandListener extends ListenerAdapter {
 					} else {
 						event.respond("Usage: !chainwar <duration in min> <war count> [<name>]");
 					}
+				} else if (command.equals("starwar")) {
+					event.respond("A long time ago, in a galaxy far, far away...");
 				} else if (command.equals("endwar")) {
 					Tim.warticker.endWar(event, args);
 				} else if (command.equals("listwars")) {
