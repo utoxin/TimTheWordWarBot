@@ -13,10 +13,11 @@
 package Tim;
 
 import java.text.DecimalFormat;
-import java.util.*;
-import java.util.concurrent.Semaphore;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang.StringUtils;
 import org.pircbotx.hooks.events.MessageEvent;
 
@@ -27,9 +28,8 @@ import org.pircbotx.hooks.events.MessageEvent;
 public class WarTicker {
 	private static final WarTicker instance;
 	public WarClockThread warticker;
-	private final Semaphore wars_lock;
 	private final Timer ticker;
-	public Map<String, WordWar> wars;
+	public ConcurrentHashMap<String, WordWar> wars;
 
 	static {
 		instance = new WarTicker();
@@ -39,7 +39,6 @@ public class WarTicker {
 		this.wars = Tim.db.loadWars();
 
 		this.warticker = new WarClockThread(this);
-		this.wars_lock = new Semaphore(1, true);
 		this.ticker = new Timer(true);
 		this.ticker.scheduleAtFixedRate(this.warticker, 0, 1000);
 	}
@@ -77,73 +76,66 @@ public class WarTicker {
 	}
 
 	private void _warsUpdate() {
-		Set<String> warsToEnd = new HashSet<>(8);
+		HashSet<String> warsToEnd = new HashSet<>(8);
 		if (this.wars != null && this.wars.size() > 0) {
-			try {
-				this.wars_lock.acquire();
-				Iterator<String> itr = this.wars.keySet().iterator();
-				WordWar war;
-				while (itr.hasNext()) {
-					war = this.wars.get(itr.next());
-					if (war.time_to_start > 0) {
-						war.time_to_start--;
-						switch ((int) war.time_to_start) {
-							case 60:
-							case 30:
-							case 5:
-							case 4:
-							case 3:
-							case 2:
-							case 1:
+			Iterator<String> itr = this.wars.keySet().iterator();
+			WordWar war;
+			while (itr.hasNext()) {
+				war = this.wars.get(itr.next());
+				if (war.time_to_start > 0) {
+					war.time_to_start--;
+					switch ((int) war.time_to_start) {
+						case 60:
+						case 30:
+						case 5:
+						case 4:
+						case 3:
+						case 2:
+						case 1:
+							this.warStartCount(war);
+							break;
+						case 0:
+							// 0 seconds until start. Don't say a damn thing.
+							break;
+						default:
+							if ((int) war.time_to_start % 300 == 0) {
 								this.warStartCount(war);
-								break;
-							case 0:
-								// 0 seconds until start. Don't say a damn thing.
-								break;
-							default:
-								if ((int) war.time_to_start % 300 == 0) {
-									this.warStartCount(war);
-								}
-								break;
-						}
-						if (war.time_to_start == 0) {
-							this.beginWar(war);
-						}
-					} else if (war.remaining > 0) {
-						war.remaining--;
-						switch ((int) war.remaining) {
-							case 60:
-							case 5:
-							case 4:
-							case 3:
-							case 2:
-							case 1:
-								this.warEndCount(war);
-								break;
-							case 0:
-								if (war.current_chain >= war.total_chains) {
-									warsToEnd.add(war.getName(false).toLowerCase());
-								}
-								this.endWar(war);								
-								break;
-							default:
-								if ((int) war.remaining % 300 == 0) {
-									this.warEndCount(war);
-								}
-								// do nothing
-								break;
-						}
+							}
+							break;
 					}
-					war.updateDb();
+					if (war.time_to_start == 0) {
+						this.beginWar(war);
+					}
+				} else if (war.remaining > 0) {
+					war.remaining--;
+					switch ((int) war.remaining) {
+						case 60:
+						case 5:
+						case 4:
+						case 3:
+						case 2:
+						case 1:
+							this.warEndCount(war);
+							break;
+						case 0:
+							if (war.current_chain >= war.total_chains) {
+								warsToEnd.add(war.getName(false).toLowerCase());
+							}
+							this.endWar(war);								
+							break;
+						default:
+							if ((int) war.remaining % 300 == 0) {
+								this.warEndCount(war);
+							}
+							// do nothing
+							break;
+					}
 				}
-				
-				for (String warName : warsToEnd) {
-					this.wars.remove(warName);
-				}
-				
-				this.wars_lock.release();
-			} catch (InterruptedException e) {
-				this.wars_lock.release();
+				war.updateDb();
+			}
+
+			for (String warName : warsToEnd) {
+				this.wars.remove(warName);
 			}
 		}
 	}
@@ -203,15 +195,9 @@ public class WarTicker {
 				if (event.getUser().canEqual(this.wars.get(name.toLowerCase()).getStarter())
 					|| Tim.db.admin_list.contains(event.getUser().getNick())
 					|| Tim.db.admin_list.contains(event.getChannel().getName().toLowerCase())) {
-					try {
-						this.wars_lock.acquire();
-						WordWar war = this.wars.remove(name.toLowerCase());
-						this.wars_lock.release();
-						war.endWar();
-						event.respond("The war '" + war.getName() + "' has been ended.");
-					} catch (InterruptedException ex) {
-						Logger.getLogger(WarTicker.class.getName()).log(Level.SEVERE, null, ex);
-					}
+					WordWar war = this.wars.remove(name.toLowerCase());
+					war.endWar();
+					event.respond("The war '" + war.getName() + "' has been ended.");
 				} else {
 					event.respond("Only the starter of a war can end it early.");
 				}
@@ -331,7 +317,7 @@ public class WarTicker {
 
 	public void listWars( MessageEvent event, boolean all ) {
 		if (this.wars != null && this.wars.size() > 0) {
-			for (Map.Entry<String, WordWar> wm : this.wars.entrySet()) {
+			for (ConcurrentHashMap.Entry<String, WordWar> wm : this.wars.entrySet()) {
 				if (all || wm.getValue().getChannel().getName().toLowerCase().equals(event.getChannel().getName().toLowerCase())) {
 					event.respond(all ? wm.getValue().getDescriptionWithChannel() : wm.getValue().getDescription());
 				}

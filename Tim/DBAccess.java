@@ -15,6 +15,7 @@ package Tim;
 import com.mysql.jdbc.Driver;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.pircbotx.Channel;
@@ -469,11 +470,11 @@ public class DBAccess {
 		}
 	}
 
-	public Map<String, WordWar> loadWars() {
+	public ConcurrentHashMap<String, WordWar> loadWars() {
 		Connection con;
 		Channel channel;
 		User user;
-		Map<String, WordWar> wars = Collections.synchronizedMap(new HashMap<String, WordWar>());
+		ConcurrentHashMap<String, WordWar> wars = new ConcurrentHashMap<>(32);
 
 		try {
 			con = pool.getConnection(timeout);
