@@ -121,7 +121,7 @@ public class WordWar {
 		if (includeCounter) {
 			return getName();
 		} else {
-			return name + " [" + getDurationText() + "]";
+			return name;
 		}
 	}
 

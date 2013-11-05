@@ -89,10 +89,15 @@ public class Tim {
 			@Override
 			public void run() {
 				if (Tim.bot.isConnected()) {
-					Tim.warticker.warticker.cancel();
-					Tim.deidler.idleticker.cancel();
-					Tim.bot.quitServer("HELP! Utoxin just murdered me! (Again!!!)");
-					Tim.bot.shutdown(true);
+					try {
+						Tim.warticker.warticker.cancel();
+						Tim.deidler.idleticker.cancel();
+						Tim.bot.quitServer("HELP! Utoxin just murdered me! (Again!!!)");
+						Tim.bot.shutdown(true);
+						Thread.sleep(1000);
+					} catch (InterruptedException ex) {
+						Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+					}
 				}
 			}
 		});
