@@ -13,6 +13,8 @@
 package Tim;
 
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 
@@ -42,10 +44,11 @@ public class AppConfig extends XMLConfiguration {
 	 * @param fileName Configuration file name.
 	 */
 	private void init( String fileName ) {
-		setFileName(fileName);
 		try {
+			setFileName(fileName);
 			load();
-		} catch (ConfigurationException configEx) {
+		} catch (ConfigurationException ex) {
+			Logger.getLogger(AppConfig.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 

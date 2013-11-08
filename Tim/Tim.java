@@ -60,7 +60,6 @@ public class Tim {
 				.setEncoding(Charset.forName("UTF-8"))
 				.setMessageDelay(Long.parseLong(db.getSetting("max_rate")))
 				.setAutoNickChange(true)
-				.setCapEnabled(true)
 				.setShutdownHookEnabled(true);
 		
 		db.refreshDbLists();

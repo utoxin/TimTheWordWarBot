@@ -13,7 +13,7 @@
 package Tim;
 
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Colors;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.MessageEvent;
@@ -311,7 +311,7 @@ public class AdminCommandListener extends ListenerAdapter {
 					}
 				} else if (command.equals("shout")) {
 					for (ChannelInfo cdata : Tim.db.channel_data.values()) {
-						cdata.channel.send().message(event.getUser().getNick() + " shouts: " + StringUtils.join(args, " "));
+						Tim.bot.sendIRC().message(cdata.channel, event.getUser().getNick() + " shouts: " + StringUtils.join(args, " "));
 					}
 				} else if (command.equals("help")) {
 					this.printAdminCommandList(event);

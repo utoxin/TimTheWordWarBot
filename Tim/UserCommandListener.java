@@ -27,7 +27,7 @@ public class UserCommandListener extends ListenerAdapter {
 	public void onMessage( MessageEvent event ) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 
-		if (!Tim.db.ignore_list.contains(event.getUser().getNick())) {
+		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())) {
 			if (message.charAt(0) == '!') {
 				if (message.startsWith("!skynet")) {
 					return;
@@ -103,7 +103,7 @@ public class UserCommandListener extends ListenerAdapter {
 	}
 
 	private void printCommandList( MessageEvent event ) {
-		Tim.bot.sendAction(event.getChannel(), "whispers something to " + event.getUser().getNick() + ". (Check for a new window or tab with the help text.)");
+		event.getChannel().send().action("whispers something to " + event.getUser().getNick() + ". (Check for a new window or tab with the help text.)");
 
 		String[] strs = {"I am a robot trained by the WordWar Monks of Honolulu. You have "
 						 + "never heard of them. It is because they are awesome.",
@@ -115,7 +115,7 @@ public class UserCommandListener extends ListenerAdapter {
 						 "    !eggtimer <time> - I will send you a message after <time> minutes.",
 						 "    !credits - Details of my creators, and where to find my source code.",};
 		for (int i = 0; i < strs.length; ++i) {
-			Tim.bot.sendNotice(event.getUser(), strs[i]);
+			event.getUser().send().notice(strs[i]);
 		}
 
 		Tim.story.helpSection(event);
@@ -126,7 +126,7 @@ public class UserCommandListener extends ListenerAdapter {
 						 "I will also respond to the /invite command if you would like to see me in another channel. "
 		};
 		for (int i = 0; i < post.length; ++i) {
-			Tim.bot.sendNotice(event.getUser(), post[i]);
+			event.getUser().send().notice(post[i]);
 		}
 	}
 }

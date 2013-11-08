@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.pircbotx.Colors;
 import twitter4j.*;
 import twitter4j.auth.AccessToken;
@@ -261,7 +261,7 @@ public class TwitterIntegration extends StatusAdapter {
 				}
 				
 				if (channel.tweetBucket >= 1) {
-					Tim.bot.sendMessage(channel.channel, message);
+					channel.channel.send().message(message);
 					channel.tweetBucket -= 1f;
 				}
 			}

@@ -18,7 +18,7 @@ import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.hooks.events.MessageEvent;
 
 /**
@@ -142,28 +142,28 @@ public class WarTicker {
 
 	private void warStartCount( WordWar war ) {
 		if (war.time_to_start < 60) {
-			Tim.bot.sendMessage(war.getChannel(), war.getName() + ": Starting in " + war.time_to_start + ( war.time_to_start == 1 ? " second" : " seconds" ) + "!");
+			war.getChannel().send().message(war.getName() + ": Starting in " + war.time_to_start + ( war.time_to_start == 1 ? " second" : " seconds" ) + "!");
 		} else {
 			int time_to_start = (int) war.time_to_start / 60;
 			if (time_to_start * 60 == war.time_to_start) {
-				Tim.bot.sendMessage(war.getChannel(), war.getName() + ": Starting in " + time_to_start + ( time_to_start == 1 ? " minute" : " minutes" ) + "!");
+				war.getChannel().send().message(war.getName() + ": Starting in " + time_to_start + ( time_to_start == 1 ? " minute" : " minutes" ) + "!");
 			} else {
-				Tim.bot.sendMessage(war.getChannel(), war.getName() + ": Starting in " + new DecimalFormat("###.#").format(war.time_to_start / 60.0) + " minutes!");
+				war.getChannel().send().message(war.getName() + ": Starting in " + new DecimalFormat("###.#").format(war.time_to_start / 60.0) + " minutes!");
 			}
 		}
 	}
 
 	private void warEndCount( WordWar war ) {
 		if (war.remaining < 60) {
-			Tim.bot.sendMessage(war.getChannel(), war.getName() + ": " + war.remaining + ( war.remaining == 1 ? " second" : " seconds" ) + " remaining!");
+			war.getChannel().send().message(war.getName() + ": " + war.remaining + ( war.remaining == 1 ? " second" : " seconds" ) + " remaining!");
 		} else {
 			int remaining = (int) war.remaining / 60;
-			Tim.bot.sendMessage(war.getChannel(), war.getName() + ": " + remaining + ( remaining == 1 ? " minute" : " minutes" ) + " remaining.");
+			war.getChannel().send().message(war.getName() + ": " + remaining + ( remaining == 1 ? " minute" : " minutes" ) + " remaining.");
 		}
 	}
 
 	private void beginWar( WordWar war ) {
-		Tim.bot.sendMessage(war.getChannel(), "WordWar '" + war.getName() + "' starts now!");
+		war.getChannel().send().message("WordWar '" + war.getName() + "' starts now!");
 
 		if (war.cdata.auto_muzzle_wars && (war.cdata.muzzled == false || war.cdata.auto_muzzled)) {
 			war.cdata.setMuzzleFlag(true, true);
@@ -171,7 +171,7 @@ public class WarTicker {
 	}
 
 	private void endWar( WordWar war ) {
-		Tim.bot.sendMessage(war.getChannel(), "WordWar '" + war.getName() + "' is over!");
+		war.getChannel().send().message("WordWar '" + war.getName() + "' is over!");
 		if (war.current_chain >= war.total_chains) {
 			war.endWar();
 		} else {

@@ -157,7 +157,7 @@ public class DBAccess {
 				PreparedStatement s2;
 				ResultSet rs2;
 				while (rs.next()) {
-					channel = Tim.bot.getChannel(rs.getString("channel"));
+					channel = Tim.bot.getUserChannelDao().getChannel(rs.getString("channel"));
 					ci = new ChannelInfo(channel);
 					ci.setDefaultOptions();
 					
@@ -485,8 +485,8 @@ public class DBAccess {
 			ResultSet rs = s.executeQuery("SELECT * FROM `wars`");
 
 			while (rs.next()) {
-				channel = Tim.bot.getChannel(rs.getString("channel"));
-				user = Tim.bot.getUser(rs.getString("starter"));
+				channel = Tim.bot.getUserChannelDao().getChannel(rs.getString("channel"));
+				user = Tim.bot.getUserChannelDao().getUser(rs.getString("starter"));
 
 				WordWar war = new WordWar(
 					rs.getLong("base_duration"),

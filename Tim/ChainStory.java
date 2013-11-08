@@ -53,43 +53,44 @@ public class ChainStory {
 
 		Calendar cal = Calendar.getInstance();
 		boolean isNovember = (10 == cal.get(Calendar.MONTH));
-		
-		if (command.equals("chainlast")) {
-			if (cdata.commands_enabled.get("chainstory")) {
-				showLast(event);
-			} else {
-				event.respond("I'm sorry. I don't do that here.");
-			}
-			
-			return true;
-		} else if (command.equals("chainnew")) {
-			if (cdata.commands_enabled.get("chainstory")) {
-				if (!isNovember) {
-					event.respond("Sorry, that command won't work outside November!");
-					return true;
-				}
-				addNew(event, argsString);
-			} else {
-				event.respond("I'm sorry. I don't do that here.");
-			}
-			
-			return true;
-		} else if (command.equals("chaininfo")) {
-			if (cdata.commands_enabled.get("chainstory")) {
-				info(event);
-			} else {
-				event.respond("I'm sorry. I don't do that here.");
-			}
-			
-			return true;
-		} else if (command.equals("chaincount")) {
-			if (cdata.commands_enabled.get("chainstory")) {
-				count(event);
-			} else {
-				event.respond("I'm sorry. I don't do that here.");
-			}
 
-			return true;
+		switch (command) {
+			case "chainlast":
+				if (cdata.commands_enabled.get("chainstory")) {
+					showLast(event);
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+				
+				return true;
+			case "chainnew":
+				if (cdata.commands_enabled.get("chainstory")) {
+					if (!isNovember) {
+						event.respond("Sorry, that command won't work outside November!");
+						return true;
+					}
+					addNew(event, argsString);
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+				
+				return true;
+			case "chaininfo":
+				if (cdata.commands_enabled.get("chainstory")) {
+					info(event);
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+				
+				return true;
+			case "chaincount":
+				if (cdata.commands_enabled.get("chainstory")) {
+					count(event);
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+				
+				return true;
 		}
 
 		return false;

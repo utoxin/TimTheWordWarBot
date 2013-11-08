@@ -56,32 +56,33 @@ public class Challenge {
 			command = message.substring(1).toLowerCase();
 		}
 
-		if (command.equals("challenge")) {
-			if (cdata.commands_enabled.get("chainstory")) {
-				issueChallenge(event.getChannel(), event.getUser().getNick(), argsString);
-			} else {
-				event.respond("I'm sorry. I don't do that here.");
-			}
-
-			return true;
-		} else if (command.equals("challengefor")) {
-			if (cdata.commands_enabled.get("chainstory")) {
-				String target;
-				space = argsString.indexOf(" ");
-				if (space > 0) {
-					target = argsString.substring(0, space);
-					argsString = argsString.substring(space + 1);
+		switch (command) {
+			case "challenge":
+				if (cdata.commands_enabled.get("chainstory")) {
+					issueChallenge(event.getChannel(), event.getUser().getNick(), argsString);
 				} else {
-					target = argsString;
-					argsString = "";
+					event.respond("I'm sorry. I don't do that here.");
 				}
-
-				issueChallenge(event.getChannel(), target, argsString);
-			} else {
-				event.respond("I'm sorry. I don't do that here.");
-			}
-			
-			return true;
+				
+				return true;
+			case "challengefor":
+				if (cdata.commands_enabled.get("chainstory")) {
+					String target;
+					space = argsString.indexOf(" ");
+					if (space > 0) {
+						target = argsString.substring(0, space);
+						argsString = argsString.substring(space + 1);
+					} else {
+						target = argsString;
+						argsString = "";
+					}
+					
+					issueChallenge(event.getChannel(), target, argsString);
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+				
+				return true;
 		}
 
 		return false;
@@ -110,124 +111,129 @@ public class Challenge {
 		}
 
 		if (command.equals("challenge")) {
-			if (args[0].equals("approved")) {
-				int pages = ( this.approved.size() + 9 ) / 10;
-				int wantPage = 0;
-				if (args != null && args.length > 1) {
-					try {
-						wantPage = Integer.parseInt(args[1]) - 1;
-					} catch (NumberFormatException ex) {
-						event.respond("Page number was not numeric.");
-						return true;
-					}
-				}
-
-				if (wantPage > pages) {
-					wantPage = pages;
-				}
-
-				int list_idx = wantPage * 10;
-				event.respond(String.format("Showing page %d of %d (%d challenges total)", wantPage + 1, pages, this.approved.size()));
-				for (int i = 0; i < 10 && list_idx < this.approved.size(); ++i, list_idx = wantPage * 10 + i) {
-					event.respond(String.format("%d: %s", list_idx, this.approved.get(list_idx)));
-				}
-				return true;
-			} else if (args[0].equals("pending")) {
-				int pages = ( this.pending.size() + 9 ) / 10;
-				int wantPage = 0;
-				if (args != null && args.length > 1) {
-					try {
-						wantPage = Integer.parseInt(args[1]) - 1;
-					} catch (NumberFormatException ex) {
-						event.respond("Page number was not numeric.");
-						return true;
-					}
-				}
-
-				if (wantPage > pages) {
-					wantPage = pages;
-				}
-
-				int list_idx = wantPage * 10;
-				event.respond(String.format("Showing page %d of %d (%d challenges total)", wantPage + 1, pages, this.pending.size()));
-				for (int i = 0; i < 10 && list_idx < this.pending.size(); ++i, list_idx = wantPage * 10 + i) {
-					event.respond(String.format("%d: %s", list_idx, this.pending.get(list_idx)));
-				}
-				return true;
-			} else if (args[0].equals("approve")) {
-				if (args != null && args.length > 1) {
-					int idx;
-					String challenge;
-					try {
-						idx = Integer.parseInt(args[1]);
-						challenge = this.pending.get(idx);
-					} catch (NumberFormatException ex) {
-						// Must be a string
-						challenge = args[1];
-						for (int i = 2; i < args.length; ++i) {
-							challenge = challenge + " " + args[i];
+			switch (args[0]) {
+				case "approved":
+				{
+					int pages = ( this.approved.size() + 9 ) / 10;
+					int wantPage = 0;
+					if (args != null && args.length > 1) {
+						try {
+							wantPage = Integer.parseInt(args[1]) - 1;
+						} catch (NumberFormatException ex) {
+							event.respond("Page number was not numeric.");
+							return true;
 						}
-						idx = this.pending.indexOf(challenge);
 					}
-					if (idx >= 0) {
-						this.setChallengeApproved(challenge, true);
-						this.pending.remove(idx);
-						this.approved.add(challenge);
-						event.respond(String.format("Challenge %s approved.", args[1]));
-					} else {
-						event.respond(String.format("Challenge %s is not pending approval.", args[1]));
+					
+					if (wantPage > pages) {
+						wantPage = pages;
 					}
-				}
-				return true;
-			} else if (args[0].equals("unapprove")) {
-				if (args != null && args.length > 1) {
-					int idx;
-					String challenge;
-					try {
-						idx = Integer.parseInt(args[1]);
-						challenge = this.approved.get(idx);
-					} catch (NumberFormatException ex) {
-						// Must be a string
-						challenge = args[1];
-						for (int i = 2; i < args.length; ++i) {
-							challenge = challenge + " " + args[i];
-						}
-						idx = this.approved.indexOf(challenge);
-					}
-					if (idx >= 0) {
-						this.setChallengeApproved(challenge, false);
-						this.pending.add(challenge);
-						this.approved.remove(idx);
-						event.respond(String.format("Challenge %s unapproved.", args[1]));
-					} else {
-						event.respond(String.format("Challenge %s is not in approved list.", args[1]));
+					
+					int list_idx = wantPage * 10;
+					event.respond(String.format("Showing page %d of %d (%d challenges total)", wantPage + 1, pages, this.approved.size()));
+					for (int i = 0; i < 10 && list_idx < this.approved.size(); ++i, list_idx = wantPage * 10 + i) {
+						event.respond(String.format("%d: %s", list_idx, this.approved.get(list_idx)));
 					}
 					return true;
 				}
-			} else if (args[0].equals("delete")) {
-				if (args != null && args.length > 1) {
-					int idx;
-					String challenge;
-					try {
-						idx = Integer.parseInt(args[1]);
-						challenge = this.pending.get(idx);
-					} catch (NumberFormatException ex) {
-						// Must be a string
-						challenge = args[1];
-						for (int i = 2; i < args.length; ++i) {
-							challenge = challenge + " " + args[i];
+				case "pending":
+				{
+					int pages = ( this.pending.size() + 9 ) / 10;
+					int wantPage = 0;
+					if (args != null && args.length > 1) {
+						try {
+							wantPage = Integer.parseInt(args[1]) - 1;
+						} catch (NumberFormatException ex) {
+							event.respond("Page number was not numeric.");
+							return true;
 						}
-						idx = this.pending.indexOf(challenge);
 					}
-					if (idx >= 0) {
-						this.removeChallenge(challenge);
-						this.pending.remove(challenge);
-						event.respond(String.format("Challenge %s deleted from pending list.", args[0]));
-					} else {
-						event.respond(String.format("Challenge %s is not pending approval.", args[0]));
+					
+					if (wantPage > pages) {
+						wantPage = pages;
+					}
+					
+					int list_idx = wantPage * 10;
+					event.respond(String.format("Showing page %d of %d (%d challenges total)", wantPage + 1, pages, this.pending.size()));
+					for (int i = 0; i < 10 && list_idx < this.pending.size(); ++i, list_idx = wantPage * 10 + i) {
+						event.respond(String.format("%d: %s", list_idx, this.pending.get(list_idx)));
 					}
 					return true;
 				}
+				case "approve":
+					if (args != null && args.length > 1) {
+						int idx;
+						String challenge;
+						try {
+							idx = Integer.parseInt(args[1]);
+							challenge = this.pending.get(idx);
+						} catch (NumberFormatException ex) {
+							// Must be a string
+							challenge = args[1];
+							for (int i = 2; i < args.length; ++i) {
+								challenge = challenge + " " + args[i];
+							}
+							idx = this.pending.indexOf(challenge);
+						}
+						if (idx >= 0) {
+							this.setChallengeApproved(challenge, true);
+							this.pending.remove(idx);
+							this.approved.add(challenge);
+							event.respond(String.format("Challenge %s approved.", args[1]));
+						} else {
+							event.respond(String.format("Challenge %s is not pending approval.", args[1]));
+						}
+					}
+					return true;
+				case "unapprove":
+					if (args != null && args.length > 1) {
+						int idx;
+						String challenge;
+						try {
+							idx = Integer.parseInt(args[1]);
+							challenge = this.approved.get(idx);
+						} catch (NumberFormatException ex) {
+							// Must be a string
+							challenge = args[1];
+							for (int i = 2; i < args.length; ++i) {
+								challenge = challenge + " " + args[i];
+							}
+							idx = this.approved.indexOf(challenge);
+						}
+						if (idx >= 0) {
+							this.setChallengeApproved(challenge, false);
+							this.pending.add(challenge);
+							this.approved.remove(idx);
+							event.respond(String.format("Challenge %s unapproved.", args[1]));
+						} else {
+							event.respond(String.format("Challenge %s is not in approved list.", args[1]));
+						}
+						return true;
+					}	break;
+				case "delete":
+					if (args != null && args.length > 1) {
+						int idx;
+						String challenge;
+						try {
+							idx = Integer.parseInt(args[1]);
+							challenge = this.pending.get(idx);
+						} catch (NumberFormatException ex) {
+							// Must be a string
+							challenge = args[1];
+							for (int i = 2; i < args.length; ++i) {
+								challenge = challenge + " " + args[i];
+							}
+							idx = this.pending.indexOf(challenge);
+						}
+						if (idx >= 0) {
+							this.removeChallenge(challenge);
+							this.pending.remove(challenge);
+							event.respond(String.format("Challenge %s deleted from pending list.", args[0]));
+						} else {
+							event.respond(String.format("Challenge %s is not pending approval.", args[0]));
+						}
+						return true;
+					}	break;
 			}
 		}
 
@@ -243,7 +249,7 @@ public class Challenge {
 			"    !challengefor <name> <challenge> - Challenge someone else, and store it for approval",};
 
 		for (int i = 0; i < strs.length; ++i) {
-			Tim.bot.sendNotice(event.getUser(), strs[i]);
+			event.getUser().send().notice(strs[i]);
 		}
 	}
 
@@ -257,7 +263,7 @@ public class Challenge {
 			"    $challenge unapprove <# from approved> - Unapprove a previously approved item",};
 
 		for (int i = 0; i < strs.length; ++i) {
-			Tim.bot.sendNotice(event.getUser(), strs[i]);
+			event.getUser().send().notice(strs[i]);
 		}
 	}
 
@@ -298,7 +304,7 @@ public class Challenge {
 			challenge = this.approved.get(i);
 		}
 
-		Tim.bot.sendAction(channel, String.format("challenges %s: %s", target, challenge));
+		channel.send().action(String.format("challenges %s: %s", target, challenge));
 	}
 
 	private void getApprovedChallenges() {

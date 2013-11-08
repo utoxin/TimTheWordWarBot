@@ -21,39 +21,18 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.pircbotx.Channel;
 import org.pircbotx.Colors;
-import org.pircbotx.PircBotX;
-import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.ActionEvent;
 import org.pircbotx.hooks.events.MessageEvent;
-import org.pircbotx.hooks.events.ServerPingEvent;
 
 /**
  *
  * @author mwalker
  */
-public class MarkovChains extends ListenerAdapter {
+public class MarkovChains {
 	private final DBAccess db = DBAccess.getInstance();
 	protected HashMap<String, Pattern> badwordPatterns = new HashMap<>();
 	protected HashMap<String, Pattern[]> badpairPatterns = new HashMap<>();
 	private final long timeout = 3000;
-
-	@Override
-	public void onMessage( MessageEvent event ) {
-		PircBotX bot = event.getBot();
-
-		if (!event.getUser().getNick().equals("Skynet") && !event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
-			process_markov(Colors.removeFormattingAndColors(event.getMessage()), "say");
-		}
-	}
-
-	@Override
-	public void onAction( ActionEvent event ) {
-		PircBotX bot = event.getBot();
-
-		if (!event.getUser().getNick().equals("Skynet") && !event.getUser().getNick().equals(bot.getNick()) && !"".equals(event.getChannel().getName())) {
-			process_markov(Colors.removeFormattingAndColors(event.getMessage()), "emote");
-		}
-	}
 
 	/**
 	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
@@ -92,16 +71,17 @@ public class MarkovChains extends ListenerAdapter {
 			command = message.toLowerCase().substring(1);
 		}
 
-		if (command.equals("badword")) {
-			if (args != null && args.length == 1) {
-				addBadWord(args[0], event.getChannel());
-				return true;
-			}
-        } else if (command.equals("badpair")) {
-			if (args != null && args.length == 2) {
-				addBadPair(args[0], args[1], event.getChannel());
-				return true;
-			}
+		switch (command) {
+			case "badword":
+				if (args != null && args.length == 1) {
+					addBadWord(args[0], event.getChannel());
+					return true;
+				}	break;
+			case "badpair":
+				if (args != null && args.length == 2) {
+					addBadPair(args[0], args[1], event.getChannel());
+					return true;
+				}	break;
 		}
 
 		return false;
@@ -114,7 +94,7 @@ public class MarkovChains extends ListenerAdapter {
 			"    $badpair <word> <word> - Add pair to the 'bad pair' list, and purge from the chain data.",};
 
 		for (int i = 0; i < strs.length; ++i) {
-			Tim.bot.sendNotice(event.getUser(), strs[i]);
+			event.getUser().send().notice(strs[i]);
 		}
 	}
 
@@ -124,18 +104,14 @@ public class MarkovChains extends ListenerAdapter {
 	}
 
 	public void randomActionWrapper( MessageEvent event ) {
-		randomAction(event.getChannel(), Tim.rand.nextBoolean() ? "say" : "mutter");
+		randomAction(event.getChannel().getName(), Tim.rand.nextBoolean() ? "say" : "mutter");
 	}
 
 	public void randomActionWrapper( ActionEvent event ) {
-		randomAction(event.getChannel(), Tim.rand.nextBoolean() ? "mutter" : "emote");
+		randomAction(event.getChannel().getName(), Tim.rand.nextBoolean() ? "mutter" : "emote");
 	}
 
-	public void randomActionWrapper( ServerPingEvent event, String channel ) {
-		randomAction(event.getBot().getChannel(channel), Tim.rand.nextBoolean() ? "say" : (Tim.rand.nextBoolean() ? "mutter" : "emote"));
-	}
-
-	protected void randomAction( Channel channel, String type ) {
+	protected void randomAction( String channel, String type ) {
 		String[] actions = {
 			"markhov"
 		};
@@ -145,12 +121,16 @@ public class MarkovChains extends ListenerAdapter {
 		if ("markhov".equals(action)) {
 			try {
 				Thread.sleep(Tim.rand.nextInt(1000) + 500);
-				if ("say".equals(type)) {
-					Tim.bot.sendMessage(channel, generate_markov(type));
-				} else if ("mutter".equals(type)) {
-					Tim.bot.sendAction(channel, "mutters under his breath, \"" + generate_markov("say") + "\"");
-				} else {
-					Tim.bot.sendAction(channel, generate_markov(type));
+				switch (type) {
+					case "say":
+						Tim.bot.sendIRC().message(channel, generate_markov(type));
+						break;
+					case "mutter":
+						Tim.bot.sendIRC().action(channel, "mutters under his breath, \"" + generate_markov("say") + "\"");
+						break;
+					default:
+						Tim.bot.sendIRC().action(channel, generate_markov(type));
+						break;
 				}
 			} catch (InterruptedException ex) {
 				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
@@ -161,7 +141,7 @@ public class MarkovChains extends ListenerAdapter {
     public void addBadPair( String word_one, String word_two, Channel channel ) {
 		Connection con;
 		if ("".equals(word_one)) {
-			Tim.bot.sendMessage(channel, "I can't add nothing. Please provide the bad word.");
+			channel.send().message("I can't add nothing. Please provide the bad word.");
 		} else {
 			try {
 				con = db.pool.getConnection(timeout);
@@ -203,7 +183,7 @@ public class MarkovChains extends ListenerAdapter {
                                     });
 				}
 
-				Tim.bot.sendAction(channel, "quickly goes through his records, and purges all knowledge of that horrible phrase.");
+				channel.send().action("quickly goes through his records, and purges all knowledge of that horrible phrase.");
 
 				con.close();
 			} catch (SQLException ex) {
@@ -215,7 +195,7 @@ public class MarkovChains extends ListenerAdapter {
 	public void addBadWord( String word, Channel channel ) {
 		Connection con;
 		if ("".equals(word)) {
-			Tim.bot.sendMessage(channel, "I can't add nothing. Please provide the bad word.");
+			channel.send().message("I can't add nothing. Please provide the bad word.");
 		} else {
 			try {
 				con = db.pool.getConnection(timeout);
@@ -234,7 +214,7 @@ public class MarkovChains extends ListenerAdapter {
 					badwordPatterns.put(word, Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word) + "(?:\\W|\\b)"));
 				}
 
-				Tim.bot.sendAction(channel, "quickly goes through his records, and purges all knowledge of that horrible word.");
+				channel.send().action("quickly goes through his records, and purges all knowledge of that horrible word.");
 
 				con.close();
 			} catch (SQLException ex) {
@@ -414,9 +394,10 @@ public class MarkovChains extends ListenerAdapter {
 	 *
 	 * @param message What is the message to parse
 	 * @param type    What type of message was it (say or emote)
+	 * @param username
 	 *
 	 */
-	public void process_markov( String message, String type ) {
+	public void process_markov( String message, String type, String username ) {
 		String[] words = message.split(" ");
 
 		for (int i = -1; i <= words.length; i++) {
@@ -463,6 +444,10 @@ public class MarkovChains extends ListenerAdapter {
 				continue;
 			}
 
+			word1 = word1.replaceAll(Tim.bot.getNick(), username);
+			word2 = word2.replaceAll(Tim.bot.getNick(), username);
+			word3 = word3.replaceAll(Tim.bot.getNick(), username);
+			
 			storeTriad(word1, word2, word3, type);
 		}
 	}
@@ -559,17 +544,12 @@ public class MarkovChains extends ListenerAdapter {
 
 		// Checks for URL
 		try {
-			new URL(word);
+			URL url = new URL(word);
 			return true;
 		} catch (MalformedURLException ex) {
 			// NOOP
 		}
 
-		// Phone number
-		if (Pattern.matches("^\\(?(\\d{3})\\)?[- ]?(\\d{3})[- ]?(\\d{4})$", word)) {
-			return true;
-		}
-
-		return false;
+		return Pattern.matches("^\\(?(\\d{3})\\)?[- ]?(\\d{3})[- ]?(\\d{4})$", word);
 	}
 }

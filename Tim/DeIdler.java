@@ -83,7 +83,7 @@ public class DeIdler {
 			Tim.story.storeLine(new_text, "Timmy");
 			for (ChannelInfo cdata : Tim.db.channel_data.values()) {
 				if (Tim.rand.nextInt(100) < 25 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled && cdata.chatterLevel >= 0) {
-					Tim.bot.sendAction(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)");
+					Tim.bot.sendIRC().action(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)");
 				}
 			}
 		}
@@ -99,7 +99,7 @@ public class DeIdler {
 		 * spam when they come back.
 		 */
 		for (ChannelInfo cdata : Tim.db.channel_data.values()) {
-			cdata = Tim.db.channel_data.get(cdata.channel.getName().toLowerCase());
+			cdata = Tim.db.channel_data.get(cdata.channel);
 
 			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 			long odds = Math.round(Math.sqrt(elapsed) / (6 - cdata.chatterLevel));

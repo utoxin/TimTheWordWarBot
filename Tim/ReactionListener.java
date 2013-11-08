@@ -87,11 +87,11 @@ public class ReactionListener extends ListenerAdapter {
 			}
 		}
 
-		if (cdata.chatterLevel > 0 && !Tim.db.ignore_list.contains(event.getUser().getNick())) {
+		if (cdata.chatterLevel > 0 && !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())) {
 			if (message.charAt(0) != '$' && message.charAt(0) != '!') {
 				if (message.toLowerCase().contains("how many lights") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < lights_odds) {
-						bot.sendMessage(event.getChannel(), "There are FOUR LIGHTS!");
+						event.getChannel().send().message("There are FOUR LIGHTS!");
 						lights_odds -= Tim.rand.nextInt(5);
 					}
 				} else if (message.toLowerCase().contains("what does the fox say") && cdata.chatter_enabled.get("silly_reactions")) {
@@ -111,12 +111,12 @@ public class ReactionListener extends ListenerAdapter {
 					}
 				} else if ((message.contains(":(") || message.contains("):")) && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < hug_odds) {
-						bot.sendAction(event.getChannel(), "gives " + event.getUser().getNick() + " a hug.");
+						event.getChannel().send().action("gives " + event.getUser().getNick() + " a hug.");
 						hug_odds -= Tim.rand.nextInt(5);
 					}
 				} else if (message.contains(":'(") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < tissue_odds) {
-						bot.sendAction(event.getChannel(), "passes " + event.getUser().getNick() + " a tissue.");
+						event.getChannel().send().action("passes " + event.getUser().getNick() + " a tissue.");
 						tissue_odds -= Tim.rand.nextInt(5);
 					}
 				} else if (Pattern.matches("(?i).*how do (i|you) (change|set) ?(my|your)? (nick|name).*", message) && cdata.chatter_enabled.get("helpful_reactions")) {
@@ -124,7 +124,7 @@ public class ReactionListener extends ListenerAdapter {
 				} else if (Pattern.matches("(?i).*are you (thinking|pondering) what i.*m (thinking|pondering).*", message) && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < aypwip_odds) {
 						int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
-						Tim.bot.sendMessage(event.getChannel(), String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
+						event.getChannel().send().message(String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
 						aypwip_odds -= Tim.rand.nextInt(5);
 					}
 				} else if (Pattern.matches("(?i).*what.*is.*the.*answer.*", message) && cdata.chatter_enabled.get("silly_reactions")) {
@@ -139,7 +139,7 @@ public class ReactionListener extends ListenerAdapter {
 					}
 				} else {
 					this.interact(event.getUser(), event.getChannel(), message, "say");
-					Tim.markov.process_markov(message, "say");
+					Tim.markov.process_markov(message, "say", event.getUser().getNick());
 				}
 			}
 		}
@@ -192,10 +192,10 @@ public class ReactionListener extends ListenerAdapter {
 			}
 		}
 
-		if (cdata.chatterLevel > 0 && !Tim.db.ignore_list.contains(event.getUser().getNick())) {
+		if (cdata.chatterLevel > 0 && !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())) {
 			if (message.toLowerCase().contains("how many lights") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < lights_odds) {
-					bot.sendMessage(event.getChannel(), "There are FOUR LIGHTS!");
+					event.getChannel().send().message("There are FOUR LIGHTS!");
 					lights_odds -= Tim.rand.nextInt(5);
 				}
 			} else if (message.toLowerCase().contains("what does the fox say") && cdata.chatter_enabled.get("silly_reactions")) {
@@ -210,7 +210,7 @@ public class ReactionListener extends ListenerAdapter {
 				}
 			} else if ((message.contains(":(") || message.contains("):")) && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < hug_odds) {
-					bot.sendAction(event.getChannel(), "gives " + event.getUser().getNick() + " a hug.");
+					event.getChannel().send().action("gives " + event.getUser().getNick() + " a hug.");
 					hug_odds -= Tim.rand.nextInt(5);
 				}
 			} else if (message.toLowerCase().startsWith("tests") && cdata.chatter_enabled.get("silly_reactions")) {
@@ -220,7 +220,7 @@ public class ReactionListener extends ListenerAdapter {
 				}
 			} else if (message.contains(":'(") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < tissue_odds) {
-					bot.sendAction(event.getChannel(), "passes " + event.getUser().getNick() + " a tissue.");
+					event.getChannel().send().action("passes " + event.getUser().getNick() + " a tissue.");
 					tissue_odds -= Tim.rand.nextInt(5);
 				}
 			} else if (Pattern.matches("(?i).*how do (i|you) (change|set) ?(my|your)? (nick|name).*", message) && cdata.chatter_enabled.get("helpful_reactions")) {
@@ -228,7 +228,7 @@ public class ReactionListener extends ListenerAdapter {
 			} else if (Pattern.matches("(?i).*are you (thinking|pondering) what i.*m (thinking|pondering).*", message) && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < aypwip_odds) {
 					int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
-					Tim.bot.sendMessage(event.getChannel(), String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
+					event.getChannel().send().message(String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
 					aypwip_odds -= Tim.rand.nextInt(5);
 				}
 			} else if (Pattern.matches("(?i).*what.*is.*the.*answer.*", message) && cdata.chatter_enabled.get("silly_reactions")) {
@@ -243,7 +243,7 @@ public class ReactionListener extends ListenerAdapter {
 				}
 			} else {
 				this.interact(event.getUser(), event.getChannel(), message, "emote");
-				Tim.markov.process_markov(message, "emote");
+				Tim.markov.process_markov(message, "emote", event.getUser().getNick());
 			}
 		}
 	}

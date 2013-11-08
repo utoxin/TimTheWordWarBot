@@ -20,13 +20,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Channel;
 import org.pircbotx.Colors;
 import org.pircbotx.User;
 import org.pircbotx.hooks.events.ActionEvent;
 import org.pircbotx.hooks.events.MessageEvent;
-import org.pircbotx.hooks.events.ServerPingEvent;
 
 /**
  *
@@ -405,15 +404,14 @@ public class Amusement {
 		randomAction(event.getUser(), event.getChannel());
 	}
 
-	protected void randomAction( User sender, Channel channel ) {
-		cdata = Tim.db.channel_data.get(channel.getName().toLowerCase());
+	protected void randomAction( User sender, String channel ) {
+		cdata = Tim.db.channel_data.get(channel);
 
 		String[] actions = new String[] {
 			"get", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper", "search"
 		};
 
 		if (sender == null) {
-			Set<User> users = channel.getUsers();
 			HashSet<User> finalUsers = new HashSet<>(10);
 
 			int size = users.size();
@@ -588,12 +586,12 @@ public class Amusement {
 			Thread.sleep(delay);
 
 			if (mutter) {
-				Tim.bot.sendAction(channel, "mutters under his breath, \"" + this.eightballs.get(r) + "\"");
+				channel.send().action("mutters under his breath, \"" + this.eightballs.get(r) + "\"");
 			} else {
 				if (Tim.rand.nextInt(100) < 5) {
-					Tim.bot.sendMessage(channel, sender.getNick() + ": " + Tim.markov.generate_markov("say"));
+					channel.send().message(sender.getNick() + ": " + Tim.markov.generate_markov("say"));
 				} else {
-					Tim.bot.sendMessage(channel, sender.getNick() + ": " + this.eightballs.get(r));
+					channel.send().message(sender.getNick() + ": " + this.eightballs.get(r));
 				}
 			}
 		} catch (InterruptedException ex) {
@@ -629,7 +627,7 @@ public class Amusement {
 
 			r = Tim.rand.nextInt(500) + 500;
 			Thread.sleep(r);
-			Tim.bot.sendAction(channel, String.format(response, songName));
+			channel.send().action(String.format(response, songName));
 		} catch (SQLException | InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -660,7 +658,7 @@ public class Amusement {
 
 			int delay = Tim.rand.nextInt(500) + 500;
 			Thread.sleep(delay);
-			Tim.bot.sendAction(channel, String.format(response, danceNameRes.getString("name")));
+			channel.send().action(String.format(response, danceNameRes.getString("name")));
 			con.close();
 		} catch (SQLException | InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
@@ -692,10 +690,15 @@ public class Amusement {
 		}
 		
 		String difficulty = args[0];
-		if (difficulty.equals("extraeasy")) {
-			difficulty = "easy";
-		} else if (difficulty.equals("extreme") || difficulty.equals("insane") || difficulty.equals("impossible")) {
-			difficulty = "hard";
+		switch (difficulty) {
+			case "extraeasy":
+				difficulty = "easy";
+				break;
+			case "extreme":
+			case "insane":
+			case "impossible":
+				difficulty = "hard";
+				break;
 		}
 
 		String value = "";
@@ -744,7 +747,7 @@ public class Amusement {
 			r = (int) Double.parseDouble(args[0]) - 1;
 		}
 
-		Tim.bot.sendMessage(channel, this.commandments.get(r));
+		channel.send().message(this.commandments.get(r));
 	}
 
 	protected void throwFridge( Channel channel, User sender, String[] args, Boolean righto ) {
@@ -762,13 +765,13 @@ public class Amusement {
 			}
 
 			if (righto) {
-				Tim.bot.sendMessage(channel, "Righto...");
+				channel.send().message("Righto...");
 			}
 
 			int time;
 			time = Tim.rand.nextInt(1500) + 1500;
 			Thread.sleep(time);
-			Tim.bot.sendAction(channel, "looks back and forth, then slinks off...");
+			channel.send().action("looks back and forth, then slinks off...");
 
 			String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
 			switch (colour.charAt(0)) {
@@ -798,7 +801,7 @@ public class Amusement {
 
 			time = Tim.rand.nextInt(3000) + 2000;
 			Thread.sleep(time);
-			Tim.bot.sendAction(channel, act);
+			channel.send().action(act);
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -819,13 +822,13 @@ public class Amusement {
 			}
 
 			if (righto) {
-				Tim.bot.sendMessage(channel, "Righto...");
+				channel.send().message("Righto...");
 			}
 
 			int time;
 			time = Tim.rand.nextInt(1500) + 1500;
 			Thread.sleep(time);
-			Tim.bot.sendAction(channel, "looks around for a convenient window, then slinks off...");
+			channel.send().action("looks around for a convenient window, then slinks off...");
 
 			int i = Tim.rand.nextInt(100);
 
@@ -842,7 +845,7 @@ public class Amusement {
 
 			time = Tim.rand.nextInt(3000) + 2000;
 			Thread.sleep(time);
-			Tim.bot.sendAction(channel, act);
+			channel.send().action(act);
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -858,13 +861,13 @@ public class Amusement {
 			}
 
 			if (righto) {
-				Tim.bot.sendMessage(channel, "Righto...");
+				channel.send().message("Righto...");
 			}
 
 			int time;
 			time = Tim.rand.nextInt(1500) + 1500;
 			Thread.sleep(time);
-			Tim.bot.sendAction(channel, "prepares the summoning circle required to bring " + target + " into the world...");
+			channel.send().action("prepares the summoning circle required to bring " + target + " into the world...");
 
 			int i = Tim.rand.nextInt(100);
 			String act;
@@ -880,7 +883,7 @@ public class Amusement {
 
 			time = Tim.rand.nextInt(3000) + 2000;
 			Thread.sleep(time);
-			Tim.bot.sendAction(channel, act);
+			channel.send().action(act);
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -894,12 +897,12 @@ public class Amusement {
 			}
 
 			if (righto) {
-				Tim.bot.sendMessage(channel, "Righto...");
+				channel.send().message("Righto...");
 			}
 
 			int time = Tim.rand.nextInt(1500) + 1500;
 			Thread.sleep(time);
-			Tim.bot.sendAction(channel, "surreptitiously works his way over to the couch, looking ever so casual...");
+			channel.send().action("surreptitiously works his way over to the couch, looking ever so casual...");
 			int i = Tim.rand.nextInt(100);
 			String act;
 			String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
@@ -918,7 +921,7 @@ public class Amusement {
 
 			time = Tim.rand.nextInt(3000) + 2000;
 			Thread.sleep(time);
-			Tim.bot.sendAction(channel, act);
+			channel.send().action(act);
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -932,12 +935,12 @@ public class Amusement {
 			}
 
 			if (righto) {
-				Tim.bot.sendMessage(channel, "Righto...");
+				channel.send().message("Righto...");
 			}
 
 			int time = Tim.rand.nextInt(1500) + 1500;
 			Thread.sleep(time);
-			Tim.bot.sendAction(channel, "falls suspiciously silent, and turns green...");
+			channel.send().action("falls suspiciously silent, and turns green...");
 			int i = Tim.rand.nextInt(100);
 			String act;
 			String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
@@ -953,11 +956,11 @@ public class Amusement {
 
 			time = Tim.rand.nextInt(3000) + 2000;
 			Thread.sleep(time);
-			Tim.bot.sendAction(channel, act);
+			channel.send().action( act);
 			
 			time = Tim.rand.nextInt(2000) + 1000;
 			Thread.sleep(time);
-			Tim.bot.sendAction(channel, "explodessss! *BOOM*");
+			channel.send().action("explodessss! *BOOM*");
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
 		}

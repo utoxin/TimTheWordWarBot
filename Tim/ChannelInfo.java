@@ -8,7 +8,6 @@ package Tim;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import org.pircbotx.Channel;
 
 /**
  *
@@ -16,7 +15,7 @@ import org.pircbotx.Channel;
  */
 public class ChannelInfo {
 
-	public Channel channel;
+	public String channel;
 
 	public HashMap<String, Boolean> chatter_enabled = new HashMap<>(16);
 	public HashMap<String, Boolean> commands_enabled = new HashMap<>(16);
@@ -35,7 +34,7 @@ public class ChannelInfo {
 	public boolean auto_muzzle_wars = true;
 	public boolean auto_muzzled = false;
 
-	public ChannelInfo(Channel channel) {
+	public ChannelInfo(String channel) {
 		this.channel = channel;
 	}
 

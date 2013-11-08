@@ -28,7 +28,7 @@ import org.pircbotx.hooks.events.KickEvent;
 public class ServerListener extends ListenerAdapter {
 	@Override
 	public void onKick( KickEvent event ) {
-		if (event.getSource().getNick().equals(Tim.bot.getNick())) {
+		if (event.getRecipient().getNick().equals(Tim.bot.getNick())) {
 			Tim.db.deleteChannel(event.getChannel());
 		}
 	}
@@ -36,9 +36,9 @@ public class ServerListener extends ListenerAdapter {
 	@Override
 	public void onInvite( InviteEvent event ) {
 		if (!Tim.db.ignore_list.contains(event.getUser())) {
-			Tim.bot.joinChannel(event.getChannel());
+			Tim.bot.sendIRC().joinChannel(event.getChannel());
 			if (!Tim.db.channel_data.containsKey(event.getChannel())) {
-				Tim.db.joinChannel(Tim.bot.getChannel(event.getChannel()));
+				Tim.db.joinChannel(Tim.bot.getUserChannelDao().getChannel(event.getChannel()));
 			}
 		}
 	}
@@ -77,12 +77,11 @@ public class ServerListener extends ListenerAdapter {
 				}
 
 				Thread.sleep(500);
-				Tim.bot.sendMessage(event.getChannel(), message);
+				event.getChannel().send().message(message);
 
 				if (Pattern.matches("(?i)mib_......", event.getUser().getNick()) || Pattern.matches("(?i)guest.*", event.getUser().getNick())) {
 					Thread.sleep(500);
-					Tim.bot.sendMessage(
-						event.getChannel(),
+					event.getChannel().send().message(
 						String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", event.getUser().getNick()));
 				}
 
@@ -91,7 +90,7 @@ public class ServerListener extends ListenerAdapter {
 				if (r < 15) {
 					r = Tim.rand.nextInt(Tim.db.extra_greetings.size());
 					Thread.sleep(500);
-					Tim.bot.sendMessage(event.getChannel(), Tim.db.extra_greetings.get(r));
+					event.getChannel().send().message(Tim.db.extra_greetings.get(r));
 				}
 			} catch (InterruptedException ex) {
 				Logger.getLogger(ServerListener.class.getName()).log(Level.SEVERE, null, ex);
