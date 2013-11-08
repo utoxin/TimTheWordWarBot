@@ -112,7 +112,7 @@ public class Amusement {
 			return true;
 		} else if (command.equals("woot")) {
 			if (cdata.commands_enabled.get("woot")) {
-				Tim.bot.sendAction(event.getChannel(), "cheers! Hooray!");
+				event.getChannel().send().action("cheers! Hooray!");
 			} else {
 				event.respond("I'm sorry. I don't do that here.");
 			}
@@ -382,7 +382,7 @@ public class Amusement {
 						 "    !eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.",};
 
 		for (int i = 0; i < strs.length; ++i) {
-			Tim.bot.sendNotice(event.getUser(), strs[i]);
+			event.getUser().send().notice(strs[i]);
 		}
 	}
 
@@ -403,10 +403,6 @@ public class Amusement {
 
 	public void randomActionWrapper( ActionEvent event ) {
 		randomAction(event.getUser(), event.getChannel());
-	}
-
-	public void randomActionWrapper( ServerPingEvent event, String channel ) {
-		randomAction(null, event.getBot().getChannel(channel));
 	}
 
 	protected void randomAction( User sender, Channel channel ) {
@@ -518,10 +514,10 @@ public class Amusement {
 
 				if (item.toLowerCase().contains("spoon")) {
 					item = "";
-					Tim.bot.sendAction(channel, "rumages around in the back room for a bit, then calls out. \"Sorry... there is no spoon. Maybe this will do...\"");
+					channel.send().action("rumages around in the back room for a bit, then calls out. \"Sorry... there is no spoon. Maybe this will do...\"");
 				}			
 			} else {
-				Tim.bot.sendAction(channel, "rumages around in the back room for a bit, then calls out. \"Sorry... I don't think I have that. Maybe this will do...\"");
+				channel.send().action("rumages around in the back room for a bit, then calls out. \"Sorry... I don't think I have that. Maybe this will do...\"");
 			}
 		}
 
@@ -531,7 +527,7 @@ public class Amusement {
 			item = this.approved_items.get(i);
 		}
 
-		Tim.bot.sendAction(channel, String.format("gets %s %s.", target, item));
+		channel.send().action(String.format("gets %s %s.", target, item));
 	}
 
 	protected void search( Channel channel, User sender, String target) {
@@ -557,20 +553,20 @@ public class Amusement {
 		}
 
 		if (target != null && Tim.rand.nextInt(100) > 75) {
-			Tim.bot.sendAction(channel, "decides at the last second to search "+sender.getNick()+"'s things instead...");
+			channel.send().action("decides at the last second to search "+sender.getNick()+"'s things instead...");
 			target = sender.getNick();
 		} else {
 			if (target == null) {
 				target = sender.getNick();
 			}
 			
-			Tim.bot.sendAction(channel, "searches through "+target+"'s things, looking for contraband...");
+			channel.send().action("searches through "+target+"'s things, looking for contraband...");
 		}
 
 		if (item.equals("")) {
-			Tim.bot.sendAction(channel, String.format("can't find anything, and grudgingly clears %s.", target));
+			channel.send().action(String.format("can't find anything, and grudgingly clears %s.", target));
 		} else {
-			Tim.bot.sendAction(channel, String.format("reports %s to Skynet for possesion of %s.", target, item));
+			channel.send().action(String.format("reports %s to Skynet for possesion of %s.", target, item));
 		}
 	}
 
@@ -579,11 +575,9 @@ public class Amusement {
 		if (args != null && args.length >= 1) {
 			String argStr = StringUtils.join(args, " ");
 
-			Tim.bot.sendAction(
-				event.getChannel(), "licks " + argStr + ". Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
+			event.getChannel().send().action("licks " + argStr + ". Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
 		} else {
-			Tim.bot.sendAction(
-				event.getChannel(), "licks " + event.getUser().getNick() + "! Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
+			event.getChannel().send().action("licks " + event.getUser().getNick() + "! Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
 		}
 	}
 

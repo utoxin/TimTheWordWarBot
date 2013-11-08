@@ -151,10 +151,10 @@ public class ReactionListener extends ListenerAdapter {
 		PircBotX bot = event.getBot();
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 
-		if (Tim.db.admin_list.contains(event.getUser().getNick().toLowerCase())) {
+		if (event.getUser().getLogin().toLowerCase().equals("utoxin")) {
 			if (message.equalsIgnoreCase("punches " + Tim.bot.getNick() + " in the face!")) {
-				Tim.bot.sendAction(event.getChannel(), "falls over and dies.  x.x");
-				Tim.bot.shutdown();
+				event.getChannel().send().action("falls over and dies.  x.x");
+				Tim.shutdown();
 			}
 		}
 

@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.pircbotx.Configuration;
+import org.pircbotx.Configuration.Builder;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
 
@@ -46,37 +48,39 @@ public class Tim {
 		markov = new MarkovChains();
 		amusement = new Amusement();
 
-		bot = new PircBotX();
-
-		bot.getListenerManager().addListener(new AdminCommandListener());
-		bot.getListenerManager().addListener(new UserCommandListener());
-		bot.getListenerManager().addListener(new ReactionListener());
-		bot.getListenerManager().addListener(new ServerListener());
-
-		bot.setEncoding(Charset.forName("UTF-8"));
-		bot.setLogin("WarMech");
-		bot.setMessageDelay(Long.parseLong(db.getSetting("max_rate")));
-		bot.setName(db.getSetting("nickname"));
-		bot.setVerbose(true);
-
-		try {
-			bot.connect(db.getSetting("server"));
-		} catch (IrcException | IOException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-		bot.identify(db.getSetting("password"));
-
-		String post_identify = db.getSetting("post_identify");
-		if (!"".equals(post_identify)) {
-			bot.sendRawLineNow(post_identify);
-		}
-
+		Builder configBuilder = new Configuration.Builder()
+				.setName(db.getSetting("nickname"))
+				.setLogin("WarMech")
+				.setNickservPassword(db.getSetting("password"))
+				.addListener(new AdminCommandListener())
+				.addListener(new UserCommandListener())
+				.addListener(new ReactionListener())
+				.addListener(new ServerListener())
+				.setServerHostname(db.getSetting("server"))
+				.setEncoding(Charset.forName("UTF-8"))
+				.setMessageDelay(Long.parseLong(db.getSetting("max_rate")))
+				.setAutoNickChange(true)
+				.setCapEnabled(true)
+				.setShutdownHookEnabled(true);
+		
 		db.refreshDbLists();
 
 		// Join our channels
 		for (Map.Entry<String, ChannelInfo> entry : db.channel_data.entrySet()) {
-			bot.joinChannel(entry.getValue().channel.getName());
+			configBuilder.addAutoJoinChannel(entry.getValue().channel.getName());
+		}
+		
+		bot = new PircBotX(configBuilder.buildConfiguration());
+
+		try {
+			bot.startBot();
+		} catch (IrcException | IOException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+		String post_identify = db.getSetting("post_identify");
+		if (!"".equals(post_identify)) {
+			bot.sendRaw().rawLineNow(post_identify);
 		}
 
 		warticker = WarTicker.getInstance();
@@ -90,10 +94,7 @@ public class Tim {
 			public void run() {
 				if (Tim.bot.isConnected()) {
 					try {
-						Tim.warticker.warticker.cancel();
-						Tim.deidler.idleticker.cancel();
-						Tim.bot.quitServer("HELP! Utoxin just murdered me! (Again!!!)");
-						Tim.bot.shutdown(true);
+						Tim.shutdown();
 						Thread.sleep(1000);
 					} catch (InterruptedException ex) {
 						Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -103,6 +104,13 @@ public class Tim {
 		});
 	}
 
+	public static void shutdown() {
+		Tim.warticker.warticker.cancel();
+		Tim.deidler.idleticker.cancel();
+		Tim.bot.stopBotReconnect();
+		Tim.bot.sendIRC().quitServer("HELP! Utoxin just murdered me! (Again!!!)");
+	}
+	
 	/**
 	 * Singleton access method.
 	 *

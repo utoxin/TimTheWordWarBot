@@ -118,7 +118,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							event.respond("Sending status of chatter settings for " + target + " via private message.");
 
 							for (String setting : ci.chatter_enabled.keySet()) {
-								event.getUser().sendMessage(setting + ": " + ci.chatter_enabled.get(setting).toString());
+								event.getUser().send().message(setting + ": " + ci.chatter_enabled.get(setting).toString());
 							}
 						} else {
 							event.respond("I don't know about " + target);
@@ -157,7 +157,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							event.respond("Sending status of command settings for " + target + " via private message.");
 
 							for (String setting : ci.commands_enabled.keySet()) {
-								event.getUser().sendMessage(setting + ": " + ci.commands_enabled.get(setting).toString());
+								event.getUser().send().message(setting + ": " + ci.commands_enabled.get(setting).toString());
 							}
 						} else {
 							event.respond("I don't know about " + target);
@@ -196,7 +196,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							event.respond("Sending Twitter accounts relayed for " + target + " via private message.");
 
 							for (String account : ci.twitter_accounts) {
-								event.getUser().sendMessage(account);
+								event.getUser().send().message(account);
 							}
 						} else {
 							event.respond("I don't know about " + target);
@@ -265,7 +265,7 @@ public class AdminCommandListener extends ListenerAdapter {
 				} else if (command.equals("shutdown")) {
 					if (event.getUser().getNick().equals("Utoxin")) {
 						event.respond("Shutting down...");
-						Tim.bot.shutdown();
+						Tim.shutdown();
 					} else {
 						event.respond("You're probably looking for the command '/kick Timmy'");
 					}
@@ -311,7 +311,7 @@ public class AdminCommandListener extends ListenerAdapter {
 					}
 				} else if (command.equals("shout")) {
 					for (ChannelInfo cdata : Tim.db.channel_data.values()) {
-						Tim.bot.sendMessage(cdata.channel, event.getUser().getNick() + " shouts: " + StringUtils.join(args, " "));
+						cdata.channel.send().message(event.getUser().getNick() + " shouts: " + StringUtils.join(args, " "));
 					}
 				} else if (command.equals("help")) {
 					this.printAdminCommandList(event);
@@ -339,16 +339,16 @@ public class AdminCommandListener extends ListenerAdapter {
 					msg += args[i] + " ";
 				}
 				if (args[0].equalsIgnoreCase("say")) {
-					Tim.bot.sendMessage(args[1], msg);
+					Tim.bot.sendIRC().message(args[1], msg);
 				} else if (args[0].equalsIgnoreCase("act")) {
-					Tim.bot.sendAction(args[1], msg);
+					Tim.bot.sendIRC().action(args[1], msg);
 				}
 			}
 		}
 	}
 
 	private void printAdminCommandList( MessageEvent event ) {
-		Tim.bot.sendAction(event.getChannel(), "whispers something to " + event.getUser().getNick() + ". (Check for a new window or tab with the help text.)");
+		event.getChannel().send().action("whispers something to " + event.getUser().getNick() + ". (Check for a new window or tab with the help text.)");
 
 		String[] helplines = {"Core Admin Commands:",
 							  "    $listitems [ <page #> ]   - lists all currently approved !get/!getfor items",
@@ -370,7 +370,7 @@ public class AdminCommandListener extends ListenerAdapter {
 		};
 
 		for (int i = 0; i < helplines.length; ++i) {
-			Tim.bot.sendNotice(event.getUser(), helplines[i]);
+			event.getChannel().send().action(helplines[i]);
 		}
 
 		Tim.challenge.adminHelpSection(event);

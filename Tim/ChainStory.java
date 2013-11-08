@@ -107,7 +107,7 @@ public class ChainStory {
 		    "    !chaincount - Just the word count and author stats.",};
 
 		for (int i = 0; i < strs.length; ++i) {
-			Tim.bot.sendNotice(event.getUser(), strs[i]);
+			event.getUser().send().notice(strs[i]);
 		}
 	}
 
@@ -171,7 +171,7 @@ public class ChainStory {
 			rs.setFetchDirection(ResultSet.FETCH_REVERSE);
 			rs.last();
 			while (true) {
-				event.getUser().sendMessage(rs.getString("string"));
+				event.getUser().send().message(rs.getString("string"));
 				if (!rs.previous()) {
 					break;
 				}
@@ -199,7 +199,7 @@ public class ChainStory {
 			rs.setFetchDirection(ResultSet.FETCH_REVERSE);
 			rs.last();
 			while (true) {
-				event.getUser().sendMessage(rs.getString("string"));
+				event.getUser().send().message(rs.getString("string"));
 				if (!rs.previous()) {
 					break;
 				}
@@ -270,14 +270,17 @@ public class ChainStory {
 	public void addNew( MessageEvent event, String message ) {
 		DecimalFormat formatter = new DecimalFormat("#,###");
 		Connection con;
+
+		message = message.replaceAll("^<?(.*)>?$", "$1");
+
 		if ("".equals(message)) {
-			Tim.bot.sendAction(event.getChannel(), "blinks, and looks confused. \"But there's nothing there. That won't help my wordcount!\"");
+			event.getChannel().send().action("blinks, and looks confused. \"But there's nothing there. That won't help my wordcount!\"");
 		} else {
 			try {
 				con = Tim.db.pool.getConnection(timeout);
 
 				storeLine(message, event.getUser().getNick());
-				Tim.bot.sendAction(event.getChannel(), "quickly copies down what " + event.getUser().getNick() + " said. \"Thanks!\"");
+				event.getChannel().send().action("quickly copies down what " + event.getUser().getNick() + " said. \"Thanks!\"");
 
 				PreparedStatement s = con.prepareStatement("SELECT SUM( LENGTH( STRING ) - LENGTH( REPLACE( STRING ,  ' ',  '' ) ) +1 ) AS word_count FROM story");
 				s.executeQuery();
