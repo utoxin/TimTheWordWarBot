@@ -12,6 +12,7 @@
  */
 package Tim;
 
+import com.google.common.collect.ImmutableSortedSet;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -95,7 +96,7 @@ public class Amusement {
 					type = "emote";
 				}
 
-				Tim.markov.randomAction(event.getChannel(), type);
+				Tim.markov.randomAction(event.getChannel().getName(), type);
 			} else {
 				event.respond("I'm sorry. I don't do that here.");
 			}
@@ -397,11 +398,11 @@ public class Amusement {
 	}
 
 	public void randomActionWrapper( MessageEvent event ) {
-		randomAction(event.getUser(), event.getChannel());
+		randomAction(event.getUser(), event.getChannel().toString());
 	}
 
 	public void randomActionWrapper( ActionEvent event ) {
-		randomAction(event.getUser(), event.getChannel());
+		randomAction(event.getUser(), event.getChannel().toString());
 	}
 
 	protected void randomAction( User sender, String channel ) {
@@ -413,6 +414,8 @@ public class Amusement {
 
 		if (sender == null) {
 			HashSet<User> finalUsers = new HashSet<>(10);
+
+			ImmutableSortedSet<User> users = Tim.bot.getUserChannelDao().getChannel(channel).getUsers();
 
 			int size = users.size();
 			for (User user : users) {
@@ -450,37 +453,38 @@ public class Amusement {
 		}
 
 		String action = enabled_actions.toArray(new String[enabled_actions.size()])[Tim.rand.nextInt(enabled_actions.size())];
+		Channel sendChannel = Tim.bot.getUserChannelDao().getChannel(channel);
 
 		switch (action) {
 			case "item":
-				getItem(channel, sender.getNick(), null);
+				getItem(sendChannel, sender.getNick(), null);
 				break;
 			case "eightball":
-				eightball(channel, sender, true);
+				eightball(sendChannel, sender, true);
 				break;
 			case "fridge":
-				throwFridge(channel, sender, null, false);
+				throwFridge(sendChannel, sender, null, false);
 				break;
 			case "defenestrate":
-				defenestrate(channel, sender, null, false);
+				defenestrate(sendChannel, sender, null, false);
 				break;
 			case "sing":
-				sing(channel);
+				sing(sendChannel);
 				break;
 			case "foof":
-				foof(channel, sender, null, false);
+				foof(sendChannel, sender, null, false);
 				break;
 			case "dance":
-				dance(channel);
+				dance(sendChannel);
 				break;
 			case "summon":
-				summon(channel, null, false);
+				summon(sendChannel, null, false);
 				break;
 			case "creeper":
-				creeper(channel, sender, null, false);
+				creeper(sendChannel, sender, null, false);
 				break;
 			case "search":
-				search(channel, sender, null);
+				search(sendChannel, sender, null);
 				break;
 		}
 	}

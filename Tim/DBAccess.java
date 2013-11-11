@@ -144,7 +144,6 @@ public class DBAccess {
 	public void getChannelList() {
 		Connection con;
 		ChannelInfo ci;
-		Channel channel;
 
 		this.channel_data.clear();
 
@@ -157,8 +156,7 @@ public class DBAccess {
 				PreparedStatement s2;
 				ResultSet rs2;
 				while (rs.next()) {
-					channel = Tim.bot.getUserChannelDao().getChannel(rs.getString("channel"));
-					ci = new ChannelInfo(channel);
+					ci = new ChannelInfo(rs.getString("channel"));
 					ci.setDefaultOptions();
 					
 					ci.setChatterTimers(
@@ -208,7 +206,7 @@ public class DBAccess {
 					s2.close();
 					rs2.close();
 					
-					this.channel_data.put(channel.getName().toLowerCase(), ci);
+					this.channel_data.put(ci.channel, ci);
 					
 					this.saveChannelSettings(ci);
 				}
@@ -304,7 +302,7 @@ public class DBAccess {
 			s.executeUpdate();
 
 			if (!this.channel_data.containsKey(channel.getName().toLowerCase())) {
-				ChannelInfo new_channel = new ChannelInfo(channel);
+				ChannelInfo new_channel = new ChannelInfo(channel.getName().toLowerCase());
 				new_channel.setDefaultOptions();
 
 				this.channel_data.put(channel.getName().toLowerCase(), new_channel);
@@ -329,23 +327,23 @@ public class DBAccess {
 			s.setFloat(3, channel.tweetBucketMax);
 			s.setFloat(4, channel.tweetBucketChargeRate);
 			s.setBoolean(5, channel.auto_muzzle_wars);
-			s.setString(6, channel.channel.getName().toLowerCase());
+			s.setString(6, channel.channel);
 			s.executeUpdate();
 
 			s = con.prepareStatement("DELETE FROM `channel_chatter_settings` WHERE `channel` = ?;");
-			s.setString(1, channel.channel.getName().toLowerCase());
+			s.setString(1, channel.channel);
 			s.executeUpdate();
 
 			s = con.prepareStatement("DELETE FROM `channel_command_settings` WHERE `channel` = ?;");
-			s.setString(1, channel.channel.getName().toLowerCase());
+			s.setString(1, channel.channel);
 			s.executeUpdate();
 
 			s = con.prepareStatement("DELETE FROM `channel_twitter_feeds` WHERE `channel` = ?;");
-			s.setString(1, channel.channel.getName().toLowerCase());
+			s.setString(1, channel.channel);
 			s.executeUpdate();
 
 			s = con.prepareStatement("INSERT INTO channel_chatter_settings SET channel = ?, setting = ?, value = ?");
-			s.setString(1, channel.channel.getName().toLowerCase());
+			s.setString(1, channel.channel);
 			
 			for (Map.Entry<String, Boolean> setting : channel.chatter_enabled.entrySet()) {
 				s.setString(2, setting.getKey());
@@ -354,7 +352,7 @@ public class DBAccess {
 			}
 
 			s = con.prepareStatement("INSERT INTO channel_command_settings SET channel = ?, setting = ?, value = ?");
-			s.setString(1, channel.channel.getName().toLowerCase());
+			s.setString(1, channel.channel);
 			
 			for (Map.Entry<String, Boolean> setting : channel.commands_enabled.entrySet()) {
 				s.setString(2, setting.getKey());
@@ -363,7 +361,7 @@ public class DBAccess {
 			}
 
 			s = con.prepareStatement("INSERT INTO channel_twitter_feeds SET channel = ?, account = ?");
-			s.setString(1, channel.channel.getName().toLowerCase());
+			s.setString(1, channel.channel);
 			
 			for (String account : channel.twitter_accounts) {
 				s.setString(2, account);

@@ -296,13 +296,14 @@ public class ReactionListener extends ListenerAdapter {
 						type = "mutter";
 					} else if ("emote".equals(type) && Tim.rand.nextBoolean()) {
 						type = "mutter";
-					}	Tim.markov.randomAction(channel, type);
+					}
+					Tim.markov.randomAction(channel.getName().toLowerCase(), type);
 					break;
 				case "challenge":
-					Tim.challenge.randomAction(sender, channel);
+					Tim.challenge.randomAction(sender, cdata.channel);
 					break;
 				case "amusement":
-					Tim.amusement.randomAction(sender, channel);
+					Tim.amusement.randomAction(sender, cdata.channel);
 					break;
 			}
 		}

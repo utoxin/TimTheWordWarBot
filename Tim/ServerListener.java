@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.pircbotx.hooks.ListenerAdapter;
+import org.pircbotx.hooks.events.ConnectEvent;
 import org.pircbotx.hooks.events.InviteEvent;
 import org.pircbotx.hooks.events.JoinEvent;
 import org.pircbotx.hooks.events.KickEvent;
@@ -26,6 +27,20 @@ import org.pircbotx.hooks.events.KickEvent;
  * @author Matthew Walker
  */
 public class ServerListener extends ListenerAdapter {
+	@Override
+	public void onConnect( ConnectEvent event ) {
+		String post_identify = Tim.db.getSetting("post_identify");
+		if (!"".equals(post_identify)) {
+			event.respond(post_identify);
+		}
+
+		Tim.warticker = WarTicker.getInstance();
+		Tim.deidler = DeIdler.getInstance();
+
+		Tim.twitterstream = new TwitterIntegration();
+		Tim.twitterstream.startStream();		
+	}
+	
 	@Override
 	public void onKick( KickEvent event ) {
 		if (event.getRecipient().getNick().equals(Tim.bot.getNick())) {

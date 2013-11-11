@@ -59,35 +59,18 @@ public class Tim {
 				.setServerHostname(db.getSetting("server"))
 				.setEncoding(Charset.forName("UTF-8"))
 				.setMessageDelay(Long.parseLong(db.getSetting("max_rate")))
-				.setAutoNickChange(true)
-				.setShutdownHookEnabled(true);
+				.setAutoNickChange(true);
 		
 		db.refreshDbLists();
 
 		// Join our channels
 		for (Map.Entry<String, ChannelInfo> entry : db.channel_data.entrySet()) {
-			configBuilder.addAutoJoinChannel(entry.getValue().channel.getName());
+			configBuilder.addAutoJoinChannel(entry.getValue().channel);
 		}
 		
 		bot = new PircBotX(configBuilder.buildConfiguration());
 
-		try {
-			bot.startBot();
-		} catch (IrcException | IOException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
 
-		String post_identify = db.getSetting("post_identify");
-		if (!"".equals(post_identify)) {
-			bot.sendRaw().rawLineNow(post_identify);
-		}
-
-		warticker = WarTicker.getInstance();
-		deidler = DeIdler.getInstance();
-
-		twitterstream = new TwitterIntegration();
-		twitterstream.startStream();
-		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -101,6 +84,12 @@ public class Tim {
 				}
 			}
 		});
+
+		try {
+			bot.startBot();
+		} catch (IrcException | IOException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	public static void shutdown() {

@@ -273,14 +273,14 @@ public class Challenge {
 	}
 
 	public void randomActionWrapper( MessageEvent event ) {
-		randomAction(event.getUser(), event.getChannel());
+		randomAction(event.getUser(), event.getChannel().getName().toLowerCase());
 	}
 
 	public void randomActionWrapper( ActionEvent event ) {
-		randomAction(event.getUser(), event.getChannel());
+		randomAction(event.getUser(), event.getChannel().getName().toLowerCase());
 	}
 
-	protected void randomAction( User sender, Channel channel ) {
+	protected void randomAction( User sender, String channel ) {
 		String[] actions = {
 			"challenge"
 		};
@@ -288,7 +288,7 @@ public class Challenge {
 		String action = actions[Tim.rand.nextInt(actions.length)];
 
 		if ("challenge".equals(action)) {
-			issueChallenge(channel, sender.getNick(), null);
+			issueChallenge(Tim.bot.getUserChannelDao().getChannel(channel), sender.getNick(), null);
 		}
 	}
 

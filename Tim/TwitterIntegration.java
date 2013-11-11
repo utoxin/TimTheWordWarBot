@@ -124,7 +124,7 @@ public class TwitterIntegration extends StatusAdapter {
 					}
 
 					tmpAccountHash = accountsToChannels.get(userId);
-					tmpAccountHash.add(channel.channel.getName().toLowerCase());
+					tmpAccountHash.add(channel.channel);
 				}
 			}
 
@@ -145,7 +145,7 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 
 		HashSet<String> tmpAccountHash = accountsToChannels.get(accountId);
-		tmpAccountHash.add(channel.channel.getName().toLowerCase());
+		tmpAccountHash.add(channel.channel);
 
 		updateStreamFilters();
 		return true;
@@ -162,7 +162,7 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 
 		HashSet<String> tmpAccountHash = accountsToChannels.get(accountId);
-		tmpAccountHash.remove(channel.channel.getName().toLowerCase());
+		tmpAccountHash.remove(channel.channel);
 
 		if (tmpAccountHash.isEmpty()) {
 			accountsToChannels.remove(accountId);
@@ -261,7 +261,7 @@ public class TwitterIntegration extends StatusAdapter {
 				}
 				
 				if (channel.tweetBucket >= 1) {
-					channel.channel.send().message(message);
+					Tim.bot.getUserChannelDao().getChannel(channel.channel).send().message(message);
 					channel.tweetBucket -= 1f;
 				}
 			}
