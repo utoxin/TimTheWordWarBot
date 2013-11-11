@@ -28,6 +28,7 @@ import snaq.db.Select1Validator;
  * @author Matthew Walker
  */
 public class DBAccess {
+
 	private static final DBAccess instance;
 	private final long timeout = 3000;
 	protected Set<String> admin_list = new HashSet<>(16);
@@ -72,7 +73,7 @@ public class DBAccess {
 		return instance;
 	}
 
-	public void deleteChannel( Channel channel ) {
+	public void deleteChannel(Channel channel) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -90,7 +91,7 @@ public class DBAccess {
 		}
 	}
 
-	public void deleteWar( int id ) {
+	public void deleteWar(int id) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -105,7 +106,7 @@ public class DBAccess {
 		}
 	}
 
-	public void deleteIgnore( String username ) {
+	public void deleteIgnore(String username) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -158,56 +159,56 @@ public class DBAccess {
 				while (rs.next()) {
 					ci = new ChannelInfo(rs.getString("channel"));
 					ci.setDefaultOptions();
-					
+
 					ci.setChatterTimers(
-							rs.getInt("chatter_name_multiplier"),
-							rs.getInt("chatter_level"));
-					
+						rs.getInt("chatter_name_multiplier"),
+						rs.getInt("chatter_level"));
+
 					ci.setTwitterTimers(
-							rs.getFloat("tweet_bucket_max"),
-							rs.getFloat("tweet_bucket_charge_rate"));
-					
+						rs.getFloat("tweet_bucket_max"),
+						rs.getFloat("tweet_bucket_charge_rate"));
+
 					ci.setWarAutoMuzzle(
-							rs.getBoolean("auto_muzzle_wars"));
-					
+						rs.getBoolean("auto_muzzle_wars"));
+
 					s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_chatter_settings` WHERE `channel` = ?");
 					s2.setString(1, rs.getString("channel"));
 					s2.executeQuery();
-					
+
 					rs2 = s2.getResultSet();
 					while (rs2.next()) {
 						ci.addChatterSetting(rs2.getString("setting"), rs2.getBoolean("value"));
 					}
-					
+
 					s2.close();
 					rs2.close();
-					
+
 					s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_command_settings` WHERE `channel` = ?");
 					s2.setString(1, rs.getString("channel"));
 					s2.executeQuery();
-					
+
 					rs2 = s2.getResultSet();
 					while (rs2.next()) {
 						ci.addCommandSetting(rs2.getString("setting"), rs2.getBoolean("value"));
 					}
-					
+
 					s2.close();
 					rs2.close();
-					
+
 					s2 = con.prepareStatement("SELECT `account` FROM `channel_twitter_feeds` WHERE `channel` = ?");
 					s2.setString(1, rs.getString("channel"));
 					s2.executeQuery();
-					
+
 					rs2 = s2.getResultSet();
 					while (rs2.next()) {
 						ci.addTwitterAccount(rs2.getString("account"));
 					}
-					
+
 					s2.close();
 					rs2.close();
-					
+
 					this.channel_data.put(ci.channel, ci);
-					
+
 					this.saveChannelSettings(ci);
 				}
 			}
@@ -224,7 +225,7 @@ public class DBAccess {
 			con = pool.getConnection(timeout);
 			try (Statement s = con.createStatement()) {
 				ResultSet rs;
-				
+
 				s.executeQuery("SELECT `string` FROM `greetings`");
 				rs = s.getResultSet();
 				this.greetings.clear();
@@ -232,7 +233,7 @@ public class DBAccess {
 					this.greetings.add(rs.getString("string"));
 				}
 				rs.close();
-				
+
 				s.executeQuery("SELECT `string` FROM `extra_greetings`");
 				rs = s.getResultSet();
 				this.extra_greetings.clear();
@@ -268,7 +269,7 @@ public class DBAccess {
 		}
 	}
 
-	public String getSetting( String key ) {
+	public String getSetting(String key) {
 		Connection con;
 		String value = "";
 
@@ -292,7 +293,7 @@ public class DBAccess {
 		return value;
 	}
 
-	public void joinChannel( Channel channel ) {
+	public void joinChannel(Channel channel) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -309,14 +310,14 @@ public class DBAccess {
 			}
 
 			con.close();
-			
-			this.saveChannelSettings( this.channel_data.get(channel.getName().toLowerCase()) );
+
+			this.saveChannelSettings(this.channel_data.get(channel.getName().toLowerCase()));
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	public void saveChannelSettings( ChannelInfo channel ) {
+	public void saveChannelSettings(ChannelInfo channel) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -344,7 +345,7 @@ public class DBAccess {
 
 			s = con.prepareStatement("INSERT INTO channel_chatter_settings SET channel = ?, setting = ?, value = ?");
 			s.setString(1, channel.channel);
-			
+
 			for (Map.Entry<String, Boolean> setting : channel.chatter_enabled.entrySet()) {
 				s.setString(2, setting.getKey());
 				s.setBoolean(3, setting.getValue());
@@ -353,7 +354,7 @@ public class DBAccess {
 
 			s = con.prepareStatement("INSERT INTO channel_command_settings SET channel = ?, setting = ?, value = ?");
 			s.setString(1, channel.channel);
-			
+
 			for (Map.Entry<String, Boolean> setting : channel.commands_enabled.entrySet()) {
 				s.setString(2, setting.getKey());
 				s.setBoolean(3, setting.getValue());
@@ -362,19 +363,19 @@ public class DBAccess {
 
 			s = con.prepareStatement("INSERT INTO channel_twitter_feeds SET channel = ?, account = ?");
 			s.setString(1, channel.channel);
-			
+
 			for (String account : channel.twitter_accounts) {
 				s.setString(2, account);
 				s.executeUpdate();
 			}
-			
+
 			con.close();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-	
-	public void saveIgnore( String username ) {
+
+	public void saveIgnore(String username) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -389,7 +390,7 @@ public class DBAccess {
 		}
 	}
 
-	public void setChannelChatterLevel( Channel channel, int level ) {
+	public void setChannelChatterLevel(Channel channel, int level) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -438,7 +439,7 @@ public class DBAccess {
 			s.executeUpdate();
 
 			ResultSet rs = s.getGeneratedKeys();
-			
+
 			if (rs.next()) {
 				id = rs.getInt(1);
 			}
@@ -447,10 +448,10 @@ public class DBAccess {
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		
+
 		return id;
 	}
-	
+
 	public void update_war(int db_id, long duration, long remaining, long time_to_start, int current_chain) {
 		Connection con;
 		try {
@@ -506,7 +507,7 @@ public class DBAccess {
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		
+
 		return wars;
 	}
 }

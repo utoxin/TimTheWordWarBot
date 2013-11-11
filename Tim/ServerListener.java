@@ -27,8 +27,9 @@ import org.pircbotx.hooks.events.KickEvent;
  * @author Matthew Walker
  */
 public class ServerListener extends ListenerAdapter {
+
 	@Override
-	public void onConnect( ConnectEvent event ) {
+	public void onConnect(ConnectEvent event) {
 		String post_identify = Tim.db.getSetting("post_identify");
 		if (!"".equals(post_identify)) {
 			event.respond(post_identify);
@@ -38,18 +39,18 @@ public class ServerListener extends ListenerAdapter {
 		Tim.deidler = DeIdler.getInstance();
 
 		Tim.twitterstream = new TwitterIntegration();
-		Tim.twitterstream.startStream();		
+		Tim.twitterstream.startStream();
 	}
-	
+
 	@Override
-	public void onKick( KickEvent event ) {
+	public void onKick(KickEvent event) {
 		if (event.getRecipient().getNick().equals(Tim.bot.getNick())) {
 			Tim.db.deleteChannel(event.getChannel());
 		}
 	}
 
 	@Override
-	public void onInvite( InviteEvent event ) {
+	public void onInvite(InviteEvent event) {
 		if (!Tim.db.ignore_list.contains(event.getUser())) {
 			Tim.bot.sendIRC().joinChannel(event.getChannel());
 			if (!Tim.db.channel_data.containsKey(event.getChannel())) {
@@ -59,7 +60,7 @@ public class ServerListener extends ListenerAdapter {
 	}
 
 	@Override
-	public void onJoin( JoinEvent event ) {
+	public void onJoin(JoinEvent event) {
 		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
 			ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 
@@ -86,8 +87,8 @@ public class ServerListener extends ListenerAdapter {
 
 					if (warscount > 0) {
 						boolean plural = warscount >= 2;
-						message += " There " + ( plural ? "are" : "is" ) + " " + warscount + " war" + ( plural ? "S" : "" )
-								   + " currently running in this channel: " + winfo;
+						message += " There " + (plural ? "are" : "is") + " " + warscount + " war" + (plural ? "S" : "")
+							+ " currently running in this channel: " + winfo;
 					}
 				}
 

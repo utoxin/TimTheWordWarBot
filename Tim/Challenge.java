@@ -31,6 +31,7 @@ import org.pircbotx.hooks.events.MessageEvent;
  * @author mwalker
  */
 public class Challenge {
+
 	private final List<String> approved = new ArrayList<>();
 	private final List<String> pending = new ArrayList<>();
 	private final long timeout = 3000;
@@ -40,9 +41,10 @@ public class Challenge {
 	 * not.
 	 *
 	 * @param event
+	 *
 	 * @return True if message was handled, false otherwise.
 	 */
-	public boolean parseUserCommand( MessageEvent event ) {
+	public boolean parseUserCommand(MessageEvent event) {
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
@@ -63,7 +65,7 @@ public class Challenge {
 				} else {
 					event.respond("I'm sorry. I don't do that here.");
 				}
-				
+
 				return true;
 			case "challengefor":
 				if (cdata.commands_enabled.get("chainstory")) {
@@ -76,12 +78,12 @@ public class Challenge {
 						target = argsString;
 						argsString = "";
 					}
-					
+
 					issueChallenge(event.getChannel(), target, argsString);
 				} else {
 					event.respond("I'm sorry. I don't do that here.");
 				}
-				
+
 				return true;
 		}
 
@@ -93,9 +95,10 @@ public class Challenge {
 	 * not.
 	 *
 	 * @param event
+	 *
 	 * @return True if message was handled, false otherwise
 	 */
-	public boolean parseAdminCommand( MessageEvent event ) {
+	public boolean parseAdminCommand(MessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString;
@@ -112,9 +115,8 @@ public class Challenge {
 
 		if (command.equals("challenge")) {
 			switch (args[0]) {
-				case "approved":
-				{
-					int pages = ( this.approved.size() + 9 ) / 10;
+				case "approved": {
+					int pages = (this.approved.size() + 9) / 10;
 					int wantPage = 0;
 					if (args != null && args.length > 1) {
 						try {
@@ -124,11 +126,11 @@ public class Challenge {
 							return true;
 						}
 					}
-					
+
 					if (wantPage > pages) {
 						wantPage = pages;
 					}
-					
+
 					int list_idx = wantPage * 10;
 					event.respond(String.format("Showing page %d of %d (%d challenges total)", wantPage + 1, pages, this.approved.size()));
 					for (int i = 0; i < 10 && list_idx < this.approved.size(); ++i, list_idx = wantPage * 10 + i) {
@@ -136,9 +138,8 @@ public class Challenge {
 					}
 					return true;
 				}
-				case "pending":
-				{
-					int pages = ( this.pending.size() + 9 ) / 10;
+				case "pending": {
+					int pages = (this.pending.size() + 9) / 10;
 					int wantPage = 0;
 					if (args != null && args.length > 1) {
 						try {
@@ -148,11 +149,11 @@ public class Challenge {
 							return true;
 						}
 					}
-					
+
 					if (wantPage > pages) {
 						wantPage = pages;
 					}
-					
+
 					int list_idx = wantPage * 10;
 					event.respond(String.format("Showing page %d of %d (%d challenges total)", wantPage + 1, pages, this.pending.size()));
 					for (int i = 0; i < 10 && list_idx < this.pending.size(); ++i, list_idx = wantPage * 10 + i) {
@@ -209,7 +210,8 @@ public class Challenge {
 							event.respond(String.format("Challenge %s is not in approved list.", args[1]));
 						}
 						return true;
-					}	break;
+					}
+					break;
 				case "delete":
 					if (args != null && args.length > 1) {
 						int idx;
@@ -233,14 +235,15 @@ public class Challenge {
 							event.respond(String.format("Challenge %s is not pending approval.", args[0]));
 						}
 						return true;
-					}	break;
+					}
+					break;
 			}
 		}
 
 		return false;
 	}
 
-	protected void helpSection( MessageEvent event ) {
+	protected void helpSection(MessageEvent event) {
 		String[] strs = {
 			"Challenge Commands:",
 			"    !challenge - Request a challenge",
@@ -253,7 +256,7 @@ public class Challenge {
 		}
 	}
 
-	protected void adminHelpSection( MessageEvent event ) {
+	protected void adminHelpSection(MessageEvent event) {
 		String[] strs = {
 			"Challenge Commands:",
 			"    $challenge pending [<page>] - List a page of pending items",
@@ -272,15 +275,15 @@ public class Challenge {
 		this.getPendingChallenges();
 	}
 
-	public void randomActionWrapper( MessageEvent event ) {
+	public void randomActionWrapper(MessageEvent event) {
 		randomAction(event.getUser(), event.getChannel().getName().toLowerCase());
 	}
 
-	public void randomActionWrapper( ActionEvent event ) {
+	public void randomActionWrapper(ActionEvent event) {
 		randomAction(event.getUser(), event.getChannel().getName().toLowerCase());
 	}
 
-	protected void randomAction( User sender, String channel ) {
+	protected void randomAction(User sender, String channel) {
 		String[] actions = {
 			"challenge"
 		};
@@ -292,9 +295,9 @@ public class Challenge {
 		}
 	}
 
-	public void issueChallenge( Channel channel, String target, String challenge ) {
-		if (challenge != null && !( "".equals(challenge) )) {
-			if (!( this.approved.contains(challenge) || this.pending.contains(challenge) ) && challenge.length() < 300) {
+	public void issueChallenge(Channel channel, String target, String challenge) {
+		if (challenge != null && !("".equals(challenge))) {
+			if (!(this.approved.contains(challenge) || this.pending.contains(challenge)) && challenge.length() < 300) {
 				this.insertPendingChallenge(challenge);
 				this.pending.add(challenge);
 			}
@@ -348,7 +351,7 @@ public class Challenge {
 		}
 	}
 
-	private void insertPendingChallenge( String challenge ) {
+	private void insertPendingChallenge(String challenge) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -363,7 +366,7 @@ public class Challenge {
 		}
 	}
 
-	private void setChallengeApproved( String challenge, Boolean approved ) {
+	private void setChallengeApproved(String challenge, Boolean approved) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -379,7 +382,7 @@ public class Challenge {
 		}
 	}
 
-	private void removeChallenge( String challenge ) {
+	private void removeChallenge(String challenge) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);

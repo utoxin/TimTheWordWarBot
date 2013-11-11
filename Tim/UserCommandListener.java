@@ -23,8 +23,9 @@ import org.pircbotx.hooks.events.MessageEvent;
  * @author mwalker
  */
 public class UserCommandListener extends ListenerAdapter {
+
 	@Override
-	public void onMessage( MessageEvent event ) {
+	public void onMessage(MessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 
 		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())) {
@@ -79,7 +80,7 @@ public class UserCommandListener extends ListenerAdapter {
 
 					event.respond("Your timer has been set.");
 					try {
-						Thread.sleep((long) ( time * 60 * 1000 ));
+						Thread.sleep((long) (time * 60 * 1000));
 					} catch (InterruptedException ex) {
 						Logger.getLogger(UserCommandListener.class.getName()).log(Level.SEVERE, null, ex);
 					}
@@ -102,11 +103,11 @@ public class UserCommandListener extends ListenerAdapter {
 		}
 	}
 
-	private void printCommandList( MessageEvent event ) {
+	private void printCommandList(MessageEvent event) {
 		event.getChannel().send().action("whispers something to " + event.getUser().getNick() + ". (Check for a new window or tab with the help text.)");
 
 		String[] strs = {"I am a robot trained by the WordWar Monks of Honolulu. You have "
-						 + "never heard of them. It is because they are awesome.",
+			+ "never heard of them. It is because they are awesome.",
 						 "Core Commands:",
 						 "    !startwar <duration> <time to start> <an optional name> - Starts a word war",
 						 "    !chainwar <base duration> <war count> - Starts a series of wars, with some randomness",

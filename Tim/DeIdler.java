@@ -21,6 +21,7 @@ import java.util.TimerTask;
  * @author Matthew Walker
  */
 public class DeIdler {
+
 	private static final DeIdler instance;
 	public DeIdler.IdleClockThread idleticker;
 	private final Timer ticker;
@@ -47,9 +48,10 @@ public class DeIdler {
 	}
 
 	public class IdleClockThread extends TimerTask {
+
 		private final DeIdler parent;
 
-		public IdleClockThread( DeIdler parent ) {
+		public IdleClockThread(DeIdler parent) {
 			this.parent = parent;
 		}
 
@@ -67,17 +69,17 @@ public class DeIdler {
 
 	public void _tick() {
 		boolean isNovember = (10 == cal.get(Calendar.MONTH));
-		boolean aheadOfPace = ((cal.get(Calendar.DAY_OF_MONTH) * (50000/30)) < Tim.story.wordcount());
+		boolean aheadOfPace = ((cal.get(Calendar.DAY_OF_MONTH) * (50000 / 30)) < Tim.story.wordcount());
 
 		if (isNovember && ((!aheadOfPace && Tim.rand.nextInt(100) < 3) || (aheadOfPace && Tim.rand.nextInt(100) < 1))) {
 			String name = Tim.story.getRandomName();
 			String new_text;
 			if (Tim.rand.nextInt(100) < 75) {
-				new_text = name+" " + Tim.markov.generate_markov("emote", Tim.rand.nextInt(150) + 75) + ".";
+				new_text = name + " " + Tim.markov.generate_markov("emote", Tim.rand.nextInt(150) + 75) + ".";
 			} else if (Tim.rand.nextBoolean()) {
-				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(45) + 25) + ",\" "+name+" muttered quietly.";
+				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(45) + 25) + ",\" " + name + " muttered quietly.";
 			} else {
-				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(25) + 25) + ",\" "+name+" said.";
+				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(25) + 25) + ",\" " + name + " said.";
 			}
 
 			Tim.story.storeLine(new_text, "Timmy");
@@ -91,7 +93,7 @@ public class DeIdler {
 		if (Tim.rand.nextInt(100) < 1) {
 			Tim.twitterstream.sendTweet(Tim.markov.generate_markov("say"));
 		}
-		
+
 		/**
 		 * This loop is used to reduce the chatter odds on idle channels, by periodically triggering idle chatter in
 		 * channels. If they currently have chatter turned off, this simply decreases their timer, and then goes on.
@@ -119,18 +121,18 @@ public class DeIdler {
 					continue;
 				}
 
-				if (cdata.chatter_enabled.get("markov") && 
-						!cdata.amusement_chatter_available()) {
-					actions = new String[] {
+				if (cdata.chatter_enabled.get("markov")
+					&& !cdata.amusement_chatter_available()) {
+					actions = new String[]{
 						"markov",};
-				} else if (cdata.chatter_enabled.get("markov") && 
-						cdata.amusement_chatter_available()) {
-					actions = new String[] {
+				} else if (cdata.chatter_enabled.get("markov")
+					&& cdata.amusement_chatter_available()) {
+					actions = new String[]{
 						"markov",
 						"amusement",};
-				} else if (!cdata.chatter_enabled.get("markov") && 
-						cdata.amusement_chatter_available()) {
-					actions = new String[] {
+				} else if (!cdata.chatter_enabled.get("markov")
+					&& cdata.amusement_chatter_available()) {
+					actions = new String[]{
 						"amusement",};
 				} else {
 					continue;

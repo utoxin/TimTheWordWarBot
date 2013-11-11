@@ -29,7 +29,7 @@ public class ChannelInfo {
 	public float tweetBucket;
 	public float tweetBucketMax;
 	public float tweetBucketChargeRate;
-	
+
 	public boolean muzzled = false;
 	public boolean auto_muzzle_wars = true;
 	public boolean auto_muzzled = false;
@@ -62,11 +62,11 @@ public class ChannelInfo {
 
 		return result.toString();
 	}
-	
+
 	public void setDefaultOptions() {
 		chatterNameMultiplier = 3;
 		chatterLevel = 1;
-		
+
 		tweetBucketMax = 10;
 		tweetBucket = 5;
 		tweetBucketChargeRate = 0.5f;
@@ -109,25 +109,25 @@ public class ChannelInfo {
 
 	public boolean amusement_chatter_available() {
 		return chatter_enabled.get("get") || chatter_enabled.get("eightball") || chatter_enabled.get("fridge")
-				|| chatter_enabled.get("defenestrate") || chatter_enabled.get("sing") || chatter_enabled.get("foof")
-				|| chatter_enabled.get("dance") || chatter_enabled.get("summon") || chatter_enabled.get("creeper")
-				|| chatter_enabled.get("search");
+			|| chatter_enabled.get("defenestrate") || chatter_enabled.get("sing") || chatter_enabled.get("foof")
+			|| chatter_enabled.get("dance") || chatter_enabled.get("summon") || chatter_enabled.get("creeper")
+			|| chatter_enabled.get("search");
 	}
 
-	public void setChatterTimers( int nameMultiplier, int chatterLevel ) {
+	public void setChatterTimers(int nameMultiplier, int chatterLevel) {
 		this.chatterNameMultiplier = nameMultiplier;
 		this.chatterLevel = chatterLevel;
 
 		this.chatterTimer = System.currentTimeMillis() / 1000;
 	}
-	
-	public void setChatterLevel( int chatterLevel ) {
+
+	public void setChatterLevel(int chatterLevel) {
 		this.chatterLevel = chatterLevel;
 
 		this.chatterTimer = System.currentTimeMillis() / 1000;
 	}
-	
-	public void setWarAutoMuzzle( boolean auto_muzzle_wars ) {
+
+	public void setWarAutoMuzzle(boolean auto_muzzle_wars) {
 		this.auto_muzzle_wars = auto_muzzle_wars;
 	}
 
@@ -138,15 +138,15 @@ public class ChannelInfo {
 		this.tweetBucket = tweetBucketMax / 2;
 		this.twitterTimer = System.currentTimeMillis();
 	}
-	
+
 	public void addChatterSetting(String name, Boolean value) {
 		this.chatter_enabled.put(name, value);
 	}
-	
+
 	public void addCommandSetting(String name, Boolean value) {
 		this.commands_enabled.put(name, value);
 	}
-	
+
 	public void addTwitterAccount(String name) {
 		addTwitterAccount(name, false);
 	}
@@ -163,7 +163,7 @@ public class ChannelInfo {
 		this.twitter_accounts.remove(name);
 		Tim.twitterstream.removeAccount(name, this);
 	}
-	
+
 	public void setMuzzleFlag(boolean muzzled, boolean auto) {
 		this.muzzled = muzzled;
 		this.auto_muzzled = auto;

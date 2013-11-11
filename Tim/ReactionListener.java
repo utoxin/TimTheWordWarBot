@@ -27,6 +27,7 @@ import org.pircbotx.hooks.events.MessageEvent;
  * @author Matthew Walker
  */
 public class ReactionListener extends ListenerAdapter {
+
 	private int lights_odds = 100;
 	private int fox_odds = 75;
 	private int cheeseburger_odds = 50;
@@ -46,9 +47,9 @@ public class ReactionListener extends ListenerAdapter {
 	private final int max_aypwip_odds = 100;
 	private final int max_answer_odds = 65;
 	private final int max_eightball_odds = 100;
-	
+
 	@Override
-	public void onMessage( MessageEvent event ) {
+	public void onMessage(MessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		PircBotX bot = event.getBot();
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
@@ -56,7 +57,7 @@ public class ReactionListener extends ListenerAdapter {
 		if (cdata.muzzled) {
 			return;
 		}
-		
+
 		if (Tim.rand.nextInt(250) == 0) {
 			if (lights_odds < max_lights_odds) {
 				lights_odds += Tim.rand.nextInt(5);
@@ -146,7 +147,7 @@ public class ReactionListener extends ListenerAdapter {
 	}
 
 	@Override
-	public void onAction( ActionEvent event ) {
+	public void onAction(ActionEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		PircBotX bot = event.getBot();
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
@@ -161,7 +162,7 @@ public class ReactionListener extends ListenerAdapter {
 		if (cdata.muzzled) {
 			return;
 		}
-		
+
 		if (Tim.rand.nextInt(500) == 0) {
 			if (lights_odds < max_lights_odds) {
 				lights_odds++;
@@ -248,13 +249,13 @@ public class ReactionListener extends ListenerAdapter {
 		}
 	}
 
-	private void interact( User sender, Channel channel, String message, String type ) {
+	private void interact(User sender, Channel channel, String message, String type) {
 		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName().toLowerCase());
 
 		if (cdata.chatterLevel <= 0) {
 			return;
 		}
-		
+
 		long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
 		long odds = Math.round(Math.sqrt(elapsed) / (6 - cdata.chatterLevel));
 		if (odds > (cdata.chatterLevel * 4)) {
@@ -267,7 +268,7 @@ public class ReactionListener extends ListenerAdapter {
 
 		if (Tim.rand.nextInt(100) < odds) {
 			cdata.chatterTimer += Tim.rand.nextInt((int) elapsed);
-			
+
 			ArrayList<String> enabled_actions = new ArrayList<>(16);
 
 			if (cdata.chatter_enabled.get("markov")) {
@@ -283,7 +284,7 @@ public class ReactionListener extends ListenerAdapter {
 			if (cdata.chatter_enabled.get("challenge")) {
 				enabled_actions.add("challenge");
 			}
-			
+
 			if (enabled_actions.isEmpty()) {
 				return;
 			}
@@ -308,10 +309,10 @@ public class ReactionListener extends ListenerAdapter {
 			}
 		}
 	}
-	
+
 	private String pickGrade() {
 		int grade = Tim.rand.nextInt(50) + 51;
-		
+
 		if (grade < 60) {
 			return "F";
 		} else if (grade < 63) {

@@ -29,6 +29,7 @@ import org.pircbotx.hooks.events.MessageEvent;
  * @author mwalker
  */
 public class MarkovChains {
+
 	private final DBAccess db = DBAccess.getInstance();
 	protected HashMap<String, Pattern> badwordPatterns = new HashMap<>();
 	protected HashMap<String, Pattern[]> badpairPatterns = new HashMap<>();
@@ -45,7 +46,7 @@ public class MarkovChains {
 	 *
 	 * @return True if message was handled, false otherwise.
 	 */
-	public boolean parseUserCommand( String channel, String sender, String prefix, String message ) {
+	public boolean parseUserCommand(String channel, String sender, String prefix, String message) {
 		return false;
 	}
 
@@ -54,9 +55,10 @@ public class MarkovChains {
 	 * not.
 	 *
 	 * @param event
+	 *
 	 * @return True if message was handled, false otherwise
 	 */
-	public boolean parseAdminCommand( MessageEvent event ) {
+	public boolean parseAdminCommand(MessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString;
@@ -76,18 +78,20 @@ public class MarkovChains {
 				if (args != null && args.length == 1) {
 					addBadWord(args[0], event.getChannel());
 					return true;
-				}	break;
+				}
+				break;
 			case "badpair":
 				if (args != null && args.length == 2) {
 					addBadPair(args[0], args[1], event.getChannel());
 					return true;
-				}	break;
+				}
+				break;
 		}
 
 		return false;
 	}
 
-	protected void adminHelpSection( MessageEvent event ) {
+	protected void adminHelpSection(MessageEvent event) {
 		String[] strs = {
 			"Markhov Chain Commands:",
 			"    $badword <word> - Add <word> to the 'bad word' list, and purge from the chain data.",
@@ -103,15 +107,15 @@ public class MarkovChains {
 		getBadpairs();
 	}
 
-	public void randomActionWrapper( MessageEvent event ) {
+	public void randomActionWrapper(MessageEvent event) {
 		randomAction(event.getChannel().getName(), Tim.rand.nextBoolean() ? "say" : "mutter");
 	}
 
-	public void randomActionWrapper( ActionEvent event ) {
+	public void randomActionWrapper(ActionEvent event) {
 		randomAction(event.getChannel().getName(), Tim.rand.nextBoolean() ? "mutter" : "emote");
 	}
 
-	protected void randomAction( String channel, String type ) {
+	protected void randomAction(String channel, String type) {
 		String[] actions = {
 			"markhov"
 		};
@@ -138,7 +142,7 @@ public class MarkovChains {
 		}
 	}
 
-    public void addBadPair( String word_one, String word_two, Channel channel ) {
+	public void addBadPair(String word_one, String word_two, Channel channel) {
 		Connection con;
 		if ("".equals(word_one)) {
 			channel.send().message("I can't add nothing. Please provide the bad word.");
@@ -153,34 +157,33 @@ public class MarkovChains {
 				s.close();
 
 				s = con.prepareStatement("DELETE msd.* FROM markov3_say_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
-				s.setString(1, "^[[:punct:]]*"+ word_one +"[[:punct:]]*$");
-				s.setString(2, "^[[:punct:]]*"+ word_two +"[[:punct:]]*$");
+				s.setString(1, "^[[:punct:]]*" + word_one + "[[:punct:]]*$");
+				s.setString(2, "^[[:punct:]]*" + word_two + "[[:punct:]]*$");
 				s.executeUpdate();
 				s.close();
 
 				s = con.prepareStatement("DELETE msd.* FROM markov3_say_data msd INNER JOIN markov_words mw1 ON (msd.second_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.third_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
-				s.setString(1, "^[[:punct:]]*"+ word_one +"[[:punct:]]*$");
-				s.setString(2, "^[[:punct:]]*"+ word_two +"[[:punct:]]*$");
+				s.setString(1, "^[[:punct:]]*" + word_one + "[[:punct:]]*$");
+				s.setString(2, "^[[:punct:]]*" + word_two + "[[:punct:]]*$");
 				s.executeUpdate();
 				s.close();
 
 				s = con.prepareStatement("DELETE msd.* FROM markov3_emote_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
-				s.setString(1, "^[[:punct:]]*"+ word_one +"[[:punct:]]*$");
-				s.setString(2, "^[[:punct:]]*"+ word_two +"[[:punct:]]*$");
+				s.setString(1, "^[[:punct:]]*" + word_one + "[[:punct:]]*$");
+				s.setString(2, "^[[:punct:]]*" + word_two + "[[:punct:]]*$");
 				s.executeUpdate();
 				s.close();
 
 				s = con.prepareStatement("DELETE msd.* FROM markov3_emote_data msd INNER JOIN markov_words mw1 ON (msd.second_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.third_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
-				s.setString(1, "^[[:punct:]]*"+ word_one +"[[:punct:]]*$");
-				s.setString(2, "^[[:punct:]]*"+ word_two +"[[:punct:]]*$");
+				s.setString(1, "^[[:punct:]]*" + word_one + "[[:punct:]]*$");
+				s.setString(2, "^[[:punct:]]*" + word_two + "[[:punct:]]*$");
 				s.executeUpdate();
 				s.close();
 
 				if (badpairPatterns.get(word_one + ":" + word_two) == null) {
-					badpairPatterns.put(word_one + ":" + word_two, new Pattern[] {
-                            Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_one) + "(?:\\W|\\b)"),
-                            Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_two) + "(?:\\W|\\b)"),
-                                    });
+					badpairPatterns.put(word_one + ":" + word_two, new Pattern[]{
+						Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_one) + "(?:\\W|\\b)"),
+						Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_two) + "(?:\\W|\\b)"),});
 				}
 
 				channel.send().action("quickly goes through his records, and purges all knowledge of that horrible phrase.");
@@ -190,9 +193,9 @@ public class MarkovChains {
 				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
-    }
-        
-	public void addBadWord( String word, Channel channel ) {
+	}
+
+	public void addBadWord(String word, Channel channel) {
 		Connection con;
 		if ("".equals(word)) {
 			channel.send().message("I can't add nothing. Please provide the bad word.");
@@ -206,7 +209,7 @@ public class MarkovChains {
 				s.close();
 
 				s = con.prepareStatement("DELETE FROM markov_words WHERE word COLLATE utf8_general_ci REGEXP ?");
-				s.setString(1, "^[[:punct:]]*"+ word +"[[:punct:]]*$");
+				s.setString(1, "^[[:punct:]]*" + word + "[[:punct:]]*$");
 				s.executeUpdate();
 				s.close();
 
@@ -223,11 +226,11 @@ public class MarkovChains {
 		}
 	}
 
-	public String generate_markov( String type ) {
+	public String generate_markov(String type) {
 		return generate_markov(type, Tim.rand.nextInt(25) + 10);
 	}
-	
-	public String generate_markov( String type, int maxLength ) {
+
+	public String generate_markov(String type, int maxLength) {
 		Connection con = null;
 		String sentence = "";
 		try {
@@ -244,7 +247,7 @@ public class MarkovChains {
 
 			int first = getMarkovWordId("");
 			int second = first;
-			
+
 			getTotal.setInt(1, first);
 			getTotal.setInt(2, second);
 
@@ -340,11 +343,11 @@ public class MarkovChains {
 
 			ResultSet rs = s.getResultSet();
 			String word;
-			
+
 			badwordPatterns.clear();
 			while (rs.next()) {
 				word = rs.getString("word");
-				
+
 				if (badwordPatterns.get(word) == null) {
 					badwordPatterns.put(word, Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word) + "(?:\\W|\\b)"));
 				}
@@ -366,17 +369,16 @@ public class MarkovChains {
 
 			ResultSet rs = s.getResultSet();
 			String word_one, word_two;
-			
+
 			badpairPatterns.clear();
 			while (rs.next()) {
 				word_one = rs.getString("word_one");
 				word_two = rs.getString("word_two");
 
 				if (badpairPatterns.get(word_one + ":" + word_two) == null) {
-					badpairPatterns.put(word_one + ":" + word_two, new Pattern[] {
-                            Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_one) + "(?:\\W|\\b)"),
-                            Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_two) + "(?:\\W|\\b)"),
-                                    });
+					badpairPatterns.put(word_one + ":" + word_two, new Pattern[]{
+						Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_one) + "(?:\\W|\\b)"),
+						Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_two) + "(?:\\W|\\b)"),});
 				}
 			}
 
@@ -392,17 +394,17 @@ public class MarkovChains {
 	 * Takes a message and a type and builds Markhov chain data out of the message, skipping bad words and other things
 	 * we don't want to track such as email addresses and URLs.
 	 *
-	 * @param message What is the message to parse
-	 * @param type    What type of message was it (say or emote)
+	 * @param message  What is the message to parse
+	 * @param type     What type of message was it (say or emote)
 	 * @param username
 	 *
 	 */
-	public void process_markov( String message, String type, String username ) {
+	public void process_markov(String message, String type, String username) {
 		String[] words = message.split(" ");
 
 		for (int i = -1; i <= words.length; i++) {
 			String word1, word2, word3;
-			
+
 			int offset1 = i - 1;
 			int offset2 = i;
 			int offset3 = i + 1;
@@ -447,11 +449,11 @@ public class MarkovChains {
 			word1 = word1.replaceAll(Tim.bot.getNick(), username);
 			word2 = word2.replaceAll(Tim.bot.getNick(), username);
 			word3 = word3.replaceAll(Tim.bot.getNick(), username);
-			
+
 			storeTriad(word1, word2, word3, type);
 		}
 	}
-	
+
 	private void storeTriad(String word1, String word2, String word3, String type) {
 		Connection con = null;
 		int first = getMarkovWordId(word1);
@@ -471,7 +473,7 @@ public class MarkovChains {
 			addTriad.setInt(1, first);
 			addTriad.setInt(2, second);
 			addTriad.setInt(3, third);
-			
+
 			addTriad.executeUpdate();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
@@ -483,8 +485,8 @@ public class MarkovChains {
 			}
 		}
 	}
-	
-	private int getMarkovWordId( String word ) {
+
+	private int getMarkovWordId(String word) {
 		Connection con = null;
 
 		try {
@@ -520,23 +522,23 @@ public class MarkovChains {
 		return 0;
 	}
 
-    private boolean skipMarkovPair( String word_one, String word_two ) {
-        for (Pattern[] patterns : badpairPatterns.values()) {
-            if (patterns[0].matcher(word_one).find() && patterns[1].matcher(word_two).find()) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-	private boolean skipMarkovWord( String word ) {
+	private boolean skipMarkovPair(String word_one, String word_two) {
+		for (Pattern[] patterns : badpairPatterns.values()) {
+			if (patterns[0].matcher(word_one).find() && patterns[1].matcher(word_two).find()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean skipMarkovWord(String word) {
 		for (Pattern pattern : badwordPatterns.values()) {
 			if (pattern.matcher(word).find()) {
 				return true;
 			}
 		}
-		
+
 		// If email, skip
 		if (Pattern.matches("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$", word)) {
 			return true;

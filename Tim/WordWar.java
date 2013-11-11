@@ -21,6 +21,7 @@ import org.pircbotx.User;
  *
  */
 public class WordWar {
+
 	public long remaining;
 	public long time_to_start;
 	public int total_chains;
@@ -29,13 +30,13 @@ public class WordWar {
 
 	protected long duration;
 	protected long base_duration;
-	
+
 	private final int db_id;
 	private final Channel channel;
 	private final User starter;
 	private final String name;
 
-	public WordWar( long time, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel ) {
+	public WordWar(long time, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel) {
 		this.starter = startingUser;
 		this.time_to_start = to_start;
 		this.total_chains = total_chains;
@@ -44,23 +45,23 @@ public class WordWar {
 		this.name = warname;
 		this.channel = hosting_channel;
 		this.cdata = Tim.db.channel_data.get(hosting_channel.getName().toLowerCase());
-		
+
 		if (total_chains > 1) {
 			this.duration = base_duration + (Tim.rand.nextInt((int) Math.floor(base_duration * 0.2))) - ((long) Math.floor(base_duration * 0.1));
 		} else {
 			this.duration = this.base_duration;
 		}
-		
+
 		this.remaining = this.duration;
-		
+
 		db_id = Tim.db.create_war(hosting_channel, startingUser, warname, base_duration, duration, remaining, to_start, total_chains, current_chain);
 
 		if (this.time_to_start <= 0 && (cdata.muzzled == false || cdata.auto_muzzled)) {
 			cdata.setMuzzleFlag(true, true);
 		}
 	}
-	
-	public WordWar( long base_duration, long duration, long remaining, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel, int db_id ) {
+
+	public WordWar(long base_duration, long duration, long remaining, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel, int db_id) {
 		this.starter = startingUser;
 		this.time_to_start = to_start;
 		this.base_duration = base_duration;
@@ -75,7 +76,7 @@ public class WordWar {
 		if (this.base_duration == 0) {
 			this.base_duration = duration;
 		}
-		
+
 		this.db_id = db_id;
 
 		if (this.time_to_start <= 0 && (cdata.muzzled == false || cdata.auto_muzzled)) {
@@ -96,7 +97,7 @@ public class WordWar {
 	public void updateDb() {
 		Tim.db.update_war(db_id, duration, remaining, time_to_start, current_chain);
 	}
-	
+
 	public Channel getChannel() {
 		return this.channel;
 	}
@@ -107,13 +108,13 @@ public class WordWar {
 
 	public String getName() {
 		String nameString;
-		
+
 		if (total_chains > 1) {
 			nameString = name + " (" + current_chain + " / " + total_chains + ")";
 		} else {
 			nameString = name;
 		}
-		
+
 		return nameString + " [" + getDurationText() + "]";
 	}
 
@@ -130,12 +131,12 @@ public class WordWar {
 		long hours = 0, minutes = 0, seconds, tmp;
 
 		tmp = duration;
-		
-		if (tmp > (60*60)) {
-			hours = tmp / (60*60);
-			tmp = tmp % (60*60);
+
+		if (tmp > (60 * 60)) {
+			hours = tmp / (60 * 60);
+			tmp = tmp % (60 * 60);
 		}
-		
+
 		if (tmp > 60) {
 			minutes = tmp / 60;
 			tmp = tmp % 60;
@@ -146,7 +147,7 @@ public class WordWar {
 		if (hours > 0) {
 			text += hours + "H ";
 		}
-		
+
 		if (minutes > 0 || (seconds > 0 && hours > 0)) {
 			text += minutes + "M ";
 		}
@@ -154,10 +155,10 @@ public class WordWar {
 		if (seconds > 0) {
 			text += seconds + "S";
 		}
-		
+
 		return text.trim();
 	}
-	
+
 	public User getStarter() {
 		return starter;
 	}

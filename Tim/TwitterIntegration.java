@@ -19,6 +19,7 @@ import twitter4j.auth.AccessToken;
  * @author Matthew Walker
  */
 public class TwitterIntegration extends StatusAdapter {
+
 	Twitter twitter;
 	AccessToken token;
 	TwitterStream userStream;
@@ -32,8 +33,8 @@ public class TwitterIntegration extends StatusAdapter {
 	boolean reconnectPending = false;
 	boolean needFilterUpdate = false;
 	long lastConnect;
-	HashMap<String,Long> accountCache = new HashMap<>(32);
-	HashMap<Long,HashSet<String>> accountsToChannels = new HashMap<>(32);
+	HashMap<String, Long> accountCache = new HashMap<>(32);
+	HashMap<Long, HashSet<String>> accountsToChannels = new HashMap<>(32);
 
 	public TwitterIntegration() {
 		accessKey = Tim.db.getSetting("twitter_access_key");
@@ -52,7 +53,7 @@ public class TwitterIntegration extends StatusAdapter {
 			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-	
+
 	public long checkAccount(String accountName) {
 		if (accountCache.containsKey(accountName)) {
 			return accountCache.get(accountName);
@@ -89,7 +90,7 @@ public class TwitterIntegration extends StatusAdapter {
 		try {
 			check = twitter.lookupUsers(usernames);
 
-			for(User user : check) {
+			for (User user : check) {
 				userIds.add(user.getId());
 			}
 		} catch (TwitterException ex) {
@@ -132,13 +133,13 @@ public class TwitterIntegration extends StatusAdapter {
 
 		needFilterUpdate = true;
 	}
-	
+
 	public boolean addAccount(String account, ChannelInfo channel) {
 		long accountId = checkAccount(account);
 		if (accountId == 0) {
 			return false;
 		}
-		
+
 		if (!accountsToChannels.containsKey(accountId)) {
 			accountsToChannels.put(accountId, new HashSet<String>(64));
 			needFilterUpdate = true;
@@ -150,13 +151,13 @@ public class TwitterIntegration extends StatusAdapter {
 		updateStreamFilters();
 		return true;
 	}
-	
+
 	public void removeAccount(String account, ChannelInfo channel) {
 		long accountId = checkAccount(account);
 		if (accountId == 0) {
 			return;
 		}
-		
+
 		if (!accountsToChannels.containsKey(accountId)) {
 			return;
 		}
@@ -171,7 +172,7 @@ public class TwitterIntegration extends StatusAdapter {
 
 		updateStreamFilters();
 	}
-	
+
 	public void updateStreamFilters() {
 		if (needFilterUpdate) {
 			if (publicStream != null) {
@@ -188,12 +189,12 @@ public class TwitterIntegration extends StatusAdapter {
 							Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 						}
 					}
-					publicStream.cleanUp();			
+					publicStream.cleanUp();
 				}
 			}
 
 			String[] hashtags = {"#NaNoWriMo"};
-			long[] finalUserIds = ArrayUtils.toPrimitive( accountsToChannels.keySet().toArray(new Long[accountsToChannels.size()]) );
+			long[] finalUserIds = ArrayUtils.toPrimitive(accountsToChannels.keySet().toArray(new Long[accountsToChannels.size()]));
 
 			publicStream = new TwitterStreamFactory().getInstance();
 			publicStream.setOAuthConsumer(consumerKey, consumerSecret);
@@ -211,7 +212,7 @@ public class TwitterIntegration extends StatusAdapter {
 
 	StatusListener publicListener = new StatusListener() {
 		@Override
-		public void onStatus( Status status ) {
+		public void onStatus(Status status) {
 			String colorString;
 			Relationship checkFriendship;
 
@@ -236,20 +237,20 @@ public class TwitterIntegration extends StatusAdapter {
 			if (status.getInReplyToUserId() != -1) {
 				return;
 			}
-			
+
 			String message = colorString + "@" + status.getUser().getScreenName() + ": " + Colors.NORMAL + status.getText().replaceAll("\\n", "");
 
 			HashSet<String> channels = accountsToChannels.get(status.getUser().getId());
 
 			float timeDiff;
-			
+
 			for (String channelName : channels) {
 				ChannelInfo channel = Tim.db.channel_data.get(channelName);
-				
+
 				if (channel.muzzled) {
 					continue;
 				}
-				
+
 				if (channel.tweetBucket < channel.tweetBucketMax) {
 					timeDiff = (System.currentTimeMillis() - channel.twitterTimer) / 1000f;
 					channel.twitterTimer = System.currentTimeMillis();
@@ -259,7 +260,7 @@ public class TwitterIntegration extends StatusAdapter {
 						channel.tweetBucket = channel.tweetBucketMax;
 					}
 				}
-				
+
 				if (channel.tweetBucket >= 1) {
 					Tim.bot.getUserChannelDao().getChannel(channel.channel).send().message(message);
 					channel.tweetBucket -= 1f;
@@ -269,9 +270,9 @@ public class TwitterIntegration extends StatusAdapter {
 			if (!status.getUser().getScreenName().equals("BotTimmy")) {
 				try {
 					checkFriendship = twitter.showFriendship(BotTimmy.getId(), status.getUser().getId());
-					if (status.getText().toLowerCase().contains("#nanowrimo") && Tim.rand.nextInt(100) < 3 && checkFriendship.isTargetFollowingSource() ) {
+					if (status.getText().toLowerCase().contains("#nanowrimo") && Tim.rand.nextInt(100) < 3 && checkFriendship.isTargetFollowingSource()) {
 						String message2;
-						
+
 						if (Tim.rand.nextBoolean()) {
 							int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
 							message2 = "@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r);
@@ -295,19 +296,19 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 
 		@Override
-		public void onDeletionNotice( StatusDeletionNotice sdn ) {
+		public void onDeletionNotice(StatusDeletionNotice sdn) {
 		}
 
 		@Override
-		public void onTrackLimitationNotice( int i ) {
+		public void onTrackLimitationNotice(int i) {
 		}
 
 		@Override
-		public void onScrubGeo( long l, long l1 ) {
+		public void onScrubGeo(long l, long l1) {
 		}
 
 		@Override
-		public void onException( Exception excptn ) {
+		public void onException(Exception excptn) {
 		}
 
 		@Override
@@ -317,7 +318,7 @@ public class TwitterIntegration extends StatusAdapter {
 
 	UserStreamListener userListener = new UserStreamListener() {
 		@Override
-		public void onStatus( Status status ) {
+		public void onStatus(Status status) {
 			boolean sendReply = false;
 			boolean getItem = false;
 			if (status.getInReplyToUserId() == TwitterIntegration.BotTimmy.getId()) {
@@ -367,83 +368,83 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 
 		@Override
-		public void onDeletionNotice( StatusDeletionNotice sdn ) {
+		public void onDeletionNotice(StatusDeletionNotice sdn) {
 		}
 
 		@Override
-		public void onTrackLimitationNotice( int i ) {
+		public void onTrackLimitationNotice(int i) {
 		}
 
 		@Override
-		public void onScrubGeo( long l, long l1 ) {
+		public void onScrubGeo(long l, long l1) {
 		}
 
 		@Override
-		public void onException( Exception excptn ) {
+		public void onException(Exception excptn) {
 		}
 
 		@Override
-		public void onDeletionNotice( long l, long l1 ) {
+		public void onDeletionNotice(long l, long l1) {
 		}
 
 		@Override
-		public void onFriendList( long[] longs ) {
+		public void onFriendList(long[] longs) {
 		}
 
 		@Override
-		public void onFavorite( User user, User user1, Status status ) {
+		public void onFavorite(User user, User user1, Status status) {
 		}
 
 		@Override
-		public void onUnfavorite( User user, User user1, Status status ) {
+		public void onUnfavorite(User user, User user1, Status status) {
 		}
 
 		@Override
-		public void onFollow( User user, User user1 ) {
+		public void onFollow(User user, User user1) {
 		}
 
 		@Override
-		public void onDirectMessage( DirectMessage dm ) {
+		public void onDirectMessage(DirectMessage dm) {
 		}
 
 		@Override
-		public void onUserListMemberAddition( User user, User user1, UserList ul ) {
+		public void onUserListMemberAddition(User user, User user1, UserList ul) {
 		}
 
 		@Override
-		public void onUserListMemberDeletion( User user, User user1, UserList ul ) {
+		public void onUserListMemberDeletion(User user, User user1, UserList ul) {
 		}
 
 		@Override
-		public void onUserListSubscription( User user, User user1, UserList ul ) {
+		public void onUserListSubscription(User user, User user1, UserList ul) {
 		}
 
 		@Override
-		public void onUserListUnsubscription( User user, User user1, UserList ul ) {
+		public void onUserListUnsubscription(User user, User user1, UserList ul) {
 		}
 
 		@Override
-		public void onUserListCreation( User user, UserList ul ) {
+		public void onUserListCreation(User user, UserList ul) {
 		}
 
 		@Override
-		public void onUserListUpdate( User user, UserList ul ) {
+		public void onUserListUpdate(User user, UserList ul) {
 		}
 
 		@Override
-		public void onUserListDeletion( User user, UserList ul ) {
+		public void onUserListDeletion(User user, UserList ul) {
 		}
 
 		@Override
-		public void onUserProfileUpdate( User user ) {
+		public void onUserProfileUpdate(User user) {
 		}
 
 		@Override
-		public void onBlock( User user, User user1 ) {
+		public void onBlock(User user, User user1) {
 		}
 
 		@Override
-		public void onUnblock( User user, User user1 ) {
+		public void onUnblock(User user, User user1) {
 		}
 
 		@Override

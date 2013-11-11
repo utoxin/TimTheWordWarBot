@@ -24,6 +24,7 @@ import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
 
 public class Tim {
+
 	public static Amusement amusement;
 	public static PircBotX bot;
 	public static Challenge challenge;
@@ -37,7 +38,7 @@ public class Tim {
 	public static DeIdler deidler;
 	public static TwitterIntegration twitterstream;
 
-	public static void main( String[] args ) {
+	public static void main(String[] args) {
 		instance = new Tim();
 	}
 
@@ -49,27 +50,26 @@ public class Tim {
 		amusement = new Amusement();
 
 		Builder configBuilder = new Configuration.Builder()
-				.setName(db.getSetting("nickname"))
-				.setLogin("WarMech")
-				.setNickservPassword(db.getSetting("password"))
-				.addListener(new AdminCommandListener())
-				.addListener(new UserCommandListener())
-				.addListener(new ReactionListener())
-				.addListener(new ServerListener())
-				.setServerHostname(db.getSetting("server"))
-				.setEncoding(Charset.forName("UTF-8"))
-				.setMessageDelay(Long.parseLong(db.getSetting("max_rate")))
-				.setAutoNickChange(true);
-		
+			.setName(db.getSetting("nickname"))
+			.setLogin("WarMech")
+			.setNickservPassword(db.getSetting("password"))
+			.addListener(new AdminCommandListener())
+			.addListener(new UserCommandListener())
+			.addListener(new ReactionListener())
+			.addListener(new ServerListener())
+			.setServerHostname(db.getSetting("server"))
+			.setEncoding(Charset.forName("UTF-8"))
+			.setMessageDelay(Long.parseLong(db.getSetting("max_rate")))
+			.setAutoNickChange(true);
+
 		db.refreshDbLists();
 
 		// Join our channels
 		for (Map.Entry<String, ChannelInfo> entry : db.channel_data.entrySet()) {
 			configBuilder.addAutoJoinChannel(entry.getValue().channel);
 		}
-		
-		bot = new PircBotX(configBuilder.buildConfiguration());
 
+		bot = new PircBotX(configBuilder.buildConfiguration());
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -100,7 +100,7 @@ public class Tim {
 			Tim.bot.sendIRC().quitServer("HELP! Utoxin just murdered me! (Again!!!)");
 		}
 	}
-	
+
 	/**
 	 * Singleton access method.
 	 *
