@@ -93,10 +93,12 @@ public class Tim {
 	}
 
 	public static void shutdown() {
-		Tim.warticker.warticker.cancel();
-		Tim.deidler.idleticker.cancel();
-		Tim.bot.stopBotReconnect();
-		Tim.bot.sendIRC().quitServer("HELP! Utoxin just murdered me! (Again!!!)");
+		if (Tim.bot.isConnected()) {
+			Tim.warticker.warticker.cancel();
+			Tim.deidler.idleticker.cancel();
+			Tim.bot.stopBotReconnect();
+			Tim.bot.sendIRC().quitServer("HELP! Utoxin just murdered me! (Again!!!)");
+		}
 	}
 	
 	/**

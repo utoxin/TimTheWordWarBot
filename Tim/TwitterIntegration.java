@@ -237,7 +237,7 @@ public class TwitterIntegration extends StatusAdapter {
 				return;
 			}
 			
-			String message = colorString + "@" + status.getUser().getScreenName() + ": " + Colors.NORMAL + status.getText();
+			String message = colorString + "@" + status.getUser().getScreenName() + ": " + Colors.NORMAL + status.getText().replaceAll("\\n", "");
 
 			HashSet<String> channels = accountsToChannels.get(status.getUser().getId());
 
@@ -245,6 +245,10 @@ public class TwitterIntegration extends StatusAdapter {
 			
 			for (String channelName : channels) {
 				ChannelInfo channel = Tim.db.channel_data.get(channelName);
+				
+				if (channel.muzzled) {
+					continue;
+				}
 				
 				if (channel.tweetBucket < channel.tweetBucketMax) {
 					timeDiff = (System.currentTimeMillis() - channel.twitterTimer) / 1000f;
@@ -254,10 +258,6 @@ public class TwitterIntegration extends StatusAdapter {
 					if (channel.tweetBucket > channel.tweetBucketMax) {
 						channel.tweetBucket = channel.tweetBucketMax;
 					}
-				}
-				
-				if (channel.muzzled) {
-					continue;
 				}
 				
 				if (channel.tweetBucket >= 1) {
@@ -270,8 +270,15 @@ public class TwitterIntegration extends StatusAdapter {
 				try {
 					checkFriendship = twitter.showFriendship(BotTimmy.getId(), status.getUser().getId());
 					if (status.getText().toLowerCase().contains("#nanowrimo") && Tim.rand.nextInt(100) < 3 && checkFriendship.isTargetFollowingSource() ) {
-						int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
-						String message2 = "@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r);
+						String message2;
+						
+						if (Tim.rand.nextBoolean()) {
+							int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
+							message2 = "@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r);
+						} else {
+							message2 = "@" + status.getUser().getScreenName() + " " + Tim.markov.generate_markov("say");
+						}
+
 						if (message2.length() > 118) {
 							message2 = message2.substring(0, 115) + "...";
 						}
