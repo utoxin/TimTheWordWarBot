@@ -384,7 +384,7 @@ public class AdminCommandListener extends ListenerAdapter {
 		};
 
 		for (int i = 0; i < helplines.length; ++i) {
-			event.getChannel().send().action(helplines[i]);
+			event.getUser().send().notice(helplines[i]);
 		}
 
 		Tim.challenge.adminHelpSection(event);
