@@ -112,6 +112,18 @@ public class Amusement {
 				}
 
 				return true;
+			case "ping":
+				if (cdata.commands_enabled.get("ping")) {
+					if (Tim.rand.nextInt(100) < 80) {
+						event.respond("Pong!");
+					} else {
+						event.getChannel().send().action("dives for the ball, but misses, and lands on a " + this.colours.get(Tim.rand.nextInt(this.colours.size())) + " couch.");
+					}
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+
+				return true;
 			case "get":
 				if (cdata.commands_enabled.get("get")) {
 					getItem(event.getChannel(), event.getUser().getNick(), args);
@@ -132,6 +144,26 @@ public class Amusement {
 							getItem(event.getChannel(), args[0], newargs);
 						} else {
 							getItem(event.getChannel(), args[0], null);
+						}
+					} else {
+						event.respond("I'm sorry. I don't do that here.");
+					}
+
+					return true;
+				}
+				break;
+			case "getfrom":
+				if (args != null && args.length > 0) {
+					if (cdata.commands_enabled.get("get")) {
+						if (args.length > 1) {
+							// Want a new args array less the first old element.
+							String[] newargs = new String[args.length - 1];
+							for (int i = 1; i < args.length; ++i) {
+								newargs[i - 1] = args[i];
+							}
+							getItemFrom(event.getChannel(), event.getUser().getNick(), args[0], newargs);
+						} else {
+							getItemFrom(event.getChannel(), event.getUser().getNick(), args[0], null);
 						}
 					} else {
 						event.respond("I'm sorry. I don't do that here.");
@@ -259,8 +291,7 @@ public class Amusement {
 			command = message.toLowerCase().substring(1);
 		}
 		switch (command) {
-			case "listitems":
-			{
+			case "listitems": {
 				int pages = (this.approved_items.size() + 9) / 10;
 				int wantPage = 0;
 				if (args != null && args.length > 0) {
@@ -283,8 +314,7 @@ public class Amusement {
 				}
 				return true;
 			}
-			case "listpending":
-			{
+			case "listpending": {
 				int pages = (this.pending_items.size() + 9) / 10;
 				int wantPage = 0;
 				if (args != null && args.length > 0) {
@@ -541,6 +571,38 @@ public class Amusement {
 		}
 
 		channel.send().action(String.format("gets %s %s.", target, item));
+	}
+
+	protected void getItemFrom(Channel channel, String recipient, String target, String[] args) {
+		String item = "";
+		if (args != null) {
+			if (Tim.rand.nextInt(100) < 65) {
+				item = args[0];
+				for (int i = 1; i < args.length; ++i) {
+					item = item + " " + args[i];
+				}
+
+				if (!(this.approved_items.contains(item) || this.pending_items.contains(item)) && item.length() < 300) {
+					this.insertPendingItem(item);
+					this.pending_items.add(item);
+				}
+
+				if (item.toLowerCase().contains("spoon")) {
+					item = "";
+					channel.send().action("rumages around in " + target + "'s things for a bit, then calls out. \"Sorry... there is no spoon. But I did find something else...\"");
+				}
+			} else {
+				channel.send().action("rumages around in " + target + "'s things for a bit, then calls out. \"Sorry... I don't think they have that. But I did find something else...\"");
+			}
+		}
+
+		if (item.isEmpty()) {
+			// Find a random item.
+			int i = Tim.rand.nextInt(this.approved_items.size());
+			item = this.approved_items.get(i);
+		}
+
+		channel.send().action(String.format("takes %s from %s, and gives it to %s.", item, target, recipient));
 	}
 
 	protected void search(Channel channel, User sender, String target) {

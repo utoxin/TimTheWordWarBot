@@ -15,10 +15,12 @@ package Tim;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Channel;
 import org.pircbotx.Colors;
 import org.pircbotx.hooks.events.ActionEvent;
@@ -33,6 +35,8 @@ public class MarkovChains {
 	private final DBAccess db = DBAccess.getInstance();
 	protected HashMap<String, Pattern> badwordPatterns = new HashMap<>();
 	protected HashMap<String, Pattern[]> badpairPatterns = new HashMap<>();
+	protected ArrayList<String> alternateWords = new ArrayList<>(64);
+	protected ArrayList<String[]> alternatePairs = new ArrayList<>(64);
 	private final long timeout = 3000;
 
 	/**
@@ -103,6 +107,8 @@ public class MarkovChains {
 	}
 
 	public void refreshDbLists() {
+		getAlternatewords();
+		getAlternatepairs();
 		getBadwords();
 		getBadpairs();
 	}
@@ -324,13 +330,60 @@ public class MarkovChains {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		} finally {
 			try {
-				con.close();
+				if (con != null) {
+					con.close();
+				}
 			} catch (SQLException ex) {
 				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 
 		return sentence;
+	}
+
+	public void getAlternatewords() {
+		Connection con;
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("SELECT `word` FROM `alternate_words`");
+			s.executeQuery();
+
+			ResultSet rs = s.getResultSet();
+
+			alternateWords.clear();
+			while (rs.next()) {
+				alternateWords.add(rs.getString("word"));
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	public void getAlternatepairs() {
+		Connection con;
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("SELECT `word_one`, `word_two` FROM `bad_pairs`");
+			s.executeQuery();
+
+			ResultSet rs = s.getResultSet();
+
+			alternatePairs.clear();
+			while (rs.next()) {
+				alternatePairs.add(new String[]{
+					rs.getString("word_one"),
+					rs.getString("word_two")
+				});
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	public void getBadwords() {
@@ -401,6 +454,8 @@ public class MarkovChains {
 	 */
 	public void process_markov(String message, String type, String username) {
 		String[] words = message.split(" ");
+		String[] alternatePair;
+		String working, old1, old2;
 
 		for (int i = -1; i <= words.length; i++) {
 			String word1, word2, word3;
@@ -414,9 +469,6 @@ public class MarkovChains {
 			} else if (offset1 >= words.length) {
 				word1 = "";
 			} else {
-				if (skipMarkovWord(words[offset1])) {
-					continue;
-				}
 				word1 = words[offset1];
 			}
 
@@ -425,9 +477,6 @@ public class MarkovChains {
 			} else if (offset2 >= words.length) {
 				word2 = "";
 			} else {
-				if (skipMarkovWord(words[offset2])) {
-					continue;
-				}
 				word2 = words[offset2];
 			}
 
@@ -436,19 +485,114 @@ public class MarkovChains {
 			} else if (offset3 >= words.length) {
 				word3 = "";
 			} else {
-				if (skipMarkovWord(words[offset3])) {
-					continue;
-				}
 				word3 = words[offset3];
 			}
 
-			if (skipMarkovPair(word1, word2) || skipMarkovPair(word2, word3)) {
-				continue;
+			word1 = word1.replaceAll(Tim.bot.getNick(), StringUtils.capitalize(username));
+			word2 = word2.replaceAll(Tim.bot.getNick(), StringUtils.capitalize(username));
+			word3 = word3.replaceAll(Tim.bot.getNick(), StringUtils.capitalize(username));
+
+			if (skipMarkovWord(word1)) {
+				old1 = word1;
+				working = word1.replaceAll("[^a-zA-Z]", "");
+				word1 = alternateWords.get(Tim.rand.nextInt(alternateWords.size()));
+
+				if (working.matches("^[A-Z]+$")) {
+					word1 = word1.toUpperCase();
+				} else if (working.matches("^[A-Z]+[a-z]+")) {
+					word1 = StringUtils.capitalize(word1);
+				}
+
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, "Replaced string ''{0}'' with ''{1}''", new Object[]{old1, word1});
 			}
 
-			word1 = word1.replaceAll(Tim.bot.getNick(), username);
-			word2 = word2.replaceAll(Tim.bot.getNick(), username);
-			word3 = word3.replaceAll(Tim.bot.getNick(), username);
+			if (skipMarkovWord(word2)) {
+				old1 = word2;
+				working = word2.replaceAll("[^a-zA-Z]", "");
+				word2 = alternateWords.get(Tim.rand.nextInt(alternateWords.size()));
+
+				if (working.matches("^[A-Z]+$")) {
+					word2 = word2.toUpperCase();
+				} else if (working.matches("^[A-Z]+[a-z]+")) {
+					word2 = StringUtils.capitalize(word2);
+				}
+
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, "Replaced string ''{0}'' with ''{1}''", new Object[]{old1, word2});
+			}
+
+			if (skipMarkovWord(word3)) {
+				old1 = word3;
+				working = word3.replaceAll("[^a-zA-Z]", "");
+				word3 = alternateWords.get(Tim.rand.nextInt(alternateWords.size()));
+
+				if (working.matches("^[A-Z]+$")) {
+					word3 = word3.toUpperCase();
+				} else if (working.matches("^[A-Z]+[a-z]+")) {
+					word3 = StringUtils.capitalize(word3);
+				}
+
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, "Replaced string ''{0}'' with ''{1}''", new Object[]{old1, word3});
+			}
+
+			if (skipMarkovPair(word1, word2)) {
+				alternatePair = alternatePairs.get(Tim.rand.nextInt(alternatePairs.size()));
+
+				old1 = word1;
+				working = word1.replaceAll("[^a-zA-Z]", "");
+				word1 = alternatePair[0];
+				if (working.matches("^[A-Z]+$")) {
+					word1 = word1.toUpperCase();
+				} else if (working.matches("^[A-Z]+[a-z]+")) {
+					word1 = StringUtils.capitalize(word1);
+				}
+
+				old2 = word2;
+				working = word2.replaceAll("[^a-zA-Z]", "");
+				word2 = alternatePair[1];
+				if (working.matches("^[A-Z]+$")) {
+					word2 = word2.toUpperCase();
+				} else if (working.matches("^[A-Z]+[a-z]+")) {
+					word2 = StringUtils.capitalize(word2);
+				}
+
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, "Replaced pair ''{0} {1}'' with ''{2} {3}''", new Object[]{old1, old2, word1, word2});
+			}
+
+			if (skipMarkovPair(word2, word3)) {
+				alternatePair = alternatePairs.get(Tim.rand.nextInt(alternatePairs.size()));
+
+				old1 = word2;
+				working = word2.replaceAll("[^a-zA-Z]", "");
+				word2 = alternatePair[1];
+				if (working.matches("^[A-Z]+$")) {
+					word2 = word2.toUpperCase();
+				} else if (working.matches("^[A-Z]+[a-z]+")) {
+					word2 = StringUtils.capitalize(word2);
+				}
+
+				old2 = word3;
+				working = word3.replaceAll("[^a-zA-Z]", "");
+				word3 = alternatePair[1];
+				if (working.matches("^[A-Z]+$")) {
+					word3 = word3.toUpperCase();
+				} else if (working.matches("^[A-Z]+[a-z]+")) {
+					word3 = StringUtils.capitalize(word3);
+				}
+
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, "Replaced pair ''{0} {1}'' with ''{2} {3}''", new Object[]{old1, old2, word2, word3});
+			}
+
+			if (offset1 >= 0 && offset1 < words.length) {
+				words[offset1] = word1;
+			}
+
+			if (offset2 >= 0 && offset2 < words.length) {
+				words[offset2] = word2;
+			}
+
+			if (offset3 >= 0 && offset3 < words.length) {
+				words[offset3] = word3;
+			}
 
 			storeTriad(word1, word2, word3, type);
 		}
@@ -479,7 +623,9 @@ public class MarkovChains {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		} finally {
 			try {
-				con.close();
+				if (con != null) {
+					con.close();
+				}
 			} catch (SQLException ex) {
 				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 			}
@@ -513,7 +659,9 @@ public class MarkovChains {
 			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
 		} finally {
 			try {
-				con.close();
+				if (con != null) {
+					con.close();
+				}
 			} catch (SQLException ex) {
 				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 			}

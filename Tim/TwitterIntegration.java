@@ -238,7 +238,7 @@ public class TwitterIntegration extends StatusAdapter {
 				return;
 			}
 
-			String message = colorString + "@" + status.getUser().getScreenName() + ": " + Colors.NORMAL + status.getText().replaceAll("\\n", "");
+			String message = colorString + "@" + status.getUser().getScreenName() + ": " + Colors.NORMAL + status.getText().replaceAll("\\n", " ");
 
 			HashSet<String> channels = accountsToChannels.get(status.getUser().getId());
 

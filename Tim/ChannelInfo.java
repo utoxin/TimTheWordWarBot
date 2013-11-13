@@ -105,6 +105,7 @@ public class ChannelInfo {
 		commands_enabled.put("challenge", Boolean.TRUE);
 		commands_enabled.put("chainstory", Boolean.TRUE);
 		commands_enabled.put("sing", Boolean.TRUE);
+		commands_enabled.put("ping", Boolean.TRUE);
 	}
 
 	public boolean amusement_chatter_available() {

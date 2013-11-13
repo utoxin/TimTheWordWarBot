@@ -190,7 +190,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							}
 						} else {
 							event.respond("Usage: $commandflag list <#channel> OR $commandflag set <#channel> <command> <0/1>");
-							event.respond("Valid Commands: chainstory, challenge, commandment, creeper, dance, defenestrate, dice, eightball, expound, foof, fridge, get, lick, markov, search, sing, summon, woot");
+							event.respond("Valid Commands: chainstory, challenge, commandment, creeper, dance, defenestrate, dice, eightball, expound, foof, fridge, get, lick, markov, ping, search, sing, summon, woot");
 						}
 						break;
 					case "twitterrelay":
