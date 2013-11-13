@@ -64,6 +64,8 @@ public class ServerListener extends ListenerAdapter {
 		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
 			ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 
+			event.getChannel().getMode();
+			
 			if (cdata.chatterLevel <= -1) {
 				return;
 			}
