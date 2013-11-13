@@ -62,7 +62,7 @@ public class AppConfig extends XMLConfiguration {
 		return instance;
 	}
 
-	public static void main(String args[]) {
+	public void main(String args[]) {
 		AppConfig config = AppConfig.getInstance();
 		System.out.println(config.getString("database.user-name"));
 		System.out.println(config.getString("database.password"));
