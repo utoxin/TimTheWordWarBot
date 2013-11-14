@@ -759,27 +759,32 @@ public class Amusement {
 		long base_wpm;
 		double modifier;
 		int goal;
+		String difficulty, original_difficulty;
 
 		if (args.length != 2) {
 			event.respond("!boxodoom requires two parameters.");
 			return;
 		}
 
-		if (!Pattern.matches("(?i)((extra)?easy)|average|medium|normal|hard|extreme|insane|impossible|tadiera", args[0])) {
+		if (Pattern.matches("(?i)((extra|super)?easy)|average|medium|normal|hard|extreme|insane|impossible|tadiera", args[0])) {
+			original_difficulty = difficulty = args[0];
+			duration = (long) Double.parseDouble(args[1]);
+		} else if (Pattern.matches("(?i)((extra|super)?easy)|average|medium|normal|hard|extreme|insane|impossible|tadiera", args[1])) {
+			original_difficulty = difficulty = args[1];
+			duration = (long) Double.parseDouble(args[0]);
+		} else {
 			event.respond("Difficulty must be one of: extraeasy, easy, average, hard, extreme, insane, impossible, tadiera");
 			return;
 		}
-
-		duration = (long) Double.parseDouble(args[1]);
 
 		if (duration < 1) {
 			event.respond("Duration must be greater than or equal to 1.");
 			return;
 		}
 
-		String difficulty = args[0];
 		switch (difficulty) {
 			case "extraeasy":
+			case "supereasy":
 				difficulty = "easy";
 				break;
 			case "medium":
@@ -812,8 +817,9 @@ public class Amusement {
 		}
 
 		base_wpm = (long) Double.parseDouble(value);
-		switch (args[0]) {
+		switch (original_difficulty) {
 			case "extraeasy":
+			case "supereasy":
 				base_wpm *= 0.65;
 				break;
 			case "extreme":
