@@ -38,8 +38,10 @@ public class ServerListener extends ListenerAdapter {
 		Tim.warticker = WarTicker.getInstance();
 		Tim.deidler = DeIdler.getInstance();
 
-		Tim.twitterstream = new TwitterIntegration();
-		Tim.twitterstream.startStream();
+		if (!Tim.db.getSetting("twitter_access_key").equals("")) {
+			Tim.twitterstream = new TwitterIntegration();
+			Tim.twitterstream.startStream();
+		}
 	}
 
 	@Override
@@ -64,8 +66,6 @@ public class ServerListener extends ListenerAdapter {
 		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
 			ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 
-			event.getChannel().getMode();
-			
 			if (cdata.chatterLevel <= -1) {
 				return;
 			}

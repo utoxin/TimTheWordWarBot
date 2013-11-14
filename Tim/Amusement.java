@@ -180,6 +180,14 @@ public class Amusement {
 				}
 
 				return true;
+			case "herd":
+				if (cdata.commands_enabled.get("herd")) {
+					herd(event.getChannel(), event.getUser(), args);
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+
+				return true;
 			case "dance":
 				if (cdata.commands_enabled.get("dance")) {
 					dance(event.getChannel());
@@ -253,7 +261,7 @@ public class Amusement {
 
 				return true;
 			default:
-				if (command.charAt(0) == 'd' && Pattern.matches("d\\d+", command)) {
+				if ((!command.contains("")) && command.charAt(0) == 'd' && Pattern.matches("d\\d+", command)) {
 					if (cdata.commands_enabled.get("dice")) {
 						dice(command.substring(1), event);
 					} else {
@@ -450,7 +458,7 @@ public class Amusement {
 		cdata = Tim.db.channel_data.get(channel);
 
 		String[] actions = new String[]{
-			"get", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper", "search"
+			"get", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper", "search", "herd"
 		};
 
 		if (sender == null) {
@@ -460,7 +468,7 @@ public class Amusement {
 
 			int size = users.size();
 			for (User user : users) {
-				if (!user.getNick().equals("Timmy") && (size <= 2 || !user.getNick().equals("Skynet"))) {
+				if (!user.getNick().equalsIgnoreCase("Timmy") && (size <= 2 || !user.getNick().equalsIgnoreCase("Skynet"))) {
 					finalUsers.add(user);
 				}
 			}
@@ -526,6 +534,9 @@ public class Amusement {
 				break;
 			case "search":
 				search(sendChannel, sender, null);
+				break;
+			case "herd":
+				herd(sendChannel, sender, null);
 				break;
 		}
 	}
@@ -754,8 +765,8 @@ public class Amusement {
 			return;
 		}
 
-		if (!Pattern.matches("(?i)((extra)?easy)|average|hard|extreme|insane|impossible", args[0])) {
-			event.respond("Difficulty must be one of: extraeasy, easy, average, hard, extreme, insane, impossible");
+		if (!Pattern.matches("(?i)((extra)?easy)|average|medium|normal|hard|extreme|insane|impossible|tadiera", args[0])) {
+			event.respond("Difficulty must be one of: extraeasy, easy, average, hard, extreme, insane, impossible, tadiera");
 			return;
 		}
 
@@ -771,9 +782,14 @@ public class Amusement {
 			case "extraeasy":
 				difficulty = "easy";
 				break;
+			case "medium":
+			case "normal":
+				difficulty = "average";
+				break;
 			case "extreme":
 			case "insane":
 			case "impossible":
+			case "tadiera":
 				difficulty = "hard";
 				break;
 		}
@@ -809,6 +825,9 @@ public class Amusement {
 			case "impossible":
 				base_wpm *= 2.2;
 				break;
+			case "tadiera":
+				base_wpm *= 3;
+				break;
 		}
 
 		modifier = 1.0 / Math.log(duration + 1.0) / 1.5 + 0.68;
@@ -834,7 +853,7 @@ public class Amusement {
 				target = StringUtils.join(args, " ");
 
 				for (User t : channel.getUsers()) {
-					if (t.canEqual(target)) {
+					if (t.getNick().toLowerCase().equals(target.toLowerCase())) {
 						target = t.getNick();
 						break;
 					}
@@ -874,6 +893,46 @@ public class Amusement {
 				act = "hurls a" + colour + " fridge at " + target + " and runs away giggling";
 			} else {
 				act = "trips and drops a" + colour + " fridge on himself";
+			}
+
+			time = Tim.rand.nextInt(3000) + 2000;
+			Thread.sleep(time);
+			channel.send().action(act);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	protected void herd(Channel channel, User sender, String[] args) {
+		try {
+			String target = sender.getNick();
+			if (args != null && args.length > 0) {
+				target = StringUtils.join(args, " ");
+
+				for (User t : channel.getUsers()) {
+					if (t.getNick().toLowerCase().equals(target.toLowerCase())) {
+						target = t.getNick();
+						break;
+					}
+				}
+			}
+
+			int time;
+			time = Tim.rand.nextInt(1000) + 500;
+			Thread.sleep(time);
+			channel.send().action("collects several " + this.colours.get(Tim.rand.nextInt(this.colours.size())) + " boxes, and lays them around to attract cats...");
+
+			int i = Tim.rand.nextInt(100);
+			String herd = Tim.db.cat_herds.get(Tim.rand.nextInt(Tim.db.cat_herds.size()));
+			String act;
+
+			if (i > 33) {				
+				act = String.format(herd, target, target);
+			} else if (i > 11) {
+				target = sender.getNick();
+				act = String.format("gets confused and " + herd, target, target);
+			} else {
+				act = "can't seem to find any cats. Maybe he used the wrong color of box?";
 			}
 
 			time = Tim.rand.nextInt(3000) + 2000;

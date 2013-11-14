@@ -34,6 +34,7 @@ public class DBAccess {
 	protected Set<String> admin_list = new HashSet<>(16);
 	protected HashMap<String, ChannelInfo> channel_data = new HashMap<>(62);
 	protected List<String> extra_greetings = new ArrayList<>();
+	protected List<String> cat_herds = new ArrayList<>();
 	protected List<String> greetings = new ArrayList<>();
 	protected Set<String> ignore_list = new HashSet<>(16);
 	protected ConnectionPool pool;
@@ -249,6 +250,28 @@ public class DBAccess {
 		}
 	}
 
+	public void getCatHerds() {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+			try (Statement s = con.createStatement()) {
+				ResultSet rs;
+
+				s.executeQuery("SELECT `string` FROM `cat_herds`");
+				rs = s.getResultSet();
+				this.cat_herds.clear();
+				while (rs.next()) {
+					this.cat_herds.add(rs.getString("string"));
+				}
+				rs.close();
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
 	public void getIgnoreList() {
 		Connection con;
 		try {
@@ -413,6 +436,7 @@ public class DBAccess {
 		this.getChannelList();
 		this.getIgnoreList();
 		this.getGreetingList();
+		this.getCatHerds();
 
 		Tim.amusement.refreshDbLists();
 		Tim.story.refreshDbLists();

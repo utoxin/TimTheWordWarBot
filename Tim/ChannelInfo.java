@@ -87,6 +87,7 @@ public class ChannelInfo {
 		chatter_enabled.put("creeper", Boolean.TRUE);
 		chatter_enabled.put("search", Boolean.TRUE);
 		chatter_enabled.put("chainstory", Boolean.TRUE);
+		chatter_enabled.put("herd", Boolean.TRUE);
 
 		commands_enabled.put("eightball", Boolean.TRUE);
 		commands_enabled.put("expound", Boolean.TRUE);
@@ -106,13 +107,14 @@ public class ChannelInfo {
 		commands_enabled.put("chainstory", Boolean.TRUE);
 		commands_enabled.put("sing", Boolean.TRUE);
 		commands_enabled.put("ping", Boolean.TRUE);
+		commands_enabled.put("herd", Boolean.TRUE);
 	}
 
 	public boolean amusement_chatter_available() {
 		return chatter_enabled.get("get") || chatter_enabled.get("eightball") || chatter_enabled.get("fridge")
 			|| chatter_enabled.get("defenestrate") || chatter_enabled.get("sing") || chatter_enabled.get("foof")
 			|| chatter_enabled.get("dance") || chatter_enabled.get("summon") || chatter_enabled.get("creeper")
-			|| chatter_enabled.get("search");
+			|| chatter_enabled.get("search") || chatter_enabled.get("herd");
 	}
 
 	public void setChatterTimers(int nameMultiplier, int chatterLevel) {

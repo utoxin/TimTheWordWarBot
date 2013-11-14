@@ -112,7 +112,7 @@ public class UserCommandListener extends ListenerAdapter {
 						 "    !startwar <duration> <time to start> <an optional name> - Starts a word war",
 						 "    !chainwar <base duration> <war count> - Starts a series of wars, with some randomness",
 						 "    !listwars - I will tell you about the wars currently in progress.",
-						 "    !boxodoom <difficulty> <duration> - Difficulty is extraeasy/easy/average/hard/extreme, duration in minutes.",
+						 "    !boxodoom <difficulty> <duration> - Difficulty is extraeasy/easy/average/hard/extreme/insane/impossible/tadiera, duration in minutes.",
 						 "    !eggtimer <time> - I will send you a message after <time> minutes.",
 						 "    !credits - Details of my creators, and where to find my source code.",};
 		for (int i = 0; i < strs.length; ++i) {
