@@ -110,9 +110,9 @@ public class WordWar {
 		String nameString;
 
 		if (total_chains > 1) {
-			nameString = name + " (" + current_chain + " / " + total_chains + ")";
+			nameString = "'" + name + "' (" + current_chain + " / " + total_chains + ")";
 		} else {
-			nameString = name;
+			nameString = "'" + name + "'";
 		}
 
 		return nameString + " [" + getDurationText() + "]";
@@ -171,7 +171,7 @@ public class WordWar {
 		long minutes;
 		long seconds;
 
-		String about = "WordWar '" + this.getName() + ":";
+		String about = "WordWar " + this.getName() + ":";
 		if (this.time_to_start > 0) {
 			minutes = this.time_to_start / 60;
 			seconds = this.time_to_start % 60;

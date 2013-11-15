@@ -697,7 +697,8 @@ public class MarkovChains {
 			}
 		}
 
-		if (urlValidator.isValid(word) || emailValidator.isValid(word)) {
+		if (urlValidator.isValid(word.replace("^(?ui)[^a-z0-9]*(.*?)[^a-z0-9]*$", "$1")) 
+			|| emailValidator.isValid(word.replace("^(?ui)[^a-z0-9]*(.*?)[^a-z0-9]*$", "$1"))) {
 			return true;
 		}
 
