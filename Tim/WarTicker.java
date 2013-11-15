@@ -201,7 +201,7 @@ public class WarTicker {
 					|| Tim.db.admin_list.contains(event.getChannel().getName().toLowerCase())) {
 					WordWar war = this.wars.remove(name.toLowerCase());
 					war.endWar();
-					event.respond("The war '" + war.getName() + "' has been ended.");
+					event.respond("The war '" + war.getName(false) + "' has been ended.");
 				} else {
 					event.respond("Only the starter of a war can end it early.");
 				}
@@ -255,7 +255,7 @@ public class WarTicker {
 			WordWar war = new WordWar(time, to_start, total_chains, 1, warname, event.getUser(), event.getChannel());
 			this.wars.put(war.getName(false).toLowerCase(), war);
 			if (to_start > 0) {
-				event.respond("Your wordwar will start in " + to_start / 60.0 + " minutes.");
+				event.respond("Your wordwar '" + warname + "' will start in " + to_start / 60.0 + " minutes.");
 			} else {
 				this.beginWar(war);
 			}

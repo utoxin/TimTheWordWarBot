@@ -110,9 +110,9 @@ public class WordWar {
 		String nameString;
 
 		if (total_chains > 1) {
-			nameString = "'" + name + "' (" + current_chain + " / " + total_chains + ")";
+			nameString = name + " (" + current_chain + " / " + total_chains + ")";
 		} else {
-			nameString = "'" + name + "'";
+			nameString = name;
 		}
 
 		return nameString + " [" + getDurationText() + "]";
