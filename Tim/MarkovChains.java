@@ -194,8 +194,8 @@ public class MarkovChains {
 
 				if (badpairPatterns.get(word_one + ":" + word_two) == null) {
 					badpairPatterns.put(word_one + ":" + word_two, new Pattern[]{
-						Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_one) + "(?:\\W|\\b)"),
-						Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_two) + "(?:\\W|\\b)"),});
+						Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_one) + ")(\\W|\\b)"),
+						Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_two) + ")(\\W|\\b)"),});
 				}
 
 				channel.send().action("quickly goes through his records, and purges all knowledge of that horrible phrase.");
@@ -226,7 +226,7 @@ public class MarkovChains {
 				s.close();
 
 				if (badwordPatterns.get(word) == null) {
-					badwordPatterns.put(word, Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word) + "(?:\\W|\\b)"));
+					badwordPatterns.put(word, Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word) + ")(\\W|\\b)"));
 				}
 
 				channel.send().action("quickly goes through his records, and purges all knowledge of that horrible word.");
@@ -408,7 +408,7 @@ public class MarkovChains {
 				word = rs.getString("word");
 
 				if (badwordPatterns.get(word) == null) {
-					badwordPatterns.put(word, Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word) + "(?:\\W|\\b)"));
+					badwordPatterns.put(word, Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word) + ")(\\W|\\b)"));
 				}
 			}
 
@@ -436,8 +436,8 @@ public class MarkovChains {
 
 				if (badpairPatterns.get(word_one + ":" + word_two) == null) {
 					badpairPatterns.put(word_one + ":" + word_two, new Pattern[]{
-						Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_one) + "(?:\\W|\\b)"),
-						Pattern.compile("(?ui)(?:\\W|\\b)" + Pattern.quote(word_two) + "(?:\\W|\\b)"),});
+						Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_one) + ")(\\W|\\b)"),
+						Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_two) + ")(\\W|\\b)"),});
 				}
 			}
 
@@ -460,8 +460,6 @@ public class MarkovChains {
 	 */
 	public void process_markov(String message, String type, String username) {
 		String[] words = message.split(" ");
-		String[] alternatePair;
-		String working, old1, old2;
 
 		for (int i = -1; i <= words.length; i++) {
 			String word1, word2, word3;
@@ -494,100 +492,23 @@ public class MarkovChains {
 				word3 = words[offset3];
 			}
 
-			if (skipMarkovWord(word1)) {
-				old1 = word1;
-				working = word1.replaceAll("[^a-zA-Z]", "");
-				word1 = alternateWords.get(Tim.rand.nextInt(alternateWords.size()));
+			word1 = replaceBadWord(word1);
+			word2 = replaceBadWord(word2);
+			word3 = replaceBadWord(word3);
 
-				if (working.matches("^[A-Z]+$")) {
-					word1 = word1.toUpperCase();
-				} else if (working.matches("^[A-Z]+[a-z]+")) {
-					word1 = StringUtils.capitalize(word1);
-				}
+			String[] result;
+			result = replaceBadPair(word1, word2);
+			word1 = result[0];
+			word2 = result[1];
 
-				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, "Replaced string ''{0}'' with ''{1}''", new Object[]{old1, word1});
-			}
-
-			if (skipMarkovWord(word2)) {
-				old1 = word2;
-				working = word2.replaceAll("[^a-zA-Z]", "");
-				word2 = alternateWords.get(Tim.rand.nextInt(alternateWords.size()));
-
-				if (working.matches("^[A-Z]+$")) {
-					word2 = word2.toUpperCase();
-				} else if (working.matches("^[A-Z]+[a-z]+")) {
-					word2 = StringUtils.capitalize(word2);
-				}
-
-				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, "Replaced string ''{0}'' with ''{1}''", new Object[]{old1, word2});
-			}
-
-			if (skipMarkovWord(word3)) {
-				old1 = word3;
-				working = word3.replaceAll("[^a-zA-Z]", "");
-				word3 = alternateWords.get(Tim.rand.nextInt(alternateWords.size()));
-
-				if (working.matches("^[A-Z]+$")) {
-					word3 = word3.toUpperCase();
-				} else if (working.matches("^[A-Z]+[a-z]+")) {
-					word3 = StringUtils.capitalize(word3);
-				}
-
-				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, "Replaced string ''{0}'' with ''{1}''", new Object[]{old1, word3});
-			}
-
-			if (skipMarkovPair(word1, word2)) {
-				alternatePair = alternatePairs.get(Tim.rand.nextInt(alternatePairs.size()));
-
-				old1 = word1;
-				working = word1.replaceAll("[^a-zA-Z]", "");
-				word1 = alternatePair[0];
-				if (working.matches("^[A-Z]+$")) {
-					word1 = word1.toUpperCase();
-				} else if (working.matches("^[A-Z]+[a-z]+")) {
-					word1 = StringUtils.capitalize(word1);
-				}
-
-				old2 = word2;
-				working = word2.replaceAll("[^a-zA-Z]", "");
-				word2 = alternatePair[1];
-				if (working.matches("^[A-Z]+$")) {
-					word2 = word2.toUpperCase();
-				} else if (working.matches("^[A-Z]+[a-z]+")) {
-					word2 = StringUtils.capitalize(word2);
-				}
-
-				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, "Replaced pair ''{0} {1}'' with ''{2} {3}''", new Object[]{old1, old2, word1, word2});
-			}
-
-			if (skipMarkovPair(word2, word3)) {
-				alternatePair = alternatePairs.get(Tim.rand.nextInt(alternatePairs.size()));
-
-				old1 = word2;
-				working = word2.replaceAll("[^a-zA-Z]", "");
-				word2 = alternatePair[1];
-				if (working.matches("^[A-Z]+$")) {
-					word2 = word2.toUpperCase();
-				} else if (working.matches("^[A-Z]+[a-z]+")) {
-					word2 = StringUtils.capitalize(word2);
-				}
-
-				old2 = word3;
-				working = word3.replaceAll("[^a-zA-Z]", "");
-				word3 = alternatePair[1];
-				if (working.matches("^[A-Z]+$")) {
-					word3 = word3.toUpperCase();
-				} else if (working.matches("^[A-Z]+[a-z]+")) {
-					word3 = StringUtils.capitalize(word3);
-				}
-
-				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, "Replaced pair ''{0} {1}'' with ''{2} {3}''", new Object[]{old1, old2, word2, word3});
-			}
+			result = replaceBadPair(word2, word3);
+			word2 = result[0];
+			word3 = result[1];
 
 			word1 = word1.replaceAll(Tim.bot.getNick(), StringUtils.capitalize(username));
 			word2 = word2.replaceAll(Tim.bot.getNick(), StringUtils.capitalize(username));
 			word3 = word3.replaceAll(Tim.bot.getNick(), StringUtils.capitalize(username));
-			
+
 			word1 = word1.substring(0, Math.min(word1.length(), 49));
 			word2 = word2.substring(0, Math.min(word2.length(), 49));
 			word3 = word3.substring(0, Math.min(word3.length(), 49));
@@ -680,28 +601,72 @@ public class MarkovChains {
 		return 0;
 	}
 
-	private boolean skipMarkovPair(String word_one, String word_two) {
+	private String[] replaceBadPair(String word_one, String word_two) {
+		String[] result = {word_one, word_two};
+		String[] alternate_pair = alternatePairs.get(Tim.rand.nextInt(alternatePairs.size()));
+		String working1, working2;
+		working1 = word_one.replaceAll("[^a-zA-Z]", "");
+		working2 = word_two.replaceAll("[^a-zA-Z]", "");
+
+		if (working1.matches("^[A-Z]+$")) {
+			alternate_pair[0] = alternate_pair[0].toUpperCase();
+		} else if (working1.matches("^[A-Z]+[a-z]+")) {
+			alternate_pair[0] = StringUtils.capitalize(alternate_pair[0]);
+		}
+
+		if (working2.matches("^[A-Z]+$")) {
+			alternate_pair[1] = alternate_pair[1].toUpperCase();
+		} else if (working2.matches("^[A-Z]+[a-z]+")) {
+			alternate_pair[1] = StringUtils.capitalize(alternate_pair[1]);
+		}
+
 		for (Pattern[] patterns : badpairPatterns.values()) {
 			if (patterns[0].matcher(word_one).find() && patterns[1].matcher(word_two).find()) {
-				return true;
+				result[0] = patterns[0].matcher(word_one).replaceAll("$1" + alternate_pair[0] + "$3");
+				result[1] = patterns[1].matcher(word_two).replaceAll("$1" + alternate_pair[1] + "$3");
+
+				Logger.getLogger(DBAccess.class.getName()).log(Level.INFO, "Replaced pair ''{0} {1}'' with ''{2} {3}''", new Object[]{word_one, word_two, result[0], result[1]});
+
+				return result;
 			}
 		}
 
-		return false;
+		return result;
 	}
 
-	private boolean skipMarkovWord(String word) {
+	private String replaceBadWord(String word) {
+		String old_word = word, working, replacement = alternateWords.get(Tim.rand.nextInt(alternateWords.size()));
+		working = word.replaceAll("[^a-zA-Z]", "");
+
+		if (working.matches("^[A-Z]+$")) {
+			replacement = replacement.toUpperCase();
+		} else if (working.matches("^[A-Z]+[a-z]+")) {
+			replacement = StringUtils.capitalize(replacement);
+		}
+
 		for (Pattern pattern : badwordPatterns.values()) {
-			if (pattern.matcher(word).find()) {
-				return true;
+			word = pattern.matcher(word).replaceAll("$1" + replacement + "$3");
+			if (!old_word.equals(word)) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.INFO, "Replaced string ''{0}'' with ''{1}''", new Object[]{old_word, word});
+				break;
 			}
 		}
 
-		if (urlValidator.isValid(word.replace("^(?ui)[^a-z0-9]*(.*?)[^a-z0-9]*$", "$1")) 
+		if (urlValidator.isValid(word.replace("^(?ui)[^a-z0-9]*(.*?)[^a-z0-9]*$", "$1"))
 			|| emailValidator.isValid(word.replace("^(?ui)[^a-z0-9]*(.*?)[^a-z0-9]*$", "$1"))) {
-			return true;
+			word = "http://bit.ly/19VurZW";
+			if (!old_word.equals(word)) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.INFO, "Replaced string ''{0}'' with ''{1}''", new Object[]{old_word, word});
+			}
 		}
 
-		return Pattern.matches("^\\(?(\\d{3})\\)?[- ]?(\\d{3})[- ]?(\\d{4})$", word);
+		if (Pattern.matches("^\\(?(\\d{3})\\)?[- ]?(\\d{2,3})[- ]?(\\d{4})$", word)) {
+			word = "867-5309";
+			if (!old_word.equals(word)) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.INFO, "Replaced string ''{0}'' with ''{1}''", new Object[]{old_word, word});
+			}
+		}
+
+		return word;
 	}
 }
