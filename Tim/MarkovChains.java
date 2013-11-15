@@ -12,8 +12,6 @@
  */
 package Tim;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +19,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.EmailValidator;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.pircbotx.Channel;
 import org.pircbotx.Colors;
 import org.pircbotx.hooks.events.ActionEvent;
@@ -38,6 +38,12 @@ public class MarkovChains {
 	protected ArrayList<String> alternateWords = new ArrayList<>(64);
 	protected ArrayList<String[]> alternatePairs = new ArrayList<>(64);
 	private final long timeout = 3000;
+	private final UrlValidator urlValidator = new UrlValidator();
+	private final EmailValidator emailValidator;
+
+	public MarkovChains() {
+		this.emailValidator = EmailValidator.getInstance();
+	}
 
 	/**
 	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
@@ -488,10 +494,6 @@ public class MarkovChains {
 				word3 = words[offset3];
 			}
 
-			word1 = word1.replaceAll(Tim.bot.getNick(), StringUtils.capitalize(username));
-			word2 = word2.replaceAll(Tim.bot.getNick(), StringUtils.capitalize(username));
-			word3 = word3.replaceAll(Tim.bot.getNick(), StringUtils.capitalize(username));
-
 			if (skipMarkovWord(word1)) {
 				old1 = word1;
 				working = word1.replaceAll("[^a-zA-Z]", "");
@@ -581,6 +583,14 @@ public class MarkovChains {
 
 				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, "Replaced pair ''{0} {1}'' with ''{2} {3}''", new Object[]{old1, old2, word2, word3});
 			}
+
+			word1 = word1.replaceAll(Tim.bot.getNick(), StringUtils.capitalize(username));
+			word2 = word2.replaceAll(Tim.bot.getNick(), StringUtils.capitalize(username));
+			word3 = word3.replaceAll(Tim.bot.getNick(), StringUtils.capitalize(username));
+			
+			word1 = word1.substring(0, Math.min(word1.length(), 49));
+			word2 = word2.substring(0, Math.min(word2.length(), 49));
+			word3 = word3.substring(0, Math.min(word3.length(), 49));
 
 			if (offset1 >= 0 && offset1 < words.length) {
 				words[offset1] = word1;
@@ -687,17 +697,8 @@ public class MarkovChains {
 			}
 		}
 
-		// If email, skip
-		if (Pattern.matches("^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$", word)) {
+		if (urlValidator.isValid(word) || emailValidator.isValid(word)) {
 			return true;
-		}
-
-		// Checks for URL
-		try {
-			URL url = new URL(word);
-			return true;
-		} catch (MalformedURLException ex) {
-			// NOOP
 		}
 
 		return Pattern.matches("^\\(?(\\d{3})\\)?[- ]?(\\d{3})[- ]?(\\d{4})$", word);

@@ -88,7 +88,7 @@ public class ReactionListener extends ListenerAdapter {
 			}
 		}
 
-		if (cdata.chatterLevel > 0 && !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())) {
+		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())) {
 			if (message.charAt(0) != '$' && message.charAt(0) != '!') {
 				if (message.toLowerCase().contains("how many lights") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < lights_odds) {
@@ -193,7 +193,7 @@ public class ReactionListener extends ListenerAdapter {
 			}
 		}
 
-		if (cdata.chatterLevel > 0 && !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())) {
+		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())) {
 			if (message.toLowerCase().contains("how many lights") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < lights_odds) {
 					event.getChannel().send().message("There are FOUR LIGHTS!");
@@ -252,23 +252,17 @@ public class ReactionListener extends ListenerAdapter {
 	private void interact(User sender, Channel channel, String message, String type) {
 		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName().toLowerCase());
 
-		if (cdata.chatterLevel <= 0) {
+		if (cdata.randomChatterLevel <= 0) {
 			return;
 		}
 
-		long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
-		long odds = Math.round(Math.sqrt(elapsed) / (6 - cdata.chatterLevel));
-		if (odds > (cdata.chatterLevel * 4)) {
-			odds = (cdata.chatterLevel * 4);
-		}
+		long odds = cdata.reactiveChatterLevel;
 
 		if (message.toLowerCase().contains(Tim.bot.getNick().toLowerCase())) {
 			odds = odds * cdata.chatterNameMultiplier;
 		}
 
 		if (Tim.rand.nextInt(100) < odds) {
-			cdata.chatterTimer += Tim.rand.nextInt((int) elapsed);
-
 			ArrayList<String> enabled_actions = new ArrayList<>(16);
 
 			if (cdata.chatter_enabled.get("markov")) {

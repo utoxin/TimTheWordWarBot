@@ -92,29 +92,60 @@ public class AdminCommandListener extends ListenerAdapter {
 						}
 						break;
 					case "chatterlevel":
-						if (args != null && args.length == 2) {
+						if (args != null && args.length == 2 && args[1].equalsIgnoreCase("list")) {
 							String target = args[0].toLowerCase();
 							if (Tim.db.channel_data.containsKey(target)) {
-								int level = Integer.parseInt(args[1]);
+								ChannelInfo ci = Tim.db.channel_data.get(target);
+								event.respond("Reactive Chatter Level: " + ci.reactiveChatterLevel + "%/Msg - Name Multiplier: " + ci.chatterNameMultiplier);
+								event.respond("Random Chatter Level: " + ci.randomChatterLevel + "%/Min");
+							} else {
+								event.respond("I don't know about " + target);
+							}
+						} else if (args != null && args.length == 4 && args[1].equalsIgnoreCase("reactive")) {
+							String target = args[0].toLowerCase();
+							if (Tim.db.channel_data.containsKey(target)) {
+								int level = Integer.parseInt(args[2]);
+								int multi = Integer.parseInt(args[3]);
 
-								if (level < -1 || level > 4) {
-									event.respond("Chatter level must be between -1 and 4 (inclusive)");
+								if (level < 0 || level > 100) {
+									event.respond("Chatter level must be between 0 and 100 (inclusive)");
+								} else if (multi < 0 || level > 100) {
+									event.respond("Name multiplier must be between 0 and 100 (inclusive)");
 								} else {
 									ChannelInfo ci = Tim.db.channel_data.get(target);
-									ci.setChatterLevel(level);
+									ci.setReactiveChatter(level, multi);
 									Tim.db.saveChannelSettings(ci);
 
-									event.respond("Chatter level updated for " + target);
+									event.respond("Reactive chatter level updated for " + target);
+								}
+							} else {
+								event.respond("I don't know about " + target);
+							}
+						} else if (args != null && args.length == 3 && args[1].equalsIgnoreCase("random")) {
+							String target = args[0].toLowerCase();
+							if (Tim.db.channel_data.containsKey(target)) {
+								int level = Integer.parseInt(args[2]);
+
+								if (level < 0 || level > 100) {
+									event.respond("Chatter level must be between 0 and 100 (inclusive)");
+								} else {
+									ChannelInfo ci = Tim.db.channel_data.get(target);
+									ci.setRandomChatter(level);
+									Tim.db.saveChannelSettings(ci);
+
+									event.respond("Random chatter level updated for " + target);
 								}
 							} else {
 								event.respond("I don't know about " + target);
 							}
 						} else {
-							event.respond("Usage: $chatterlevel <#channel> <-1 - 4>");
+							event.respond("Usage: $chatterlevel <#channel> list");
+							event.respond("Usage: $chatterlevel <#channel> reactive <%/Msg> <name multplier>");
+							event.respond("Usage: $chatterlevel <#channel> random <%/Min>");
 						}
 						break;
 					case "chatterflag":
-						if (args != null && args.length == 2 && args[0].equals("list")) {
+						if (args != null && args.length == 2 && args[0].equalsIgnoreCase("list")) {
 							String target = args[1].toLowerCase();
 							if (Tim.db.channel_data.containsKey(target)) {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
@@ -127,34 +158,43 @@ public class AdminCommandListener extends ListenerAdapter {
 							} else {
 								event.respond("I don't know about " + target);
 							}
-						} else if (args != null && args.length == 4 && args[0].equals("set")) {
+						} else if (args != null && args.length == 4 && args[0].equalsIgnoreCase("set")) {
 							String target = args[1].toLowerCase();
 							if (Tim.db.channel_data.containsKey(target)) {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
 
-								if (ci.chatter_enabled.containsKey(args[2])) {
-									boolean flag = false;
-									if (!"0".equals(args[3])) {
-										flag = true;
-									}
+								boolean flag = false;
+								if (!"0".equals(args[3])) {
+									flag = true;
+								}
 
-									ci.chatter_enabled.put(args[2], flag);
+								if (args[2].equalsIgnoreCase("all")) {
+									for (String key : ci.chatter_enabled.keySet()) {
+										ci.chatter_enabled.put(key, flag);
+									}
 									Tim.db.saveChannelSettings(ci);
 
-									event.respond("Chatter flag updated.");
+									event.respond("All chatter flags updated.");
 								} else {
-									event.respond("I'm sorry, but I don't have a setting for " + args[2]);
+									if (ci.chatter_enabled.containsKey(args[2])) {
+										ci.chatter_enabled.put(args[2], flag);
+										Tim.db.saveChannelSettings(ci);
+
+										event.respond("Chatter flag updated.");
+									} else {
+										event.respond("I'm sorry, but I don't have a setting for " + args[2]);
+									}
 								}
 							} else {
 								event.respond("I don't know about " + target);
 							}
 						} else {
 							event.respond("Usage: $chatterflag list <#channel> OR $chatterflag set <#channel> <type> <0/1>");
-							event.respond("Valid Chatter Types: chainstory, challenge, creeper, dance, defenestrate, eightball, foof, fridge, get, greetings, helpful_reactions, markov, search, sing, silly_reactions, summon");
+							event.respond("Valid Chatter Types: all, chainstory, challenge, creeper, dance, defenestrate, eightball, foof, fridge, get, greetings, helpful_reactions, markov, search, sing, silly_reactions, summon");
 						}
 						break;
 					case "commandflag":
-						if (args != null && args.length == 2 && args[0].equals("list")) {
+						if (args != null && args.length == 2 && args[0].equalsIgnoreCase("list")) {
 							String target = args[1].toLowerCase();
 							if (Tim.db.channel_data.containsKey(target)) {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
@@ -167,34 +207,43 @@ public class AdminCommandListener extends ListenerAdapter {
 							} else {
 								event.respond("I don't know about " + target);
 							}
-						} else if (args != null && args.length == 4 && args[0].equals("set")) {
+						} else if (args != null && args.length == 4 && args[0].equalsIgnoreCase("set")) {
 							String target = args[1].toLowerCase();
 							if (Tim.db.channel_data.containsKey(target)) {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
 
-								if (ci.commands_enabled.containsKey(args[2])) {
-									boolean flag = false;
-									if (!"0".equals(args[3])) {
-										flag = true;
+								boolean flag = false;
+								if (!"0".equals(args[3])) {
+									flag = true;
+								}
+								
+								if (args[2].equalsIgnoreCase("all")) {
+									for (String key : ci.commands_enabled.keySet()) {
+										ci.commands_enabled.put(key, flag);
 									}
-
-									ci.commands_enabled.put(args[2], flag);
 									Tim.db.saveChannelSettings(ci);
 
-									event.respond("Command flag updated.");
+									event.respond("All command flags updated.");
 								} else {
-									event.respond("I'm sorry, but I don't have a setting for " + args[2]);
+									if (ci.commands_enabled.containsKey(args[2])) {
+										ci.commands_enabled.put(args[2], flag);
+										Tim.db.saveChannelSettings(ci);
+
+										event.respond("Command flag updated.");
+									} else {
+										event.respond("I'm sorry, but I don't have a setting for " + args[2]);
+									}
 								}
 							} else {
 								event.respond("I don't know about " + target);
 							}
 						} else {
 							event.respond("Usage: $commandflag list <#channel> OR $commandflag set <#channel> <command> <0/1>");
-							event.respond("Valid Commands: chainstory, challenge, commandment, creeper, dance, defenestrate, dice, eightball, expound, foof, fridge, get, lick, markov, ping, search, sing, summon, woot");
+							event.respond("Valid Commands: all, chainstory, challenge, commandment, creeper, dance, defenestrate, dice, eightball, expound, foof, fridge, get, lick, markov, ping, search, sing, summon, woot");
 						}
 						break;
 					case "twitterrelay":
-						if (args != null && args.length == 2 && args[0].equals("list")) {
+						if (args != null && args.length == 2 && args[0].equalsIgnoreCase("list")) {
 							String target = args[1].toLowerCase();
 							if (Tim.db.channel_data.containsKey(target)) {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
@@ -207,12 +256,12 @@ public class AdminCommandListener extends ListenerAdapter {
 							} else {
 								event.respond("I don't know about " + target);
 							}
-						} else if (args != null && args.length == 3 && (args[0].equals("add") || args[0].equals("remove"))) {
+						} else if (args != null && args.length == 3 && (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove"))) {
 							String target = args[1].toLowerCase();
 							if (Tim.db.channel_data.containsKey(target)) {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
 
-								if (args[0].equals("add")) {
+								if (args[0].equalsIgnoreCase("add")) {
 									if (Tim.twitterstream.checkAccount(args[2]) > 0) {
 										event.respond("Twitter account added to channel's twitter feed. There may be a short delay (up to 90 seconds) before it takes effect.");
 										ci.addTwitterAccount(args[2], true);
@@ -234,7 +283,7 @@ public class AdminCommandListener extends ListenerAdapter {
 						}
 						break;
 					case "twitterbucket":
-						if (args != null && args.length == 2 && args[0].equals("list")) {
+						if (args != null && args.length == 2 && args[0].equalsIgnoreCase("list")) {
 							String target = args[1].toLowerCase();
 							if (Tim.db.channel_data.containsKey(target)) {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
@@ -247,7 +296,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							} else {
 								event.respond("I don't know about " + target);
 							}
-						} else if (args != null && args.length == 4 && args[0].equals("set")) {
+						} else if (args != null && args.length == 4 && args[0].equalsIgnoreCase("set")) {
 							String target = args[1].toLowerCase();
 							if (Tim.db.channel_data.containsKey(target)) {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
@@ -271,7 +320,7 @@ public class AdminCommandListener extends ListenerAdapter {
 						}
 						break;
 					case "shutdown":
-						if (event.getUser().getNick().equals("Utoxin")) {
+						if (event.getUser().getNick().equalsIgnoreCase("Utoxin")) {
 							event.respond("Shutting down...");
 							Tim.shutdown();
 						} else {
@@ -374,9 +423,9 @@ public class AdminCommandListener extends ListenerAdapter {
 							  "    $unignore <username>      - Removes user from bot's ignore list",
 							  "    $listignores              - Prints the list of ignored users",
 							  "Channel Setting Commands:",
-							  "    $chatterlevel <#channel> <0-4>   - Set the chatter level for Timmy. 0 is off, 4 is the highest.",
 							  "    $setmuzzleflag <#channel> <0/1>  - Sets the channel's current muzzle state",
 							  "    $automuzzlewars <#channel> <0/1> - Whether to auto-muzzle the channel during wars.",
+							  "    $chatterlevel                    - Set the chatter level for Timmy.",
 							  "    $chatterflag                     - Control Timmy's chatter settings in your channel",
 							  "    $commandflag                     - Control which commands can be used in your channel",
 							  "    $twitterrelay                    - Control Timmy's twitter relays.",

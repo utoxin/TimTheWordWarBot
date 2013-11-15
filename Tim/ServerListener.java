@@ -65,39 +65,44 @@ public class ServerListener extends ListenerAdapter {
 	public void onJoin(JoinEvent event) {
 		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
 			ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
-
-			if (cdata.chatterLevel <= -1) {
-				return;
-			}
+			int warscount = 0;
 
 			try {
-				String message = String.format(Tim.db.greetings.get(Tim.rand.nextInt(Tim.db.greetings.size())), event.getUser().getNick());
+				String message = "";
+				if (cdata.chatter_enabled.get("silly_reactions")) {
+					message = String.format(Tim.db.greetings.get(Tim.rand.nextInt(Tim.db.greetings.size())), event.getUser().getNick());
+				}
 
-				if (Tim.warticker.wars.size() > 0) {
-					int warscount = 0;
-					String winfo = "";
-
+				if (cdata.chatter_enabled.get("helpful_reactions") && Tim.warticker.wars.size() > 0) {
 					for (Map.Entry<String, WordWar> wm : Tim.warticker.wars.entrySet()) {
 						if (wm.getValue().getChannel().equals(event.getChannel())) {
-							winfo += wm.getValue().getDescription();
-							if (warscount > 0) {
-								winfo += " || ";
-							}
 							warscount++;
 						}
 					}
 
 					if (warscount > 0) {
 						boolean plural = warscount >= 2;
-						message += " There " + (plural ? "are" : "is") + " " + warscount + " war" + (plural ? "S" : "")
-							+ " currently running in this channel: " + winfo;
+						if (!message.equals("")) {
+							message += " ";
+						}
+
+						message += "There " + (plural ? "are" : "is") + " " + warscount + " war" + (plural ? "s" : "")
+							+ " currently running in this channel:";
 					}
 				}
 
 				Thread.sleep(500);
 				event.getChannel().send().message(message);
 
-				if (Pattern.matches("(?i)mib_......", event.getUser().getNick()) || Pattern.matches("(?i)guest.*", event.getUser().getNick())) {
+				if (cdata.chatter_enabled.get("helpful_reactions") && warscount > 0) {
+					for (Map.Entry<String, WordWar> wm : Tim.warticker.wars.entrySet()) {
+						if (wm.getValue().getChannel().equals(event.getChannel())) {
+							event.getChannel().send().message(wm.getValue().getDescription());
+						}
+					}
+				}
+				
+				if (cdata.chatter_enabled.get("helpful_reactions") && (Pattern.matches("(?i)mib_......", event.getUser().getNick()) || Pattern.matches("(?i)guest.*", event.getUser().getNick()))) {
 					Thread.sleep(500);
 					event.getChannel().send().message(
 						String.format("%s: To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere", event.getUser().getNick()));
@@ -105,7 +110,7 @@ public class ServerListener extends ListenerAdapter {
 
 				int r = Tim.rand.nextInt(100);
 
-				if (r < 15) {
+				if (cdata.chatter_enabled.get("silly_reactions") && r < 15) {
 					r = Tim.rand.nextInt(Tim.db.extra_greetings.size());
 					Thread.sleep(500);
 					event.getChannel().send().message(Tim.db.extra_greetings.get(r));

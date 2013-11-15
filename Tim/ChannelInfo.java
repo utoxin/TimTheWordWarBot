@@ -21,9 +21,9 @@ public class ChannelInfo {
 	public HashMap<String, Boolean> commands_enabled = new HashMap<>(16);
 	public Set<String> twitter_accounts = new HashSet<>(16);
 
-	public long chatterTimer;
+	public int reactiveChatterLevel;
+	public int randomChatterLevel;
 	public int chatterNameMultiplier;
-	public int chatterLevel;
 
 	public long twitterTimer;
 	public float tweetBucket;
@@ -48,9 +48,7 @@ public class ChannelInfo {
 		result.append(" Chatter Settings: ").append(chatter_enabled).append(NEW_LINE);
 		result.append(" Command Settings: ").append(commands_enabled).append(NEW_LINE);
 		result.append(" Twitter Accounts: ").append(twitter_accounts).append(NEW_LINE);
-		result.append(" Chatter Timer: ").append(chatterTimer).append(NEW_LINE);
 		result.append(" Chatter Name *: ").append(chatterNameMultiplier).append(NEW_LINE);
-		result.append(" Chatter Level: ").append(chatterLevel).append(NEW_LINE);
 		result.append(" Twitter Timer: ").append(twitterTimer).append(NEW_LINE);
 		result.append(" Twitter Bucket: ").append(tweetBucket).append(NEW_LINE);
 		result.append(" Twitter Bucket Max: ").append(tweetBucketMax).append(NEW_LINE);
@@ -65,7 +63,8 @@ public class ChannelInfo {
 
 	public void setDefaultOptions() {
 		chatterNameMultiplier = 3;
-		chatterLevel = 1;
+		reactiveChatterLevel = 5;
+		randomChatterLevel = 2;
 
 		tweetBucketMax = 10;
 		tweetBucket = 5;
@@ -117,17 +116,13 @@ public class ChannelInfo {
 			|| chatter_enabled.get("search") || chatter_enabled.get("herd");
 	}
 
-	public void setChatterTimers(int nameMultiplier, int chatterLevel) {
+	public void setReactiveChatter(int chatterLevel, int nameMultiplier) {
+		this.reactiveChatterLevel = chatterLevel;
 		this.chatterNameMultiplier = nameMultiplier;
-		this.chatterLevel = chatterLevel;
-
-		this.chatterTimer = System.currentTimeMillis() / 1000;
 	}
 
-	public void setChatterLevel(int chatterLevel) {
-		this.chatterLevel = chatterLevel;
-
-		this.chatterTimer = System.currentTimeMillis() / 1000;
+	public void setRandomChatter(int chatterLevel) {
+		this.randomChatterLevel = chatterLevel;
 	}
 
 	public void setWarAutoMuzzle(boolean auto_muzzle_wars) {

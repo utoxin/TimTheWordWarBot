@@ -161,9 +161,12 @@ public class DBAccess {
 					ci = new ChannelInfo(rs.getString("channel"));
 					ci.setDefaultOptions();
 
-					ci.setChatterTimers(
-						rs.getInt("chatter_name_multiplier"),
-						rs.getInt("chatter_level"));
+					ci.setReactiveChatter(
+						rs.getInt("reactive_chatter_level"), 
+						rs.getInt("chatter_name_multiplier"));
+
+					ci.setRandomChatter(
+						rs.getInt("random_chatter_level"));
 
 					ci.setTwitterTimers(
 						rs.getFloat("tweet_bucket_max"),
@@ -345,13 +348,14 @@ public class DBAccess {
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET chatter_level = ?, chatter_name_multiplier = ?, tweet_bucket_max = ?, tweet_bucket_charge_rate = ?, auto_muzzle_wars = ? WHERE channel = ?");
-			s.setInt(1, channel.chatterLevel);
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET reactive_chatter_level = ?, chatter_name_multiplier = ?, random_chatter_level = ?, tweet_bucket_max = ?, tweet_bucket_charge_rate = ?, auto_muzzle_wars = ? WHERE channel = ?");
+			s.setInt(1, channel.reactiveChatterLevel);
 			s.setInt(2, channel.chatterNameMultiplier);
-			s.setFloat(3, channel.tweetBucketMax);
-			s.setFloat(4, channel.tweetBucketChargeRate);
-			s.setBoolean(5, channel.auto_muzzle_wars);
-			s.setString(6, channel.channel);
+			s.setInt(3, channel.randomChatterLevel);
+			s.setFloat(4, channel.tweetBucketMax);
+			s.setFloat(5, channel.tweetBucketChargeRate);
+			s.setBoolean(6, channel.auto_muzzle_wars);
+			s.setString(7, channel.channel);
 			s.executeUpdate();
 
 			s = con.prepareStatement("DELETE FROM `channel_chatter_settings` WHERE `channel` = ?;");
@@ -406,24 +410,6 @@ public class DBAccess {
 			PreparedStatement s = con.prepareStatement("INSERT INTO `ignores` (`name`) VALUES (?);");
 			s.setString(1, username.toLowerCase());
 			s.executeUpdate();
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	public void setChannelChatterLevel(Channel channel, int level) {
-		Connection con;
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET chatter_level = ? WHERE `channel` = ?");
-			s.setInt(1, level);
-			s.setString(2, channel.getName());
-			s.executeUpdate();
-
-			this.channel_data.get(channel.getName()).chatterLevel = level;
 
 			con.close();
 		} catch (SQLException ex) {

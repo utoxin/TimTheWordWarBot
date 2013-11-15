@@ -754,27 +754,31 @@ public class Amusement {
 	}
 
 	public void boxodoom(MessageEvent event, String[] args) {
-		Connection con;
-		long duration;
-		long base_wpm;
-		double modifier;
 		int goal;
-		String difficulty, original_difficulty;
+		long duration, base_wpm;
+		double modifier;
+
+		String difficulty = "", original_difficulty = "";
+		Connection con;
 
 		if (args.length != 2) {
 			event.respond("!boxodoom requires two parameters.");
 			return;
 		}
 
-		if (Pattern.matches("(?i)((extra|super)?easy)|average|medium|normal|hard|extreme|insane|impossible|tadiera", args[0])) {
-			original_difficulty = difficulty = args[0];
-			duration = (long) Double.parseDouble(args[1]);
-		} else if (Pattern.matches("(?i)((extra|super)?easy)|average|medium|normal|hard|extreme|insane|impossible|tadiera", args[1])) {
-			original_difficulty = difficulty = args[1];
-			duration = (long) Double.parseDouble(args[0]);
-		} else {
-			event.respond("Difficulty must be one of: extraeasy, easy, average, hard, extreme, insane, impossible, tadiera");
-			return;
+		try {
+			if (Pattern.matches("(?i)((extra|super)?easy)|average|medium|normal|hard|extreme|insane|impossible|tadiera", args[0])) {
+				original_difficulty = difficulty = args[0].toLowerCase();
+				duration = (long) Double.parseDouble(args[1]);
+			} else if (Pattern.matches("(?i)((extra|super)?easy)|average|medium|normal|hard|extreme|insane|impossible|tadiera", args[1])) {
+				original_difficulty = difficulty = args[1].toLowerCase();
+				duration = (long) Double.parseDouble(args[0]);
+			} else {
+				event.respond("Difficulty must be one of: extraeasy, easy, average, hard, extreme, insane, impossible, tadiera");
+				return;
+			}
+		} catch (NumberFormatException ex) {
+			duration = 0;
 		}
 
 		if (duration < 1) {

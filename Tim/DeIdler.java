@@ -84,7 +84,7 @@ public class DeIdler {
 
 			Tim.story.storeLine(new_text, "Timmy");
 			for (ChannelInfo cdata : Tim.db.channel_data.values()) {
-				if (Tim.rand.nextInt(100) < 25 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled && cdata.chatterLevel >= 0) {
+				if (Tim.rand.nextInt(100) < 25 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled && cdata.randomChatterLevel >= 0) {
 					Tim.bot.sendIRC().action(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)");
 				}
 			}
@@ -103,21 +103,13 @@ public class DeIdler {
 		for (ChannelInfo cdata : Tim.db.channel_data.values()) {
 			cdata = Tim.db.channel_data.get(cdata.channel);
 
-			long elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
-			long odds = Math.round(Math.sqrt(elapsed) / (6 - cdata.chatterLevel));
+			// Maybe cure the stale channel mode warnings?
+			Tim.bot.getUserChannelDao().getChannel(cdata.channel).getMode();
 
-			if (odds < (cdata.chatterLevel * 4)) {
-				continue;
-			}
-
-			if (Tim.rand.nextInt(100) < odds) {
+			if (Tim.rand.nextInt(100) < cdata.randomChatterLevel) {
 				String[] actions;
 
-				cdata.chatterTimer += Tim.rand.nextInt((int) elapsed / 3);
-				elapsed = System.currentTimeMillis() / 1000 - cdata.chatterTimer;
-				cdata.chatterTimer += Math.round(elapsed / 2);
-
-				if (50 < Tim.rand.nextInt(100) || cdata.chatterLevel <= 0 || cdata.muzzled) {
+				if (cdata.muzzled) {
 					continue;
 				}
 
