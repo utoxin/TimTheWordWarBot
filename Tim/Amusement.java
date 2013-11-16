@@ -261,7 +261,7 @@ public class Amusement {
 
 				return true;
 			default:
-				if ((!command.contains("")) && command.charAt(0) == 'd' && Pattern.matches("d\\d+", command)) {
+				if ((!command.equals("")) && command.charAt(0) == 'd' && Pattern.matches("d\\d+", command)) {
 					if (cdata.commands_enabled.get("dice")) {
 						dice(command.substring(1), event);
 					} else {
