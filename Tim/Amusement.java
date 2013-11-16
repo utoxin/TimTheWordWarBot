@@ -468,7 +468,11 @@ public class Amusement {
 
 			int size = users.size();
 			for (User user : users) {
-				if (!user.getNick().equalsIgnoreCase("Timmy") && (size <= 2 || !user.getNick().equalsIgnoreCase("Skynet"))) {
+				if (!user.getNick().equalsIgnoreCase("Timmy") 
+					&& (size <= 2 || !user.getNick().equalsIgnoreCase("Skynet"))
+					&& !Tim.db.ignore_list.contains(user.getNick().toLowerCase())
+					&& !Tim.db.soft_ignore_list.contains(user.getNick().toLowerCase())
+				) {
 					finalUsers.add(user);
 				}
 			}

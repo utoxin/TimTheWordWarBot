@@ -37,6 +37,7 @@ public class DBAccess {
 	protected List<String> cat_herds = new ArrayList<>();
 	protected List<String> greetings = new ArrayList<>();
 	protected Set<String> ignore_list = new HashSet<>(16);
+	protected Set<String> soft_ignore_list = new HashSet<>(16);
 	protected ConnectionPool pool;
 
 	static {
@@ -281,12 +282,17 @@ public class DBAccess {
 			con = pool.getConnection(timeout);
 
 			Statement s = con.createStatement();
-			s.executeQuery("SELECT `name` FROM `ignores`");
+			s.executeQuery("SELECT `name`, `type` FROM `ignores`");
 
 			ResultSet rs = s.getResultSet();
 			this.ignore_list.clear();
+			this.soft_ignore_list.clear();
 			while (rs.next()) {
-				this.ignore_list.add(rs.getString("name").toLowerCase());
+				if (rs.getString("type").equals("hard")) {
+					this.ignore_list.add(rs.getString("name").toLowerCase());
+				} else {
+					this.soft_ignore_list.add(rs.getString("name").toLowerCase());
+				}
 			}
 
 			con.close();
@@ -402,13 +408,14 @@ public class DBAccess {
 		}
 	}
 
-	public void saveIgnore(String username) {
+	public void saveIgnore(String username, String type) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("INSERT INTO `ignores` (`name`) VALUES (?);");
+			PreparedStatement s = con.prepareStatement("INSERT INTO `ignores` (`name`, `type`) VALUES (?, ?);");
 			s.setString(1, username.toLowerCase());
+			s.setString(2, type.toLowerCase());
 			s.executeUpdate();
 
 			con.close();

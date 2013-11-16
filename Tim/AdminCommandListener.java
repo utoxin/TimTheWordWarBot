@@ -140,7 +140,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							}
 						} else {
 							event.respond("Usage: $chatterlevel <#channel> list");
-							event.respond("Usage: $chatterlevel <#channel> reactive <%/Msg> <name multplier>");
+							event.respond("Usage: $chatterlevel <#channel> reactive <%/Msg> <Name Multiplier>");
 							event.respond("Usage: $chatterlevel <#channel> random <%/Min>");
 						}
 						break;
@@ -338,7 +338,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							for (int i = 0; i < args.length; ++i) {
 								users += " " + args[i];
 								Tim.db.ignore_list.add(args[i]);
-								Tim.db.saveIgnore(args[i]);
+								Tim.db.saveIgnore(args[i], "hard");
 							}
 							event.respond("The following users have been ignored:" + users);
 						} else {
@@ -351,6 +351,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							for (int i = 0; i < args.length; ++i) {
 								users += " " + args[i];
 								Tim.db.ignore_list.remove(args[i]);
+								Tim.db.soft_ignore_list.remove(args[i]);
 								Tim.db.deleteIgnore(args[i]);
 							}
 							event.respond("The following users have been unignored:" + users);
