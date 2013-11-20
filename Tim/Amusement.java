@@ -228,6 +228,14 @@ public class Amusement {
 				}
 
 				return true;
+			case "banish":
+				if (cdata.commands_enabled.get("banish")) {
+					banish(event.getChannel(), args, true);
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+
+				return true;
 			case "foof":
 				if (cdata.commands_enabled.get("foof")) {
 					foof(event.getChannel(), event.getUser(), args, true);
@@ -458,7 +466,7 @@ public class Amusement {
 		cdata = Tim.db.channel_data.get(channel);
 
 		String[] actions = new String[]{
-			"get", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper", "search", "herd"
+			"get", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper", "search", "herd", "banish"
 		};
 
 		if (sender == null) {
@@ -528,6 +536,9 @@ public class Amusement {
 				break;
 			case "summon":
 				summon(sendChannel, null, false);
+				break;
+			case "banish":
+				banish(sendChannel, null, false);
 				break;
 			case "creeper":
 				creeper(sendChannel, sender, null, false);
@@ -1025,6 +1036,44 @@ public class Amusement {
 			} else {
 				String target2 = this.deities.get(Tim.rand.nextInt(this.deities.size()));
 				act = "attempts to summon " + target + ", but something goes horribly wrong. After the smoke clears, " + target2 + " is left standing on the smoldering remains of the summoning circle.";
+			}
+
+			time = Tim.rand.nextInt(3000) + 2000;
+			Thread.sleep(time);
+			channel.send().action(act);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	protected void banish(Channel channel, String[] args, Boolean righto) {
+		try {
+			String target;
+			if (args == null || args.length == 0) {
+				target = this.deities.get(Tim.rand.nextInt(this.deities.size()));
+			} else {
+				target = StringUtils.join(args, " ");
+			}
+
+			if (righto) {
+				channel.send().message("Righto...");
+			}
+
+			int time;
+			time = Tim.rand.nextInt(1500) + 1500;
+			Thread.sleep(time);
+			channel.send().action("gathers the supplies necessary to banish " + target + " to the outer darkness...");
+
+			int i = Tim.rand.nextInt(100);
+			String act;
+
+			if (i > 50) {
+				act = "completes the ritual successfully, banishing " + target + " to the outer darkness, where they can't interfere with Timmy's affairs!";
+			} else if (i > 30) {
+				act = "completes the ritual to banish " + target + ", but they reappear after a short absence, looking a bit annoyed.";
+			} else {
+				String target2 = this.deities.get(Tim.rand.nextInt(this.deities.size()));
+				act = "attempts to banish " + target + ", but something goes horribly wrong. As the ritual is completed, " + target2 + " appears to chastise "+Tim.bot.getNick()+" for his temerity.";
 			}
 
 			time = Tim.rand.nextInt(3000) + 2000;
