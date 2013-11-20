@@ -85,6 +85,27 @@ public class UserCommandListener extends ListenerAdapter {
 						Logger.getLogger(UserCommandListener.class.getName()).log(Level.SEVERE, null, ex);
 					}
 					event.respond("Your timer has expired!");
+				} else if (command.equals("ignore")) {
+					if (args != null && (args[0].equals("soft") || args[0].equals("hard"))) {
+						if (args[0].equals("hard")) {
+							Tim.db.ignore_list.add(event.getUser().getNick().toLowerCase());
+							event.respond("Fine. I didn't like you either. See if I talk to you ever again...");
+						} else {
+							Tim.db.soft_ignore_list.add(event.getUser().getNick().toLowerCase());
+							event.respond("Okay, I'll stop bothering you. Sorry!");
+						}
+						Tim.db.saveIgnore(event.getUser().getNick().toLowerCase(), args[0]);
+					} else {
+						event.respond("Usage: !ignore <soft/hard>");
+						event.respond("Warning: Hard ignores can only be cleared by admins.");
+					}
+				} else if (command.equals("unignore")) {
+					if (Tim.db.soft_ignore_list.remove(event.getUser().getNick().toLowerCase())) {
+						event.respond("Okay! Thanks! I'll try not to be /TOO/ annoying...");
+						Tim.db.deleteIgnore(event.getUser().getNick().toLowerCase());
+					} else {
+						event.respond("Okay... I wasn't ignoring you anyway. :)");
+					}
 				} else if (command.equals("help")) {
 					this.printCommandList(event);
 				} else if (command.equals("credits")) {
@@ -114,6 +135,8 @@ public class UserCommandListener extends ListenerAdapter {
 						 "    !listwars - I will tell you about the wars currently in progress.",
 						 "    !boxodoom <difficulty> <duration> - Difficulty is extraeasy/easy/average/hard/extreme/insane/impossible/tadiera, duration in minutes.",
 						 "    !eggtimer <time> - I will send you a message after <time> minutes.",
+						 "    !ignore <hard/soft> - Make Timmy ignore you. Soft lets you keep using commands. Hard is EVERYTHING.",
+						 "    !unignore - Turn off soft ignores. Hard ignores have to be removed by an admin.",
 						 "    !credits - Details of my creators, and where to find my source code.",};
 		for (int i = 0; i < strs.length; ++i) {
 			event.getUser().send().notice(strs[i]);

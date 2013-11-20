@@ -69,11 +69,17 @@ public class ServerListener extends ListenerAdapter {
 
 			try {
 				String message = "";
-				if (cdata.chatter_enabled.get("silly_reactions")) {
+				if (cdata.chatter_enabled.get("silly_reactions")
+					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
+					&& !Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())					
+				) {
 					message = String.format(Tim.db.greetings.get(Tim.rand.nextInt(Tim.db.greetings.size())), event.getUser().getNick());
 				}
 
-				if (cdata.chatter_enabled.get("helpful_reactions") && Tim.warticker.wars.size() > 0) {
+				if (cdata.chatter_enabled.get("helpful_reactions") 
+					&& Tim.warticker.wars.size() > 0
+					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
+				) {
 					for (Map.Entry<String, WordWar> wm : Tim.warticker.wars.entrySet()) {
 						if (wm.getValue().getChannel().equals(event.getChannel())) {
 							warscount++;
@@ -92,9 +98,14 @@ public class ServerListener extends ListenerAdapter {
 				}
 
 				Thread.sleep(500);
-				event.getChannel().send().message(message);
+				if (!message.equals("")) {
+					event.getChannel().send().message(message);
+				}
 
-				if (cdata.chatter_enabled.get("helpful_reactions") && warscount > 0) {
+				if (cdata.chatter_enabled.get("helpful_reactions") 
+					&& warscount > 0
+					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
+				) {
 					for (Map.Entry<String, WordWar> wm : Tim.warticker.wars.entrySet()) {
 						if (wm.getValue().getChannel().equals(event.getChannel())) {
 							event.getChannel().send().message(wm.getValue().getDescription());
@@ -110,7 +121,11 @@ public class ServerListener extends ListenerAdapter {
 
 				int r = Tim.rand.nextInt(100);
 
-				if (cdata.chatter_enabled.get("silly_reactions") && r < 15) {
+				if (cdata.chatter_enabled.get("silly_reactions") 
+					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
+					&& !Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())
+					&& r < 15
+				) {
 					r = Tim.rand.nextInt(Tim.db.extra_greetings.size());
 					Thread.sleep(500);
 					event.getChannel().send().message(Tim.db.extra_greetings.get(r));

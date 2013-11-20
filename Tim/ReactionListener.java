@@ -88,7 +88,8 @@ public class ReactionListener extends ListenerAdapter {
 			}
 		}
 
-		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())) {
+		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase()) &&
+			!Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())) {
 			if (message.charAt(0) != '$' && message.charAt(0) != '!') {
 				if (message.toLowerCase().contains("how many lights") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < lights_odds) {
@@ -193,7 +194,9 @@ public class ReactionListener extends ListenerAdapter {
 			}
 		}
 
-		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())) {
+		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase()) &&
+			!Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())
+		) {
 			if (message.toLowerCase().contains("how many lights") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < lights_odds) {
 					event.getChannel().send().message("There are FOUR LIGHTS!");
