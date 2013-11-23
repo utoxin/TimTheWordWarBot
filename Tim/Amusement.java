@@ -561,7 +561,11 @@ public class Amusement {
 		try {
 			max = Integer.parseInt(number);
 			int r = Tim.rand.nextInt(max) + 1;
-			event.respond("Your result is " + r);
+			if (r < 9000) {
+				event.respond("Your result is " + r);
+			} else {
+				event.respond("OVER 9000!!! (" + r + ")");
+			}
 		} catch (NumberFormatException ex) {
 			event.respond(number + " is not a number I could understand.");
 		}
