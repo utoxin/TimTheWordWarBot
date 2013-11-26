@@ -437,22 +437,31 @@ public class DBAccess {
 		Tim.markov.refreshDbLists();
 	}
 
-	public int create_war(Channel channel, User starter, String name, long base_duration, long duration, long remaining, long time_to_start, int total_chains, int current_chain) {
+	public int create_war(WordWar war) {
 		int id = 0;
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("INSERT INTO `wars` (`channel`, `starter`, `name`, `base_duration`, `duration`, `remaining`, `time_to_start`, `total_chains`, `current_chain`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-			s.setString(1, channel.getName().toLowerCase());
-			s.setString(2, starter.getNick());
-			s.setString(3, name);
-			s.setLong(4, base_duration);
-			s.setLong(5, duration);
-			s.setLong(6, remaining);
-			s.setLong(7, time_to_start);
-			s.setInt(8, total_chains);
-			s.setInt(9, current_chain);
+			PreparedStatement s = con.prepareStatement(
+				"INSERT INTO `new_wars` (`channel`, `starter`, `name`, `state`, `base_duration`, `current_duration`, `time_remaining`," +
+					" `randomize_chain_length`, `chain_length_variation`, `break_duration`, `total_wars`, `current_war`)" +
+					" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+				Statement.RETURN_GENERATED_KEYS
+			);
+			
+			s.setString(1, war.channel.getName().toLowerCase());
+			s.setString(2, war.starter.getNick());
+			s.setString(3, war.name);
+			s.setString(4, war.state.name());
+			s.setLong(5, war.base_duration);
+			s.setLong(6, war.current_duration);
+			s.setLong(7, war.time_remaining);
+			s.setBoolean(8, war.randomize_chain_length);
+			s.setFloat(9, war.chain_length_variation);
+			s.setLong(10, war.break_duration);
+			s.setInt(11, war.total_wars);
+			s.setInt(12, war.current_war);
 			s.executeUpdate();
 
 			ResultSet rs = s.getGeneratedKeys();
@@ -469,17 +478,17 @@ public class DBAccess {
 		return id;
 	}
 
-	public void update_war(int db_id, long duration, long remaining, long time_to_start, int current_chain) {
+	public void update_war(WordWar war) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("UPDATE `wars` SET `duration` = ? ,`remaining` = ?, `time_to_start` = ?, `current_chain` = ? WHERE id = ?");
-			s.setLong(1, duration);
-			s.setLong(2, remaining);
-			s.setLong(3, time_to_start);
-			s.setInt(4, current_chain);
-			s.setInt(5, db_id);
+			PreparedStatement s = con.prepareStatement("UPDATE `wars` SET `state` = ?, `current_duration` = ?, `time_remaining` = ?, `current_war` = ? WHERE id = ?");
+			s.setString(1, war.state.name());
+			s.setLong(2, war.current_duration);
+			s.setLong(3, war.time_remaining);
+			s.setInt(4, war.current_war);
+			s.setInt(5, war.db_id);
 			s.executeUpdate();
 
 			con.close();
@@ -504,18 +513,10 @@ public class DBAccess {
 				channel = Tim.bot.getUserChannelDao().getChannel(rs.getString("channel"));
 				user = Tim.bot.getUserChannelDao().getUser(rs.getString("starter"));
 
-				WordWar war = new WordWar(
-					rs.getLong("base_duration"),
-					rs.getLong("duration"),
-					rs.getLong("remaining"),
-					rs.getLong("time_to_start"),
-					rs.getInt("total_chains"),
-					rs.getInt("current_chain"),
-					rs.getString("name"),
-					user,
-					channel,
-					rs.getInt("id")
-				);
+				WordWar war = new WordWar(rs.getString("name"), user, channel);
+				war.setAttributes(WordWar.WordWarState.valueOf(rs.getString("state")), rs.getLong("time_remaining"), rs.getLong("base_duration"), rs.getLong("current_duration"));
+				war.setChainAttributes(rs.getInt("total_wars"), rs.getInt("current_war"), rs.getLong("break_duration"), rs.getBoolean("randomize_chain_length"), rs.getFloat("chain_length_variation"));
+				war.db_id = rs.getInt("id");
 
 				wars.put(war.getName(false).toLowerCase(), war);
 			}

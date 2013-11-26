@@ -21,69 +21,102 @@ import org.pircbotx.User;
  *
  */
 public class WordWar {
+	public enum WordWarState {
+		STARTING_PAUSED, STARTING, RUNNING_PAUSED, RUNNING, COMPLETE, CANCELED
+	}
 
-	public long remaining;
-	public long time_to_start;
-	public int total_chains;
-	public int current_chain;
+	public WordWarState state = WordWarState.STARTING_PAUSED;
+
+	public long time_remaining;
+	public long base_duration;
+	public long current_duration;
+	
+	public boolean randomize_chain_length = true;
+	public float chain_length_variation = 0.1f;
+
+	public long break_duration = 0;
+	public int total_wars = 1;
+	public int current_war = 1;
+
 	public ChannelInfo cdata;
 
-	protected long duration;
-	protected long base_duration;
+	public int db_id = 0;
+	public Channel channel;
+	public User starter;
+	public String name;
 
-	private final int db_id;
-	private final Channel channel;
-	private final User starter;
-	private final String name;
-
-	public WordWar(long time, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel) {
-		this.starter = startingUser;
-		this.time_to_start = to_start;
-		this.total_chains = total_chains;
-		this.current_chain = current_chain;
-		this.base_duration = time;
-		this.name = warname;
-		this.channel = hosting_channel;
-		this.cdata = Tim.db.channel_data.get(hosting_channel.getName().toLowerCase());
-
-		if (total_chains > 1) {
-			this.duration = base_duration + (Tim.rand.nextInt((int) Math.floor(base_duration * 0.2))) - ((long) Math.floor(base_duration * 0.1));
-		} else {
-			this.duration = this.base_duration;
-		}
-
-		this.remaining = this.duration;
-
-		db_id = Tim.db.create_war(hosting_channel, startingUser, warname, base_duration, duration, remaining, to_start, total_chains, current_chain);
-
-		if (this.time_to_start <= 0 && (cdata.muzzled == false || cdata.auto_muzzled)) {
-			cdata.setMuzzleFlag(true, true);
-		}
+	public WordWar(String name, User starter, Channel channel) {
+		this.name = name;
+		this.starter = starter;
+		this.channel = channel;
+		this.cdata = Tim.db.channel_data.get(channel.getName().toLowerCase());
 	}
 
-	public WordWar(long base_duration, long duration, long remaining, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel, int db_id) {
-		this.starter = startingUser;
-		this.time_to_start = to_start;
+	public void setAttributes(WordWarState state, long time_remaining, long base_duration, long current_duration) {
+		this.state = state;
+		this.time_remaining = time_remaining;
 		this.base_duration = base_duration;
-		this.duration = duration;
-		this.remaining = remaining;
-		this.total_chains = total_chains;
-		this.current_chain = current_chain;
-		this.name = warname;
-		this.channel = hosting_channel;
-		this.cdata = Tim.db.channel_data.get(hosting_channel.getName().toLowerCase());
+		this.current_duration = current_duration;
+	}
 
-		if (this.base_duration == 0) {
-			this.base_duration = duration;
+	public void setChainAttributes(int total_wars, int current_war, long break_duration, boolean randomize_chain_length, float chain_length_variation) {
+		this.total_wars = total_wars;
+		this.current_war = current_war;
+		this.break_duration = break_duration;
+		this.randomize_chain_length = randomize_chain_length;
+		this.chain_length_variation = chain_length_variation;
+	}
+
+	public boolean start_war() {
+		if (state != WordWarState.RUNNING && state != WordWarState.RUNNING_PAUSED) {
+			if (randomize_chain_length) {
+				if (Tim.rand.nextBoolean()) {
+					time_remaining = base_duration + Math.round(base_duration * (chain_length_variation * Tim.rand.nextFloat()));
+				} else {
+					time_remaining = base_duration - Math.round(base_duration * (chain_length_variation * Tim.rand.nextFloat()));
+				}
+			} else {
+				time_remaining = base_duration;
+			}
+
+			current_duration = time_remaining;
+
+			state = WordWarState.RUNNING;
+
+			if (cdata.auto_muzzle_wars == true && cdata.auto_muzzled == false && cdata.muzzled == false) {
+				cdata.setMuzzleFlag(true, true);
+			}
+
+			return true;
+		} else {
+			return false;
 		}
-
-		this.db_id = db_id;
-
-		if (this.time_to_start <= 0 && (cdata.muzzled == false || cdata.auto_muzzled)) {
-			cdata.setMuzzleFlag(true, true);
+	}
+	
+	public boolean pause_war() {
+		if (state == WordWarState.RUNNING) {
+			state = WordWarState.RUNNING_PAUSED;
+			return true;
+		} else if (state == WordWarState.STARTING) {
+			state = WordWarState.STARTING_PAUSED;
+			return true;
+		} else {
+			return false;
 		}
 	}
 
+	public boolean resume_war() {
+		if (state == WordWarState.RUNNING_PAUSED) {
+			state = WordWarState.RUNNING;
+			return true;
+		} else if (state == WordWarState.STARTING_PAUSED) {
+			state = WordWarState.STARTING;
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	protected void endWar() {
 		if (db_id > 0) {
 			Tim.db.deleteWar(db_id);
@@ -94,8 +127,12 @@ public class WordWar {
 		}
 	}
 
-	public void updateDb() {
-		Tim.db.update_war(db_id, duration, remaining, time_to_start, current_chain);
+	public void db_update_war() {
+		if (db_id == 0) {
+			db_id = Tim.db.create_war(this);
+		} else {
+			Tim.db.update_war(this);
+		}
 	}
 
 	public Channel getChannel() {
@@ -103,14 +140,14 @@ public class WordWar {
 	}
 
 	public long getDuration() {
-		return duration;
+		return current_duration;
 	}
 
 	public String getName() {
 		String nameString;
 
-		if (total_chains > 1) {
-			nameString = name + " (" + current_chain + " / " + total_chains + ")";
+		if (total_wars > 1) {
+			nameString = name + " (" + current_war + " / " + total_wars + ")";
 		} else {
 			nameString = name;
 		}
@@ -130,7 +167,7 @@ public class WordWar {
 		String text = "";
 		long hours = 0, minutes = 0, seconds, tmp;
 
-		tmp = duration;
+		tmp = current_duration;
 
 		if (tmp > (60 * 60)) {
 			hours = tmp / (60 * 60);
@@ -164,32 +201,51 @@ public class WordWar {
 	}
 
 	public long getTime_to_start() {
-		return time_to_start;
+		return time_remaining;
 	}
 
 	public String getDescription() {
 		long minutes;
 		long seconds;
 
-		String about = "WordWar " + this.getName() + ":";
-		if (this.time_to_start > 0) {
-			minutes = this.time_to_start / 60;
-			seconds = this.time_to_start % 60;
-			about += " starts in ";
+		String about = "WordWar " + this.getName() + " ";
+		
+		if (state == WordWarState.CANCELED) {
+			about += " was canceled.";
+		} else if (state == WordWarState.COMPLETE) {
+			about += " was completed.";
 		} else {
-			minutes = this.remaining / 60;
-			seconds = this.remaining % 60;
-			about += " ends in ";
-		}
-		if (minutes > 0) {
-			about += minutes + " minutes";
+			if (state == WordWarState.STARTING || state == WordWarState.STARTING_PAUSED) {
+				minutes = time_remaining / 60;
+				seconds = time_remaining % 60;
+				
+				if (state == WordWarState.STARTING_PAUSED) {
+					about += " (PAUSED) ";
+				}
+				
+				about += " starts in ";
+			} else {
+				minutes = time_remaining / 60;
+				seconds = time_remaining % 60;
+				
+				if (state == WordWarState.RUNNING_PAUSED) {
+					about += " (PAUSED) ";
+				}
+				
+				about += " ends in ";
+			}
+
+			if (minutes > 0) {
+				about += minutes + " minutes";
+				if (seconds > 0) {
+					about += " and ";
+				}
+			}
 			if (seconds > 0) {
-				about += " and ";
+				about += seconds + " seconds";
 			}
 		}
-		if (seconds > 0) {
-			about += seconds + " seconds";
-		}
+
 		return about;
 	}
 
