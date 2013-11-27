@@ -93,21 +93,6 @@ public class DBAccess {
 		}
 	}
 
-	public void deleteWar(int id) {
-		Connection con;
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("DELETE FROM `wars` WHERE `id` = ?");
-			s.setInt(1, id);
-			s.executeUpdate();
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
 	public void deleteIgnore(String username) {
 		Connection con;
 		try {
@@ -483,7 +468,7 @@ public class DBAccess {
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("UPDATE `wars` SET `state` = ?, `current_duration` = ?, `time_remaining` = ?, `current_war` = ? WHERE id = ?");
+			PreparedStatement s = con.prepareStatement("UPDATE `new_wars` SET `state` = ?, `current_duration` = ?, `time_remaining` = ?, `current_war` = ? WHERE id = ?");
 			s.setString(1, war.state.name());
 			s.setLong(2, war.current_duration);
 			s.setLong(3, war.time_remaining);
@@ -507,7 +492,7 @@ public class DBAccess {
 			con = pool.getConnection(timeout);
 
 			Statement s = con.createStatement();
-			ResultSet rs = s.executeQuery("SELECT * FROM `wars`");
+			ResultSet rs = s.executeQuery("SELECT * FROM `new_wars` WHERE state NOT IN ('CANCELED', 'COMPLETED')");
 
 			while (rs.next()) {
 				channel = Tim.bot.getUserChannelDao().getChannel(rs.getString("channel"));

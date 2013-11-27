@@ -84,56 +84,42 @@ public class WarTicker {
 			WordWar war;
 			while (itr.hasNext()) {
 				war = this.wars.get(itr.next());
-				if (war.time_to_start > 0) {
-					war.time_to_start--;
-					switch ((int) war.time_to_start) {
-						case 60:
-						case 30:
-						case 5:
-						case 4:
-						case 3:
-						case 2:
-						case 1:
+				if (war.state != WordWar.WordWarState.RUNNING && war.state != WordWar.WordWarState.STARTING) {
+					continue;
+				}
+
+				war.time_remaining--;
+				switch ((int) war.time_remaining) {
+					case 60:
+					case 30:
+					case 5:
+					case 4:
+					case 3:
+					case 2:
+					case 1:
+						if (war.state == WordWar.WordWarState.STARTING) {
 							this.warStartCount(war);
-							break;
-						case 0:
-							// 0 seconds until start. Don't say a damn thing.
-							break;
-						default:
-							if ((war.time_to_start <= (60 * 20) && war.time_to_start % 300 == 0) || (war.time_to_start % 600 == 0)) {
-								this.warStartCount(war);
-							}
-							break;
-					}
-					if (war.time_to_start == 0) {
-						this.beginWar(war);
-					}
-				} else if (war.remaining > 0) {
-					war.remaining--;
-					switch ((int) war.remaining) {
-						case 60:
-						case 5:
-						case 4:
-						case 3:
-						case 2:
-						case 1:
+						} else if (war.state == WordWar.WordWarState.RUNNING) {
 							this.warEndCount(war);
-							break;
-						case 0:
-							if (war.current_chain >= war.total_chains) {
-								warsToEnd.add(war.getName(false).toLowerCase());
-							}
-							this.endWar(war);
-							break;
-						default:
-							if ((war.remaining <= (60 * 20) && war.remaining % 300 == 0) || (war.remaining % 600 == 0)) {
+						}
+						break;
+					case 0:
+						// 0 seconds until start. Don't say a damn thing.
+						break;
+					default:
+						if ((war.time_remaining <= (60 * 10) && war.time_remaining % 300 == 0) || (war.time_remaining % 600 == 0)) {
+							if (war.state == WordWar.WordWarState.STARTING) {
+								this.warStartCount(war);
+							} else if (war.state == WordWar.WordWarState.RUNNING) {
 								this.warEndCount(war);
 							}
-							// do nothing
-							break;
-					}
+						}
+						break;
 				}
-				war.updateDb();
+
+				if (war.time_remaining % 10 == 0) {
+					war.db_update_war();
+				}
 			}
 
 			for (String warName : warsToEnd) {
@@ -143,23 +129,23 @@ public class WarTicker {
 	}
 
 	private void warStartCount(WordWar war) {
-		if (war.time_to_start < 60) {
-			war.getChannel().send().message(war.getName() + ": Starting in " + war.time_to_start + (war.time_to_start == 1 ? " second" : " seconds") + "!");
+		if (war.time_remaining < 60) {
+			war.getChannel().send().message(war.getName() + ": Starting in " + war.time_remaining + (war.time_remaining == 1 ? " second" : " seconds") + "!");
 		} else {
-			int time_to_start = (int) war.time_to_start / 60;
-			if (time_to_start * 60 == war.time_to_start) {
+			int time_to_start = (int) war.time_remaining / 60;
+			if (time_to_start * 60 == war.time_remaining) {
 				war.getChannel().send().message(war.getName() + ": Starting in " + time_to_start + (time_to_start == 1 ? " minute" : " minutes") + "!");
 			} else {
-				war.getChannel().send().message(war.getName() + ": Starting in " + new DecimalFormat("###.#").format(war.time_to_start / 60.0) + " minutes!");
+				war.getChannel().send().message(war.getName() + ": Starting in " + new DecimalFormat("###.#").format(war.time_remaining / 60.0) + " minutes!");
 			}
 		}
 	}
 
 	private void warEndCount(WordWar war) {
-		if (war.remaining < 60) {
-			war.getChannel().send().message(war.getName() + ": " + war.remaining + (war.remaining == 1 ? " second" : " seconds") + " remaining!");
+		if (war.time_remaining < 60) {
+			war.getChannel().send().message(war.getName() + ": " + war.time_remaining + (war.time_remaining == 1 ? " second" : " seconds") + " remaining!");
 		} else {
-			int remaining = (int) war.remaining / 60;
+			int remaining = (int) war.time_remaining / 60;
 			war.getChannel().send().message(war.getName() + ": " + remaining + (remaining == 1 ? " minute" : " minutes") + " remaining.");
 		}
 	}
@@ -174,19 +160,14 @@ public class WarTicker {
 
 	private void endWar(WordWar war) {
 		war.getChannel().send().message("WordWar '" + war.getName() + "' is over!");
-		if (war.current_chain >= war.total_chains) {
-			war.endWar();
+		if (war.current_war >= war.total_wars) {
+			war.endWar(false);
 		} else {
-			if (war.cdata.muzzled && war.cdata.auto_muzzled) {
-				war.cdata.setMuzzleFlag(false, false);
-			}
+			war.current_war++;
 
-			war.current_chain++;
-
-			war.duration = (long) (war.base_duration + (war.base_duration * ((Tim.rand.nextInt(20) - 10) / 100.0)));
-			war.remaining = war.duration;
-			war.time_to_start = (long) ((war.base_duration * 0.5) + (war.base_duration * ((Tim.rand.nextInt(20) - 10) / 100.0)));
-			war.updateDb();
+			war.current_duration = (long) (war.base_duration + (war.base_duration * ((Tim.rand.nextInt(20) - 10) / 100.0)));
+			war.time_remaining = (long) ((war.base_duration * 0.5) + (war.base_duration * ((Tim.rand.nextInt(20) - 10) / 100.0)));
+			war.db_update_war();
 			warStartCount(war);
 		}
 	}
@@ -200,7 +181,7 @@ public class WarTicker {
 					|| Tim.db.admin_list.contains(event.getUser().getNick())
 					|| Tim.db.admin_list.contains(event.getChannel().getName().toLowerCase())) {
 					WordWar war = this.wars.remove(name.toLowerCase());
-					war.endWar();
+					war.endWar(true);
 					event.respond("The war '" + war.getName(false) + "' has been ended.");
 				} else {
 					event.respond("Only the starter of a war can end it early.");

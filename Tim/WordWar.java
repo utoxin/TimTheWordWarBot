@@ -22,7 +22,7 @@ import org.pircbotx.User;
  */
 public class WordWar {
 	public enum WordWarState {
-		STARTING_PAUSED, STARTING, RUNNING_PAUSED, RUNNING, COMPLETE, CANCELED
+		STARTING_PAUSED, STARTING, RUNNING_PAUSED, RUNNING, COMPLETED, CANCELED
 	}
 
 	public WordWarState state = WordWarState.STARTING_PAUSED;
@@ -83,10 +83,6 @@ public class WordWar {
 
 			state = WordWarState.RUNNING;
 
-			if (cdata.auto_muzzle_wars == true && cdata.auto_muzzled == false && cdata.muzzled == false) {
-				cdata.setMuzzleFlag(true, true);
-			}
-
 			return true;
 		} else {
 			return false;
@@ -117,13 +113,10 @@ public class WordWar {
 		}
 	}
 	
-	protected void endWar() {
+	protected void endWar(boolean early) {
 		if (db_id > 0) {
-			Tim.db.deleteWar(db_id);
-		}
-
-		if (cdata.auto_muzzled) {
-			cdata.setMuzzleFlag(false, false);
+			state = early ? WordWarState.CANCELED : WordWarState.COMPLETED;
+			Tim.db.update_war(this);
 		}
 	}
 
@@ -212,7 +205,7 @@ public class WordWar {
 		
 		if (state == WordWarState.CANCELED) {
 			about += " was canceled.";
-		} else if (state == WordWarState.COMPLETE) {
+		} else if (state == WordWarState.COMPLETED) {
 			about += " was completed.";
 		} else {
 			if (state == WordWarState.STARTING || state == WordWarState.STARTING_PAUSED) {
