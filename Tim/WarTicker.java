@@ -12,6 +12,7 @@
  */
 package Tim;
 
+import Tim.WordWar.WordWarState;
 import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -233,7 +234,11 @@ public class WarTicker {
 		}
 
 		if (!this.wars.containsKey(warname.toLowerCase())) {
-			WordWar war = new WordWar(time, to_start, total_chains, 1, warname, event.getUser(), event.getChannel());
+			WordWar war = new WordWar(warname, event.getUser(), event.getChannel());
+			
+			war.setAttributes(WordWarState.STARTING, to_start, time, time);
+			war.setChainAttributes(total_chains, 1, 1, true, 0.1f);
+			
 			this.wars.put(war.getName(false).toLowerCase(), war);
 			if (to_start > 0) {
 				event.respond("Your wordwar '" + warname + "' will start in " + to_start / 60.0 + " minutes.");
@@ -284,7 +289,9 @@ public class WarTicker {
 		}
 
 		if (!this.wars.containsKey(warname.toLowerCase())) {
-			WordWar war = new WordWar(time, to_start, 1, 1, warname, event.getUser(), event.getChannel());
+			WordWar war = new WordWar(warname, event.getUser(), event.getChannel());
+			war.setAttributes(WordWarState.STARTING, to_start, time, time);
+
 			this.wars.put(war.getName(false).toLowerCase(), war);
 			if (to_start > 0) {
 				event.respond("Your wordwar will start in " + to_start / 60.0 + " minutes.");
