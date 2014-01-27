@@ -40,6 +40,7 @@ public class MarkovChains {
 	private final long timeout = 3000;
 	private final UrlValidator urlValidator = new UrlValidator();
 	private final EmailValidator emailValidator;
+	private final String[] sentenceEndings = {"!", "!", "?", "?", "!", "!", "?", "?", "...", "?!", "...!", "...?"};
 
 	public MarkovChains() {
 		this.emailValidator = EmailValidator.getInstance();
@@ -283,10 +284,9 @@ public class MarkovChains {
 
 			int curWords = 1;
 			boolean keepGoing = true;
+			boolean startNew = false;
 
 			while (keepGoing || curWords < maxLength) {
-				keepGoing = true;
-
 				getTotal.setInt(1, first);
 				getTotal.setInt(2, second);
 
@@ -314,16 +314,38 @@ public class MarkovChains {
 					lastWord = nextRes.getString("word");
 
 					if ("".equals(lastWord)) {
+						if (!sentence.matches("[.?!]$")) {
+							String ending = ".";
+							if (Tim.rand.nextInt(100) > 75) {
+								ending = sentenceEndings[Tim.rand.nextInt(sentenceEndings.length)];
+							}
+							
+							sentence = sentence.replace("[.?!:;/-]*$", ending);
+						}
+						
+						startNew = true;
+
 						break;
 					}
 
-					sentence += " " + nextRes.getString("word");
+					if (startNew) {
+						if ("emote".equals(type)) {
+							sentence += " " + Tim.bot.getNick();
+						} else {
+							lastWord = StringUtils.capitalize(lastWord);
+						}
+						
+						startNew = false;
+					}
+					
+					sentence += " " + lastWord;
 					break;
 				}
-
+				
 				curWords++;
 
-				if (Tim.rand.nextInt(100) < ((curWords - maxLength) * 10)) {
+				keepGoing = !startNew;
+				if (!keepGoing && Tim.rand.nextInt(100) < ((curWords - maxLength) * 10)) {
 					break;
 				}
 			}
