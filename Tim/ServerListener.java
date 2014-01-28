@@ -63,7 +63,9 @@ public class ServerListener extends ListenerAdapter {
 
 	@Override
 	public void onJoin(JoinEvent event) {
-		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
+		if (event.getUser().getNick().equals(Tim.bot.getNick())) {
+
+		} else {
 			ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 			int warscount = 0;
 

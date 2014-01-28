@@ -283,10 +283,9 @@ public class MarkovChains {
 			}
 
 			int curWords = 1;
-			boolean keepGoing = true;
 			boolean startNew = false;
 
-			while (keepGoing || curWords < maxLength) {
+			while (!startNew || curWords < maxLength) {
 				getTotal.setInt(1, first);
 				getTotal.setInt(2, second);
 
@@ -314,23 +313,30 @@ public class MarkovChains {
 					lastWord = nextRes.getString("word");
 
 					if ("".equals(lastWord)) {
-						if (!sentence.matches("[.?!]$")) {
+						if (!sentence.matches("[.?!\"']+$")) {
 							String ending = ".";
-							if (Tim.rand.nextInt(100) > 75) {
+							if (Tim.rand.nextInt(100) > 65) {
 								ending = sentenceEndings[Tim.rand.nextInt(sentenceEndings.length)];
 							}
-							
-							sentence = sentence.replace("[.?!:;/-]*$", ending);
-						}
-						
-						startNew = true;
 
+							sentence = sentence.replaceFirst("[.?!:;/\"'-]*$", ending);
+						}
+
+						startNew = true;
 						break;
 					}
 
 					if (startNew) {
 						if ("emote".equals(type)) {
-							sentence += " " + Tim.bot.getNick();
+							if (Tim.rand.nextInt(100) > 65) {
+								sentence += " " + Tim.bot.getNick();
+							} else {
+								if (Tim.rand.nextBoolean()) {
+									sentence += " He";
+								} else {
+									sentence += " They";
+								}
+							}
 						} else {
 							lastWord = StringUtils.capitalize(lastWord);
 						}
@@ -344,8 +350,7 @@ public class MarkovChains {
 				
 				curWords++;
 
-				keepGoing = !startNew;
-				if (!keepGoing && Tim.rand.nextInt(100) < ((curWords - maxLength) * 10)) {
+				if (startNew && Tim.rand.nextInt(100) < (Math.max(1, curWords - maxLength) * 15)) {
 					break;
 				}
 			}
