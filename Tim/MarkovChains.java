@@ -248,117 +248,56 @@ public class MarkovChains {
 		String sentence = "";
 		try {
 			con = db.pool.getConnection(timeout);
-			PreparedStatement nextList, getTotal, nextWord;
+			CallableStatement nextSentenceStmt;
 
 			if ("emote".equals(type)) {
-				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markov3_emote_data WHERE first_id = ? AND second_id = ?");
-				nextWord = con.prepareStatement("SELECT markov_words.word, rt FROM (SELECT first_id, second_id, third_id, (@runtot := @runtot + count) AS rt FROM (SELECT * FROM `markov3_emote_data` WHERE first_id = ? AND second_id = ?) derived, (SELECT @runtot := 0) r) derived2 INNER JOIN markov_words ON (derived2.third_id = markov_words.id) HAVING rt > ? LIMIT 1");
+				nextSentenceStmt = con.prepareCall("CALL generateMarkovEmote(?)");
 			} else {
-				getTotal = con.prepareStatement("SELECT SUM(count) AS total FROM markov3_say_data WHERE first_id = ? AND second_id = ?");
-				nextWord = con.prepareStatement("SELECT markov_words.word, rt FROM (SELECT first_id, second_id, third_id, (@runtot := @runtot + count) AS rt FROM (SELECT * FROM `markov3_say_data` WHERE first_id = ? AND second_id = ?) derived, (SELECT @runtot := 0) r) derived2 INNER JOIN markov_words ON (derived2.third_id = markov_words.id) HAVING rt > ? LIMIT 1");
+				nextSentenceStmt = con.prepareCall("CALL generateMarkovSay(?)");
 			}
 
-			int first = getMarkovWordId("");
-			int second = first;
+			nextSentenceStmt.registerOutParameter(1, java.sql.Types.LONGVARCHAR);
 
-			getTotal.setInt(1, first);
-			getTotal.setInt(2, second);
+			int curWords = 0;
 
-			ResultSet totalRes = getTotal.executeQuery();
-			totalRes.next();
-			int total = totalRes.getInt("total");
-			int pick = Tim.rand.nextInt(total);
+			while (curWords < maxLength) {
+				nextSentenceStmt.executeUpdate();
+				String nextSentence = nextSentenceStmt.getString(1);
 
-			String lastWord;
-
-			nextWord.setInt(1, first);
-			nextWord.setInt(2, second);
-			nextWord.setInt(3, pick);
-
-			ResultSet nextRes = nextWord.executeQuery();
-			while (nextRes.next()) {
-				sentence = nextRes.getString("word");
-				second = getMarkovWordId(nextRes.getString("word"));
-				break;
-			}
-
-			int curWords = 1;
-			boolean startNew = false;
-
-			while (!startNew || curWords < maxLength) {
-				getTotal.setInt(1, first);
-				getTotal.setInt(2, second);
-
-				totalRes = getTotal.executeQuery();
-				if (totalRes.next()) {
-					total = totalRes.getInt("total");
-				} else {
-					break;
-				}
-
-				if (total == 0) {
-					break;
-				}
-
-				pick = Tim.rand.nextInt(total);
-
-				nextWord.setInt(1, first);
-				nextWord.setInt(2, second);
-				nextWord.setInt(3, pick);
-
-				nextRes = nextWord.executeQuery();
-				while (nextRes.next()) {
-					first = second;
-					second = getMarkovWordId(nextRes.getString("word"));
-					lastWord = nextRes.getString("word");
-
-					if ("".equals(lastWord)) {
-						if (!sentence.matches("[.?!\"']+$")) {
-							String ending = ".";
-							if (Tim.rand.nextInt(100) > 65) {
-								ending = sentenceEndings[Tim.rand.nextInt(sentenceEndings.length)];
-							}
-
-							sentence = sentence.replaceFirst("[.?!:;/\"'-]*$", ending);
-						}
-
-						startNew = true;
-						break;
-					}
-
-					if (startNew) {
-						if ("emote".equals(type)) {
-							if (Tim.rand.nextInt(100) > 65) {
-								sentence += " " + Tim.bot.getNick();
-							} else {
-								if (Tim.rand.nextBoolean()) {
-									sentence += " He";
-								} else {
-									sentence += " They";
-								}
-							}
+				if ("emote".equals(type)) {
+					if (curWords > 0) {
+						if (Tim.rand.nextInt(100) > 65) {
+							nextSentence = " " + Tim.bot.getNick() + nextSentence;
 						} else {
-							lastWord = StringUtils.capitalize(lastWord);
+							if (Tim.rand.nextBoolean()) {
+								nextSentence = " He" + nextSentence;
+							} else {
+								nextSentence = " They" + nextSentence;
+							}
 						}
-						
-						startNew = false;
 					}
-					
-					sentence += " " + lastWord;
-					break;
+				} else {
+					nextSentence = StringUtils.capitalize(nextSentence);
 				}
-				
-				curWords++;
 
-				if (startNew && Tim.rand.nextInt(100) < (Math.max(1, curWords - maxLength) * 15)) {
+				if (!nextSentence.matches("[.?!\"']+$")) {
+					String ending = ".";
+					if (Tim.rand.nextInt(100) > 65) {
+						ending = sentenceEndings[Tim.rand.nextInt(sentenceEndings.length)];
+					}
+
+					nextSentence = nextSentence.replaceFirst("[.?!:;/\"'-]*$", ending);
+				}
+
+				curWords += nextSentence.split("\\s+").length;
+				sentence += nextSentence;
+
+				if (Tim.rand.nextInt(100) < 10) {
 					break;
 				}
 			}
 
-			nextRes.close();
-			totalRes.close();
-			nextWord.close();
-			getTotal.close();
+			nextSentenceStmt.close();
 		} catch (SQLException ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		} finally {
