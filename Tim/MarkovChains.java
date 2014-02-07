@@ -267,17 +267,21 @@ public class MarkovChains {
 				if ("emote".equals(type)) {
 					if (curWords > 0) {
 						if (Tim.rand.nextInt(100) > 65) {
-							nextSentence = " " + Tim.bot.getNick() + nextSentence;
+							nextSentence = Tim.bot.getNick() + " " + nextSentence;
 						} else {
 							if (Tim.rand.nextBoolean()) {
-								nextSentence = " He" + nextSentence;
+								nextSentence = "He " + nextSentence;
 							} else {
-								nextSentence = " They" + nextSentence;
+								nextSentence = "They " + nextSentence;
 							}
 						}
 					}
 				} else {
 					nextSentence = StringUtils.capitalize(nextSentence);
+				}
+				
+				if (!"".equals(sentence)) {
+					nextSentence = " " + nextSentence;
 				}
 
 				if (!nextSentence.matches("[.?!\"']+$")) {
