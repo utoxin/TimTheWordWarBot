@@ -39,6 +39,9 @@ BEGIN
 				SET word1 = word2;
 				SET word2 = word3;
 			END IF;
+		ELSE
+			SET word1 = word2;
+			SET word2 = 1;
 		END IF;
 	END WHILE;
 
@@ -81,6 +84,9 @@ BEGIN
 				SET word1 = word2;
 				SET word2 = word3;
 			END IF;
+		ELSE
+			SET word1 = word2;
+			SET word2 = 1;
 		END IF;
 	END WHILE;
 

@@ -266,14 +266,12 @@ public class MarkovChains {
 
 				if ("emote".equals(type)) {
 					if (curWords > 0) {
-						if (Tim.rand.nextInt(100) > 65) {
+						if (Tim.rand.nextInt(100) > 75) {
 							nextSentence = Tim.bot.getNick() + " " + nextSentence;
+						} else if (Tim.rand.nextInt(100) > 50) {
+							nextSentence = "He " + nextSentence;
 						} else {
-							if (Tim.rand.nextBoolean()) {
-								nextSentence = "He " + nextSentence;
-							} else {
-								nextSentence = "They " + nextSentence;
-							}
+							nextSentence = "It " + nextSentence;
 						}
 					}
 				} else {
@@ -293,10 +291,11 @@ public class MarkovChains {
 					nextSentence = nextSentence.replaceFirst("[.?!:;/\"'-]*$", ending);
 				}
 
-				curWords += nextSentence.split("\\s+").length;
+				curWords += nextSentence.trim().split("\\s+").length;
 				sentence += nextSentence;
 
-				if (Tim.rand.nextInt(100) < 10) {
+				// Odds of ending early = Percentage of Max divided by 4
+				if (Tim.rand.nextInt(100) < ( (1-((maxLength - curWords) / maxLength)) * 25) ) {
 					break;
 				}
 			}

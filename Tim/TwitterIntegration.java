@@ -273,7 +273,7 @@ public class TwitterIntegration extends StatusAdapter {
 					if (status.getText().toLowerCase().contains("#nanowrimo") && Tim.rand.nextInt(100) < 3 && checkFriendship.isTargetFollowingSource()) {
 						String message2;
 
-						if (Tim.rand.nextBoolean()) {
+						if (Tim.rand.nextInt(100) < 20) {
 							int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
 							message2 = "@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r);
 						} else {
@@ -348,9 +348,11 @@ public class TwitterIntegration extends StatusAdapter {
 					if (getItem) {
 						int r = Tim.rand.nextInt(Tim.amusement.approved_items.size());
 						message = "@" + status.getUser().getScreenName() + " Here, have " + Tim.amusement.approved_items.get(r);
-					} else {
+					} else if (Tim.rand.nextInt(100) < 20) {
 						int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
 						message = "@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r);
+					} else {
+						message = "@" + status.getUser().getScreenName() + " " + Tim.markov.generate_markov("say");
 					}
 
 					if (message.length() > 118) {
