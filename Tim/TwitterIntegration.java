@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.ArrayUtils;
 import org.pircbotx.Colors;
 import twitter4j.*;
@@ -321,6 +323,58 @@ public class TwitterIntegration extends StatusAdapter {
 		public void onStatus(Status status) {
 			boolean sendReply = false;
 			boolean getItem = false;
+			
+			if (status.getText().toLowerCase().startsWith("@bottimmy")) {
+				if (status.getText().toLowerCase().contains("!unfollow")) {
+					try {
+						twitter.destroyFriendship(status.getUser().getId());
+
+						StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " Okay, I won't follow you anymore... #SadTimmy #NaNoWriMo");
+						reply.setInReplyToStatusId(status.getId());
+
+						twitter.updateStatus(reply);
+					} catch (TwitterException ex) {
+						Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+					}
+
+					return;
+				} else if (status.getText().toLowerCase().contains("!follow")) {
+					try {
+						twitter.createFriendship(status.getUser().getId());
+
+						StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " Hurray! A new friend! #HappyTimmy #NaNoWriMo");
+						reply.setInReplyToStatusId(status.getId());
+
+						twitter.updateStatus(reply);
+					} catch (TwitterException ex) {
+						Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+					}
+
+					return;
+				} else if (status.getText().toLowerCase().contains("!fridge")) {
+					try {
+						Pattern fridgeVictimPattern = Pattern.compile("!fridge @(\\S+)", Pattern.CASE_INSENSITIVE);
+						Matcher fridgeVictimMatcher = fridgeVictimPattern.matcher(status.getText());
+						
+						String target;
+						if (fridgeVictimMatcher.find() && Tim.rand.nextInt(100) > 33) {
+							target = fridgeVictimMatcher.group(1);
+						} else {
+							target = status.getUser().getScreenName();
+						}
+
+						StatusUpdate reply = new StatusUpdate("Timmy hurls a " + Tim.amusement.colours.get(Tim.rand.nextInt(Tim.amusement.colours.size())) + " fridge at @" + target + "! #FearTimmy #NaNoWriMo");
+						reply.setInReplyToStatusId(status.getId());
+
+						twitter.updateStatus(reply);
+					} catch (TwitterException ex) {
+						Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+					}
+					
+					return;
+				}
+			}
+
 			if (status.getInReplyToUserId() == TwitterIntegration.BotTimmy.getId()) {
 				sendReply = true;
 				if (Tim.rand.nextInt(100) < 15) {
