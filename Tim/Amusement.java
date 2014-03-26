@@ -14,6 +14,7 @@ package Tim;
 
 import com.google.common.collect.ImmutableSortedSet;
 import java.sql.*;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -172,6 +173,22 @@ public class Amusement {
 					return true;
 				}
 				break;
+			case "attack":
+				if (cdata.commands_enabled.get("attack")) {
+					if (args != null && args.length > 0) {
+						String target = args[0];
+						for (int i = 1; i < args.length; ++i) {
+							target = target + " " + args[i];
+						}
+						attackCommand(event.getChannel(), event.getUser(), target);
+					} else {
+						attackCommand(event.getChannel(), event.getUser(), null);
+					}
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+
+				return true;
 			case "fridge":
 				if (cdata.commands_enabled.get("fridge")) {
 					throwFridge(event.getChannel(), event.getUser(), args, true);
@@ -462,6 +479,7 @@ public class Amusement {
 		randomAction(event.getUser(), event.getChannel().toString());
 	}
 
+	@SuppressWarnings("null")
 	protected void randomAction(User sender, String channel) {
 		cdata = Tim.db.channel_data.get(channel);
 
@@ -569,6 +587,48 @@ public class Amusement {
 		} catch (NumberFormatException ex) {
 			event.respond(number + " is not a number I could understand.");
 		}
+	}
+
+	protected void attackCommand(Channel channel, User sender, String target) {
+		DecimalFormat formatter = new DecimalFormat("#,###");
+		String item = this.approved_items.get(Tim.rand.nextInt(this.approved_items.size()));
+
+		if (target != null && Tim.rand.nextInt(100) > 75) {
+			channel.send().action(String.format("decides he likes %s, so he attacks %s instead...", target, sender.getNick()));
+			target = sender.getNick();
+		} else if (target == null) {
+			target = sender.getNick();
+		}
+
+		int damage;
+
+		switch(Tim.rand.nextInt(8)) {
+			case 2:
+			case 3:
+				damage = Tim.rand.nextInt(100);
+				break;
+			case 4:
+			case 5:
+				damage = Tim.rand.nextInt(1000);
+				break;
+			case 6:
+				damage = Tim.rand.nextInt(10000);
+				break;
+			case 7:
+				damage = Tim.rand.nextInt(100000);
+				break;
+			default:
+				damage = Tim.rand.nextInt(10);
+		}
+
+		String damageString;
+		if (damage > 9000) {
+			damageString = "OVER 9000";
+		} else {
+			damageString = formatter.format(damage);
+		}
+		
+		channel.send().action(String.format("hits %s with %s for %s points of damage.", target, item, damageString));
 	}
 
 	protected void getItem(Channel channel, String target, String[] args) {

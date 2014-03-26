@@ -323,39 +323,32 @@ public class TwitterIntegration extends StatusAdapter {
 		public void onStatus(Status status) {
 			boolean sendReply = false;
 			boolean getItem = false;
+			Relationship checkFriendship;
 			
 			if (status.getText().toLowerCase().startsWith("@bottimmy")) {
-				if (status.getText().toLowerCase().contains("!unfollow")) {
-					try {
+				try {
+					if (status.getText().toLowerCase().contains("!unfollow")) {
 						twitter.destroyFriendship(status.getUser().getId());
 
 						StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " Okay, I won't follow you anymore... #SadTimmy #NaNoWriMo");
 						reply.setInReplyToStatusId(status.getId());
 
 						twitter.updateStatus(reply);
-					} catch (TwitterException ex) {
-						Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
-					}
-
-					return;
-				} else if (status.getText().toLowerCase().contains("!follow")) {
-					try {
+						
+						return;
+					} else if (status.getText().toLowerCase().contains("!follow")) {
 						twitter.createFriendship(status.getUser().getId());
 
 						StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " Hurray! A new friend! #HappyTimmy #NaNoWriMo");
 						reply.setInReplyToStatusId(status.getId());
 
 						twitter.updateStatus(reply);
-					} catch (TwitterException ex) {
-						Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
-					}
-
-					return;
-				} else if (status.getText().toLowerCase().contains("!fridge")) {
-					try {
+						
+						return;
+					} else if (status.getText().toLowerCase().contains("!fridge")) {
 						Pattern fridgeVictimPattern = Pattern.compile("!fridge @(\\S+)", Pattern.CASE_INSENSITIVE);
 						Matcher fridgeVictimMatcher = fridgeVictimPattern.matcher(status.getText());
-						
+
 						String target;
 						if (fridgeVictimMatcher.find() && Tim.rand.nextInt(100) > 33) {
 							target = fridgeVictimMatcher.group(1);
@@ -367,11 +360,11 @@ public class TwitterIntegration extends StatusAdapter {
 						reply.setInReplyToStatusId(status.getId());
 
 						twitter.updateStatus(reply);
-					} catch (TwitterException ex) {
-						Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+						
+						return;
 					}
-					
-					return;
+				} catch (TwitterException ex) {
+					Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			}
 

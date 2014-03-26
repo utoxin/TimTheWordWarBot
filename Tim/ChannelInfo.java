@@ -89,26 +89,27 @@ public class ChannelInfo {
 		chatter_enabled.put("herd", Boolean.TRUE);
 		chatter_enabled.put("banish", Boolean.TRUE);
 
+		commands_enabled.put("attack", Boolean.TRUE);
+		commands_enabled.put("banish", Boolean.TRUE);
+		commands_enabled.put("chainstory", Boolean.TRUE);
+		commands_enabled.put("challenge", Boolean.TRUE);
+		commands_enabled.put("commandment", Boolean.TRUE);
+		commands_enabled.put("creeper", Boolean.TRUE);
+		commands_enabled.put("defenestrate", Boolean.TRUE);
+		commands_enabled.put("dance", Boolean.TRUE);
+		commands_enabled.put("dice", Boolean.TRUE);
 		commands_enabled.put("eightball", Boolean.TRUE);
 		commands_enabled.put("expound", Boolean.TRUE);
-		commands_enabled.put("dice", Boolean.TRUE);
-		commands_enabled.put("woot", Boolean.TRUE);
-		commands_enabled.put("get", Boolean.TRUE);
-		commands_enabled.put("fridge", Boolean.TRUE);
-		commands_enabled.put("dance", Boolean.TRUE);
-		commands_enabled.put("lick", Boolean.FALSE);
-		commands_enabled.put("commandment", Boolean.TRUE);
-		commands_enabled.put("defenestrate", Boolean.TRUE);
-		commands_enabled.put("summon", Boolean.TRUE);
 		commands_enabled.put("foof", Boolean.TRUE);
-		commands_enabled.put("creeper", Boolean.TRUE);
-		commands_enabled.put("search", Boolean.TRUE);
-		commands_enabled.put("challenge", Boolean.TRUE);
-		commands_enabled.put("chainstory", Boolean.TRUE);
-		commands_enabled.put("sing", Boolean.TRUE);
-		commands_enabled.put("ping", Boolean.TRUE);
+		commands_enabled.put("fridge", Boolean.TRUE);
+		commands_enabled.put("get", Boolean.TRUE);
 		commands_enabled.put("herd", Boolean.TRUE);
-		commands_enabled.put("banish", Boolean.TRUE);
+		commands_enabled.put("lick", Boolean.FALSE);
+		commands_enabled.put("ping", Boolean.TRUE);
+		commands_enabled.put("search", Boolean.TRUE);
+		commands_enabled.put("sing", Boolean.TRUE);
+		commands_enabled.put("summon", Boolean.TRUE);
+		commands_enabled.put("woot", Boolean.TRUE);
 	}
 
 	public boolean amusement_chatter_available() {
