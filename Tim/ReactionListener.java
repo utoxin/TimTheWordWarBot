@@ -91,6 +91,13 @@ public class ReactionListener extends ListenerAdapter {
 		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase()) &&
 			!Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())) {
 			if (message.charAt(0) != '$' && message.charAt(0) != '!') {
+				if (!message.equals(":(") && !message.equals("):")) {
+					cdata.lastSpeaker = event.getUser();
+					cdata.lastSpeakerTime = System.currentTimeMillis();
+				} else if (cdata.lastSpeakerTime <= (System.currentTimeMillis() - (60 * 1000))) {
+					cdata.lastSpeaker = event.getUser();
+				}
+
 				if (message.toLowerCase().contains("how many lights") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < lights_odds) {
 						event.getChannel().send().message("There are FOUR LIGHTS!");
@@ -113,7 +120,7 @@ public class ReactionListener extends ListenerAdapter {
 					}
 				} else if ((message.contains(":(") || message.contains("):")) && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < hug_odds) {
-						event.getChannel().send().action("gives " + event.getUser().getNick() + " a hug.");
+						event.getChannel().send().action("gives " + cdata.lastSpeaker.getNick() + " a hug.");
 						hug_odds -= Tim.rand.nextInt(5);
 					}
 				} else if (message.contains(":'(") && cdata.chatter_enabled.get("silly_reactions")) {

@@ -5,9 +5,8 @@
  */
 package Tim;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import org.pircbotx.User;
 
 /**
  *
@@ -20,6 +19,9 @@ public class ChannelInfo {
 	public HashMap<String, Boolean> chatter_enabled = new HashMap<>(16);
 	public HashMap<String, Boolean> commands_enabled = new HashMap<>(16);
 	public Set<String> twitter_accounts = new HashSet<>(16);
+	
+	public User lastSpeaker;
+	public long lastSpeakerTime;
 
 	public int reactiveChatterLevel;
 	public int randomChatterLevel;
