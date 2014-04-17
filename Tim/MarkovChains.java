@@ -330,7 +330,7 @@ public class MarkovChains {
 	public int getSeedWord(String message, String type, int lastSeed) {
 		String[] words = message.split(" ");
 		HashSet<Integer> wordIds = new HashSet<>();
-		Connection con;
+		Connection con = null;
 
 		for (String word : words) {
 			wordIds.add(getMarkovWordId(word));
@@ -373,6 +373,14 @@ public class MarkovChains {
 			s.close();
 		} catch (SQLException ex) {
 			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 		
 		return 0;
