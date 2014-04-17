@@ -13,8 +13,7 @@
 package Tim;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -23,7 +22,6 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.pircbotx.Channel;
 import org.pircbotx.Colors;
-import org.pircbotx.hooks.events.ActionEvent;
 import org.pircbotx.hooks.events.MessageEvent;
 
 /**
@@ -120,15 +118,7 @@ public class MarkovChains {
 		getBadpairs();
 	}
 
-	public void randomActionWrapper(MessageEvent event) {
-		randomAction(event.getChannel().getName(), Tim.rand.nextBoolean() ? "say" : "mutter");
-	}
-
-	public void randomActionWrapper(ActionEvent event) {
-		randomAction(event.getChannel().getName(), Tim.rand.nextBoolean() ? "mutter" : "emote");
-	}
-
-	protected void randomAction(String channel, String type) {
+	protected void randomAction(String channel, String type, String message) {
 		String[] actions = {
 			"markhov"
 		};
@@ -140,13 +130,13 @@ public class MarkovChains {
 				Thread.sleep(Tim.rand.nextInt(1000) + 500);
 				switch (type) {
 					case "say":
-						Tim.bot.sendIRC().message(channel, generate_markov(type));
+						Tim.bot.sendIRC().message(channel, generate_markov(type, message));
 						break;
 					case "mutter":
-						Tim.bot.sendIRC().action(channel, "mutters under his breath, \"" + generate_markov("say") + "\"");
+						Tim.bot.sendIRC().action(channel, "mutters under his breath, \"" + generate_markov("say", message) + "\"");
 						break;
 					default:
-						Tim.bot.sendIRC().action(channel, generate_markov(type));
+						Tim.bot.sendIRC().action(channel, generate_markov(type, message));
 						break;
 				}
 			} catch (InterruptedException ex) {
@@ -240,10 +230,20 @@ public class MarkovChains {
 	}
 
 	public String generate_markov(String type) {
-		return generate_markov(type, Tim.rand.nextInt(25) + 10);
+		return generate_markov(type, Tim.rand.nextInt(25) + 10, 0);
 	}
 
-	public String generate_markov(String type, int maxLength) {
+	public String generate_markov(String type, String message) {
+		int seedWord = 0;
+
+		if (!message.equals("")) {
+			seedWord = getSeedWord(message, type, 0);
+		}
+
+		return generate_markov(type, Tim.rand.nextInt(25) + 10, seedWord);
+	}
+
+	public String generate_markov(String type, int maxLength, int seedWord) {
 		Connection con = null;
 		String sentence = "";
 		try {
@@ -251,18 +251,29 @@ public class MarkovChains {
 			CallableStatement nextSentenceStmt;
 
 			if ("emote".equals(type)) {
-				nextSentenceStmt = con.prepareCall("CALL generateMarkovEmote(?)");
+				nextSentenceStmt = con.prepareCall("CALL generateMarkovEmote(?, ?)");
 			} else {
-				nextSentenceStmt = con.prepareCall("CALL generateMarkovSay(?)");
+				nextSentenceStmt = con.prepareCall("CALL generateMarkovSay(?, ?)");
 			}
 
-			nextSentenceStmt.registerOutParameter(1, java.sql.Types.LONGVARCHAR);
+			nextSentenceStmt.registerOutParameter(2, java.sql.Types.LONGVARCHAR);
 
 			int curWords = 0;
 
 			while (curWords < maxLength) {
+				nextSentenceStmt.setInt(1, seedWord);
 				nextSentenceStmt.executeUpdate();
-				String nextSentence = nextSentenceStmt.getString(1);
+				String nextSentence = nextSentenceStmt.getString(2);
+				
+				if (seedWord > 0) {
+					nextSentence = getMarkovWordById(seedWord) + " " + nextSentence;
+				}
+				
+				if (!"".equals(nextSentence)) {
+					seedWord = getSeedWord(nextSentence, type, seedWord);
+				} else {
+					seedWord = 0;
+				}
 
 				if ("emote".equals(type)) {
 					if (curWords > 0) {
@@ -316,6 +327,57 @@ public class MarkovChains {
 		return sentence;
 	}
 
+	public int getSeedWord(String message, String type, int lastSeed) {
+		String[] words = message.split(" ");
+		HashSet<Integer> wordIds = new HashSet<>();
+		Connection con;
+
+		for (String word : words) {
+			wordIds.add(getMarkovWordId(word));
+		}
+		
+		wordIds.remove(lastSeed);
+		if (wordIds.isEmpty()) {
+			return 0;
+		}
+		
+		String ids = StringUtils.join(wordIds, ",");
+
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			PreparedStatement s;
+			if (type.equals("say")) {
+				s = con.prepareStatement("SELECT * FROM (SELECT second_id FROM markov3_say_data msd WHERE msd.first_id = 1 AND msd.third_id != 1 AND msd.second_id IN ("+ids+") "
+					+ "GROUP BY msd.second_id ORDER BY sum(msd.count) ASC LIMIT ?) derived ORDER BY RAND() LIMIT 1");
+			} else {
+				s = con.prepareStatement("SELECT * FROM (SELECT second_id FROM markov3_emote_data msd WHERE msd.first_id = 1 AND msd.third_id != 1 AND msd.second_id IN ("+ids+") "
+					+ "GROUP BY msd.second_id ORDER BY sum(msd.count) ASC LIMIT ?) derived ORDER BY RAND() LIMIT 1");
+			}
+
+			int innerLimit = 2;
+			if ((words.length / 4) > 2) {
+				innerLimit = words.length / 4;
+			}
+			
+			s.setInt(1, innerLimit);
+			s.executeQuery();
+
+			ResultSet rs = s.getResultSet();
+
+			if (rs.next()) {
+				return rs.getInt(1);
+			}
+			
+			rs.close();
+			s.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		
+		return 0;
+	}
+	
 	public void getAlternatewords() {
 		Connection con;
 		try {
@@ -568,6 +630,35 @@ public class MarkovChains {
 		}
 
 		return 0;
+	}
+
+	private String getMarkovWordById(int wordID) {
+		Connection con = null;
+
+		try {
+			con = db.pool.getConnection(timeout);
+			PreparedStatement checkword;
+
+			checkword = con.prepareStatement("SELECT word FROM markov_words WHERE id = ?");
+
+			checkword.setInt(1, wordID);
+			ResultSet checkRes = checkword.executeQuery();
+			if (checkRes.next()) {
+				return checkRes.getString("word");
+			}
+		} catch (SQLException ex) {
+			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+
+		return "";
 	}
 
 	private String[] replaceBadPair(String word_one, String word_two) {

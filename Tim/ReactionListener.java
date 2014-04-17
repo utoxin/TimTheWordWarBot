@@ -143,7 +143,7 @@ public class ReactionListener extends ListenerAdapter {
 					}
 				} else if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < eightball_odds) {
-						Tim.amusement.eightball(event.getChannel(), event.getUser(), false);
+						Tim.amusement.eightball(event.getChannel(), event.getUser(), false, message);
 						eightball_odds -= Tim.rand.nextInt(5);
 					}
 				} else {
@@ -249,7 +249,7 @@ public class ReactionListener extends ListenerAdapter {
 				}
 			} else if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < eightball_odds) {
-					Tim.amusement.eightball(event.getChannel(), event.getUser(), false);
+					Tim.amusement.eightball(event.getChannel(), event.getUser(), false, message);
 					eightball_odds -= Tim.rand.nextInt(5);
 				}
 			} else {
@@ -302,7 +302,7 @@ public class ReactionListener extends ListenerAdapter {
 					} else if ("emote".equals(type) && Tim.rand.nextBoolean()) {
 						type = "mutter";
 					}
-					Tim.markov.randomAction(channel.getName().toLowerCase(), type);
+					Tim.markov.randomAction(channel.getName().toLowerCase(), type, message);
 					break;
 				case "challenge":
 					Tim.challenge.randomAction(sender, cdata.channel);

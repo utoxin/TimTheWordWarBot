@@ -75,11 +75,11 @@ public class DeIdler {
 			String name = Tim.story.getRandomName();
 			String new_text;
 			if (Tim.rand.nextInt(100) < 75) {
-				new_text = name + " " + Tim.markov.generate_markov("emote", Tim.rand.nextInt(150) + 75) + ".";
+				new_text = name + " " + Tim.markov.generate_markov("emote", Tim.rand.nextInt(150) + 75, 0) + ".";
 			} else if (Tim.rand.nextBoolean()) {
-				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(45) + 25) + ",\" " + name + " muttered quietly.";
+				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(45) + 25, 0) + ",\" " + name + " muttered quietly.";
 			} else {
-				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(25) + 25) + ",\" " + name + " said.";
+				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(25) + 25, 0) + ",\" " + name + " said.";
 			}
 
 			Tim.story.storeLine(new_text, "Timmy");
@@ -133,7 +133,7 @@ public class DeIdler {
 				String action = actions[Tim.rand.nextInt(actions.length)];
 				switch (action) {
 					case "markov":
-						Tim.markov.randomAction(cdata.channel, Tim.rand.nextBoolean() ? "say" : "emote");
+						Tim.markov.randomAction(cdata.channel, Tim.rand.nextBoolean() ? "say" : "emote", "");
 						break;
 					case "amusement":
 						Tim.amusement.randomAction(null, cdata.channel);

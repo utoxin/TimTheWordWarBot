@@ -3,7 +3,7 @@ DROP PROCEDURE IF EXISTS `generateMarkovSay`;
 DROP PROCEDURE IF EXISTS `generateMarkovEmote`;
 
 DELIMITER $$
-CREATE PROCEDURE `generateMarkovSay`(OUT finalSentence TEXT)
+CREATE PROCEDURE `generateMarkovSay`(IN seedWord INT(10), OUT finalSentence TEXT)
 BEGIN
 	DECLARE sentence TEXT;
 	DECLARE lastWord VARCHAR(100);
@@ -16,6 +16,10 @@ BEGIN
 	DECLARE CONTINUE HANDLER FOR NOT FOUND SET word3 = 0;
 
 	SET word3 = 2;
+
+	IF (seedWord > 0) THEN
+		SET word2 = seedWord;
+	END IF;
 
 	WHILE word3 > 1 DO
 		OPEN countCurs;
@@ -48,7 +52,7 @@ BEGIN
 	SET finalSentence = sentence;
 END$$
 
-CREATE PROCEDURE `generateMarkovEmote`(OUT finalSentence TEXT)
+CREATE PROCEDURE `generateMarkovEmote`(IN seedWord INT(10), OUT finalSentence TEXT)
 BEGIN
 	DECLARE sentence TEXT;
 	DECLARE lastWord VARCHAR(100);
@@ -61,6 +65,10 @@ BEGIN
 	DECLARE CONTINUE HANDLER FOR NOT FOUND SET word3 = 0;
 
 	SET word3 = 2;
+
+	IF (seedWord > 0) THEN
+		SET word2 = seedWord;
+	END IF;
 
 	WHILE word3 > 1 DO
 		OPEN countCurs;

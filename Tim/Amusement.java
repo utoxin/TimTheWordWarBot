@@ -61,11 +61,13 @@ public class Amusement {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String[] args = null;
+		String argStr = "";
 
 		int space = message.indexOf(" ");
 		if (space > 0) {
 			command = message.substring(1, space).toLowerCase();
 			args = message.substring(space + 1).split(" ", 0);
+			argStr = StringUtils.join(args, " ");
 		} else {
 			command = message.substring(1).toLowerCase();
 		}
@@ -83,7 +85,7 @@ public class Amusement {
 				return true;
 			case "eightball":
 				if (cdata.commands_enabled.get("eightball")) {
-					eightball(event.getChannel(), event.getUser(), false);
+					eightball(event.getChannel(), event.getUser(), false, argStr);
 				} else {
 					event.respond("I'm sorry. I don't do that here.");
 				}
@@ -93,13 +95,13 @@ public class Amusement {
 				if (cdata.commands_enabled.get("expound")) {
 					int which = Tim.rand.nextInt(3);
 					String type = "say";
-					if (which == 1) {
+					if (which == 1 || (which == 2 && !argStr.equals(""))) {
 						type = "mutter";
 					} else if (which == 2) {
 						type = "emote";
 					}
 
-					Tim.markov.randomAction(event.getChannel().getName(), type);
+					Tim.markov.randomAction(event.getChannel().getName(), type, argStr);
 				} else {
 					event.respond("I'm sorry. I don't do that here.");
 				}
@@ -539,7 +541,7 @@ public class Amusement {
 				getItem(sendChannel, sender.getNick(), null);
 				break;
 			case "eightball":
-				eightball(sendChannel, sender, true);
+				eightball(sendChannel, sender, true, "");
 				break;
 			case "fridge":
 				throwFridge(sendChannel, sender, null, false);
@@ -746,7 +748,7 @@ public class Amusement {
 		}
 	}
 
-	protected void eightball(Channel channel, User sender, boolean mutter) {
+	protected void eightball(Channel channel, User sender, boolean mutter, String argStr) {
 		try {
 			int r = Tim.rand.nextInt(this.eightballs.size());
 			int delay = Tim.rand.nextInt(1000) + 1000;
@@ -756,7 +758,7 @@ public class Amusement {
 				channel.send().action("mutters under his breath, \"" + this.eightballs.get(r) + "\"");
 			} else {
 				if (Tim.rand.nextInt(100) < 5) {
-					channel.send().message(sender.getNick() + ": " + Tim.markov.generate_markov("say"));
+					channel.send().message(sender.getNick() + ": " + Tim.markov.generate_markov("say", argStr));
 				} else {
 					channel.send().message(sender.getNick() + ": " + this.eightballs.get(r));
 				}
