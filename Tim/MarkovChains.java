@@ -269,7 +269,7 @@ public class MarkovChains {
 					nextSentence = getMarkovWordById(seedWord) + " " + nextSentence;
 				}
 				
-				if (!"".equals(nextSentence)) {
+				if (nextSentence.split(" ").length >= 5) {
 					seedWord = getSeedWord(nextSentence, type, seedWord);
 				} else {
 					seedWord = 0;
