@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package Tim;
 
 import java.util.HashMap;
@@ -37,6 +33,7 @@ public class TwitterIntegration extends StatusAdapter {
 	long lastConnect;
 	HashMap<String, Long> accountCache = new HashMap<>(32);
 	HashMap<Long, HashSet<String>> accountsToChannels = new HashMap<>(32);
+	IDs friendIDs;
 
 	public TwitterIntegration() {
 		accessKey = Tim.db.getSetting("twitter_access_key");
@@ -51,6 +48,7 @@ public class TwitterIntegration extends StatusAdapter {
 
 		try {
 			BotTimmy = twitter.showUser("BotTimmy");
+			friendIDs = twitter.getFriendsIDs(BotTimmy.getId());
 		} catch (TwitterException ex) {
 			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -323,7 +321,6 @@ public class TwitterIntegration extends StatusAdapter {
 		public void onStatus(Status status) {
 			boolean sendReply = false;
 			boolean getItem = false;
-			Relationship checkFriendship;
 			
 			if (status.getText().toLowerCase().startsWith("@bottimmy")) {
 				try {
@@ -335,6 +332,8 @@ public class TwitterIntegration extends StatusAdapter {
 
 						twitter.updateStatus(reply);
 						
+						friendIDs = twitter.getFriendsIDs(BotTimmy.getId());
+
 						return;
 					} else if (status.getText().toLowerCase().contains("!follow")) {
 						twitter.createFriendship(status.getUser().getId());
@@ -343,6 +342,8 @@ public class TwitterIntegration extends StatusAdapter {
 						reply.setInReplyToStatusId(status.getId());
 
 						twitter.updateStatus(reply);
+												
+						friendIDs = twitter.getFriendsIDs(BotTimmy.getId());
 						
 						return;
 					} else if (status.getText().toLowerCase().contains("!fridge")) {
@@ -373,14 +374,14 @@ public class TwitterIntegration extends StatusAdapter {
 				if (Tim.rand.nextInt(100) < 15) {
 					getItem = true;
 				}
-			} else if (status.getText().toLowerCase().contains("@bottimmy") && Tim.rand.nextInt(100) < 80) {
+			} else if (status.getText().toLowerCase().contains("@bottimmy") && status.isRetweet() == false && Tim.rand.nextInt(100) < 80) {
 				sendReply = true;
 				if (Tim.rand.nextInt(100) < 25) {
 					getItem = true;
 				}
 			} else if (Tim.rand.nextInt(100) < 2) {
 				sendReply = true;
-				if (Tim.rand.nextInt(100) < 50) {
+				if (Tim.rand.nextInt(100) < 25) {
 					getItem = true;
 				}
 			}
@@ -450,10 +451,20 @@ public class TwitterIntegration extends StatusAdapter {
 
 		@Override
 		public void onFollow(User user, User user1) {
+			try {
+				friendIDs = twitter.getFriendsIDs(BotTimmy.getId());
+			} catch (TwitterException ex) {
+				Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 
 		@Override
 		public void onDirectMessage(DirectMessage dm) {
+		}
+
+		@Override
+		public void onUnfollow(User user, User user1) {
+			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 		}
 
 		@Override

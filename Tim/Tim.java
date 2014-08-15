@@ -96,7 +96,8 @@ public class Tim {
 		if (Tim.bot.isConnected()) {
 			Tim.warticker.warticker.cancel();
 			Tim.deidler.idleticker.cancel();
-			Tim.twitterstream.twitter.shutdown();
+			Tim.twitterstream.userStream.shutdown();
+			Tim.twitterstream.publicStream.shutdown();
 			Tim.bot.stopBotReconnect();
 			Tim.bot.sendIRC().quitServer("HELP! Utoxin just murdered me! (Again!!!)");
 		}
