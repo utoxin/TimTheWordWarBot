@@ -38,7 +38,7 @@ public class MarkovChains {
 	private final long timeout = 3000;
 	private final UrlValidator urlValidator = new UrlValidator();
 	private final EmailValidator emailValidator;
-	private final String[] sentenceEndings = {"!", "!", "?", "?", "!", "!", "?", "?", "...", "?!", "...!", "...?"};
+	private final String[] sentenceEndings = {".", ".", ".", ".", "!", "!", "?", "?", "!", "!", "?", "?", "...", "?!", "...!", "...?"};
 
 	public MarkovChains() {
 		this.emailValidator = EmailValidator.getInstance();

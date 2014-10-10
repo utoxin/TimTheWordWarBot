@@ -83,6 +83,26 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 	}
 
+	public void sendDeidleTweet(String message) {
+		try {
+			if (friendIDs.getIDs().length > 0 && Tim.rand.nextInt(100) < 15) {
+				long userId = friendIDs.getIDs()[Tim.rand.nextInt(friendIDs.getIDs().length)];
+				User tempUser = twitter.showUser(userId);
+				
+				message = "@" + tempUser.getScreenName() + " " + message;
+			}
+			
+			if (message.length() > 129) {
+				message = message.substring(0, 126) + "...";
+			}
+
+			StatusUpdate status = new StatusUpdate(message + " #FearTimmy");
+			twitter.updateStatus(status);
+		} catch (TwitterException ex) {
+			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
 	private Set<Long> getTwitterIds(String[] usernames) {
 		ResponseList<User> check;
 		Set<Long> userIds = new HashSet<>(128);
@@ -270,7 +290,7 @@ public class TwitterIntegration extends StatusAdapter {
 			if (!status.getUser().getScreenName().equals("BotTimmy")) {
 				try {
 					checkFriendship = twitter.showFriendship(BotTimmy.getId(), status.getUser().getId());
-					if (status.getText().toLowerCase().contains("#nanowrimo") && Tim.rand.nextInt(100) < 3 && checkFriendship.isTargetFollowingSource()) {
+					if (status.getText().toLowerCase().contains("#nanowrimo") && Tim.rand.nextInt(100) < 3 && checkFriendship.isTargetFollowingSource() && status.isRetweet() == false) {
 						String message2;
 
 						if (Tim.rand.nextInt(100) < 20) {
@@ -374,7 +394,7 @@ public class TwitterIntegration extends StatusAdapter {
 				if (Tim.rand.nextInt(100) < 15) {
 					getItem = true;
 				}
-			} else if (status.getText().toLowerCase().contains("@bottimmy") && status.isRetweet() == false && Tim.rand.nextInt(100) < 80) {
+			} else if (status.getText().toLowerCase().contains("@bottimmy") && Tim.rand.nextInt(100) < 80) {
 				sendReply = true;
 				if (Tim.rand.nextInt(100) < 25) {
 					getItem = true;
@@ -386,7 +406,7 @@ public class TwitterIntegration extends StatusAdapter {
 				}
 			}
 
-			if (status.getUser().getId() == TwitterIntegration.BotTimmy.getId()) {
+			if (status.getUser().getId() == TwitterIntegration.BotTimmy.getId() || status.isRetweet() == true) {
 				sendReply = false;
 			}
 
@@ -464,7 +484,11 @@ public class TwitterIntegration extends StatusAdapter {
 
 		@Override
 		public void onUnfollow(User user, User user1) {
-			throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+			try {
+				friendIDs = twitter.getFriendsIDs(BotTimmy.getId());
+			} catch (TwitterException ex) {
+				Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 
 		@Override

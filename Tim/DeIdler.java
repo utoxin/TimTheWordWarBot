@@ -91,7 +91,7 @@ public class DeIdler {
 		}
 
 		if (Tim.rand.nextInt(100) < 1) {
-			Tim.twitterstream.sendTweet(Tim.markov.generate_markov("say"));
+			Tim.twitterstream.sendDeidleTweet(Tim.markov.generate_markov("say"));
 		}
 
 		/**
