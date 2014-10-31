@@ -348,6 +348,96 @@ public class DBAccess {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
+	
+	public void recordVelociraptorSighting(ChannelInfo channel) {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET velociraptor_sightings = velociraptor_sightings + 1, last_sighting_date = NOW() WHERE channel = ?");
+			s.setString(1, channel.channel);
+			s.executeUpdate();
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	public int getVelociraptorSightingCount(ChannelInfo channel) {
+		Connection con;
+		int value = 0;
+
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("SELECT `velociraptor_sightings` FROM `channels` WHERE `channel` = ?");
+			s.setString(1, channel.channel);
+			s.executeQuery();
+
+			ResultSet rs = s.getResultSet();
+			while (rs.next()) {
+				value = rs.getInt("velociraptor_sightings");
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+		return value;
+	}
+
+	public String getVelociraptorSightingDate(ChannelInfo channel) {
+		Connection con;
+		String value = "";
+
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("SELECT IFNULL(DATE_FORMAT(`last_sighting_date`, '%M %D'), 'Never') AS formatted_date FROM `channels` WHERE `channel` = ?");
+			s.setString(1, channel.channel);
+			s.executeQuery();
+
+			ResultSet rs = s.getResultSet();
+			while (rs.next()) {
+				value = rs.getString("formatted_date");
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+		return value;
+	}
+
+	public String getRecentVelociraptorSighting() {
+		Connection con;
+		String channel = "Unknown";
+		String date = "Unknown";
+		int count = 0;
+		
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("SELECT IFNULL(DATE_FORMAT(`last_sighting_date`, '%M %D'), 'Never') AS formatted_date, velociraptor_sightings, channel FROM `channels` ORDER BY `last_sighting_date` DESC LIMIT 1");
+			s.executeQuery();
+
+			ResultSet rs = s.getResultSet();
+			while (rs.next()) {
+				date = rs.getString("formatted_date");
+				channel = rs.getString("channel");
+				count = rs.getInt("velociraptor_sightings");
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+
+		return String.format("The last velociraptor sighting was in %s on %s. They have reported %d velociraptors.", channel, date, count);
+	}
 
 	public void saveChannelSettings(ChannelInfo channel) {
 		Connection con;

@@ -58,6 +58,7 @@ public class Tim {
 			.addListener(new ReactionListener())
 			.addListener(new ServerListener())
 			.setServerHostname(db.getSetting("server"))
+			.setServerPassword(db.getSetting("server_password"))
 			.setEncoding(Charset.forName("UTF-8"))
 			.setMessageDelay(Long.parseLong(db.getSetting("max_rate")))
 			.setAutoNickChange(true);

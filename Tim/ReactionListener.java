@@ -37,6 +37,8 @@ public class ReactionListener extends ListenerAdapter {
 	private int aypwip_odds = 100;
 	private int answer_odds = 65;
 	private int eightball_odds = 100;
+	private int soon_odds = 100;
+	private int velociraptor_odds = 100;
 
 	private final int max_lights_odds = 100;
 	private final int max_fox_odds = 75;
@@ -47,6 +49,8 @@ public class ReactionListener extends ListenerAdapter {
 	private final int max_aypwip_odds = 100;
 	private final int max_answer_odds = 65;
 	private final int max_eightball_odds = 100;
+	private final int max_soon_odds = 100;
+	private final int max_velociraptor_odds = 100;
 
 	@Override
 	public void onMessage(MessageEvent event) {
@@ -57,36 +61,8 @@ public class ReactionListener extends ListenerAdapter {
 		if (cdata.muzzled) {
 			return;
 		}
-
-		if (Tim.rand.nextInt(250) == 0) {
-			if (lights_odds < max_lights_odds) {
-				lights_odds += Tim.rand.nextInt(5);
-			}
-			if (fox_odds < max_fox_odds) {
-				fox_odds += Tim.rand.nextInt(5);
-			}
-			if (cheeseburger_odds < max_cheeseburger_odds) {
-				cheeseburger_odds += Tim.rand.nextInt(5);
-			}
-			if (test_odds < max_test_odds) {
-				test_odds += Tim.rand.nextInt(5);
-			}
-			if (hug_odds < max_hug_odds) {
-				hug_odds += Tim.rand.nextInt(5);
-			}
-			if (tissue_odds < max_tissue_odds) {
-				tissue_odds += Tim.rand.nextInt(5);
-			}
-			if (aypwip_odds < max_aypwip_odds) {
-				aypwip_odds += Tim.rand.nextInt(5);
-			}
-			if (answer_odds < max_answer_odds) {
-				answer_odds += Tim.rand.nextInt(5);
-			}
-			if (eightball_odds < max_eightball_odds) {
-				eightball_odds += Tim.rand.nextInt(5);
-			}
-		}
+		
+		updateOdds();
 
 		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase()) &&
 			!Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())) {
@@ -107,6 +83,17 @@ public class ReactionListener extends ListenerAdapter {
 					if (Tim.rand.nextInt(100) < fox_odds) {
 						event.respond("Foxes don't talk. Sheesh.");
 						fox_odds -= Tim.rand.nextInt(5);
+					}
+				} else if (message.toLowerCase().contains("when will then be now") && cdata.chatter_enabled.get("silly_reactions")) {
+					if (Tim.rand.nextInt(100) < soon_odds) {
+						event.respond("Soon.");
+						soon_odds -= Tim.rand.nextInt(5);
+					}
+				} else if (message.toLowerCase().contains("velociraptor") && cdata.chatter_enabled.get("silly_reactions")) {
+					Tim.db.recordVelociraptorSighting(cdata);
+					if (Tim.rand.nextInt(100) < velociraptor_odds) {
+						event.respond("Velociraptor sighted! Incident has been logged.");
+						velociraptor_odds -= Tim.rand.nextInt(5);
 					}
 				} else if (message.toLowerCase().contains("cheeseburger") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < cheeseburger_odds) {
@@ -171,35 +158,7 @@ public class ReactionListener extends ListenerAdapter {
 			return;
 		}
 
-		if (Tim.rand.nextInt(500) == 0) {
-			if (lights_odds < max_lights_odds) {
-				lights_odds++;
-			}
-			if (fox_odds < max_fox_odds) {
-				fox_odds += Tim.rand.nextInt(5);
-			}
-			if (cheeseburger_odds < max_cheeseburger_odds) {
-				cheeseburger_odds += Tim.rand.nextInt(5);
-			}
-			if (test_odds < max_test_odds) {
-				test_odds += Tim.rand.nextInt(5);
-			}
-			if (hug_odds < max_hug_odds) {
-				hug_odds += Tim.rand.nextInt(5);
-			}
-			if (tissue_odds < max_tissue_odds) {
-				tissue_odds += Tim.rand.nextInt(5);
-			}
-			if (aypwip_odds < max_aypwip_odds) {
-				aypwip_odds += Tim.rand.nextInt(5);
-			}
-			if (answer_odds < max_answer_odds) {
-				answer_odds += Tim.rand.nextInt(5);
-			}
-			if (eightball_odds < max_eightball_odds) {
-				eightball_odds += Tim.rand.nextInt(5);
-			}
-		}
+		updateOdds();
 
 		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase()) &&
 			!Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())
@@ -213,6 +172,17 @@ public class ReactionListener extends ListenerAdapter {
 				if (Tim.rand.nextInt(100) < fox_odds) {
 					event.respond("mutters under his breath. \"Foxes don't talk. Sheesh.\"");
 					fox_odds -= Tim.rand.nextInt(5);
+				}
+			} else if (message.toLowerCase().contains("when will then be now") && cdata.chatter_enabled.get("silly_reactions")) {
+				if (Tim.rand.nextInt(100) < soon_odds) {
+					event.respond("replies with certainty, \"Soon.\"");
+					soon_odds -= Tim.rand.nextInt(5);
+				}
+			} else if (message.toLowerCase().contains("velociraptor") && cdata.chatter_enabled.get("silly_reactions")) {
+				Tim.db.recordVelociraptorSighting(cdata);
+				if (Tim.rand.nextInt(100) < velociraptor_odds) {
+					event.respond("jots down a note in a red notebook labeled 'Velociraptor Sighting Log'.");
+					velociraptor_odds -= Tim.rand.nextInt(5);
 				}
 			} else if (message.toLowerCase().contains("cheeseburger") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < cheeseburger_odds) {
@@ -343,6 +313,44 @@ public class ReactionListener extends ListenerAdapter {
 			return "A";
 		} else {
 			return "A+";
+		}
+	}
+	
+	private void updateOdds() {
+		if (Tim.rand.nextInt(250) == 0) {
+			if (lights_odds < max_lights_odds) {
+				lights_odds += Tim.rand.nextInt(5);
+			}
+			if (fox_odds < max_fox_odds) {
+				fox_odds += Tim.rand.nextInt(5);
+			}
+			if (cheeseburger_odds < max_cheeseburger_odds) {
+				cheeseburger_odds += Tim.rand.nextInt(5);
+			}
+			if (test_odds < max_test_odds) {
+				test_odds += Tim.rand.nextInt(5);
+			}
+			if (hug_odds < max_hug_odds) {
+				hug_odds += Tim.rand.nextInt(5);
+			}
+			if (tissue_odds < max_tissue_odds) {
+				tissue_odds += Tim.rand.nextInt(5);
+			}
+			if (aypwip_odds < max_aypwip_odds) {
+				aypwip_odds += Tim.rand.nextInt(5);
+			}
+			if (answer_odds < max_answer_odds) {
+				answer_odds += Tim.rand.nextInt(5);
+			}
+			if (eightball_odds < max_eightball_odds) {
+				eightball_odds += Tim.rand.nextInt(5);
+			}
+			if (soon_odds < max_soon_odds) {
+				soon_odds += Tim.rand.nextInt(5);
+			}
+			if (velociraptor_odds < max_velociraptor_odds) {
+				velociraptor_odds += Tim.rand.nextInt(5);
+			}
 		}
 	}
 }

@@ -128,9 +128,16 @@ public class ServerListener extends ListenerAdapter {
 					&& !Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())
 					&& r < 15
 				) {
-					r = Tim.rand.nextInt(Tim.db.extra_greetings.size());
 					Thread.sleep(500);
-					event.getChannel().send().message(Tim.db.extra_greetings.get(r));
+					if (Tim.rand.nextBoolean()) {
+						r = Tim.rand.nextInt(Tim.db.extra_greetings.size());
+						event.getChannel().send().message(Tim.db.extra_greetings.get(r));
+					} else {
+						int velociraptorCount = Tim.db.getVelociraptorSightingCount(cdata);
+						String velociraptorDate = Tim.db.getVelociraptorSightingDate(cdata);
+						
+						event.getChannel().send().message(String.format("This channel has had %d total velociraptor sightings. The last one was on %s.", velociraptorCount, velociraptorDate));
+					}
 				}
 			} catch (InterruptedException ex) {
 				Logger.getLogger(ServerListener.class.getName()).log(Level.SEVERE, null, ex);
