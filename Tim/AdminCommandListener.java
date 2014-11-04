@@ -192,7 +192,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							}
 						} else {
 							event.respond("Usage: $chatterflag list <#channel> OR $chatterflag set <#channel> <type> <0/1>");
-							event.respond("Valid Chatter Types: all, chainstory, challenge, creeper, dance, defenestrate, eightball, foof, fridge, get, greetings, helpful_reactions, markov, search, sing, silly_reactions, summon");
+							event.respond("Valid Chatter Types: all, chainstory, challenge, creeper, dance, defenestrate, eightball, foof, fridge, get, greetings, helpful_reactions, markov, search, sing, silly_reactions, summon, velociraptor");
 						}
 						break;
 					case "commandflag":
@@ -241,7 +241,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							}
 						} else {
 							event.respond("Usage: $commandflag list <#channel> OR $commandflag set <#channel> <command> <0/1>");
-							event.respond("Valid Commands: all, attack, chainstory, challenge, commandment, creeper, dance, defenestrate, dice, eightball, expound, foof, fridge, get, lick, markov, ping, search, sing, summon, woot");
+							event.respond("Valid Commands: all, attack, chainstory, challenge, commandment, creeper, dance, defenestrate, dice, eightball, expound, foof, fridge, get, lick, markov, ping, search, sing, summon, velociraptor, woot");
 						}
 						break;
 					case "twitterrelay":

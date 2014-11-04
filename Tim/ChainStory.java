@@ -23,10 +23,6 @@ import java.util.logging.Logger;
 import org.pircbotx.Colors;
 import org.pircbotx.hooks.events.MessageEvent;
 
-/**
- *
- * @author mwalker
- */
 public class ChainStory {
 
 	private final long timeout = 3000;

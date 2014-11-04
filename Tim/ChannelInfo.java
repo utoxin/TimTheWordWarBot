@@ -1,19 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package Tim;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import org.pircbotx.User;
 
-/**
- *
- * @author Matthew Walker
- */
 public class ChannelInfo {
-
 	public String channel;
 
 	public HashMap<String, Boolean> chatter_enabled = new HashMap<>(16);
@@ -26,6 +17,12 @@ public class ChannelInfo {
 	public int reactiveChatterLevel;
 	public int randomChatterLevel;
 	public int chatterNameMultiplier;
+	
+	public int velociraptorSightings;
+	public int activeVelociraptors;
+	public int deadVelociraptors;
+	public int killedVelociraptors;
+	public Date lastSighting;
 
 	public long twitterTimer;
 	public float tweetBucket;
@@ -67,29 +64,35 @@ public class ChannelInfo {
 		chatterNameMultiplier = 3;
 		reactiveChatterLevel = 5;
 		randomChatterLevel = 2;
+		
+		velociraptorSightings = 0;
+		activeVelociraptors = 0;
+		deadVelociraptors = 0;
+		killedVelociraptors = 0;
 
 		tweetBucketMax = 10;
 		tweetBucket = 5;
 		tweetBucketChargeRate = 0.5f;
 
+		chatter_enabled.put("banish", Boolean.TRUE);
+		chatter_enabled.put("chainstory", Boolean.TRUE);
+		chatter_enabled.put("challenge", Boolean.TRUE);
+		chatter_enabled.put("creeper", Boolean.TRUE);
+		chatter_enabled.put("dance", Boolean.TRUE);
+		chatter_enabled.put("defenestrate", Boolean.TRUE);
+		chatter_enabled.put("eightball", Boolean.TRUE);
+		chatter_enabled.put("foof", Boolean.TRUE);
+		chatter_enabled.put("fridge", Boolean.TRUE);
+		chatter_enabled.put("get", Boolean.TRUE);
 		chatter_enabled.put("greetings", Boolean.TRUE);
 		chatter_enabled.put("helpful_reactions", Boolean.TRUE);
-		chatter_enabled.put("silly_reactions", Boolean.TRUE);
-		chatter_enabled.put("markov", Boolean.TRUE);
-		chatter_enabled.put("challenge", Boolean.TRUE);
-		chatter_enabled.put("get", Boolean.TRUE);
-		chatter_enabled.put("eightball", Boolean.TRUE);
-		chatter_enabled.put("fridge", Boolean.TRUE);
-		chatter_enabled.put("defenestrate", Boolean.TRUE);
-		chatter_enabled.put("sing", Boolean.TRUE);
-		chatter_enabled.put("foof", Boolean.TRUE);
-		chatter_enabled.put("dance", Boolean.TRUE);
-		chatter_enabled.put("summon", Boolean.TRUE);
-		chatter_enabled.put("creeper", Boolean.TRUE);
-		chatter_enabled.put("search", Boolean.TRUE);
-		chatter_enabled.put("chainstory", Boolean.TRUE);
 		chatter_enabled.put("herd", Boolean.TRUE);
-		chatter_enabled.put("banish", Boolean.TRUE);
+		chatter_enabled.put("markov", Boolean.TRUE);
+		chatter_enabled.put("search", Boolean.TRUE);
+		chatter_enabled.put("silly_reactions", Boolean.TRUE);
+		chatter_enabled.put("sing", Boolean.TRUE);
+		chatter_enabled.put("summon", Boolean.TRUE);
+		chatter_enabled.put("velociraptor", Boolean.TRUE);
 
 		commands_enabled.put("attack", Boolean.TRUE);
 		commands_enabled.put("banish", Boolean.TRUE);
@@ -111,6 +114,7 @@ public class ChannelInfo {
 		commands_enabled.put("search", Boolean.TRUE);
 		commands_enabled.put("sing", Boolean.TRUE);
 		commands_enabled.put("summon", Boolean.TRUE);
+		commands_enabled.put("velociraptor", Boolean.TRUE);
 		commands_enabled.put("woot", Boolean.TRUE);
 	}
 
@@ -119,6 +123,62 @@ public class ChannelInfo {
 			|| chatter_enabled.get("defenestrate") || chatter_enabled.get("sing") || chatter_enabled.get("foof")
 			|| chatter_enabled.get("dance") || chatter_enabled.get("summon") || chatter_enabled.get("creeper")
 			|| chatter_enabled.get("search") || chatter_enabled.get("herd") || chatter_enabled.get("banish");
+	}
+
+	public void recordVelociraptorSighting() {
+		velociraptorSightings += 1;
+		activeVelociraptors += 1;
+		lastSighting.setTime(System.currentTimeMillis());
+		
+		Tim.db.saveChannelSettings(this);
+	}
+
+	public void recordSwarmKills(int left, int kills) {
+		activeVelociraptors -= left;
+		killedVelociraptors += kills;
+
+		if (activeVelociraptors < 0) {
+			activeVelociraptors = 0;
+		}
+		
+		Tim.db.saveChannelSettings(this);
+	}
+	
+	public void recordSwarmDeaths(int deaths) {
+		activeVelociraptors -= deaths;
+		deadVelociraptors += deaths;
+
+		if (activeVelociraptors < 0) {
+			activeVelociraptors = 0;
+		}
+		
+		Tim.db.saveChannelSettings(this);
+	}
+	
+	public String getLastSighting() {
+		if (velociraptorSightings == 0) {
+			return "Never";
+		}
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(lastSighting);
+
+		SimpleDateFormat sdf = new SimpleDateFormat("MMM d");
+
+		return sdf.format(lastSighting) + getDayOfMonthSuffix(cal.get(Calendar.DAY_OF_MONTH));
+	}
+	
+	private String getDayOfMonthSuffix(int n) {
+		if (n >= 11 && n <= 13) {
+			return "th";
+		}
+
+		switch (n % 10) {
+			case 1:  return "st";
+			case 2:  return "nd";
+			case 3:  return "rd";
+			default: return "th";
+		}
 	}
 
 	public void setReactiveChatter(int chatterLevel, int nameMultiplier) {

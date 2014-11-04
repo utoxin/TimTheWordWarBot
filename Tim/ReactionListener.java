@@ -16,16 +16,11 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 import org.pircbotx.Channel;
 import org.pircbotx.Colors;
-import org.pircbotx.PircBotX;
 import org.pircbotx.User;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.ActionEvent;
 import org.pircbotx.hooks.events.MessageEvent;
 
-/**
- *
- * @author Matthew Walker
- */
 public class ReactionListener extends ListenerAdapter {
 
 	private int lights_odds = 100;
@@ -38,7 +33,7 @@ public class ReactionListener extends ListenerAdapter {
 	private int answer_odds = 65;
 	private int eightball_odds = 100;
 	private int soon_odds = 100;
-	private int velociraptor_odds = 100;
+	private int velociraptor_odds = 75;
 
 	private final int max_lights_odds = 100;
 	private final int max_fox_odds = 75;
@@ -50,12 +45,11 @@ public class ReactionListener extends ListenerAdapter {
 	private final int max_answer_odds = 65;
 	private final int max_eightball_odds = 100;
 	private final int max_soon_odds = 100;
-	private final int max_velociraptor_odds = 100;
+	private final int max_velociraptor_odds = 75;
 
 	@Override
 	public void onMessage(MessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
-		PircBotX bot = event.getBot();
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 
 		if (cdata.muzzled) {
@@ -89,12 +83,43 @@ public class ReactionListener extends ListenerAdapter {
 						event.respond("Soon.");
 						soon_odds -= Tim.rand.nextInt(5);
 					}
-				} else if (message.toLowerCase().contains("velociraptor") && cdata.chatter_enabled.get("silly_reactions")) {
-					Tim.db.recordVelociraptorSighting(cdata);
+				} else if (message.toLowerCase().contains("velociraptor") && cdata.chatter_enabled.get("velociraptor")) {
 					if (Tim.rand.nextInt(100) < velociraptor_odds) {
+						cdata.recordVelociraptorSighting();
 						event.respond("Velociraptor sighted! Incident has been logged.");
 						velociraptor_odds -= Tim.rand.nextInt(5);
+						
+						if (cdata.activeVelociraptors > 10) {
+							int odds = (cdata.activeVelociraptors - 10);
+							if (odds > 50) {
+								odds = 50;
+							}
+							
+							if (Tim.rand.nextInt(100) < odds) {
+								String attack = Tim.db.getRandomChannelWithVelociraptors(cdata.channel);
+								
+								if (!attack.equals("")) {
+									ChannelInfo victimCdata = Tim.db.channel_data.get(attack);
+									int attackCount = Tim.rand.nextInt(cdata.activeVelociraptors / 2);
+									int defendingCount = Tim.rand.nextInt(victimCdata.activeVelociraptors / 2);
+									int killPercent = (int) (((attackCount / (double) defendingCount) / 10) * 100);
+									int killCount = (int) (defendingCount * (killPercent / 100.0));
+
+									cdata.recordSwarmKills(attackCount, killCount);
+									victimCdata.recordSwarmDeaths(killCount);
+									
+									event.getChannel().send().message(String.format("Suddenly, %d of the velociraptors go charging off to attack a group in %s! "
+										+ "After a horrific battle, they manage to kill %d of them...", attackCount, attack, killCount));
+
+									if (victimCdata.chatter_enabled.get("velociraptor")) {
+										Tim.bot.sendIRC().message(victimCdata.channel, String.format("A swarm of %d velociraptors suddenly appears from the direction of %s. "
+											+ "The local raptors do their best to fight them off, and %d of them die before the swarm disappears.", attackCount, attack, killCount));
+									}
+								}
+							}
+						}
 					}
+					Tim.markov.process_markov(message, "say", event.getUser().getNick());
 				} else if (message.toLowerCase().contains("cheeseburger") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < cheeseburger_odds) {
 						event.respond("I can has cheezburger?");
@@ -144,7 +169,6 @@ public class ReactionListener extends ListenerAdapter {
 	@Override
 	public void onAction(ActionEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
-		PircBotX bot = event.getBot();
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 
 		if (event.getUser().getLogin().toLowerCase().equals("utoxin")) {
@@ -178,12 +202,43 @@ public class ReactionListener extends ListenerAdapter {
 					event.respond("replies with certainty, \"Soon.\"");
 					soon_odds -= Tim.rand.nextInt(5);
 				}
-			} else if (message.toLowerCase().contains("velociraptor") && cdata.chatter_enabled.get("silly_reactions")) {
-				Tim.db.recordVelociraptorSighting(cdata);
+			} else if (message.toLowerCase().contains("velociraptor") && cdata.chatter_enabled.get("velociraptor")) {
 				if (Tim.rand.nextInt(100) < velociraptor_odds) {
+					cdata.recordVelociraptorSighting();
 					event.respond("jots down a note in a red notebook labeled 'Velociraptor Sighting Log'.");
 					velociraptor_odds -= Tim.rand.nextInt(5);
+						
+					if (cdata.activeVelociraptors > 10) {
+						int odds = (cdata.activeVelociraptors - 10);
+						if (odds > 50) {
+							odds = 50;
+						}
+
+						if (Tim.rand.nextInt(100) < odds) {
+							String attack = Tim.db.getRandomChannelWithVelociraptors(cdata.channel);
+
+							if (!attack.equals("")) {
+								ChannelInfo victimCdata = Tim.db.channel_data.get(attack);
+								int attackCount = Tim.rand.nextInt(cdata.activeVelociraptors / 2);
+								int defendingCount = Tim.rand.nextInt(victimCdata.activeVelociraptors / 2);
+								int killPercent = (int) (((attackCount / (double) defendingCount) / 10) * 100);
+								int killCount = (int) (defendingCount * (killPercent / 100.0));
+								
+								cdata.recordSwarmKills(attackCount, killCount);
+								victimCdata.recordSwarmDeaths(killCount);
+
+								event.getChannel().send().message(String.format("Suddenly, %d of the velociraptors go charging off to attack a group in %s! "
+									+ "After a horrific battle, they manage to kill %d of them...", attackCount, attack, killCount));
+
+								if (victimCdata.chatter_enabled.get("velociraptor")) {
+									Tim.bot.sendIRC().message(victimCdata.channel, String.format("A swarm of %d velociraptors suddenly appears from the direction of %s. "
+										+ "The local raptors do their best to fight them off, and %d of them die before the swarm disappears.", attackCount, attack, killCount));
+								}
+							}
+						}
+					}
 				}
+				Tim.markov.process_markov(message, "emote", event.getUser().getNick());
 			} else if (message.toLowerCase().contains("cheeseburger") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < cheeseburger_odds) {
 					event.respond("sniffs the air, and peers around. \"Can has cheezburger?\"");

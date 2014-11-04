@@ -12,6 +12,7 @@
  */
 package Tim;
 
+import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -133,10 +134,10 @@ public class ServerListener extends ListenerAdapter {
 						r = Tim.rand.nextInt(Tim.db.extra_greetings.size());
 						event.getChannel().send().message(Tim.db.extra_greetings.get(r));
 					} else {
-						int velociraptorCount = Tim.db.getVelociraptorSightingCount(cdata);
-						String velociraptorDate = Tim.db.getVelociraptorSightingDate(cdata);
+						int velociraptorCount = cdata.activeVelociraptors;
+						String velociraptorDate = cdata.getLastSighting();
 						
-						event.getChannel().send().message(String.format("This channel has had %d total velociraptor sightings. The last one was on %s.", velociraptorCount, velociraptorDate));
+						event.getChannel().send().message(String.format("This channel has %d active velociraptors! The last one was spotted on %s.", velociraptorCount, velociraptorDate));
 					}
 				}
 			} catch (InterruptedException ex) {

@@ -18,6 +18,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import org.pircbotx.Channel;
 import org.pircbotx.User;
 import snaq.db.ConnectionPool;
@@ -175,6 +178,16 @@ public class DBAccess {
 
 					ci.setWarAutoMuzzle(
 						rs.getBoolean("auto_muzzle_wars"));
+					
+					ci.velociraptorSightings = rs.getInt("velociraptor_sightings");
+					ci.activeVelociraptors = rs.getInt("active_velociraptors");
+					ci.deadVelociraptors = rs.getInt("dead_velociraptors");
+					ci.killedVelociraptors = rs.getInt("killed_velociraptors");
+					
+					if (rs.getDate("last_sighting_date") != null) {
+						long time = rs.getDate("last_sighting_date").getTime();
+						ci.lastSighting = new java.util.Date(time);
+					}
 
 					s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_chatter_settings` WHERE `channel` = ?");
 					s2.setString(1, rs.getString("channel"));
@@ -349,13 +362,21 @@ public class DBAccess {
 		}
 	}
 	
-	public void recordVelociraptorSighting(ChannelInfo channel) {
+	public void recordVelociraptorSwarm(ChannelInfo fromChannel, ChannelInfo toChannel, int swarmCount, int kills) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET velociraptor_sightings = velociraptor_sightings + 1, last_sighting_date = NOW() WHERE channel = ?");
-			s.setString(1, channel.channel);
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET active_velociraptors = active_velociraptors - ?, dead_velociraptors = dead_velociraptors + ? WHERE channel = ?");
+			s.setInt(1, kills);
+			s.setInt(2, kills);
+			s.setString(3, toChannel.channel);
+			s.executeUpdate();
+
+			s = con.prepareStatement("UPDATE `channels` SET active_velociraptors = active_velociraptors - ?, killed_velociraptors = killed_velociraptors + ? WHERE channel = ?");
+			s.setInt(1, swarmCount);
+			s.setInt(2, kills);
+			s.setString(3, fromChannel.channel);
 			s.executeUpdate();
 
 			con.close();
@@ -363,45 +384,21 @@ public class DBAccess {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-
-	public int getVelociraptorSightingCount(ChannelInfo channel) {
-		Connection con;
-		int value = 0;
-
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("SELECT `velociraptor_sightings` FROM `channels` WHERE `channel` = ?");
-			s.setString(1, channel.channel);
-			s.executeQuery();
-
-			ResultSet rs = s.getResultSet();
-			while (rs.next()) {
-				value = rs.getInt("velociraptor_sightings");
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-		return value;
-	}
-
-	public String getVelociraptorSightingDate(ChannelInfo channel) {
+	
+	public String getRandomChannelWithVelociraptors(String exclude) {
 		Connection con;
 		String value = "";
 
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("SELECT IFNULL(DATE_FORMAT(`last_sighting_date`, '%M %D'), 'Never') AS formatted_date FROM `channels` WHERE `channel` = ?");
-			s.setString(1, channel.channel);
+			PreparedStatement s = con.prepareStatement("SELECT `channel` FROM `channels` WHERE `channel` != ? AND `active_velociraptors` > 0 ORDER BY (RAND() * active_velociraptors) DESC LIMIT 1");
+			s.setString(1, exclude);
 			s.executeQuery();
 
 			ResultSet rs = s.getResultSet();
 			while (rs.next()) {
-				value = rs.getString("formatted_date");
+				value = rs.getString("channel");
 			}
 
 			con.close();
@@ -410,33 +407,6 @@ public class DBAccess {
 		}
 
 		return value;
-	}
-
-	public String getRecentVelociraptorSighting() {
-		Connection con;
-		String channel = "Unknown";
-		String date = "Unknown";
-		int count = 0;
-		
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("SELECT IFNULL(DATE_FORMAT(`last_sighting_date`, '%M %D'), 'Never') AS formatted_date, velociraptor_sightings, channel FROM `channels` ORDER BY `last_sighting_date` DESC LIMIT 1");
-			s.executeQuery();
-
-			ResultSet rs = s.getResultSet();
-			while (rs.next()) {
-				date = rs.getString("formatted_date");
-				channel = rs.getString("channel");
-				count = rs.getInt("velociraptor_sightings");
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-		return String.format("The last velociraptor sighting was in %s on %s. They have reported %d velociraptors.", channel, date, count);
 	}
 
 	public void saveChannelSettings(ChannelInfo channel) {
@@ -444,14 +414,26 @@ public class DBAccess {
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET reactive_chatter_level = ?, chatter_name_multiplier = ?, random_chatter_level = ?, tweet_bucket_max = ?, tweet_bucket_charge_rate = ?, auto_muzzle_wars = ? WHERE channel = ?");
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			
+			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET reactive_chatter_level = ?, chatter_name_multiplier = ?, random_chatter_level = ?, tweet_bucket_max = ?, "
+				+ "tweet_bucket_charge_rate = ?, auto_muzzle_wars = ?, velociraptor_sightings = ?, active_velociraptors = ?, dead_velociraptors = ?, killed_velociraptors = ?, last_sighting_date = ? WHERE channel = ?");
 			s.setInt(1, channel.reactiveChatterLevel);
 			s.setInt(2, channel.chatterNameMultiplier);
 			s.setInt(3, channel.randomChatterLevel);
 			s.setFloat(4, channel.tweetBucketMax);
 			s.setFloat(5, channel.tweetBucketChargeRate);
 			s.setBoolean(6, channel.auto_muzzle_wars);
-			s.setString(7, channel.channel);
+			s.setInt(7, channel.velociraptorSightings);
+			s.setInt(8, channel.activeVelociraptors);
+			s.setInt(9, channel.deadVelociraptors);
+			s.setInt(10, channel.killedVelociraptors);
+			if (channel.lastSighting != null) {
+				s.setString(11, sdf.format(channel.lastSighting));
+			} else {
+				s.setString(11, "1999-01-01");
+			}
+			s.setString(12, channel.channel);
 			s.executeUpdate();
 
 			s = con.prepareStatement("DELETE FROM `channel_chatter_settings` WHERE `channel` = ?;");

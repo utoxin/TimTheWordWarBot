@@ -287,6 +287,16 @@ public class Amusement {
 				}
 
 				return true;
+			case "raptorstats":
+				if (cdata.commands_enabled.get("velociraptor")) {
+					event.respond(String.format("There have been %d velociraptor sightings is this channel. The last one was on %s.", cdata.velociraptorSightings, cdata.getLastSighting()));
+					event.respond(String.format("%d velociraptors in this channel have been killed by other swarms.", cdata.deadVelociraptors));
+					event.respond(String.format("Swarms from this channel have killed %d other velociraptors.", cdata.killedVelociraptors));
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+			
+				return true;
 			default:
 				if ((!command.equals("")) && command.charAt(0) == 'd' && Pattern.matches("d\\d+", command)) {
 					if (cdata.commands_enabled.get("dice")) {
@@ -455,7 +465,8 @@ public class Amusement {
 		String[] strs = {"Amusement Commands:",
 						 "    !get <anything> - I will fetch you whatever you like.",
 						 "    !getfor <someone> <anything> - I will give someone whatever you like.",
-						 "    !eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.",};
+						 "    !eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.",
+						 "    !raptorstats - Details about this channel's raptor activity.",};
 
 		for (int i = 0; i < strs.length; ++i) {
 			event.getUser().send().notice(strs[i]);
@@ -649,10 +660,10 @@ public class Amusement {
 
 				if (item.toLowerCase().contains("spoon")) {
 					item = "";
-					channel.send().action("rumages around in the back room for a bit, then calls out. \"Sorry... there is no spoon. Maybe this will do...\"");
+					channel.send().action("rummages around in the back room for a bit, then calls out. \"Sorry... there is no spoon. Maybe this will do...\"");
 				}
 			} else {
-				channel.send().action("rumages around in the back room for a bit, then calls out. \"Sorry... I don't think I have that. Maybe this will do...\"");
+				channel.send().action("rummages around in the back room for a bit, then calls out. \"Sorry... I don't think I have that. Maybe this will do...\"");
 			}
 		}
 
@@ -681,10 +692,10 @@ public class Amusement {
 
 				if (item.toLowerCase().contains("spoon")) {
 					item = "";
-					channel.send().action("rumages around in " + target + "'s things for a bit, then calls out. \"Sorry... there is no spoon. But I did find something else...\"");
+					channel.send().action("rummages around in " + target + "'s things for a bit, then calls out. \"Sorry... there is no spoon. But I did find something else...\"");
 				}
 			} else {
-				channel.send().action("rumages around in " + target + "'s things for a bit, then calls out. \"Sorry... I don't think they have that. But I did find something else...\"");
+				channel.send().action("rummages around in " + target + "'s things for a bit, then calls out. \"Sorry... I don't think they have that. But I did find something else...\"");
 			}
 		}
 
