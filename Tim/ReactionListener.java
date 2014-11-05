@@ -102,7 +102,7 @@ public class ReactionListener extends ListenerAdapter {
 									ChannelInfo victimCdata = Tim.db.channel_data.get(attack);
 									int attackCount = Tim.rand.nextInt(cdata.activeVelociraptors / 2);
 									int defendingCount = Tim.rand.nextInt(victimCdata.activeVelociraptors / 2);
-									int killPercent = (int) (((attackCount / (double) defendingCount) / 10) * 100);
+									int killPercent = (int) ((attackCount / (double) defendingCount) * 10);
 									int killCount = (int) (defendingCount * (killPercent / 100.0));
 
 									cdata.recordSwarmKills(attackCount, killCount);
@@ -221,7 +221,7 @@ public class ReactionListener extends ListenerAdapter {
 								ChannelInfo victimCdata = Tim.db.channel_data.get(attack);
 								int attackCount = Tim.rand.nextInt(cdata.activeVelociraptors / 2);
 								int defendingCount = Tim.rand.nextInt(victimCdata.activeVelociraptors / 2);
-								int killPercent = (int) (((attackCount / (double) defendingCount) / 10) * 100);
+								int killPercent = (int) ((attackCount / (double) defendingCount) * 10);
 								int killCount = (int) (defendingCount * (killPercent / 100.0));
 								
 								cdata.recordSwarmKills(attackCount, killCount);

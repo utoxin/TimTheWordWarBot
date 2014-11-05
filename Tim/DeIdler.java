@@ -71,7 +71,7 @@ public class DeIdler {
 		boolean isNovember = (10 == cal.get(Calendar.MONTH));
 		boolean aheadOfPace = ((cal.get(Calendar.DAY_OF_MONTH) * (50000 / 30)) < Tim.story.wordcount());
 
-		if (isNovember && ((!aheadOfPace && Tim.rand.nextInt(100) < 3) || (aheadOfPace && Tim.rand.nextInt(100) < 1))) {
+		if (isNovember && ((!aheadOfPace && Tim.rand.nextInt(100) < 4) || (aheadOfPace && Tim.rand.nextInt(100) < 2))) {
 			String name = Tim.story.getRandomName();
 			String new_text;
 			if (Tim.rand.nextInt(100) < 75) {
@@ -84,7 +84,7 @@ public class DeIdler {
 
 			Tim.story.storeLine(new_text, "Timmy");
 			for (ChannelInfo cdata : Tim.db.channel_data.values()) {
-				if (Tim.rand.nextInt(100) < 25 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled && cdata.randomChatterLevel >= 0) {
+				if (Tim.rand.nextInt(100) < 20 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled && cdata.randomChatterLevel >= 0) {
 					Tim.bot.sendIRC().action(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)");
 				}
 			}
