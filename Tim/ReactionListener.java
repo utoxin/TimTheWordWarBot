@@ -22,31 +22,6 @@ import org.pircbotx.hooks.events.ActionEvent;
 import org.pircbotx.hooks.events.MessageEvent;
 
 public class ReactionListener extends ListenerAdapter {
-
-	private int lights_odds = 100;
-	private int fox_odds = 75;
-	private int cheeseburger_odds = 50;
-	private int test_odds = 100;
-	private int hug_odds = 100;
-	private int tissue_odds = 100;
-	private int aypwip_odds = 100;
-	private int answer_odds = 65;
-	private int eightball_odds = 100;
-	private int soon_odds = 100;
-	private int velociraptor_odds = 75;
-
-	private final int max_lights_odds = 100;
-	private final int max_fox_odds = 75;
-	private final int max_cheeseburger_odds = 50;
-	private final int max_test_odds = 100;
-	private final int max_hug_odds = 100;
-	private final int max_tissue_odds = 100;
-	private final int max_aypwip_odds = 100;
-	private final int max_answer_odds = 65;
-	private final int max_eightball_odds = 100;
-	private final int max_soon_odds = 100;
-	private final int max_velociraptor_odds = 75;
-
 	@Override
 	public void onMessage(MessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
@@ -56,7 +31,7 @@ public class ReactionListener extends ListenerAdapter {
 			return;
 		}
 		
-		updateOdds();
+		updateOdds(cdata);
 
 		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase()) &&
 			!Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())) {
@@ -69,25 +44,25 @@ public class ReactionListener extends ListenerAdapter {
 				}
 
 				if (message.toLowerCase().contains("how many lights") && cdata.chatter_enabled.get("silly_reactions")) {
-					if (Tim.rand.nextInt(100) < lights_odds) {
+					if (Tim.rand.nextInt(100) < cdata.lights_odds) {
 						event.getChannel().send().message("There are FOUR LIGHTS!");
-						lights_odds -= Tim.rand.nextInt(5);
+						cdata.lights_odds--;
 					}
 				} else if (message.toLowerCase().contains("what does the fox say") && cdata.chatter_enabled.get("silly_reactions")) {
-					if (Tim.rand.nextInt(100) < fox_odds) {
+					if (Tim.rand.nextInt(100) < cdata.fox_odds) {
 						event.respond("Foxes don't talk. Sheesh.");
-						fox_odds -= Tim.rand.nextInt(5);
+						cdata.fox_odds--;
 					}
 				} else if (message.toLowerCase().contains("when will then be now") && cdata.chatter_enabled.get("silly_reactions")) {
-					if (Tim.rand.nextInt(100) < soon_odds) {
+					if (Tim.rand.nextInt(100) < cdata.soon_odds) {
 						event.respond("Soon.");
-						soon_odds -= Tim.rand.nextInt(5);
+						cdata.soon_odds--;
 					}
 				} else if (message.toLowerCase().contains("velociraptor") && cdata.chatter_enabled.get("velociraptor")) {
-					if (Tim.rand.nextInt(100) < velociraptor_odds) {
+					if (Tim.rand.nextInt(100) < cdata.velociraptor_odds) {
 						cdata.recordVelociraptorSighting();
 						event.respond("Velociraptor sighted! Incident has been logged.");
-						velociraptor_odds -= Tim.rand.nextInt(5);
+						cdata.velociraptor_odds--;
 						
 						if (cdata.activeVelociraptors > 10) {
 							int odds = (cdata.activeVelociraptors - 10);
@@ -101,8 +76,13 @@ public class ReactionListener extends ListenerAdapter {
 								if (!attack.equals("")) {
 									ChannelInfo victimCdata = Tim.db.channel_data.get(attack);
 									int attackCount = Tim.rand.nextInt(cdata.activeVelociraptors / 2);
-									int defendingCount = Tim.rand.nextInt(victimCdata.activeVelociraptors / 2);
-									int killPercent = (int) ((attackCount / (double) defendingCount) * 10);
+									int defendingCount = Tim.rand.nextInt(victimCdata.activeVelociraptors / 2) + (victimCdata.activeVelociraptors / 2);
+									double killPercent = (((double) attackCount / (double) defendingCount) * 25.0) + Tim.rand.nextInt(attackCount);
+
+									if (killPercent > 100) {
+										killPercent = 100;
+									}
+
 									int killCount = (int) (defendingCount * (killPercent / 100.0));
 
 									cdata.recordSwarmKills(attackCount, killCount);
@@ -111,9 +91,9 @@ public class ReactionListener extends ListenerAdapter {
 									event.getChannel().send().message(String.format("Suddenly, %d of the velociraptors go charging off to attack a group in %s! "
 										+ "After a horrific battle, they manage to kill %d of them...", attackCount, attack, killCount));
 
-									if (victimCdata.chatter_enabled.get("velociraptor")) {
+									if (victimCdata.chatter_enabled.get("velociraptor") && victimCdata.muzzled == false) {
 										Tim.bot.sendIRC().message(victimCdata.channel, String.format("A swarm of %d velociraptors suddenly appears from the direction of %s. "
-											+ "The local raptors do their best to fight them off, and %d of them die before the swarm disappears.", attackCount, attack, killCount));
+											+ "The local raptors do their best to fight them off, and %d of them die before the swarm disappears.", attackCount, cdata.channel, killCount));
 									}
 								}
 							}
@@ -121,42 +101,42 @@ public class ReactionListener extends ListenerAdapter {
 					}
 					Tim.markov.process_markov(message, "say", event.getUser().getNick());
 				} else if (message.toLowerCase().contains("cheeseburger") && cdata.chatter_enabled.get("silly_reactions")) {
-					if (Tim.rand.nextInt(100) < cheeseburger_odds) {
+					if (Tim.rand.nextInt(100) < cdata.cheeseburger_odds) {
 						event.respond("I can has cheezburger?");
-						cheeseburger_odds -= Tim.rand.nextInt(5);
+						cdata.cheeseburger_odds--;
 					}
 				} else if (message.toLowerCase().startsWith("test") && cdata.chatter_enabled.get("silly_reactions")) {
-					if (Tim.rand.nextInt(100) < test_odds) {
+					if (Tim.rand.nextInt(100) < cdata.test_odds) {
 						event.respond("After due consideration, your test earned a: " + pickGrade());
-						test_odds -= Tim.rand.nextInt(5);
+						cdata.test_odds--;
 					}
 				} else if ((message.contains(":(") || message.contains("):")) && cdata.chatter_enabled.get("silly_reactions")) {
-					if (Tim.rand.nextInt(100) < hug_odds) {
+					if (Tim.rand.nextInt(100) < cdata.hug_odds) {
 						event.getChannel().send().action("gives " + cdata.lastSpeaker.getNick() + " a hug.");
-						hug_odds -= Tim.rand.nextInt(5);
+						cdata.hug_odds--;
 					}
 				} else if (message.contains(":'(") && cdata.chatter_enabled.get("silly_reactions")) {
-					if (Tim.rand.nextInt(100) < tissue_odds) {
+					if (Tim.rand.nextInt(100) < cdata.tissue_odds) {
 						event.getChannel().send().action("passes " + event.getUser().getNick() + " a tissue.");
-						tissue_odds -= Tim.rand.nextInt(5);
+						cdata.tissue_odds--;
 					}
 				} else if (Pattern.matches("(?i).*how do (i|you) (change|set) ?(my|your)? (nick|name).*", message) && cdata.chatter_enabled.get("helpful_reactions")) {
 					event.respond("To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere");
 				} else if (Pattern.matches("(?i).*are you (thinking|pondering) what i.*m (thinking|pondering).*", message) && cdata.chatter_enabled.get("silly_reactions")) {
-					if (Tim.rand.nextInt(100) < aypwip_odds) {
+					if (Tim.rand.nextInt(100) < cdata.aypwip_odds) {
 						int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
 						event.getChannel().send().message(String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
-						aypwip_odds -= Tim.rand.nextInt(5);
+						cdata.aypwip_odds--;
 					}
 				} else if (Pattern.matches("(?i).*what.*is.*the.*answer.*", message) && cdata.chatter_enabled.get("silly_reactions")) {
-					if (Tim.rand.nextInt(100) < answer_odds) {
+					if (Tim.rand.nextInt(100) < cdata.answer_odds) {
 						event.respond("The answer is 42. Everyone knows that.");
-						answer_odds -= Tim.rand.nextInt(5);
+						cdata.answer_odds--;
 					}
 				} else if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && cdata.chatter_enabled.get("silly_reactions")) {
-					if (Tim.rand.nextInt(100) < eightball_odds) {
+					if (Tim.rand.nextInt(100) < cdata.eightball_odds) {
 						Tim.amusement.eightball(event.getChannel(), event.getUser(), false, message);
-						eightball_odds -= Tim.rand.nextInt(5);
+						cdata.eightball_odds--;
 					}
 				} else {
 					this.interact(event.getUser(), event.getChannel(), message, "say");
@@ -182,37 +162,34 @@ public class ReactionListener extends ListenerAdapter {
 			return;
 		}
 
-		updateOdds();
+		updateOdds(cdata);
 
 		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase()) &&
 			!Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())
 		) {
 			if (message.toLowerCase().contains("how many lights") && cdata.chatter_enabled.get("silly_reactions")) {
-				if (Tim.rand.nextInt(100) < lights_odds) {
+				if (Tim.rand.nextInt(100) < cdata.lights_odds) {
 					event.getChannel().send().message("There are FOUR LIGHTS!");
-					lights_odds -= Tim.rand.nextInt(5);
+					cdata.lights_odds--;
 				}
 			} else if (message.toLowerCase().contains("what does the fox say") && cdata.chatter_enabled.get("silly_reactions")) {
-				if (Tim.rand.nextInt(100) < fox_odds) {
+				if (Tim.rand.nextInt(100) < cdata.fox_odds) {
 					event.respond("mutters under his breath. \"Foxes don't talk. Sheesh.\"");
-					fox_odds -= Tim.rand.nextInt(5);
+					cdata.fox_odds--;
 				}
 			} else if (message.toLowerCase().contains("when will then be now") && cdata.chatter_enabled.get("silly_reactions")) {
-				if (Tim.rand.nextInt(100) < soon_odds) {
+				if (Tim.rand.nextInt(100) < cdata.soon_odds) {
 					event.respond("replies with certainty, \"Soon.\"");
-					soon_odds -= Tim.rand.nextInt(5);
+					cdata.soon_odds--;
 				}
 			} else if (message.toLowerCase().contains("velociraptor") && cdata.chatter_enabled.get("velociraptor")) {
-				if (Tim.rand.nextInt(100) < velociraptor_odds) {
+				if (Tim.rand.nextInt(100) < cdata.velociraptor_odds) {
 					cdata.recordVelociraptorSighting();
 					event.respond("jots down a note in a red notebook labeled 'Velociraptor Sighting Log'.");
-					velociraptor_odds -= Tim.rand.nextInt(5);
+					cdata.velociraptor_odds--;
 						
 					if (cdata.activeVelociraptors > 10) {
-						int odds = (cdata.activeVelociraptors - 10);
-						if (odds > 50) {
-							odds = 50;
-						}
+						int odds = (int) (Math.log(cdata.activeVelociraptors) * 20);
 
 						if (Tim.rand.nextInt(100) < odds) {
 							String attack = Tim.db.getRandomChannelWithVelociraptors(cdata.channel);
@@ -220,8 +197,13 @@ public class ReactionListener extends ListenerAdapter {
 							if (!attack.equals("")) {
 								ChannelInfo victimCdata = Tim.db.channel_data.get(attack);
 								int attackCount = Tim.rand.nextInt(cdata.activeVelociraptors / 2);
-								int defendingCount = Tim.rand.nextInt(victimCdata.activeVelociraptors / 2);
-								int killPercent = (int) ((attackCount / (double) defendingCount) * 10);
+								int defendingCount = Tim.rand.nextInt(victimCdata.activeVelociraptors / 2) + (victimCdata.activeVelociraptors / 2);
+								double killPercent = (((double) attackCount / (double) defendingCount) * 25.0) + Tim.rand.nextInt(attackCount);
+
+								if (killPercent > 100) {
+									killPercent = 100;
+								}
+
 								int killCount = (int) (defendingCount * (killPercent / 100.0));
 								
 								cdata.recordSwarmKills(attackCount, killCount);
@@ -230,9 +212,9 @@ public class ReactionListener extends ListenerAdapter {
 								event.getChannel().send().message(String.format("Suddenly, %d of the velociraptors go charging off to attack a group in %s! "
 									+ "After a horrific battle, they manage to kill %d of them...", attackCount, attack, killCount));
 
-								if (victimCdata.chatter_enabled.get("velociraptor")) {
+								if (victimCdata.chatter_enabled.get("velociraptor") && victimCdata.muzzled == false) {
 									Tim.bot.sendIRC().message(victimCdata.channel, String.format("A swarm of %d velociraptors suddenly appears from the direction of %s. "
-										+ "The local raptors do their best to fight them off, and %d of them die before the swarm disappears.", attackCount, attack, killCount));
+										+ "The local raptors do their best to fight them off, and %d of them die before the swarm disappears.", attackCount, cdata.channel, killCount));
 								}
 							}
 						}
@@ -240,42 +222,42 @@ public class ReactionListener extends ListenerAdapter {
 				}
 				Tim.markov.process_markov(message, "emote", event.getUser().getNick());
 			} else if (message.toLowerCase().contains("cheeseburger") && cdata.chatter_enabled.get("silly_reactions")) {
-				if (Tim.rand.nextInt(100) < cheeseburger_odds) {
+				if (Tim.rand.nextInt(100) < cdata.cheeseburger_odds) {
 					event.respond("sniffs the air, and peers around. \"Can has cheezburger?\"");
-					cheeseburger_odds -= Tim.rand.nextInt(5);
+					cdata.cheeseburger_odds--;
 				}
 			} else if ((message.contains(":(") || message.contains("):")) && cdata.chatter_enabled.get("silly_reactions")) {
-				if (Tim.rand.nextInt(100) < hug_odds) {
+				if (Tim.rand.nextInt(100) < cdata.hug_odds) {
 					event.getChannel().send().action("gives " + event.getUser().getNick() + " a hug.");
-					hug_odds -= Tim.rand.nextInt(5);
+					cdata.hug_odds--;
 				}
 			} else if (message.toLowerCase().startsWith("tests") && cdata.chatter_enabled.get("silly_reactions")) {
-				if (Tim.rand.nextInt(100) < test_odds) {
+				if (Tim.rand.nextInt(100) < cdata.test_odds) {
 					event.respond("considers, and gives " + event.getUser().getNick() + " a grade: " + pickGrade());
-					test_odds -= Tim.rand.nextInt(5);
+					cdata.test_odds--;
 				}
 			} else if (message.contains(":'(") && cdata.chatter_enabled.get("silly_reactions")) {
-				if (Tim.rand.nextInt(100) < tissue_odds) {
+				if (Tim.rand.nextInt(100) < cdata.tissue_odds) {
 					event.getChannel().send().action("passes " + event.getUser().getNick() + " a tissue.");
-					tissue_odds -= Tim.rand.nextInt(5);
+					cdata.tissue_odds--;
 				}
 			} else if (Pattern.matches("(?i).*how do (i|you) (change|set) ?(my|your)? (nick|name).*", message) && cdata.chatter_enabled.get("helpful_reactions")) {
 				event.respond("To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere");
 			} else if (Pattern.matches("(?i).*are you (thinking|pondering) what i.*m (thinking|pondering).*", message) && cdata.chatter_enabled.get("silly_reactions")) {
-				if (Tim.rand.nextInt(100) < aypwip_odds) {
+				if (Tim.rand.nextInt(100) < cdata.aypwip_odds) {
 					int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
 					event.getChannel().send().message(String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
-					aypwip_odds -= Tim.rand.nextInt(5);
+					cdata.aypwip_odds--;
 				}
 			} else if (Pattern.matches("(?i).*what.*is.*the.*answer.*", message) && cdata.chatter_enabled.get("silly_reactions")) {
-				if (Tim.rand.nextInt(100) < answer_odds) {
+				if (Tim.rand.nextInt(100) < cdata.answer_odds) {
 					event.respond("sighs at the question. \"The answer is 42. I thought you knew that...\"");
-					answer_odds -= Tim.rand.nextInt(5);
+					cdata.answer_odds--;
 				}
 			} else if (Pattern.matches("(?i)" + Tim.bot.getNick() + ".*[?]", message) && cdata.chatter_enabled.get("silly_reactions")) {
-				if (Tim.rand.nextInt(100) < eightball_odds) {
+				if (Tim.rand.nextInt(100) < cdata.eightball_odds) {
 					Tim.amusement.eightball(event.getChannel(), event.getUser(), false, message);
-					eightball_odds -= Tim.rand.nextInt(5);
+					cdata.eightball_odds--;
 				}
 			} else {
 				this.interact(event.getUser(), event.getChannel(), message, "emote");
@@ -371,40 +353,40 @@ public class ReactionListener extends ListenerAdapter {
 		}
 	}
 	
-	private void updateOdds() {
-		if (Tim.rand.nextInt(250) == 0) {
-			if (lights_odds < max_lights_odds) {
-				lights_odds += Tim.rand.nextInt(5);
+	private void updateOdds(ChannelInfo cdata) {
+		if (Tim.rand.nextInt(100) == 0) {
+			if (cdata.lights_odds < cdata.max_lights_odds) {
+				cdata.lights_odds++;
 			}
-			if (fox_odds < max_fox_odds) {
-				fox_odds += Tim.rand.nextInt(5);
+			if (cdata.fox_odds < cdata.max_fox_odds) {
+				cdata.fox_odds++;
 			}
-			if (cheeseburger_odds < max_cheeseburger_odds) {
-				cheeseburger_odds += Tim.rand.nextInt(5);
+			if (cdata.cheeseburger_odds < cdata.max_cheeseburger_odds) {
+				cdata.cheeseburger_odds++;
 			}
-			if (test_odds < max_test_odds) {
-				test_odds += Tim.rand.nextInt(5);
+			if (cdata.test_odds < cdata.max_test_odds) {
+				cdata.test_odds++;
 			}
-			if (hug_odds < max_hug_odds) {
-				hug_odds += Tim.rand.nextInt(5);
+			if (cdata.hug_odds < cdata.max_hug_odds) {
+				cdata.hug_odds++;
 			}
-			if (tissue_odds < max_tissue_odds) {
-				tissue_odds += Tim.rand.nextInt(5);
+			if (cdata.tissue_odds < cdata.max_tissue_odds) {
+				cdata.tissue_odds++;
 			}
-			if (aypwip_odds < max_aypwip_odds) {
-				aypwip_odds += Tim.rand.nextInt(5);
+			if (cdata.aypwip_odds < cdata.max_aypwip_odds) {
+				cdata.aypwip_odds++;
 			}
-			if (answer_odds < max_answer_odds) {
-				answer_odds += Tim.rand.nextInt(5);
+			if (cdata.answer_odds < cdata.max_answer_odds) {
+				cdata.answer_odds++;
 			}
-			if (eightball_odds < max_eightball_odds) {
-				eightball_odds += Tim.rand.nextInt(5);
+			if (cdata.eightball_odds < cdata.max_eightball_odds) {
+				cdata.eightball_odds++;
 			}
-			if (soon_odds < max_soon_odds) {
-				soon_odds += Tim.rand.nextInt(5);
+			if (cdata.soon_odds < cdata.max_soon_odds) {
+				cdata.soon_odds++;
 			}
-			if (velociraptor_odds < max_velociraptor_odds) {
-				velociraptor_odds += Tim.rand.nextInt(5);
+			if (cdata.velociraptor_odds < cdata.max_velociraptor_odds) {
+				cdata.velociraptor_odds++;
 			}
 		}
 	}

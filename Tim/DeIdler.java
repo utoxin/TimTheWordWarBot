@@ -69,22 +69,22 @@ public class DeIdler {
 
 	public void _tick() {
 		boolean isNovember = (10 == cal.get(Calendar.MONTH));
-		boolean aheadOfPace = ((cal.get(Calendar.DAY_OF_MONTH) * (50000 / 30)) < Tim.story.wordcount());
+		boolean aheadOfPace = (((cal.get(Calendar.DAY_OF_MONTH) + 1) * (50000 / 30)) < Tim.story.wordcount());
 
-		if (isNovember && ((!aheadOfPace && Tim.rand.nextInt(100) < 4) || (aheadOfPace && Tim.rand.nextInt(100) < 2))) {
+		if (isNovember && ((!aheadOfPace && Tim.rand.nextInt(100) < 8) || (aheadOfPace && Tim.rand.nextInt(100) < 4))) {
 			String name = Tim.story.getRandomName();
 			String new_text;
 			if (Tim.rand.nextInt(100) < 75) {
-				new_text = name + " " + Tim.markov.generate_markov("emote", Tim.rand.nextInt(150) + 75, 0) + ".";
+				new_text = name + " " + Tim.markov.generate_markov("emote", Tim.rand.nextInt(350) + 150, 0) + ".";
 			} else if (Tim.rand.nextBoolean()) {
-				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(45) + 25, 0) + ",\" " + name + " muttered quietly.";
+				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(250) + 50, 0) + ",\" " + name + " muttered quietly.";
 			} else {
-				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(25) + 25, 0) + ",\" " + name + " said.";
+				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(250) + 50, 0) + ",\" " + name + " said.";
 			}
 
 			Tim.story.storeLine(new_text, "Timmy");
 			for (ChannelInfo cdata : Tim.db.channel_data.values()) {
-				if (Tim.rand.nextInt(100) < 20 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled && cdata.randomChatterLevel >= 0) {
+				if (Tim.rand.nextInt(100) < 15 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled && cdata.randomChatterLevel >= 0) {
 					Tim.bot.sendIRC().action(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)");
 				}
 			}

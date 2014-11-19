@@ -289,7 +289,7 @@ public class Amusement {
 				return true;
 			case "raptorstats":
 				if (cdata.commands_enabled.get("velociraptor")) {
-					event.respond(String.format("There have been %d velociraptor sightings in this channel. The last one was on %s.", cdata.velociraptorSightings, cdata.getLastSighting()));
+					event.respond(String.format("There have been %d velociraptor sightings in this channel, and %d are still here. The last one was on %s.", cdata.velociraptorSightings, cdata.activeVelociraptors, cdata.getLastSighting()));
 					event.respond(String.format("%d velociraptors in this channel have been killed by other swarms.", cdata.deadVelociraptors));
 					event.respond(String.format("Swarms from this channel have killed %d other velociraptors.", cdata.killedVelociraptors));
 				} else {

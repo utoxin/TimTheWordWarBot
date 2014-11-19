@@ -33,6 +33,30 @@ public class ChannelInfo {
 	public boolean auto_muzzle_wars = true;
 	public boolean auto_muzzled = false;
 
+	public int fox_odds = 75;
+	public int lights_odds = 100;
+	public int cheeseburger_odds = 50;
+	public int test_odds = 100;
+	public int hug_odds = 100;
+	public int tissue_odds = 100;
+	public int aypwip_odds = 100;
+	public int answer_odds = 65;
+	public int eightball_odds = 100;
+	public int soon_odds = 100;
+	public int velociraptor_odds = 100;
+
+	public final int max_lights_odds = 100;
+	public final int max_fox_odds = 75;
+	public final int max_cheeseburger_odds = 50;
+	public final int max_test_odds = 100;
+	public final int max_hug_odds = 100;
+	public final int max_tissue_odds = 100;
+	public final int max_aypwip_odds = 100;
+	public final int max_answer_odds = 65;
+	public final int max_eightball_odds = 100;
+	public final int max_soon_odds = 100;
+	public final int max_velociraptor_odds = 100;
+
 	public ChannelInfo(String channel) {
 		this.channel = channel;
 	}

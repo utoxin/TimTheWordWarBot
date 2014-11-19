@@ -378,6 +378,10 @@ public class AdminCommandListener extends ListenerAdapter {
 							Tim.bot.sendIRC().message(cdata.channel, event.getUser().getNick() + " shouts: " + StringUtils.join(args, " "));
 						}
 						break;
+					case "part":
+						event.getChannel().send().part();
+						Tim.db.deleteChannel(event.getChannel());
+						break;
 					case "help":
 						this.printAdminCommandList(event);
 						break;
@@ -425,6 +429,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							  "    $ignore <username>        - Places user on the bot's ignore list",
 							  "    $unignore <username>      - Removes user from bot's ignore list",
 							  "    $listignores              - Prints the list of ignored users",
+							  "    $part                     - Leaves channel message was sent from",
 							  "Channel Setting Commands:",
 							  "    $setmuzzleflag <#channel> <0/1>  - Sets the channel's current muzzle state",
 							  "    $automuzzlewars <#channel> <0/1> - Whether to auto-muzzle the channel during wars.",
