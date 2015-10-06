@@ -83,11 +83,9 @@ public class DeIdler {
 			}
 
 			Tim.story.storeLine(new_text, "Timmy");
-			for (ChannelInfo cdata : Tim.db.channel_data.values()) {
-				if (Tim.rand.nextInt(100) < 15 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled && cdata.randomChatterLevel >= 0) {
-					Tim.bot.sendIRC().action(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)");
-				}
-			}
+			Tim.db.channel_data.values().stream().filter((cdata) -> (Tim.rand.nextInt(100) < 15 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled && cdata.randomChatterLevel >= 0)).forEach((cdata) -> {
+				Tim.bot.sendIRC().action(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)");
+			});
 		}
 
 		if (Tim.rand.nextInt(100) < 1) {

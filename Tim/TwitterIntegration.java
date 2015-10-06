@@ -110,9 +110,9 @@ public class TwitterIntegration extends StatusAdapter {
 		try {
 			check = twitter.lookupUsers(usernames);
 
-			for (User user : check) {
+			check.stream().forEach((user) -> {
 				userIds.add(user.getId());
-			}
+			});
 		} catch (TwitterException ex) {
 			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -141,7 +141,7 @@ public class TwitterIntegration extends StatusAdapter {
 
 				for (Long userId : tmpUserIds) {
 					if (!accountsToChannels.containsKey(userId)) {
-						accountsToChannels.put(userId, new HashSet<String>(64));
+						accountsToChannels.put(userId, new HashSet<>(64));
 					}
 
 					tmpAccountHash = accountsToChannels.get(userId);
@@ -161,7 +161,7 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 
 		if (!accountsToChannels.containsKey(accountId)) {
-			accountsToChannels.put(accountId, new HashSet<String>(64));
+			accountsToChannels.put(accountId, new HashSet<>(64));
 			needFilterUpdate = true;
 		}
 

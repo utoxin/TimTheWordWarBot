@@ -58,7 +58,7 @@ public class ReactionListener extends ListenerAdapter {
 						event.respond("Soon.");
 						cdata.soon_odds--;
 					}
-				} else if (message.toLowerCase().contains("velociraptor") && cdata.chatter_enabled.get("velociraptor")) {
+				} else if (message.toLowerCase().contains("raptor") && cdata.chatter_enabled.get("velociraptor")) {
 					if (Tim.rand.nextInt(100) < cdata.velociraptor_odds) {
 						cdata.recordVelociraptorSighting();
 						event.respond("Velociraptor sighted! Incident has been logged.");
@@ -182,7 +182,7 @@ public class ReactionListener extends ListenerAdapter {
 					event.respond("replies with certainty, \"Soon.\"");
 					cdata.soon_odds--;
 				}
-			} else if (message.toLowerCase().contains("velociraptor") && cdata.chatter_enabled.get("velociraptor")) {
+			} else if (message.toLowerCase().contains("raptor") && cdata.chatter_enabled.get("velociraptor")) {
 				if (Tim.rand.nextInt(100) < cdata.velociraptor_odds) {
 					cdata.recordVelociraptorSighting();
 					event.respond("jots down a note in a red notebook labeled 'Velociraptor Sighting Log'.");

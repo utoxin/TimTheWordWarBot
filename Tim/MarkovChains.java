@@ -363,13 +363,16 @@ public class MarkovChains {
 			s.setInt(1, innerLimit);
 			s.executeQuery();
 
-			ResultSet rs = s.getResultSet();
-
-			if (rs.next()) {
-				return rs.getInt(1);
+			try (ResultSet rs = s.getResultSet()) {
+				if (rs.next()) {
+					int id = rs.getInt(1);
+					rs.close();
+					s.close();
+					con.close();
+					return id;
+				}
 			}
-			
-			rs.close();
+
 			s.close();
 		} catch (SQLException ex) {
 			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);

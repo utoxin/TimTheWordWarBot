@@ -506,15 +506,13 @@ public class Amusement {
 			ImmutableSortedSet<User> users = Tim.bot.getUserChannelDao().getChannel(channel).getUsers();
 
 			int size = users.size();
-			for (User user : users) {
-				if (!user.getNick().equalsIgnoreCase("Timmy") 
-					&& (size <= 2 || !user.getNick().equalsIgnoreCase("Skynet"))
-					&& !Tim.db.ignore_list.contains(user.getNick().toLowerCase())
-					&& !Tim.db.soft_ignore_list.contains(user.getNick().toLowerCase())
-				) {
+			users.stream().filter((user) -> (!user.getNick().equalsIgnoreCase("Timmy") 
+											 && (size <= 2 || !user.getNick().equalsIgnoreCase("Skynet"))
+											 && !Tim.db.ignore_list.contains(user.getNick().toLowerCase())
+											 && !Tim.db.soft_ignore_list.contains(user.getNick().toLowerCase())
+				)).forEach((user) -> {
 					finalUsers.add(user);
-				}
-			}
+			});
 
 			if (finalUsers.size() > 0) {
 				int r = Tim.rand.nextInt(finalUsers.size());

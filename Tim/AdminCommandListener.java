@@ -154,9 +154,9 @@ public class AdminCommandListener extends ListenerAdapter {
 
 								event.respond("Sending status of chatter settings for " + target + " via private message.");
 
-								for (String setting : ci.chatter_enabled.keySet()) {
+								ci.chatter_enabled.keySet().stream().forEach((setting) -> {
 									event.getUser().send().message(setting + ": " + ci.chatter_enabled.get(setting).toString());
-								}
+								});
 							} else {
 								event.respond("I don't know about " + target);
 							}
@@ -203,9 +203,9 @@ public class AdminCommandListener extends ListenerAdapter {
 
 								event.respond("Sending status of command settings for " + target + " via private message.");
 
-								for (String setting : ci.commands_enabled.keySet()) {
+								ci.commands_enabled.keySet().stream().forEach((setting) -> {
 									event.getUser().send().message(setting + ": " + ci.commands_enabled.get(setting).toString());
-								}
+								});
 							} else {
 								event.respond("I don't know about " + target);
 							}
@@ -252,9 +252,9 @@ public class AdminCommandListener extends ListenerAdapter {
 
 								event.respond("Sending Twitter accounts relayed for " + target + " via private message.");
 
-								for (String account : ci.twitter_accounts) {
+								ci.twitter_accounts.stream().forEach((account) -> {
 									event.getUser().send().message(account);
-								}
+								});
 							} else {
 								event.respond("I don't know about " + target);
 							}
@@ -292,9 +292,9 @@ public class AdminCommandListener extends ListenerAdapter {
 
 								event.respond(String.format("Current Twitter Bucket settings for %s - Current Bucket: %.2f  Max Bucket: %.1f  Charge Rate / Minute: %.2f", target, ci.tweetBucket, ci.tweetBucketMax, ci.tweetBucketChargeRate));
 
-								for (String account : ci.twitter_accounts) {
+								ci.twitter_accounts.stream().forEach((account) -> {
 									event.respond(account);
-								}
+								});
 							} else {
 								event.respond("I don't know about " + target);
 							}
@@ -363,15 +363,15 @@ public class AdminCommandListener extends ListenerAdapter {
 						break;
 					case "listignores":
 						event.respond("There are " + Tim.db.ignore_list.size() + " users ignored.");
-						for (String item : Tim.db.ignore_list) {
+						Tim.db.ignore_list.stream().forEach((item) -> {
 							event.respond(item);
-						}
+				});
 						break;
 					case "listbadwords":
 						event.respond("There are " + Tim.markov.badwordPatterns.keySet().size() + " total bad words.");
-						for (String key : Tim.markov.badwordPatterns.keySet()) {
+						Tim.markov.badwordPatterns.keySet().stream().forEach((key) -> {
 							event.respond("Key: " + key + "  Pattern: " + Tim.markov.badwordPatterns.get(key).toString());
-						}
+				});
 						break;
 					case "shout":
 						for (ChannelInfo cdata : Tim.db.channel_data.values()) {

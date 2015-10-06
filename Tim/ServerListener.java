@@ -12,8 +12,6 @@
  */
 package Tim;
 
-import java.text.SimpleDateFormat;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -83,11 +81,7 @@ public class ServerListener extends ListenerAdapter {
 					&& Tim.warticker.wars.size() > 0
 					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
 				) {
-					for (Map.Entry<String, WordWar> wm : Tim.warticker.wars.entrySet()) {
-						if (wm.getValue().getChannel().equals(event.getChannel())) {
-							warscount++;
-						}
-					}
+					warscount = Tim.warticker.wars.entrySet().stream().filter((wm) -> (wm.getValue().getChannel().equals(event.getChannel()))).map((_item) -> 1).reduce(warscount, Integer::sum);
 
 					if (warscount > 0) {
 						boolean plural = warscount >= 2;
@@ -109,11 +103,9 @@ public class ServerListener extends ListenerAdapter {
 					&& warscount > 0
 					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
 				) {
-					for (Map.Entry<String, WordWar> wm : Tim.warticker.wars.entrySet()) {
-						if (wm.getValue().getChannel().equals(event.getChannel())) {
-							event.getChannel().send().message(wm.getValue().getDescription());
-						}
-					}
+					Tim.warticker.wars.entrySet().stream().filter((wm) -> (wm.getValue().getChannel().equals(event.getChannel()))).forEach((wm) -> {
+						event.getChannel().send().message(wm.getValue().getDescription());
+					});
 				}
 				
 				if (cdata.chatter_enabled.get("helpful_reactions") && (Pattern.matches("(?i)mib_......", event.getUser().getNick()) || Pattern.matches("(?i)guest.*", event.getUser().getNick()))) {

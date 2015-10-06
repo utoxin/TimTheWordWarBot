@@ -14,7 +14,6 @@ package Tim;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,9 +65,9 @@ public class Tim {
 		db.refreshDbLists();
 
 		// Join our channels
-		for (Map.Entry<String, ChannelInfo> entry : db.channel_data.entrySet()) {
+		db.channel_data.entrySet().stream().forEach((entry) -> {
 			configBuilder.addAutoJoinChannel(entry.getValue().channel);
-		}
+		});
 
 		bot = new PircBotX(configBuilder.buildConfiguration());
 

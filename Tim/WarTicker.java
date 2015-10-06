@@ -136,9 +136,9 @@ public class WarTicker {
 				war.updateDb();
 			}
 
-			for (String warName : warsToEnd) {
+			warsToEnd.stream().forEach((warName) -> {
 				this.wars.remove(warName);
-			}
+			});
 		}
 	}
 
@@ -321,11 +321,9 @@ public class WarTicker {
 
 	public void listWars(MessageEvent event, boolean all) {
 		if (this.wars != null && this.wars.size() > 0) {
-			for (ConcurrentHashMap.Entry<String, WordWar> wm : this.wars.entrySet()) {
-				if (all || wm.getValue().getChannel().getName().toLowerCase().equals(event.getChannel().getName().toLowerCase())) {
-					event.respond(all ? wm.getValue().getDescriptionWithChannel() : wm.getValue().getDescription());
-				}
-			}
+			this.wars.entrySet().stream().filter((wm) -> (all || wm.getValue().getChannel().getName().toLowerCase().equals(event.getChannel().getName().toLowerCase()))).forEach((wm) -> {
+				event.respond(all ? wm.getValue().getDescriptionWithChannel() : wm.getValue().getDescription());
+			});
 		} else {
 			event.respond("No wars are currently available.");
 		}
