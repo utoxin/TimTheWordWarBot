@@ -1,16 +1,22 @@
-/**
- * This file is part of Timmy, the Wordwar Bot.
- *
- * Timmy is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * Timmy is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with Timmy. If not, see
- * <http://www.gnu.org/licenses/>.
- */
 package Tim;
+
+/*
+ * Copyright (C) 2015 mwalker
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -59,46 +65,7 @@ public class ReactionListener extends ListenerAdapter {
 						cdata.soon_odds--;
 					}
 				} else if (message.toLowerCase().contains("raptor") && cdata.chatter_enabled.get("velociraptor")) {
-					if (Tim.rand.nextInt(100) < cdata.velociraptor_odds) {
-						cdata.recordVelociraptorSighting();
-						event.respond("Velociraptor sighted! Incident has been logged.");
-						cdata.velociraptor_odds--;
-						
-						if (cdata.activeVelociraptors > 10) {
-							int odds = (cdata.activeVelociraptors - 10);
-							if (odds > 50) {
-								odds = 50;
-							}
-							
-							if (Tim.rand.nextInt(100) < odds) {
-								String attack = Tim.db.getRandomChannelWithVelociraptors(cdata.channel);
-								
-								if (!attack.equals("")) {
-									ChannelInfo victimCdata = Tim.db.channel_data.get(attack);
-									int attackCount = Tim.rand.nextInt(cdata.activeVelociraptors / 2);
-									int defendingCount = Tim.rand.nextInt(victimCdata.activeVelociraptors / 2) + (victimCdata.activeVelociraptors / 2);
-									double killPercent = (((double) attackCount / (double) defendingCount) * 25.0) + Tim.rand.nextInt(attackCount);
-
-									if (killPercent > 100) {
-										killPercent = 100;
-									}
-
-									int killCount = (int) (defendingCount * (killPercent / 100.0));
-
-									cdata.recordSwarmKills(attackCount, killCount);
-									victimCdata.recordSwarmDeaths(killCount);
-									
-									event.getChannel().send().message(String.format("Suddenly, %d of the velociraptors go charging off to attack a group in %s! "
-										+ "After a horrific battle, they manage to kill %d of them...", attackCount, attack, killCount));
-
-									if (victimCdata.chatter_enabled.get("velociraptor") && victimCdata.muzzled == false) {
-										Tim.bot.sendIRC().message(victimCdata.channel, String.format("A swarm of %d velociraptors suddenly appears from the direction of %s. "
-											+ "The local raptors do their best to fight them off, and %d of them die before the swarm disappears.", attackCount, cdata.channel, killCount));
-									}
-								}
-							}
-						}
-					}
+					Tim.raptors.sighting(event);
 					Tim.markov.process_markov(message, "say", event.getUser().getNick());
 				} else if (message.toLowerCase().contains("cheeseburger") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < cdata.cheeseburger_odds) {
@@ -183,43 +150,7 @@ public class ReactionListener extends ListenerAdapter {
 					cdata.soon_odds--;
 				}
 			} else if (message.toLowerCase().contains("raptor") && cdata.chatter_enabled.get("velociraptor")) {
-				if (Tim.rand.nextInt(100) < cdata.velociraptor_odds) {
-					cdata.recordVelociraptorSighting();
-					event.respond("jots down a note in a red notebook labeled 'Velociraptor Sighting Log'.");
-					cdata.velociraptor_odds--;
-						
-					if (cdata.activeVelociraptors > 10) {
-						int odds = (int) (Math.log(cdata.activeVelociraptors) * 20);
-
-						if (Tim.rand.nextInt(100) < odds) {
-							String attack = Tim.db.getRandomChannelWithVelociraptors(cdata.channel);
-
-							if (!attack.equals("")) {
-								ChannelInfo victimCdata = Tim.db.channel_data.get(attack);
-								int attackCount = Tim.rand.nextInt(cdata.activeVelociraptors / 2);
-								int defendingCount = Tim.rand.nextInt(victimCdata.activeVelociraptors / 2) + (victimCdata.activeVelociraptors / 2);
-								double killPercent = (((double) attackCount / (double) defendingCount) * 25.0) + Tim.rand.nextInt(attackCount);
-
-								if (killPercent > 100) {
-									killPercent = 100;
-								}
-
-								int killCount = (int) (defendingCount * (killPercent / 100.0));
-								
-								cdata.recordSwarmKills(attackCount, killCount);
-								victimCdata.recordSwarmDeaths(killCount);
-
-								event.getChannel().send().message(String.format("Suddenly, %d of the velociraptors go charging off to attack a group in %s! "
-									+ "After a horrific battle, they manage to kill %d of them...", attackCount, attack, killCount));
-
-								if (victimCdata.chatter_enabled.get("velociraptor") && victimCdata.muzzled == false) {
-									Tim.bot.sendIRC().message(victimCdata.channel, String.format("A swarm of %d velociraptors suddenly appears from the direction of %s. "
-										+ "The local raptors do their best to fight them off, and %d of them die before the swarm disappears.", attackCount, cdata.channel, killCount));
-								}
-							}
-						}
-					}
-				}
+				Tim.raptors.sighting(event);
 				Tim.markov.process_markov(message, "emote", event.getUser().getNick());
 			} else if (message.toLowerCase().contains("cheeseburger") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < cdata.cheeseburger_odds) {

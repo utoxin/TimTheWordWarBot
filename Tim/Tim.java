@@ -1,16 +1,22 @@
-/**
- * This file is part of Timmy, the Wordwar Bot.
- *
- * Timmy is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * Timmy is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with Timmy. If not, see
- * <http://www.gnu.org/licenses/>.
- */
 package Tim;
+
+/*
+ * Copyright (C) 2015 mwalker
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -23,7 +29,6 @@ import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
 
 public class Tim {
-
 	public static Amusement amusement;
 	public static PircBotX bot;
 	public static Challenge challenge;
@@ -36,6 +41,7 @@ public class Tim {
 	public static WarTicker warticker;
 	public static DeIdler deidler;
 	public static TwitterIntegration twitterstream;
+	public static VelociraptorHandler raptors;
 
 	public static void main(String[] args) {
 		instance = new Tim();
@@ -47,6 +53,7 @@ public class Tim {
 		challenge = new Challenge();
 		markov = new MarkovChains();
 		amusement = new Amusement();
+		raptors = new VelociraptorHandler();
 
 		Builder configBuilder = new Configuration.Builder()
 			.setName(db.getSetting("nickname"))
@@ -94,12 +101,12 @@ public class Tim {
 
 	public static void shutdown() {
 		if (Tim.bot.isConnected()) {
+			Tim.bot.stopBotReconnect();
+			Tim.bot.sendIRC().quitServer("HELP! Utoxin just murdered me! (Again!!!)");
 			Tim.warticker.warticker.cancel();
 			Tim.deidler.idleticker.cancel();
 			Tim.twitterstream.userStream.shutdown();
 			Tim.twitterstream.publicStream.shutdown();
-			Tim.bot.stopBotReconnect();
-			Tim.bot.sendIRC().quitServer("HELP! Utoxin just murdered me! (Again!!!)");
 		}
 	}
 
