@@ -168,8 +168,12 @@ public class ChannelInfo {
 	}
 
 	public void recordVelociraptorSighting() {
-		velociraptorSightings += 1;
-		activeVelociraptors += 1;
+		recordVelociraptorSighting(1);
+	}
+	
+	public void recordVelociraptorSighting(int increment) {
+		velociraptorSightings += increment;
+		activeVelociraptors += increment;
 		lastSighting.setTime(System.currentTimeMillis());
 		
 		Tim.db.saveChannelSettings(this);

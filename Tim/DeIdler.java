@@ -18,9 +18,7 @@ package Tim;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-import java.util.Calendar;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 /**
  *
@@ -111,36 +109,38 @@ public class DeIdler {
 			Tim.bot.getUserChannelDao().getChannel(cdata.channel).getMode();
 
 			if (Tim.rand.nextInt(100) < cdata.randomChatterLevel) {
-				String[] actions;
+				ArrayList<String> actions = new ArrayList<>();
 
 				if (cdata.muzzled) {
 					continue;
 				}
 
-				if (cdata.chatter_enabled.get("markov")
-					&& !cdata.amusement_chatter_available()) {
-					actions = new String[]{
-						"markov",};
-				} else if (cdata.chatter_enabled.get("markov")
-					&& cdata.amusement_chatter_available()) {
-					actions = new String[]{
-						"markov",
-						"amusement",};
-				} else if (!cdata.chatter_enabled.get("markov")
-					&& cdata.amusement_chatter_available()) {
-					actions = new String[]{
-						"amusement",};
-				} else {
+				if (cdata.chatter_enabled.get("markov")) {
+					actions.add("markov");
+				}
+				
+				if (cdata.amusement_chatter_available()) {
+					actions.add("amusement");
+				}
+				
+				if (cdata.chatter_enabled.get("velociraptor")) {
+					actions.add("velociraptors");
+				}
+				
+				if (actions.isEmpty()) {
 					continue;
 				}
 
-				String action = actions[Tim.rand.nextInt(actions.length)];
+				String action = actions.get(Tim.rand.nextInt(actions.size()));
 				switch (action) {
 					case "markov":
 						Tim.markov.randomAction(cdata.channel, Tim.rand.nextBoolean() ? "say" : "emote", "");
 						break;
 					case "amusement":
 						Tim.amusement.randomAction(null, cdata.channel);
+						break;
+					case "velociraptors":
+						Tim.raptors.swarm(cdata.channel);
 						break;
 				}
 			}
