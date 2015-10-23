@@ -73,6 +73,8 @@ public class UserCommandListener extends ListenerAdapter {
 					Tim.warticker.listAllWars(event);
 				} else if (command.equals("boxodoom")) {
 					Tim.amusement.boxodoom(event, args);
+				} else if (command.equals("pickone")) {
+					Tim.amusement.pickone(event, args);
 				} else if (command.equals("eggtimer")) {
 					double time = 15;
 					if (args != null) {

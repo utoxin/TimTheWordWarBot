@@ -762,6 +762,20 @@ public class Amusement {
 			event.getChannel().send().action("licks " + event.getUser().getNick() + "! Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
 		}
 	}
+	
+	protected void pickone(MessageEvent event, String[] args) {
+		String argStr = StringUtils.join(args, " ");
+		String[] choices = argStr.split(",", 0);
+
+		if (choices.length < 1) {
+			event.respond("I don't see any choices there!");
+		} else if (choices.length == 1) {
+			event.respond("You only gave one option, silly!");
+		} else {
+			int r = Tim.rand.nextInt(choices.length);
+			event.respond("I pick... " + choices[r]);
+		}
+	}
 
 	protected void eightball(Channel channel, User sender, boolean mutter, String argStr) {
 		try {

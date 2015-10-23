@@ -63,7 +63,7 @@ public class VelociraptorHandler {
 	public void swarm(String channel) {
 		ChannelInfo cdata = Tim.db.channel_data.get(channel.toLowerCase());
 
-		if (Tim.rand.nextInt(100) < (Math.log(cdata.activeVelociraptors) * 8)) {
+		if (cdata.activeVelociraptors > 2 && Tim.rand.nextInt(100) < (Math.log(cdata.activeVelociraptors) * 8)) {
 			String attack = Tim.db.getRandomChannelWithVelociraptors(cdata.channel);
 
 			if (!attack.equals("")) {
@@ -80,6 +80,9 @@ public class VelociraptorHandler {
 				}
 
 				int killCount = (int) (defendingCount * (killPercent / 100.0));
+				if (killCount < 0) {
+					return;
+				}
 
 				cdata.recordSwarmKills(attackCount - returnCount, killCount);
 				victimCdata.recordSwarmDeaths(killCount);
@@ -93,16 +96,29 @@ public class VelociraptorHandler {
 				}
 			}
 		} else {
-			int newCount = Tim.rand.nextInt(cdata.activeVelociraptors / 2) - Tim.rand.nextInt(cdata.activeVelociraptors / 4);
+			if (cdata.activeVelociraptors > 1) {
+				int newCount = Tim.rand.nextInt(cdata.activeVelociraptors / 2);
+				
+				if (cdata.activeVelociraptors >= 4) {
+					newCount -= Tim.rand.nextInt(cdata.activeVelociraptors / 4);
+				}
 
-			if (newCount < 1) {
-				return;
+				if (newCount < 1) {
+					return;
+				}
+
+				cdata.recordVelociraptorSighting(newCount);
+
+				if (newCount > 1) {
+					Tim.bot.sendIRC().message(channel, String.format("Something is going on in the swarm... hey, where did those %d baby"
+						+ " raptors come from?! Clever girls.", newCount));
+				} else {
+					Tim.bot.sendIRC().message(channel, "Something is going on in the swarm... hey, where did that baby"
+						+ " raptor come from?! Clever girl.");
+				}
+			} else if (cdata.activeVelociraptors < 0) {
+				cdata.activeVelociraptors = 0;
 			}
-
-			cdata.recordVelociraptorSighting(newCount);
-
-			Tim.bot.sendIRC().message(channel, String.format("Something is going on in the swarm... hey, where did those %d new"
-				+ " raptors come from?! Clever girls.", newCount));
 		}
 	}
 }

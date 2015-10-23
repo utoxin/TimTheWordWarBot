@@ -138,6 +138,12 @@ public class ServerListener extends ListenerAdapter {
 						event.getChannel().send().message(String.format("This channel has %d active velociraptors! The last one was spotted on %s.", velociraptorCount, velociraptorDate));
 					}
 				}
+
+				if (cdata.chatter_enabled.get("silly_reactions") && event.getUser().getNick().toLowerCase().equals("trillian")) {
+					Thread.sleep(1000);
+					event.getChannel().send().message("All hail the velociraptor queen!");
+					Tim.raptors.sighting(event);
+				}
 			} catch (InterruptedException ex) {
 				Logger.getLogger(ServerListener.class.getName()).log(Level.SEVERE, null, ex);
 			}

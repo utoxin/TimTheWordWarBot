@@ -96,24 +96,18 @@ public class DeIdler {
 			Tim.twitterstream.sendDeidleTweet(Tim.markov.generate_markov("say"));
 		}
 
-		/**
-		 * This loop is used to reduce the chatter odds on idle channels, by periodically triggering idle chatter in
-		 * channels. If they currently have chatter turned off, this simply decreases their timer, and then goes on.
-		 * That way, the odds don't build up to astronomical levels while people are idle or away, resulting in lots of
-		 * spam when they come back.
-		 */
 		for (ChannelInfo cdata : Tim.db.channel_data.values()) {
 			cdata = Tim.db.channel_data.get(cdata.channel);
 
 			// Maybe cure the stale channel mode warnings?
 			Tim.bot.getUserChannelDao().getChannel(cdata.channel).getMode();
 
+			if (cdata.muzzled) {
+				continue;
+			}
+
 			if (Tim.rand.nextInt(100) < cdata.randomChatterLevel) {
 				ArrayList<String> actions = new ArrayList<>();
-
-				if (cdata.muzzled) {
-					continue;
-				}
 
 				if (cdata.chatter_enabled.get("markov")) {
 					actions.add("markov");
