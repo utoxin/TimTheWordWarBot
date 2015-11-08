@@ -72,9 +72,7 @@ public class Tim {
 		db.refreshDbLists();
 
 		// Join our channels
-		db.channel_data.entrySet().stream().forEach((entry) -> {
-			configBuilder.addAutoJoinChannel(entry.getValue().channel);
-		});
+		db.channel_data.entrySet().stream().forEach((entry) -> configBuilder.addAutoJoinChannel(entry.getValue().channel));
 
 		bot = new PircBotX(configBuilder.buildConfiguration());
 

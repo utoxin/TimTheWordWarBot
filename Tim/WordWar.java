@@ -36,23 +36,27 @@ public class WordWar {
 
 	protected long duration;
 	protected long base_duration;
+	protected long break_duration;
+	protected boolean do_randomness;
 
 	private final int db_id;
 	private final Channel channel;
 	private final User starter;
 	private final String name;
 
-	public WordWar(long time, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel) {
+	public WordWar(long time, long to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness, String warname, User startingUser, Channel hosting_channel) {
 		this.starter = startingUser;
 		this.time_to_start = to_start;
 		this.total_chains = total_chains;
 		this.current_chain = current_chain;
 		this.base_duration = time;
+		this.break_duration = break_duration;
+		this.do_randomness = do_randomness;
 		this.name = warname;
 		this.channel = hosting_channel;
 		this.cdata = Tim.db.channel_data.get(hosting_channel.getName().toLowerCase());
 
-		if (total_chains > 1) {
+		if (total_chains > 1 && do_randomness) {
 			this.duration = base_duration + (Tim.rand.nextInt((int) Math.floor(base_duration * 0.2))) - ((long) Math.floor(base_duration * 0.1));
 		} else {
 			this.duration = this.base_duration;
@@ -60,14 +64,14 @@ public class WordWar {
 
 		this.remaining = this.duration;
 
-		db_id = Tim.db.create_war(hosting_channel, startingUser, warname, base_duration, duration, remaining, to_start, total_chains, current_chain);
+		db_id = Tim.db.create_war(hosting_channel, startingUser, warname, base_duration, duration, remaining, to_start, total_chains, current_chain, break_duration, do_randomness);
 
 		if (this.time_to_start <= 0 && (cdata.muzzled == false || cdata.auto_muzzled)) {
 			cdata.setMuzzleFlag(true, true);
 		}
 	}
 
-	public WordWar(long base_duration, long duration, long remaining, long to_start, int total_chains, int current_chain, String warname, User startingUser, Channel hosting_channel, int db_id) {
+	public WordWar(long base_duration, long duration, long remaining, long to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness, String warname, User startingUser, Channel hosting_channel, int db_id) {
 		this.starter = startingUser;
 		this.time_to_start = to_start;
 		this.base_duration = base_duration;
@@ -75,6 +79,8 @@ public class WordWar {
 		this.remaining = remaining;
 		this.total_chains = total_chains;
 		this.current_chain = current_chain;
+		this.break_duration = break_duration;
+		this.do_randomness = do_randomness;
 		this.name = warname;
 		this.channel = hosting_channel;
 		this.cdata = Tim.db.channel_data.get(hosting_channel.getName().toLowerCase());
@@ -106,10 +112,6 @@ public class WordWar {
 
 	public Channel getChannel() {
 		return this.channel;
-	}
-
-	public long getDuration() {
-		return duration;
 	}
 
 	public String getName() {
@@ -167,10 +169,6 @@ public class WordWar {
 
 	public User getStarter() {
 		return starter;
-	}
-
-	public long getTime_to_start() {
-		return time_to_start;
 	}
 
 	public String getDescription() {

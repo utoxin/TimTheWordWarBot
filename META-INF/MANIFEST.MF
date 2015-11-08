@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Class-Path: lib/commons-configuration.jar lib/commons-validator-1.4.0.
+ jar lib/slf4j-simple-1.7.5.jar lib/mysql-connector-java-5.1.22-bin.ja
+ r lib/bitly-api-client-0.7.2.jar lib/commons-lang-2.6.jar lib/guava-1
+ 5.0.jar lib/commons-lang3-3.1.jar lib/commons-logging.jar lib/twitter
+ 4j-async-4.0.2.jar lib/twitter4j-stream-4.0.2.jar lib/pircbotx-2.0.1.
+ jar lib/smackx-3.4.1-0cec571.jar lib/DBPool-5.0.jar lib/jumblr-0.0.8.
+ jar lib/smack-3.4.1-0cec571.jar lib/twitter4j-core-4.0.2.jar lib/comm
+ ons-collections.jar lib/slf4j-api-1.7.5.jar
+Main-Class: Tim.Tim
+

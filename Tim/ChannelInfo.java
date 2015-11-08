@@ -40,7 +40,7 @@ public class ChannelInfo {
 	public int activeVelociraptors;
 	public int deadVelociraptors;
 	public int killedVelociraptors;
-	public Date lastSighting;
+	public Date lastSighting = new Date();
 
 	public long twitterTimer;
 	public float tweetBucket;

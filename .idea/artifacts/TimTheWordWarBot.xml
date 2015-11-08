@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact name="TimTheWordWarBot">
+    <output-path>$PROJECT_DIR$/out/artifacts/TimTheWordWarBot</output-path>
+    <root id="root">
+      <element id="archive" name="TimTheWordWarBot.jar">
+        <element id="module-output" name="TimTheWordWarBot" />
+      </element>
+      <element id="directory" name="lib">
+        <element id="library" level="project" name="Libraries" />
+      </element>
+    </root>
+  </artifact>
+</component>

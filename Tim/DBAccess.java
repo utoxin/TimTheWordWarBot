@@ -396,7 +396,7 @@ public class DBAccess {
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("SELECT `channel` FROM `channels` WHERE `channel` != ? AND `active_velociraptors` > 0 ORDER BY (RAND() * active_velociraptors) DESC LIMIT 1");
+			PreparedStatement s = con.prepareStatement("SELECT `channel` FROM `channels` WHERE `channel` != ? AND `active_velociraptors` > 0 ORDER BY (RAND() * active_velociraptors) DESC LIMIT 1;");
 			s.setString(1, exclude);
 			s.executeQuery();
 
@@ -421,7 +421,7 @@ public class DBAccess {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
 			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET reactive_chatter_level = ?, chatter_name_multiplier = ?, random_chatter_level = ?, tweet_bucket_max = ?, "
-				+ "tweet_bucket_charge_rate = ?, auto_muzzle_wars = ?, velociraptor_sightings = ?, active_velociraptors = ?, dead_velociraptors = ?, killed_velociraptors = ?, last_sighting_date = ? WHERE channel = ?");
+				+ "tweet_bucket_charge_rate = ?, auto_muzzle_wars = ?, velociraptor_sightings = ?, active_velociraptors = ?, dead_velociraptors = ?, killed_velociraptors = ?, last_sighting_date = ? WHERE channel = ?;");
 			s.setInt(1, channel.reactiveChatterLevel);
 			s.setInt(2, channel.chatterNameMultiplier);
 			s.setInt(3, channel.randomChatterLevel);
@@ -452,7 +452,7 @@ public class DBAccess {
 			s.setString(1, channel.channel);
 			s.executeUpdate();
 
-			s = con.prepareStatement("INSERT INTO channel_chatter_settings SET channel = ?, setting = ?, value = ?");
+			s = con.prepareStatement("INSERT INTO `channel_chatter_settings` SET `channel` = ?, `setting` = ?, `value` = ?;");
 			s.setString(1, channel.channel);
 
 			for (Map.Entry<String, Boolean> setting : channel.chatter_enabled.entrySet()) {
@@ -461,7 +461,7 @@ public class DBAccess {
 				s.executeUpdate();
 			}
 
-			s = con.prepareStatement("INSERT INTO channel_command_settings SET channel = ?, setting = ?, value = ?");
+			s = con.prepareStatement("INSERT INTO `channel_command_settings` SET `channel` = ?, `setting` = ?, `value` = ?;");
 			s.setString(1, channel.channel);
 
 			for (Map.Entry<String, Boolean> setting : channel.commands_enabled.entrySet()) {
@@ -470,7 +470,7 @@ public class DBAccess {
 				s.executeUpdate();
 			}
 
-			s = con.prepareStatement("INSERT INTO channel_twitter_feeds SET channel = ?, account = ?");
+			s = con.prepareStatement("INSERT INTO `channel_twitter_feeds` SET `channel` = ?, `account` = ?;");
 			s.setString(1, channel.channel);
 
 			for (String account : channel.twitter_accounts) {
@@ -513,22 +513,24 @@ public class DBAccess {
 		Tim.markov.refreshDbLists();
 	}
 
-	public int create_war(Channel channel, User starter, String name, long base_duration, long duration, long remaining, long time_to_start, int total_chains, int current_chain) {
+	public int create_war(Channel channel, User starter, String name, long base_duration, long duration, long remaining, long time_to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness) {
 		int id = 0;
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
 
-			PreparedStatement s = con.prepareStatement("INSERT INTO `wars` (`channel`, `starter`, `name`, `base_duration`, `duration`, `remaining`, `time_to_start`, `total_chains`, `current_chain`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement s = con.prepareStatement("INSERT INTO `wars` (`channel`, `starter`, `name`, `base_duration`, `randomness`, `delay`, `duration`, `remaining`, `time_to_start`, `total_chains`, `current_chain`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			s.setString(1, channel.getName().toLowerCase());
 			s.setString(2, starter.getNick());
 			s.setString(3, name);
 			s.setLong(4, base_duration);
-			s.setLong(5, duration);
-			s.setLong(6, remaining);
-			s.setLong(7, time_to_start);
-			s.setInt(8, total_chains);
-			s.setInt(9, current_chain);
+			s.setBoolean(5, do_randomness);
+			s.setLong(6, break_duration);
+			s.setLong(7, duration);
+			s.setLong(8, remaining);
+			s.setLong(9, time_to_start);
+			s.setInt(10, total_chains);
+			s.setInt(11, current_chain);
 			s.executeUpdate();
 
 			ResultSet rs = s.getGeneratedKeys();
@@ -587,6 +589,8 @@ public class DBAccess {
 					rs.getLong("time_to_start"),
 					rs.getInt("total_chains"),
 					rs.getInt("current_chain"),
+					rs.getInt("delay"),
+					rs.getBoolean("randomness"),
 					rs.getString("name"),
 					user,
 					channel,

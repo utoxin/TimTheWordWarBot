@@ -24,6 +24,11 @@ import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.hooks.events.MessageEvent;
 
@@ -189,9 +194,15 @@ public class WarTicker {
 
 			war.current_chain++;
 
-			war.duration = (long) (war.base_duration + (war.base_duration * ((Tim.rand.nextInt(20) - 10) / 100.0)));
+			if (war.do_randomness) {
+				war.duration = (long) (war.base_duration + (war.base_duration * ((Tim.rand.nextInt(20) - 10) / 100.0)));
+				war.time_to_start = (long) ((war.break_duration) + (war.break_duration * ((Tim.rand.nextInt(20) - 10) / 100.0)));
+			} else {
+				war.duration = war.base_duration;
+				war.time_to_start = war.break_duration;
+			}
+
 			war.remaining = war.duration;
-			war.time_to_start = (long) ((war.base_duration * 0.5) + (war.base_duration * ((Tim.rand.nextInt(20) - 10) / 100.0)));
 			war.updateDb();
 			warStartCount(war);
 		}
@@ -222,8 +233,11 @@ public class WarTicker {
 	public void startChainWar(MessageEvent event, String[] args) {
 		long time;
 		long to_start = 60;
-		int total_chains = 1;
-		String warname;
+		int total_chains;
+		int delay;
+		boolean do_randomness = true;
+
+		String warname = "";
 
 		try {
 			time = (long) (Double.parseDouble(args[0]) * 60);
@@ -235,12 +249,8 @@ public class WarTicker {
 		try {
 			total_chains = Integer.parseInt(args[1]);
 		} catch (NumberFormatException e) {
-			if (args[1].equalsIgnoreCase("now")) {
-				to_start = 0;
-			} else {
-				event.respond("I could not understand the time to start parameter. Was it numeric?");
-				return;
-			}
+			event.respond("I could not understand the time to start parameter. Was it numeric?");
+			return;
 		}
 
 		if (time < 60) {
@@ -248,17 +258,61 @@ public class WarTicker {
 			return;
 		}
 
+		delay = (int) time / 2;
+
+		Pattern breakPattern = Pattern.compile("^break:([0-9.]+)$");
+		Pattern randomnessPattern = Pattern.compile("^random:([01])$");
+		Pattern startDelayPattern = Pattern.compile("^start:([0-9.]+)$");
+		Matcher m;
+
 		if (args.length >= 3) {
-			warname = args[2];
-			for (int i = 3; i < args.length; i++) {
-				warname = warname + " " + args[i];
+			for (int i = 2; i < args.length; i++) {
+				m = breakPattern.matcher(args[i]);
+				if (m.find()) {
+					try {
+						delay = (int) (Double.parseDouble(m.group(1)) * 60);
+					} catch (NumberFormatException e) {
+						Logger.getLogger(WarTicker.class.getName()).log(Level.INFO, "Input: ''{0}'' Found String: ''{1}''", new Object[]{args[1], m.group(1)});
+					}
+					continue;
+				}
+
+				m = startDelayPattern.matcher(args[i]);
+				if (m.find()) {
+					try {
+						to_start = (int) (Double.parseDouble(m.group(1)) * 60);
+					} catch (NumberFormatException e) {
+						Logger.getLogger(WarTicker.class.getName()).log(Level.INFO, "Input: ''{0}'' Found String: ''{1}''", new Object[]{args[1], m.group(1)});
+					}
+					continue;
+				}
+
+				m = randomnessPattern.matcher(args[i]);
+				if (m.find()) {
+					try {
+						if (Integer.parseInt(m.group(1)) == 0) {
+							do_randomness = false;
+						}
+					} catch (NumberFormatException e) {
+						Logger.getLogger(WarTicker.class.getName()).log(Level.INFO, "Input: ''{0}'' Found String: ''{1}''", new Object[]{args[1], m.group(1)});
+					}
+					continue;
+				}
+
+				if (warname.equals("")) {
+					warname = args[i];
+				} else {
+					warname = warname + " " + args[i];
+				}
 			}
-		} else {
+		}
+
+		if (warname.equals("")) {
 			warname = event.getUser().getNick() + "'s War";
 		}
 
 		if (!this.wars.containsKey(warname.toLowerCase())) {
-			WordWar war = new WordWar(time, to_start, total_chains, 1, warname, event.getUser(), event.getChannel());
+			WordWar war = new WordWar(time, to_start, total_chains, 1, delay, do_randomness, warname, event.getUser(), event.getChannel());
 			this.wars.put(war.getName(false).toLowerCase(), war);
 			if (to_start > 0) {
 				event.respond("Your wordwar '" + warname + "' will start in " + to_start / 60.0 + " minutes.");
@@ -309,7 +363,7 @@ public class WarTicker {
 		}
 
 		if (!this.wars.containsKey(warname.toLowerCase())) {
-			WordWar war = new WordWar(time, to_start, 1, 1, warname, event.getUser(), event.getChannel());
+			WordWar war = new WordWar(time, to_start, 1, 1, 0, false, warname, event.getUser(), event.getChannel());
 			this.wars.put(war.getName(false).toLowerCase(), war);
 			if (to_start > 0) {
 				event.respond("Your wordwar will start in " + to_start / 60.0 + " minutes.");

@@ -23,6 +23,9 @@ import org.pircbotx.hooks.Event;
 import org.pircbotx.hooks.events.ActionEvent;
 import org.pircbotx.hooks.events.MessageEvent;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author mwalker
@@ -40,8 +43,12 @@ public class VelociraptorHandler {
 		} else {
 			return;
 		}
-		
+
+		Logger.getLogger(VelociraptorHandler.class.getName()).log(Level.INFO, "Raptor Spotted In ''{0}''", new Object[]{channel.getName()});
+
 		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName().toLowerCase());
+
+		Logger.getLogger(VelociraptorHandler.class.getName()).log(Level.INFO, "Channel Active Raptors: {0}", new Object[]{cdata.activeVelociraptors});
 
 		if (Tim.rand.nextInt(100) < cdata.velociraptor_odds) {
 			cdata.recordVelociraptorSighting();
@@ -62,6 +69,8 @@ public class VelociraptorHandler {
 	
 	public void swarm(String channel) {
 		ChannelInfo cdata = Tim.db.channel_data.get(channel.toLowerCase());
+
+		Logger.getLogger(VelociraptorHandler.class.getName()).log(Level.INFO, "Channel Active Raptors: {0}", new Object[]{cdata.activeVelociraptors});
 
 		if (cdata.activeVelociraptors > 2 && Tim.rand.nextInt(100) < (Math.log(cdata.activeVelociraptors) * 8)) {
 			String attack = Tim.db.getRandomChannelWithVelociraptors(cdata.channel);
