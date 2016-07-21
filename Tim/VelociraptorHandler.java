@@ -23,15 +23,12 @@ import org.pircbotx.hooks.Event;
 import org.pircbotx.hooks.events.ActionEvent;
 import org.pircbotx.hooks.events.MessageEvent;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
  * @author mwalker
  */
-public class VelociraptorHandler {
-	public void sighting(Event event) {
+class VelociraptorHandler {
+	void sighting(Event event) {
 		Channel channel;
 		boolean action = false;
 		
@@ -44,11 +41,7 @@ public class VelociraptorHandler {
 			return;
 		}
 
-		Logger.getLogger(VelociraptorHandler.class.getName()).log(Level.INFO, "Raptor Spotted In ''{0}''", new Object[]{channel.getName()});
-
 		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName().toLowerCase());
-
-		Logger.getLogger(VelociraptorHandler.class.getName()).log(Level.INFO, "Channel Active Raptors: {0}", new Object[]{cdata.activeVelociraptors});
 
 		if (Tim.rand.nextInt(100) < cdata.velociraptor_odds) {
 			cdata.recordVelociraptorSighting();
@@ -66,42 +59,61 @@ public class VelociraptorHandler {
 			}
 		}
 	}
-	
-	public void swarm(String channel) {
+
+	private int oddsIncreasing(int input) {
+		return (int) Math.floor(0.001 * input * input);
+	}
+
+	private int oddsDecreasing(int input) {
+		return (int) Math.floor(Math.log(input) * 8);
+	}
+
+	void swarm(String channel) {
 		ChannelInfo cdata = Tim.db.channel_data.get(channel.toLowerCase());
 
-		Logger.getLogger(VelociraptorHandler.class.getName()).log(Level.INFO, "Channel Active Raptors: {0}", new Object[]{cdata.activeVelociraptors});
-
-		if (cdata.activeVelociraptors > 2 && Tim.rand.nextInt(100) < (Math.log(cdata.activeVelociraptors) * 8)) {
+		if (cdata.activeVelociraptors > 10 && Tim.rand.nextInt(100) < oddsDecreasing(cdata.activeVelociraptors)) {
 			String attack = Tim.db.getRandomChannelWithVelociraptors(cdata.channel);
 
 			if (!attack.equals("")) {
 				ChannelInfo victimCdata = Tim.db.channel_data.get(attack);
 				int attackCount = Tim.rand.nextInt(cdata.activeVelociraptors / 2);
-				int returnCount = Tim.rand.nextInt(attackCount / 2);
 
-				int defendingCount = victimCdata.activeVelociraptors;
-				
-				double killPercent = (((double) attackCount / (double) defendingCount) * 25.0) + (Math.log(Tim.rand.nextInt(attackCount)) * 5);
+				if (Tim.rand.nextInt(100) < oddsIncreasing(cdata.activeVelociraptors)) {
+					cdata.recordSwarmKills(attackCount, 0);
+					victimCdata.recordSwarmDeaths(-attackCount);
 
-				if (killPercent > 100) {
-					killPercent = 100;
-				}
+					Tim.bot.sendIRC().message(channel, String.format("Apparently feeling crowded, %d of the velociraptors head off in search of new territory. "
+						+ "After a searching, they settle in %s.", attackCount, attack));
 
-				int killCount = (int) (defendingCount * (killPercent / 100.0));
-				if (killCount < 0) {
-					return;
-				}
+					if (victimCdata.chatter_enabled.get("velociraptor") && !victimCdata.muzzled) {
+						Tim.bot.sendIRC().message(victimCdata.channel, String.format("A swarm of %d velociraptors appears from the direction of %s. "
+							+ "The local raptors are nervous, but the strangers simply want to join the colony.", attackCount, cdata.channel));
+					}
+				} else {
+					int returnCount = Math.max(0, Tim.rand.nextInt(attackCount / 2) - (int) Math.floor(Math.sqrt(cdata.activeVelociraptors)));
+					int defendingCount = victimCdata.activeVelociraptors;
 
-				cdata.recordSwarmKills(attackCount - returnCount, killCount);
-				victimCdata.recordSwarmDeaths(killCount);
+					double killPercent = (((double) attackCount / (double) defendingCount) * 25.0) + (Math.log(Tim.rand.nextInt(attackCount)) * 5);
 
-				Tim.bot.sendIRC().message(channel, String.format("Suddenly, %d of the velociraptors go charging off to attack a group in %s! "
-					+ "After a horrific battle, they manage to kill %d of them, and %d return home!", attackCount, attack, killCount, returnCount));
+					if (killPercent > 100) {
+						killPercent = 100;
+					}
 
-				if (victimCdata.chatter_enabled.get("velociraptor") && victimCdata.muzzled == false) {
-					Tim.bot.sendIRC().message(victimCdata.channel, String.format("A swarm of %d velociraptors suddenly appears from the direction of %s. "
-						+ "The local raptors do their best to fight them off, and %d of them die before the swarm disappears.", attackCount, cdata.channel, killCount));
+					int killCount = (int) (defendingCount * (killPercent / 100.0));
+					if (killCount < 0) {
+						return;
+					}
+
+					cdata.recordSwarmKills(attackCount - returnCount, killCount);
+					victimCdata.recordSwarmDeaths(killCount);
+
+					Tim.bot.sendIRC().message(channel, String.format("Suddenly, %d of the velociraptors go charging off to attack a group in %s! "
+						+ "After a horrific battle, they manage to kill %d of them, and %d return home!", attackCount, attack, killCount, returnCount));
+
+					if (victimCdata.chatter_enabled.get("velociraptor") && !victimCdata.muzzled) {
+						Tim.bot.sendIRC().message(victimCdata.channel, String.format("A swarm of %d velociraptors suddenly appears from the direction of %s. "
+							+ "The local raptors do their best to fight them off, and %d of them die before the swarm disappears.", attackCount, cdata.channel, killCount));
+					}
 				}
 			}
 		} else {

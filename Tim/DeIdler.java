@@ -18,28 +18,29 @@ package Tim;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+import org.pircbotx.Channel;
+
 import java.util.*;
 
 /**
  *
  * @author Matthew Walker
  */
-public class DeIdler {
+class DeIdler {
 
 	private static final DeIdler instance;
-	public DeIdler.IdleClockThread idleticker;
-	private final Timer ticker;
-	private final Calendar cal;
+	DeIdler.IdleClockThread idleTicker;
 
 	static {
 		instance = new DeIdler();
 	}
 
-	public DeIdler() {
-		this.cal = Calendar.getInstance();
-		this.idleticker = new DeIdler.IdleClockThread(this);
-		this.ticker = new Timer(true);
-		this.ticker.scheduleAtFixedRate(this.idleticker, 0, 60000);
+	private DeIdler() {
+		Timer ticker;
+
+		this.idleTicker = new DeIdler.IdleClockThread(this);
+		ticker = new Timer(true);
+		ticker.scheduleAtFixedRate(this.idleTicker, 0, 60000);
 	}
 
 	/**
@@ -51,11 +52,12 @@ public class DeIdler {
 		return instance;
 	}
 
-	public class IdleClockThread extends TimerTask {
+	@SuppressWarnings("WeakerAccess")
+	class IdleClockThread extends TimerTask {
 
 		private final DeIdler parent;
 
-		public IdleClockThread(DeIdler parent) {
+		IdleClockThread(DeIdler parent) {
 			this.parent = parent;
 		}
 
@@ -71,7 +73,10 @@ public class DeIdler {
 		}
 	}
 
-	public void _tick() {
+	private void _tick() {
+		Calendar cal = Calendar.getInstance();
+		Date date = new Date();
+
 		boolean isNovember = (10 == cal.get(Calendar.MONTH));
 		boolean aheadOfPace = (((cal.get(Calendar.DAY_OF_MONTH) + 1) * (50000 / 30)) < Tim.story.wordcount());
 
@@ -87,9 +92,7 @@ public class DeIdler {
 			}
 
 			Tim.story.storeLine(new_text, "Timmy");
-			Tim.db.channel_data.values().stream().filter((cdata) -> (Tim.rand.nextInt(100) < 15 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled && cdata.randomChatterLevel >= 0)).forEach((cdata) -> {
-				Tim.bot.sendIRC().action(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)");
-			});
+			Tim.db.channel_data.values().stream().filter((cdata) -> (Tim.rand.nextInt(100) < 15 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled && cdata.randomChatterLevel >= 0)).forEach((cdata) -> Tim.bot.sendIRC().action(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)"));
 		}
 
 		if (Tim.rand.nextInt(100) < 1) {
@@ -103,7 +106,12 @@ public class DeIdler {
 			Tim.bot.getUserChannelDao().getChannel(cdata.channel).getMode();
 
 			if (cdata.muzzled) {
-				continue;
+				if (cdata.muzzledUntil > 0 && cdata.muzzledUntil < date.getTime() && !cdata.auto_muzzled) {
+					cdata.muzzled = false;
+					cdata.muzzledUntil = 0;
+				} else {
+					continue;
+				}
 			}
 
 			if (Tim.rand.nextInt(100) < cdata.randomChatterLevel) {
@@ -116,7 +124,11 @@ public class DeIdler {
 				if (cdata.amusement_chatter_available()) {
 					actions.add("amusement");
 				}
-				
+
+				if (cdata.chatter_enabled.get("bored")) {
+					actions.add("bored");
+				}
+
 				if (cdata.chatter_enabled.get("velociraptor")) {
 					actions.add("velociraptors");
 				}
@@ -135,6 +147,10 @@ public class DeIdler {
 						break;
 					case "velociraptors":
 						Tim.raptors.swarm(cdata.channel);
+						break;
+					case "bored":
+						Channel sendChannel = Tim.bot.getUserChannelDao().getChannel(cdata.channel);
+						sendChannel.send().message("I'm bored.");
 						break;
 				}
 			}

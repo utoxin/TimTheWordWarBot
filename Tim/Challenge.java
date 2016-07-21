@@ -29,14 +29,13 @@ import java.util.logging.Logger;
 import org.pircbotx.Channel;
 import org.pircbotx.Colors;
 import org.pircbotx.User;
-import org.pircbotx.hooks.events.ActionEvent;
 import org.pircbotx.hooks.events.MessageEvent;
 
 /**
  *
  * @author mwalker
  */
-public class Challenge {
+class Challenge {
 
 	private final List<String> approved = new ArrayList<>();
 	private final List<String> pending = new ArrayList<>();
@@ -46,11 +45,11 @@ public class Challenge {
 	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
 	 * not.
 	 *
-	 * @param event
+	 * @param event Event to process
 	 *
 	 * @return True if message was handled, false otherwise.
 	 */
-	public boolean parseUserCommand(MessageEvent event) {
+	boolean parseUserCommand(MessageEvent event) {
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
@@ -100,11 +99,11 @@ public class Challenge {
 	 * Parses admin-level commands passed from the main class. Returns true if the message was handled, false if it was
 	 * not.
 	 *
-	 * @param event
+	 * @param event Event to process
 	 *
 	 * @return True if message was handled, false otherwise
 	 */
-	public boolean parseAdminCommand(MessageEvent event) {
+	boolean parseAdminCommand(MessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString;
@@ -120,11 +119,12 @@ public class Challenge {
 		}
 
 		if (command.equals("challenge")) {
+			assert args != null;
 			switch (args[0]) {
 				case "approved": {
 					int pages = (this.approved.size() + 9) / 10;
 					int wantPage = 0;
-					if (args != null && args.length > 1) {
+					if (args.length > 1) {
 						try {
 							wantPage = Integer.parseInt(args[1]) - 1;
 						} catch (NumberFormatException ex) {
@@ -147,7 +147,7 @@ public class Challenge {
 				case "pending": {
 					int pages = (this.pending.size() + 9) / 10;
 					int wantPage = 0;
-					if (args != null && args.length > 1) {
+					if (args.length > 1) {
 						try {
 							wantPage = Integer.parseInt(args[1]) - 1;
 						} catch (NumberFormatException ex) {
@@ -168,7 +168,7 @@ public class Challenge {
 					return true;
 				}
 				case "approve":
-					if (args != null && args.length > 1) {
+					if (args.length > 1) {
 						int idx;
 						String challenge;
 						try {
@@ -193,7 +193,7 @@ public class Challenge {
 					}
 					return true;
 				case "unapprove":
-					if (args != null && args.length > 1) {
+					if (args.length > 1) {
 						int idx;
 						String challenge;
 						try {
@@ -219,7 +219,7 @@ public class Challenge {
 					}
 					break;
 				case "delete":
-					if (args != null && args.length > 1) {
+					if (args.length > 1) {
 						int idx;
 						String challenge;
 						try {
@@ -249,7 +249,7 @@ public class Challenge {
 		return false;
 	}
 
-	protected void helpSection(MessageEvent event) {
+	void helpSection(MessageEvent event) {
 		String[] strs = {
 			"Challenge Commands:",
 			"    !challenge - Request a challenge",
@@ -257,12 +257,12 @@ public class Challenge {
 			"    !challengefor <name> - Challenge someone else",
 			"    !challengefor <name> <challenge> - Challenge someone else, and store it for approval",};
 
-		for (int i = 0; i < strs.length; ++i) {
-			event.getUser().send().notice(strs[i]);
+		for (String str : strs) {
+			event.getUser().send().notice(str);
 		}
 	}
 
-	protected void adminHelpSection(MessageEvent event) {
+	void adminHelpSection(MessageEvent event) {
 		String[] strs = {
 			"Challenge Commands:",
 			"    $challenge pending [<page>] - List a page of pending items",
@@ -271,25 +271,17 @@ public class Challenge {
 			"    $challenge delete <# from pending> - Delete pending item",
 			"    $challenge unapprove <# from approved> - Unapprove a previously approved item",};
 
-		for (int i = 0; i < strs.length; ++i) {
-			event.getUser().send().notice(strs[i]);
+		for (String str : strs) {
+			event.getUser().send().notice(str);
 		}
 	}
 
-	public void refreshDbLists() {
+	void refreshDbLists() {
 		this.getApprovedChallenges();
 		this.getPendingChallenges();
 	}
 
-	public void randomActionWrapper(MessageEvent event) {
-		randomAction(event.getUser(), event.getChannel().getName().toLowerCase());
-	}
-
-	public void randomActionWrapper(ActionEvent event) {
-		randomAction(event.getUser(), event.getChannel().getName().toLowerCase());
-	}
-
-	protected void randomAction(User sender, String channel) {
+	void randomAction(User sender, String channel) {
 		String[] actions = {
 			"challenge"
 		};
@@ -301,7 +293,7 @@ public class Challenge {
 		}
 	}
 
-	public void issueChallenge(Channel channel, String target, String challenge) {
+	private void issueChallenge(Channel channel, String target, String challenge) {
 		if (challenge != null && !("".equals(challenge))) {
 			if (!(this.approved.contains(challenge) || this.pending.contains(challenge)) && challenge.length() < 300) {
 				this.insertPendingChallenge(challenge);

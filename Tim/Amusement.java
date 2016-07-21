@@ -21,10 +21,7 @@ package Tim;
 import com.google.common.collect.ImmutableSortedSet;
 import java.sql.*;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -32,26 +29,25 @@ import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Channel;
 import org.pircbotx.Colors;
 import org.pircbotx.User;
-import org.pircbotx.hooks.events.ActionEvent;
 import org.pircbotx.hooks.events.MessageEvent;
 
 /**
  *
  * @author mwalker
  */
-public class Amusement {
+class Amusement {
 
 	private final long timeout = 3000;
 
-	private final List<String> pending_items = new ArrayList<>();
+	private final List<String> pendingItems = new ArrayList<>();
 	private final List<String> commandments = new ArrayList<>();
 	private final List<String> flavours = new ArrayList<>();
 	private final List<String> deities = new ArrayList<>();
 
-	protected List<String> approved_items = new ArrayList<>();
-	protected List<String> colours = new ArrayList<>();
-	protected List<String> eightballs = new ArrayList<>();
-	protected List<String> aypwips = new ArrayList<>();
+	List<String> approvedItems = new ArrayList<>();
+	List<String> colours = new ArrayList<>();
+	List<String> eightBalls = new ArrayList<>();
+	List<String> ponderingList = new ArrayList<>();
 
 	private ChannelInfo cdata;
 
@@ -59,11 +55,11 @@ public class Amusement {
 	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
 	 * not.
 	 *
-	 * @param event
+	 * @param event The event to parse
 	 *
 	 * @return True if message was handled, false otherwise.
 	 */
-	public boolean parseUserCommand(MessageEvent event) {
+	boolean parseUserCommand(MessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String[] args = null;
@@ -81,9 +77,57 @@ public class Amusement {
 		command = command.replaceAll("\\W", "");
 		cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 		switch (command) {
-			case "sing":
-				if (cdata.commands_enabled.get("sing")) {
-					sing(event.getChannel());
+			case "attack":
+				if (cdata.commands_enabled.get("attack")) {
+					if (args != null && args.length > 0) {
+						String target = args[0];
+						for (int i = 1; i < args.length; ++i) {
+							target = target + " " + args[i];
+						}
+						attackCommand(event.getChannel(), event.getUser(), target);
+					} else {
+						attackCommand(event.getChannel(), event.getUser(), null);
+					}
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+
+				return true;
+			case "banish":
+				if (cdata.commands_enabled.get("banish")) {
+					banish(event.getChannel(), args, true);
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+
+				return true;
+			case "catch":
+				if (cdata.commands_enabled.get("catch")) {
+					catchCommand(event.getChannel(), args);
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+
+				return true;
+			case "commandment":
+				if (cdata.commands_enabled.get("commandment")) {
+					commandment(event.getChannel(), args);
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+
+				return true;
+			case "dance":
+				if (cdata.commands_enabled.get("dance")) {
+					dance(event.getChannel());
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+
+				return true;
+			case "defenestrate":
+				if (cdata.commands_enabled.get("defenestrate")) {
+					defenestrate(event.getChannel(), event.getUser(), args, true);
 				} else {
 					event.respond("I'm sorry. I don't do that here.");
 				}
@@ -113,21 +157,17 @@ public class Amusement {
 				}
 
 				return true;
-			case "woot":
-				if (cdata.commands_enabled.get("woot")) {
-					event.getChannel().send().action("cheers! Hooray!");
+			case "foof":
+				if (cdata.commands_enabled.get("foof")) {
+					foof(event.getChannel(), event.getUser(), args, true);
 				} else {
 					event.respond("I'm sorry. I don't do that here.");
 				}
 
 				return true;
-			case "ping":
-				if (cdata.commands_enabled.get("ping")) {
-					if (Tim.rand.nextInt(100) < 80) {
-						event.respond("Pong!");
-					} else {
-						event.getChannel().send().action("dives for the ball, but misses, and lands on a " + this.colours.get(Tim.rand.nextInt(this.colours.size())) + " couch.");
-					}
+			case "fridge":
+				if (cdata.commands_enabled.get("fridge")) {
+					throwFridge(event.getChannel(), event.getUser(), args, true);
 				} else {
 					event.respond("I'm sorry. I don't do that here.");
 				}
@@ -147,9 +187,7 @@ public class Amusement {
 						if (args.length > 1) {
 							// Want a new args array less the first old element.
 							String[] newargs = new String[args.length - 1];
-							for (int i = 1; i < args.length; ++i) {
-								newargs[i - 1] = args[i];
-							}
+							System.arraycopy(args, 1, newargs, 0, args.length - 1);
 							getItem(event.getChannel(), args[0], newargs);
 						} else {
 							getItem(event.getChannel(), args[0], null);
@@ -167,9 +205,7 @@ public class Amusement {
 						if (args.length > 1) {
 							// Want a new args array less the first old element.
 							String[] newargs = new String[args.length - 1];
-							for (int i = 1; i < args.length; ++i) {
-								newargs[i - 1] = args[i];
-							}
+							System.arraycopy(args, 1, newargs, 0, args.length - 1);
 							getItemFrom(event.getChannel(), event.getUser().getNick(), args[0], newargs);
 						} else {
 							getItemFrom(event.getChannel(), event.getUser().getNick(), args[0], null);
@@ -181,41 +217,9 @@ public class Amusement {
 					return true;
 				}
 				break;
-			case "attack":
-				if (cdata.commands_enabled.get("attack")) {
-					if (args != null && args.length > 0) {
-						String target = args[0];
-						for (int i = 1; i < args.length; ++i) {
-							target = target + " " + args[i];
-						}
-						attackCommand(event.getChannel(), event.getUser(), target);
-					} else {
-						attackCommand(event.getChannel(), event.getUser(), null);
-					}
-				} else {
-					event.respond("I'm sorry. I don't do that here.");
-				}
-
-				return true;
-			case "fridge":
-				if (cdata.commands_enabled.get("fridge")) {
-					throwFridge(event.getChannel(), event.getUser(), args, true);
-				} else {
-					event.respond("I'm sorry. I don't do that here.");
-				}
-
-				return true;
 			case "herd":
 				if (cdata.commands_enabled.get("herd")) {
 					herd(event.getChannel(), event.getUser(), args);
-				} else {
-					event.respond("I'm sorry. I don't do that here.");
-				}
-
-				return true;
-			case "dance":
-				if (cdata.commands_enabled.get("dance")) {
-					dance(event.getChannel());
 				} else {
 					event.respond("I'm sorry. I don't do that here.");
 				}
@@ -229,49 +233,23 @@ public class Amusement {
 				}
 
 				return true;
-			case "commandment":
-				if (cdata.commands_enabled.get("commandment")) {
-					commandment(event.getChannel(), args);
+			case "ping":
+				if (cdata.commands_enabled.get("ping")) {
+					if (Tim.rand.nextInt(100) < 80) {
+						event.respond("Pong!");
+					} else {
+						event.getChannel().send().action("dives for the ball, but misses, and lands on a " + this.colours.get(Tim.rand.nextInt(this.colours.size())) + " couch.");
+					}
 				} else {
 					event.respond("I'm sorry. I don't do that here.");
 				}
 
 				return true;
-			case "defenestrate":
-				if (cdata.commands_enabled.get("defenestrate")) {
-					defenestrate(event.getChannel(), event.getUser(), args, true);
-				} else {
-					event.respond("I'm sorry. I don't do that here.");
-				}
-
-				return true;
-			case "summon":
-				if (cdata.commands_enabled.get("summon")) {
-					summon(event.getChannel(), args, true);
-				} else {
-					event.respond("I'm sorry. I don't do that here.");
-				}
-
-				return true;
-			case "banish":
-				if (cdata.commands_enabled.get("banish")) {
-					banish(event.getChannel(), args, true);
-				} else {
-					event.respond("I'm sorry. I don't do that here.");
-				}
-
-				return true;
-			case "foof":
-				if (cdata.commands_enabled.get("foof")) {
-					foof(event.getChannel(), event.getUser(), args, true);
-				} else {
-					event.respond("I'm sorry. I don't do that here.");
-				}
-
-				return true;
-			case "creeper":
-				if (cdata.commands_enabled.get("creeper")) {
-					creeper(event.getChannel(), event.getUser(), args, true);
+			case "raptorstats":
+				if (cdata.commands_enabled.get("velociraptor")) {
+					event.respond(String.format("There have been %d velociraptor sightings in this channel, and %d are still here. The last one was on %s.", cdata.velociraptorSightings, cdata.activeVelociraptors, cdata.getLastSighting()));
+					event.respond(String.format("%d velociraptors in this channel have been killed by other swarms.", cdata.deadVelociraptors));
+					event.respond(String.format("Swarms from this channel have killed %d other velociraptors.", cdata.killedVelociraptors));
 				} else {
 					event.respond("I'm sorry. I don't do that here.");
 				}
@@ -293,15 +271,29 @@ public class Amusement {
 				}
 
 				return true;
-			case "raptorstats":
-				if (cdata.commands_enabled.get("velociraptor")) {
-					event.respond(String.format("There have been %d velociraptor sightings in this channel, and %d are still here. The last one was on %s.", cdata.velociraptorSightings, cdata.activeVelociraptors, cdata.getLastSighting()));
-					event.respond(String.format("%d velociraptors in this channel have been killed by other swarms.", cdata.deadVelociraptors));
-					event.respond(String.format("Swarms from this channel have killed %d other velociraptors.", cdata.killedVelociraptors));
+			case "sing":
+				if (cdata.commands_enabled.get("sing")) {
+					sing(event.getChannel());
 				} else {
 					event.respond("I'm sorry. I don't do that here.");
 				}
-			
+
+				return true;
+			case "summon":
+				if (cdata.commands_enabled.get("summon")) {
+					summon(event.getChannel(), args, true);
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+
+				return true;
+			case "woot":
+				if (cdata.commands_enabled.get("woot")) {
+					event.getChannel().send().action("cheers! Hooray!");
+				} else {
+					event.respond("I'm sorry. I don't do that here.");
+				}
+
 				return true;
 			default:
 				if ((!command.equals("")) && command.charAt(0) == 'd' && Pattern.matches("d\\d+", command)) {
@@ -323,11 +315,11 @@ public class Amusement {
 	 * Parses admin-level commands passed from the main class. Returns true if the message was handled, false if it was
 	 * not.
 	 *
-	 * @param event
+	 * @param event Event to process
 	 *
 	 * @return True if message was handled, false otherwise
 	 */
-	public boolean parseAdminCommand(MessageEvent event) {
+	boolean parseAdminCommand(MessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString;
@@ -343,7 +335,7 @@ public class Amusement {
 		}
 		switch (command) {
 			case "listitems": {
-				int pages = (this.approved_items.size() + 9) / 10;
+				int pages = (this.approvedItems.size() + 9) / 10;
 				int wantPage = 0;
 				if (args != null && args.length > 0) {
 					try {
@@ -359,14 +351,14 @@ public class Amusement {
 				}
 
 				int list_idx = wantPage * 10;
-				event.respond(String.format("Showing page %d of %d (%d items total)", wantPage + 1, pages, this.approved_items.size()));
-				for (int i = 0; i < 10 && list_idx < this.approved_items.size(); ++i, list_idx = wantPage * 10 + i) {
-					event.respond(String.format("%d: %s", list_idx, this.approved_items.get(list_idx)));
+				event.respond(String.format("Showing page %d of %d (%d items total)", wantPage + 1, pages, this.approvedItems.size()));
+				for (int i = 0; i < 10 && list_idx < this.approvedItems.size(); ++i, list_idx = wantPage * 10 + i) {
+					event.respond(String.format("%d: %s", list_idx, this.approvedItems.get(list_idx)));
 				}
 				return true;
 			}
 			case "listpending": {
-				int pages = (this.pending_items.size() + 9) / 10;
+				int pages = (this.pendingItems.size() + 9) / 10;
 				int wantPage = 0;
 				if (args != null && args.length > 0) {
 					try {
@@ -382,9 +374,9 @@ public class Amusement {
 				}
 
 				int list_idx = wantPage * 10;
-				event.respond(String.format("Showing page %d of %d (%d items total)", wantPage + 1, pages, this.pending_items.size()));
-				for (int i = 0; i < 10 && list_idx < this.pending_items.size(); ++i, list_idx = wantPage * 10 + i) {
-					event.respond(String.format("%d: %s", list_idx, this.pending_items.get(list_idx)));
+				event.respond(String.format("Showing page %d of %d (%d items total)", wantPage + 1, pages, this.pendingItems.size()));
+				for (int i = 0; i < 10 && list_idx < this.pendingItems.size(); ++i, list_idx = wantPage * 10 + i) {
+					event.respond(String.format("%d: %s", list_idx, this.pendingItems.get(list_idx)));
 				}
 				return true;
 			}
@@ -394,19 +386,19 @@ public class Amusement {
 					String item;
 					try {
 						idx = Integer.parseInt(args[0]);
-						item = this.pending_items.get(idx);
+						item = this.pendingItems.get(idx);
 					} catch (NumberFormatException ex) {
 						// Must be a string
 						item = args[0];
 						for (int i = 1; i < args.length; ++i) {
 							item = item + " " + args[i];
 						}
-						idx = this.pending_items.indexOf(item);
+						idx = this.pendingItems.indexOf(item);
 					}
 					if (idx >= 0) {
 						this.setItemApproved(item, true);
-						this.pending_items.remove(idx);
-						this.approved_items.add(item);
+						this.pendingItems.remove(idx);
+						this.approvedItems.add(item);
 						event.respond(String.format("Item %s approved.", args[0]));
 					} else {
 						event.respond(String.format("Item %s is not pending approval.", args[0]));
@@ -419,19 +411,19 @@ public class Amusement {
 					String item;
 					try {
 						idx = Integer.parseInt(args[0]);
-						item = this.approved_items.get(idx);
+						item = this.approvedItems.get(idx);
 					} catch (NumberFormatException ex) {
 						// Must be a string
 						item = args[0];
 						for (int i = 1; i < args.length; ++i) {
 							item = item + " " + args[i];
 						}
-						idx = this.approved_items.indexOf(item);
+						idx = this.approvedItems.indexOf(item);
 					}
 					if (idx >= 0) {
 						this.setItemApproved(item, false);
-						this.pending_items.add(item);
-						this.approved_items.remove(idx);
+						this.pendingItems.add(item);
+						this.approvedItems.remove(idx);
 						event.respond(String.format("Item %s disapproved.", args[0]));
 					} else {
 						event.respond(String.format("Item %s is not in approved list.", args[0]));
@@ -444,18 +436,18 @@ public class Amusement {
 					String item;
 					try {
 						idx = Integer.parseInt(args[0]);
-						item = this.pending_items.get(idx);
+						item = this.pendingItems.get(idx);
 					} catch (NumberFormatException ex) {
 						// Must be a string
 						item = args[0];
 						for (int i = 1; i < args.length; ++i) {
 							item = item + " " + args[i];
 						}
-						idx = this.pending_items.indexOf(item);
+						idx = this.pendingItems.indexOf(item);
 					}
 					if (idx >= 0) {
 						this.removeItem(item);
-						this.pending_items.remove(item);
+						this.pendingItems.remove(item);
 						event.respond(String.format("Item %s has been deleted from pending list.", args[0]));
 					} else {
 						event.respond(String.format("Item %s is not pending approval.", args[0]));
@@ -467,19 +459,19 @@ public class Amusement {
 		return false;
 	}
 
-	protected void helpSection(MessageEvent event) {
+	void helpSection(MessageEvent event) {
 		String[] strs = {"Amusement Commands:",
 						 "    !get <anything> - I will fetch you whatever you like.",
 						 "    !getfor <someone> <anything> - I will give someone whatever you like.",
 						 "    !eightball <your question> - I can tell you (with some degree of inaccuracy) how likely something is.",
 						 "    !raptorstats - Details about this channel's raptor activity.",};
 
-		for (int i = 0; i < strs.length; ++i) {
-			event.getUser().send().notice(strs[i]);
+		for (String str : strs) {
+			event.getUser().send().notice(str);
 		}
 	}
 
-	public void refreshDbLists() {
+	void refreshDbLists() {
 		this.getAypwipList();
 		this.getColourList();
 		this.getCommandmentList();
@@ -490,20 +482,11 @@ public class Amusement {
 		this.getPendingItems();
 	}
 
-	public void randomActionWrapper(MessageEvent event) {
-		randomAction(event.getUser(), event.getChannel().toString());
-	}
-
-	public void randomActionWrapper(ActionEvent event) {
-		randomAction(event.getUser(), event.getChannel().toString());
-	}
-
-	@SuppressWarnings("null")
-	protected void randomAction(User sender, String channel) {
+	void randomAction(User sender, String channel) {
 		cdata = Tim.db.channel_data.get(channel);
 
 		String[] actions = new String[]{
-			"get", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "creeper", "search", "herd", "banish"
+			"get", "eightball", "fridge", "defenestrate", "sing", "foof", "dance", "summon", "search", "herd", "banish", "catch"
 		};
 
 		if (sender == null) {
@@ -516,9 +499,7 @@ public class Amusement {
 											 && (size <= 2 || !user.getNick().equalsIgnoreCase("Skynet"))
 											 && !Tim.db.ignore_list.contains(user.getNick().toLowerCase())
 											 && !Tim.db.soft_ignore_list.contains(user.getNick().toLowerCase())
-				)).forEach((user) -> {
-					finalUsers.add(user);
-			});
+				)).forEach(finalUsers::add);
 
 			if (finalUsers.size() > 0) {
 				int r = Tim.rand.nextInt(finalUsers.size());
@@ -553,6 +534,7 @@ public class Amusement {
 
 		switch (action) {
 			case "item":
+				assert sender != null;
 				getItem(sendChannel, sender.getNick(), null);
 				break;
 			case "eightball":
@@ -579,8 +561,8 @@ public class Amusement {
 			case "banish":
 				banish(sendChannel, null, false);
 				break;
-			case "creeper":
-				creeper(sendChannel, sender, null, false);
+			case "catch":
+				catchCommand(sendChannel, null);
 				break;
 			case "search":
 				search(sendChannel, sender, null);
@@ -591,7 +573,7 @@ public class Amusement {
 		}
 	}
 
-	protected void dice(String number, MessageEvent event) {
+	private void dice(String number, MessageEvent event) {
 		int max;
 		try {
 			max = Integer.parseInt(number);
@@ -606,9 +588,9 @@ public class Amusement {
 		}
 	}
 
-	protected void attackCommand(Channel channel, User sender, String target) {
+	private void attackCommand(Channel channel, User sender, String target) {
 		DecimalFormat formatter = new DecimalFormat("#,###");
-		String item = this.approved_items.get(Tim.rand.nextInt(this.approved_items.size()));
+		String item = this.approvedItems.get(Tim.rand.nextInt(this.approvedItems.size()));
 
 		if (target != null && Tim.rand.nextInt(100) > 75) {
 			channel.send().action(String.format("decides he likes %s, so he attacks %s instead...", target, sender.getNick()));
@@ -648,7 +630,7 @@ public class Amusement {
 		channel.send().action(String.format("hits %s with %s for %s points of damage.", target, item, damageString));
 	}
 
-	protected void getItem(Channel channel, String target, String[] args) {
+	private void getItem(Channel channel, String target, String[] args) {
 		String item = "";
 		if (args != null) {
 			if (Tim.rand.nextInt(100) < 65) {
@@ -657,9 +639,9 @@ public class Amusement {
 					item = item + " " + args[i];
 				}
 
-				if (!(this.approved_items.contains(item) || this.pending_items.contains(item)) && item.length() < 300) {
+				if (!(this.approvedItems.contains(item) || this.pendingItems.contains(item)) && item.length() < 300) {
 					this.insertPendingItem(item);
-					this.pending_items.add(item);
+					this.pendingItems.add(item);
 				}
 
 				if (item.toLowerCase().contains("spoon")) {
@@ -673,14 +655,14 @@ public class Amusement {
 
 		if (item.isEmpty()) {
 			// Find a random item.
-			int i = Tim.rand.nextInt(this.approved_items.size());
-			item = this.approved_items.get(i);
+			int i = Tim.rand.nextInt(this.approvedItems.size());
+			item = this.approvedItems.get(i);
 		}
 
 		channel.send().action(String.format("gets %s %s.", target, item));
 	}
 
-	protected void getItemFrom(Channel channel, String recipient, String target, String[] args) {
+	private void getItemFrom(Channel channel, String recipient, String target, String[] args) {
 		String item = "";
 		if (args != null) {
 			if (Tim.rand.nextInt(100) < 65) {
@@ -689,9 +671,9 @@ public class Amusement {
 					item = item + " " + args[i];
 				}
 
-				if (!(this.approved_items.contains(item) || this.pending_items.contains(item)) && item.length() < 300) {
+				if (!(this.approvedItems.contains(item) || this.pendingItems.contains(item)) && item.length() < 300) {
 					this.insertPendingItem(item);
-					this.pending_items.add(item);
+					this.pendingItems.add(item);
 				}
 
 				if (item.toLowerCase().contains("spoon")) {
@@ -705,19 +687,19 @@ public class Amusement {
 
 		if (item.isEmpty()) {
 			// Find a random item.
-			int i = Tim.rand.nextInt(this.approved_items.size());
-			item = this.approved_items.get(i);
+			int i = Tim.rand.nextInt(this.approvedItems.size());
+			item = this.approvedItems.get(i);
 		}
 
 		channel.send().action(String.format("takes %s from %s, and gives it to %s.", item, target, recipient));
 	}
 
-	protected void search(Channel channel, User sender, String target) {
+	private void search(Channel channel, User sender, String target) {
 		String item = "";
 
 		int count = Tim.rand.nextInt(4);
 		if (count == 1) {
-			item = this.approved_items.get(Tim.rand.nextInt(this.approved_items.size()));
+			item = this.approvedItems.get(Tim.rand.nextInt(this.approvedItems.size()));
 		} else if (count > 1) {
 			for (int i = 0; i < count; i++) {
 				if (i > 0 && count > 2) {
@@ -730,7 +712,7 @@ public class Amusement {
 					item = item + " ";
 				}
 
-				item = item + this.approved_items.get(Tim.rand.nextInt(this.approved_items.size()));
+				item = item + this.approvedItems.get(Tim.rand.nextInt(this.approvedItems.size()));
 			}
 		}
 
@@ -752,8 +734,7 @@ public class Amusement {
 		}
 	}
 
-	protected void lick(MessageEvent event, String[] args) {
-		ChannelInfo ci = Tim.db.channel_data.get(event.getChannel().toString().toLowerCase());
+	private void lick(MessageEvent event, String[] args) {
 		if (args != null && args.length >= 1) {
 			String argStr = StringUtils.join(args, " ");
 
@@ -763,7 +744,7 @@ public class Amusement {
 		}
 	}
 	
-	protected void pickone(MessageEvent event, String[] args) {
+	void pickone(MessageEvent event, String[] args) {
 		String argStr = StringUtils.join(args, " ");
 		String[] choices = argStr.split(",", 0);
 
@@ -777,19 +758,19 @@ public class Amusement {
 		}
 	}
 
-	protected void eightball(Channel channel, User sender, boolean mutter, String argStr) {
+	void eightball(Channel channel, User sender, boolean mutter, String argStr) {
 		try {
-			int r = Tim.rand.nextInt(this.eightballs.size());
+			int r = Tim.rand.nextInt(this.eightBalls.size());
 			int delay = Tim.rand.nextInt(1000) + 1000;
 			Thread.sleep(delay);
 
 			if (mutter) {
-				channel.send().action("mutters under his breath, \"" + this.eightballs.get(r) + "\"");
+				channel.send().action("mutters under his breath, \"" + this.eightBalls.get(r) + "\"");
 			} else {
 				if (Tim.rand.nextInt(100) < 5) {
 					channel.send().message(sender.getNick() + ": " + Tim.markov.generate_markov("say", argStr));
 				} else {
-					channel.send().message(sender.getNick() + ": " + this.eightballs.get(r));
+					channel.send().message(sender.getNick() + ": " + this.eightBalls.get(r));
 				}
 			}
 		} catch (InterruptedException ex) {
@@ -797,7 +778,7 @@ public class Amusement {
 		}
 	}
 
-	protected void sing(Channel channel) {
+	private void sing(Channel channel) {
 		Connection con;
 		int r = Tim.rand.nextInt(100);
 
@@ -831,7 +812,7 @@ public class Amusement {
 		}
 	}
 
-	protected void dance(Channel channel) {
+	private void dance(Channel channel) {
 		Connection con;
 		int r = Tim.rand.nextInt(100);
 
@@ -863,7 +844,7 @@ public class Amusement {
 		}
 	}
 
-	public void boxodoom(MessageEvent event, String[] args) {
+	void boxodoom(MessageEvent event, String[] args) {
 		int goal;
 		long duration, base_wpm;
 		double modifier;
@@ -956,7 +937,7 @@ public class Amusement {
 		event.respond("Your goal is " + String.valueOf(goal));
 	}
 
-	protected void commandment(Channel channel, String[] args) {
+	private void commandment(Channel channel, String[] args) {
 		int r = Tim.rand.nextInt(this.commandments.size());
 		if (args != null && args.length == 1 && Double.parseDouble(args[0]) > 0
 			&& Double.parseDouble(args[0]) <= this.commandments.size()) {
@@ -966,7 +947,7 @@ public class Amusement {
 		channel.send().message(this.commandments.get(r));
 	}
 
-	protected void throwFridge(Channel channel, User sender, String[] args, Boolean righto) {
+	private void throwFridge(Channel channel, User sender, String[] args, Boolean righto) {
 		try {
 			String target = sender.getNick();
 			if (args != null && args.length > 0) {
@@ -1023,7 +1004,7 @@ public class Amusement {
 		}
 	}
 
-	protected void herd(Channel channel, User sender, String[] args) {
+	private void herd(Channel channel, User sender, String[] args) {
 		try {
 			String target = sender.getNick();
 			if (args != null && args.length > 0) {
@@ -1063,7 +1044,7 @@ public class Amusement {
 		}
 	}
 
-	protected void defenestrate(Channel channel, User sender, String[] args, Boolean righto) {
+	private void defenestrate(Channel channel, User sender, String[] args, Boolean righto) {
 		try {
 			String target = sender.getNick();
 			if (args != null && args.length > 0) {
@@ -1107,7 +1088,7 @@ public class Amusement {
 		}
 	}
 
-	protected void summon(Channel channel, String[] args, Boolean righto) {
+	private void summon(Channel channel, String[] args, Boolean righto) {
 		try {
 			String target;
 			if (args == null || args.length == 0) {
@@ -1145,7 +1126,7 @@ public class Amusement {
 		}
 	}
 
-	protected void banish(Channel channel, String[] args, Boolean righto) {
+	private void banish(Channel channel, String[] args, Boolean righto) {
 		try {
 			String target;
 			if (args == null || args.length == 0) {
@@ -1183,7 +1164,49 @@ public class Amusement {
 		}
 	}
 
-	protected void foof(Channel channel, User sender, String[] args, Boolean righto) {
+	private void catchCommand(Channel channel, String[] args) {
+		try {
+			String target;
+			if (args == null || args.length == 0) {
+				target = Tim.db.pokemon.get(Tim.rand.nextInt(Tim.db.pokemon.size()));
+			} else {
+				target = StringUtils.join(args, " ");
+			}
+
+			String colour1 = this.colours.get(Tim.rand.nextInt(this.colours.size()));
+			String colour2;
+			do {
+				colour2 = this.colours.get(Tim.rand.nextInt(this.colours.size()));
+			} while(Objects.equals(colour2, colour1));
+
+			channel.send().action(String.format("grabs a %s and %s pokeball, and attempts to catch %s!", colour1, colour2, target));
+
+			int i = Tim.rand.nextInt(100);
+			String act;
+
+			if (i > 65) {
+				act = String.format("catches %s, and adds them to his collection!", target);
+			} else if (i > 50) {
+				act = String.format("almost catches %s, but they manage to break out of the pokeball and escape!", target);
+			} else if (i > 25) {
+				String target2;
+				do {
+					target2 = Tim.db.pokemon.get(Tim.rand.nextInt(Tim.db.pokemon.size()));
+				} while (Objects.equals(target2, target));
+
+				act = String.format("somehow misses %s, and his pokeball captures %s instead. Oops!", target, target2);
+			} else {
+				act = "misses his throw completely, and catches nothing. Awwwww.";
+			}
+
+			Thread.sleep(1000);
+			channel.send().action(act);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void foof(Channel channel, User sender, String[] args, Boolean righto) {
 		try {
 			String target = sender.getNick();
 			if (args != null && args.length > 0) {
@@ -1221,58 +1244,19 @@ public class Amusement {
 		}
 	}
 
-	protected void creeper(Channel channel, User sender, String[] args, Boolean righto) {
-		try {
-			String target = sender.getNick();
-			if (args != null && args.length > 0) {
-				target = StringUtils.join(args, " ");
-			}
-
-			if (righto) {
-				channel.send().message("Righto...");
-			}
-
-			int time = Tim.rand.nextInt(1500) + 1500;
-			Thread.sleep(time);
-			channel.send().action("falls suspiciously silent, and turns green...");
-			int i = Tim.rand.nextInt(100);
-			String act;
-			String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
-
-			if (i > 33) {
-				act = "ssssidles up to " + target + ". That'ssss a very nice novel you've got there...";
-			} else if (i > 11) {
-				target = sender.getNick();
-				act = "sidlessss up to " + target + ". Ssssso, you were looking for a creeper?";
-			} else {
-				act = "sneaksssss up on a " + colour + " fridge...";
-			}
-
-			time = Tim.rand.nextInt(3000) + 2000;
-			Thread.sleep(time);
-			channel.send().action(act);
-
-			time = Tim.rand.nextInt(2000) + 1000;
-			Thread.sleep(time);
-			channel.send().action("explodessss! *BOOM*");
-		} catch (InterruptedException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	protected void getApprovedItems() {
+	private void getApprovedItems() {
 		Connection con;
 		String value;
 
 		try {
-			this.approved_items.clear();
+			this.approvedItems.clear();
 
 			con = Tim.db.pool.getConnection(timeout);
 			PreparedStatement s = con.prepareStatement("SELECT `item` FROM `items` WHERE `approved` = TRUE");
 			ResultSet rs = s.executeQuery();
 			while (rs.next()) {
 				value = rs.getString("item");
-				this.approved_items.add(value);
+				this.approvedItems.add(value);
 			}
 
 			con.close();
@@ -1281,10 +1265,10 @@ public class Amusement {
 		}
 	}
 
-	protected void getPendingItems() {
+	private void getPendingItems() {
 		Connection con;
 		String value;
-		this.pending_items.clear();
+		this.pendingItems.clear();
 
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -1293,7 +1277,7 @@ public class Amusement {
 			ResultSet rs = s.executeQuery();
 			while (rs.next()) {
 				value = rs.getString("item");
-				this.pending_items.add(value);
+				this.pendingItems.add(value);
 			}
 
 			con.close();
@@ -1302,7 +1286,7 @@ public class Amusement {
 		}
 	}
 
-	protected void insertPendingItem(String item) {
+	private void insertPendingItem(String item) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -1317,7 +1301,7 @@ public class Amusement {
 		}
 	}
 
-	protected void setItemApproved(String item, Boolean approved) {
+	private void setItemApproved(String item, Boolean approved) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -1333,7 +1317,7 @@ public class Amusement {
 		}
 	}
 
-	protected void removeItem(String item) {
+	private void removeItem(String item) {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -1348,7 +1332,7 @@ public class Amusement {
 		}
 	}
 
-	protected void getAypwipList() {
+	private void getAypwipList() {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -1357,9 +1341,9 @@ public class Amusement {
 			s.executeQuery("SELECT `string` FROM `aypwips`");
 
 			ResultSet rs = s.getResultSet();
-			this.aypwips.clear();
+			this.ponderingList.clear();
 			while (rs.next()) {
-				this.aypwips.add(rs.getString("string"));
+				this.ponderingList.add(rs.getString("string"));
 			}
 
 			con.close();
@@ -1368,7 +1352,7 @@ public class Amusement {
 		}
 	}
 
-	protected void getColourList() {
+	private void getColourList() {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -1388,7 +1372,7 @@ public class Amusement {
 		}
 	}
 
-	protected void getCommandmentList() {
+	private void getCommandmentList() {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -1408,7 +1392,7 @@ public class Amusement {
 		}
 	}
 
-	protected void getDeityList() {
+	private void getDeityList() {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -1428,7 +1412,7 @@ public class Amusement {
 		}
 	}
 
-	protected void getEightballList() {
+	private void getEightballList() {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -1437,9 +1421,9 @@ public class Amusement {
 			s.executeQuery("SELECT `string` FROM `eightballs`");
 
 			ResultSet rs = s.getResultSet();
-			this.eightballs.clear();
+			this.eightBalls.clear();
 			while (rs.next()) {
-				this.eightballs.add(rs.getString("string"));
+				this.eightBalls.add(rs.getString("string"));
 			}
 
 			con.close();
@@ -1448,7 +1432,7 @@ public class Amusement {
 		}
 	}
 
-	protected void getFlavourList() {
+	private void getFlavourList() {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);

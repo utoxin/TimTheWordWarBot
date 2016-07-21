@@ -72,7 +72,7 @@ public class Tim {
 		db.refreshDbLists();
 
 		// Join our channels
-		db.channel_data.entrySet().stream().forEach((entry) -> configBuilder.addAutoJoinChannel(entry.getValue().channel));
+		db.channel_data.entrySet().forEach((entry) -> configBuilder.addAutoJoinChannel(entry.getValue().channel));
 
 		bot = new PircBotX(configBuilder.buildConfiguration());
 
@@ -101,8 +101,8 @@ public class Tim {
 		if (Tim.bot.isConnected()) {
 			Tim.bot.stopBotReconnect();
 			Tim.bot.sendIRC().quitServer("HELP! Utoxin just murdered me! (Again!!!)");
-			Tim.warticker.warticker.cancel();
-			Tim.deidler.idleticker.cancel();
+			Tim.warticker.warTicker.cancel();
+			Tim.deidler.idleTicker.cancel();
 			Tim.twitterstream.userStream.shutdown();
 			Tim.twitterstream.publicStream.shutdown();
 		}

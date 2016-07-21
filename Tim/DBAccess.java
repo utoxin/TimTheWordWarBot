@@ -34,18 +34,20 @@ import snaq.db.Select1Validator;
  *
  * @author Matthew Walker
  */
-public class DBAccess {
-
+class DBAccess {
 	private static final DBAccess instance;
 	private final long timeout = 3000;
-	protected Set<String> admin_list = new HashSet<>(16);
+
 	protected HashMap<String, ChannelInfo> channel_data = new HashMap<>(62);
-	protected List<String> extra_greetings = new ArrayList<>();
-	protected List<String> cat_herds = new ArrayList<>();
-	protected List<String> greetings = new ArrayList<>();
-	protected Set<String> ignore_list = new HashSet<>(16);
-	protected Set<String> soft_ignore_list = new HashSet<>(16);
-	protected ConnectionPool pool;
+
+	Set<String> admin_list = new HashSet<>(16);
+	List<String> extra_greetings = new ArrayList<>();
+	List<String> cat_herds = new ArrayList<>();
+	List<String> greetings = new ArrayList<>();
+	List<String> pokemon = new ArrayList<>();
+	Set<String> ignore_list = new HashSet<>(16);
+	Set<String> soft_ignore_list = new HashSet<>(16);
+	ConnectionPool pool;
 
 	static {
 		instance = new DBAccess();
@@ -55,7 +57,7 @@ public class DBAccess {
 		Class c;
 		Driver driver;
 
-		/**
+		/*
 		 * Make sure the JDBC driver is initialized. Used by the connection pool.
 		 */
 		try {
@@ -82,7 +84,7 @@ public class DBAccess {
 		return instance;
 	}
 
-	public void deleteChannel(Channel channel) {
+	void deleteChannel(Channel channel) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -100,7 +102,7 @@ public class DBAccess {
 		}
 	}
 
-	public void deleteWar(int id) {
+	void deleteWar(int id) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -115,7 +117,7 @@ public class DBAccess {
 		}
 	}
 
-	public void deleteIgnore(String username) {
+	void deleteIgnore(String username) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -130,7 +132,7 @@ public class DBAccess {
 		}
 	}
 
-	public void getAdminList() {
+	private void getAdminList() {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -151,7 +153,7 @@ public class DBAccess {
 		}
 	}
 
-	public void getChannelList() {
+	private void getChannelList() {
 		Connection con;
 		ChannelInfo ci;
 
@@ -241,7 +243,7 @@ public class DBAccess {
 		}
 	}
 
-	public void getGreetingList() {
+	private void getGreetingList() {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -271,7 +273,7 @@ public class DBAccess {
 		}
 	}
 
-	public void getCatHerds() {
+	private void getCatHerds() {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -293,7 +295,29 @@ public class DBAccess {
 		}
 	}
 
-	public void getIgnoreList() {
+	private void getPokemon() {
+		Connection con;
+		try {
+			con = pool.getConnection(timeout);
+			try (Statement s = con.createStatement()) {
+				ResultSet rs;
+
+				s.executeQuery("SELECT `name` FROM `pokemon`");
+				rs = s.getResultSet();
+				this.pokemon.clear();
+				while (rs.next()) {
+					this.pokemon.add(rs.getString("name"));
+				}
+				rs.close();
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getIgnoreList() {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -318,7 +342,7 @@ public class DBAccess {
 		}
 	}
 
-	public String getSetting(String key) {
+	String getSetting(String key) {
 		Connection con;
 		String value = "";
 
@@ -342,7 +366,7 @@ public class DBAccess {
 		return value;
 	}
 
-	public void joinChannel(Channel channel) {
+	void joinChannel(Channel channel) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -366,30 +390,7 @@ public class DBAccess {
 		}
 	}
 	
-	public void recordVelociraptorSwarm(ChannelInfo fromChannel, ChannelInfo toChannel, int swarmCount, int kills) {
-		Connection con;
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET active_velociraptors = active_velociraptors - ?, dead_velociraptors = dead_velociraptors + ? WHERE channel = ?");
-			s.setInt(1, kills);
-			s.setInt(2, kills);
-			s.setString(3, toChannel.channel);
-			s.executeUpdate();
-
-			s = con.prepareStatement("UPDATE `channels` SET active_velociraptors = active_velociraptors - ?, killed_velociraptors = killed_velociraptors + ? WHERE channel = ?");
-			s.setInt(1, swarmCount);
-			s.setInt(2, kills);
-			s.setString(3, fromChannel.channel);
-			s.executeUpdate();
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-	
-	public String getRandomChannelWithVelociraptors(String exclude) {
+	String getRandomChannelWithVelociraptors(String exclude) {
 		Connection con;
 		String value = "";
 
@@ -413,7 +414,7 @@ public class DBAccess {
 		return value;
 	}
 
-	public void saveChannelSettings(ChannelInfo channel) {
+	void saveChannelSettings(ChannelInfo channel) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -484,7 +485,7 @@ public class DBAccess {
 		}
 	}
 
-	public void saveIgnore(String username, String type) {
+	void saveIgnore(String username, String type) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -500,12 +501,13 @@ public class DBAccess {
 		}
 	}
 
-	public void refreshDbLists() {
+	void refreshDbLists() {
 		this.getAdminList();
 		this.getChannelList();
 		this.getIgnoreList();
 		this.getGreetingList();
 		this.getCatHerds();
+		this.getPokemon();
 
 		Tim.amusement.refreshDbLists();
 		Tim.story.refreshDbLists();
@@ -513,7 +515,7 @@ public class DBAccess {
 		Tim.markov.refreshDbLists();
 	}
 
-	public int create_war(Channel channel, User starter, String name, long base_duration, long duration, long remaining, long time_to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness) {
+	int create_war(Channel channel, User starter, String name, long base_duration, long duration, long remaining, long time_to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness) {
 		int id = 0;
 		Connection con;
 		try {
@@ -547,7 +549,7 @@ public class DBAccess {
 		return id;
 	}
 
-	public void update_war(int db_id, long duration, long remaining, long time_to_start, int current_chain) {
+	void update_war(int db_id, long duration, long remaining, long time_to_start, int current_chain) {
 		Connection con;
 		try {
 			con = pool.getConnection(timeout);
@@ -566,7 +568,7 @@ public class DBAccess {
 		}
 	}
 
-	public ConcurrentHashMap<String, WordWar> loadWars() {
+	ConcurrentHashMap<String, WordWar> loadWars() {
 		Connection con;
 		Channel channel;
 		User user;
@@ -606,5 +608,9 @@ public class DBAccess {
 		}
 
 		return wars;
+	}
+
+	public void storeChatInput(String input) {
+
 	}
 }

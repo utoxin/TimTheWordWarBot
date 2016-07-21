@@ -36,23 +36,24 @@ import org.pircbotx.hooks.events.MessageEvent;
  *
  * @author mwalker
  */
-public class WarTicker {
+class WarTicker {
 
 	private static final WarTicker instance;
-	public WarClockThread warticker;
-	private final Timer ticker;
-	public ConcurrentHashMap<String, WordWar> wars;
+	WarClockThread warTicker;
+	ConcurrentHashMap<String, WordWar> wars;
 
 	static {
 		instance = new WarTicker();
 	}
 
-	public WarTicker() {
+	private WarTicker() {
+		Timer ticker;
+
 		this.wars = Tim.db.loadWars();
 
-		this.warticker = new WarClockThread(this);
-		this.ticker = new Timer(true);
-		this.ticker.scheduleAtFixedRate(this.warticker, 0, 1000);
+		this.warTicker = new WarClockThread(this);
+		ticker = new Timer(true);
+		ticker.scheduleAtFixedRate(this.warTicker, 0, 1000);
 	}
 
 	/**
@@ -64,11 +65,12 @@ public class WarTicker {
 		return instance;
 	}
 
-	public class WarClockThread extends TimerTask {
+	@SuppressWarnings("WeakerAccess")
+	class WarClockThread extends TimerTask {
 
 		private final WarTicker parent;
 
-		public WarClockThread(WarTicker parent) {
+		WarClockThread(WarTicker parent) {
 			this.parent = parent;
 		}
 
@@ -84,7 +86,7 @@ public class WarTicker {
 		}
 	}
 
-	public void _tick() {
+	private void _tick() {
 		this._warsUpdate();
 	}
 
@@ -147,9 +149,7 @@ public class WarTicker {
 				war.updateDb();
 			}
 
-			warsToEnd.stream().forEach((warName) -> {
-				this.wars.remove(warName);
-			});
+			warsToEnd.forEach((warName) -> this.wars.remove(warName));
 		}
 	}
 
@@ -178,7 +178,7 @@ public class WarTicker {
 	private void beginWar(WordWar war) {
 		war.getChannel().send().message("WordWar '" + war.getName() + "' starts now!");
 
-		if (war.cdata.auto_muzzle_wars && (war.cdata.muzzled == false || war.cdata.auto_muzzled)) {
+		if (war.cdata.auto_muzzle_wars && (!war.cdata.muzzled || war.cdata.auto_muzzled)) {
 			war.cdata.setMuzzleFlag(true, true);
 		}
 	}
@@ -209,7 +209,7 @@ public class WarTicker {
 	}
 
 	// !endwar <name>
-	public void endWar(MessageEvent event, String[] args) {
+	void endWar(MessageEvent event, String[] args) {
 		if (args != null && args.length > 0) {
 			String name = StringUtils.join(args, " ");
 			if (this.wars.containsKey(name.toLowerCase())) {
@@ -230,14 +230,14 @@ public class WarTicker {
 		}
 	}
 
-	public void startChainWar(MessageEvent event, String[] args) {
+	void startChainWar(MessageEvent event, String[] args) {
 		long time;
 		long to_start = 60;
 		int total_chains;
 		int delay;
 		boolean do_randomness = true;
 
-		String warname = "";
+		String warName = "";
 
 		try {
 			time = (long) (Double.parseDouble(args[0]) * 60);
@@ -299,32 +299,32 @@ public class WarTicker {
 					continue;
 				}
 
-				if (warname.equals("")) {
-					warname = args[i];
+				if (warName.equals("")) {
+					warName = args[i];
 				} else {
-					warname = warname + " " + args[i];
+					warName = warName + " " + args[i];
 				}
 			}
 		}
 
-		if (warname.equals("")) {
-			warname = event.getUser().getNick() + "'s War";
+		if (warName.equals("")) {
+			warName = event.getUser().getNick() + "'s War";
 		}
 
-		if (!this.wars.containsKey(warname.toLowerCase())) {
-			WordWar war = new WordWar(time, to_start, total_chains, 1, delay, do_randomness, warname, event.getUser(), event.getChannel());
+		if (!this.wars.containsKey(warName.toLowerCase())) {
+			WordWar war = new WordWar(time, to_start, total_chains, 1, delay, do_randomness, warName, event.getUser(), event.getChannel());
 			this.wars.put(war.getName(false).toLowerCase(), war);
 			if (to_start > 0) {
-				event.respond("Your wordwar '" + warname + "' will start in " + to_start / 60.0 + " minutes.");
+				event.respond("Your wordwar '" + warName + "' will start in " + to_start / 60.0 + " minutes.");
 			} else {
 				this.beginWar(war);
 			}
 		} else {
-			event.respond("There is already a war with the name '" + warname + "'");
+			event.respond("There is already a war with the name '" + warName + "'");
 		}
 	}
 
-	public void startWar(MessageEvent event, String[] args) {
+	void startWar(MessageEvent event, String[] args) {
 		long time;
 		long to_start = 60;
 		String warname;
@@ -375,16 +375,23 @@ public class WarTicker {
 		}
 	}
 
-	public void listAllWars(MessageEvent event) {
+	void listAllWars(MessageEvent event) {
 		this.listWars(event, true);
 	}
 
-	public void listWars(MessageEvent event, boolean all) {
+	void listWars(MessageEvent event, boolean all) {
+		boolean responded = false;
+
 		if (this.wars != null && this.wars.size() > 0) {
-			this.wars.entrySet().stream().filter((wm) -> (all || wm.getValue().getChannel().getName().toLowerCase().equals(event.getChannel().getName().toLowerCase()))).forEach((wm) -> {
-				event.respond(all ? wm.getValue().getDescriptionWithChannel() : wm.getValue().getDescription());
-			});
-		} else {
+			for (WordWar war : this.wars.values()) {
+				if (all || war.getChannel().getName().toLowerCase().equals(event.getChannel().getName().toLowerCase())) {
+					event.respond(all ? war.getDescriptionWithChannel() : war.getDescription());
+					responded = true;
+				}
+			}
+		}
+
+		if (!responded) {
 			event.respond("No wars are currently available.");
 		}
 	}

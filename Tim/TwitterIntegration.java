@@ -34,28 +34,26 @@ import twitter4j.auth.AccessToken;
  *
  * @author Matthew Walker
  */
-public class TwitterIntegration extends StatusAdapter {
+class TwitterIntegration extends StatusAdapter {
 
-	Twitter twitter;
-	AccessToken token;
+	private Twitter twitter;
+	private AccessToken token;
 	TwitterStream userStream;
 	TwitterStream publicStream;
-	String accessKey;
-	String accessSecret;
-	String consumerKey;
-	String consumerSecret;
+	private String consumerKey;
+	private String consumerSecret;
 
-	static User BotTimmy;
-	boolean reconnectPending = false;
-	boolean needFilterUpdate = false;
-	long lastConnect;
-	HashMap<String, Long> accountCache = new HashMap<>(32);
-	HashMap<Long, HashSet<String>> accountsToChannels = new HashMap<>(32);
-	IDs friendIDs;
+	private static User BotTimmy;
+	private boolean reconnectPending = false;
+	private boolean needFilterUpdate = false;
+	private long lastConnect;
+	private HashMap<String, Long> accountCache = new HashMap<>(32);
+	private HashMap<Long, HashSet<String>> accountsToChannels = new HashMap<>(32);
+	private IDs friendIDs;
 
-	public TwitterIntegration() {
-		accessKey = Tim.db.getSetting("twitter_access_key");
-		accessSecret = Tim.db.getSetting("twitter_access_secret");
+	TwitterIntegration() {
+		String accessKey = Tim.db.getSetting("twitter_access_key");
+		String accessSecret = Tim.db.getSetting("twitter_access_secret");
 		consumerKey = Tim.db.getSetting("twitter_consumer_key");
 		consumerSecret = Tim.db.getSetting("twitter_consumer_secret");
 
@@ -72,7 +70,7 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 	}
 
-	public long checkAccount(String accountName) {
+	long checkAccount(String accountName) {
 		if (accountCache.containsKey(accountName)) {
 			return accountCache.get(accountName);
 		} else {
@@ -101,7 +99,7 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 	}
 
-	public void sendDeidleTweet(String message) {
+	void sendDeidleTweet(String message) {
 		try {
 			if (friendIDs.getIDs().length > 0 && Tim.rand.nextInt(100) < 15) {
 				long userId = friendIDs.getIDs()[Tim.rand.nextInt(friendIDs.getIDs().length)];
@@ -128,9 +126,7 @@ public class TwitterIntegration extends StatusAdapter {
 		try {
 			check = twitter.lookupUsers(usernames);
 
-			check.stream().forEach((user) -> {
-				userIds.add(user.getId());
-			});
+			check.forEach((user) -> userIds.add(user.getId()));
 		} catch (TwitterException ex) {
 			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -138,7 +134,7 @@ public class TwitterIntegration extends StatusAdapter {
 		return userIds;
 	}
 
-	public void startStream() {
+	void startStream() {
 		userStream = new TwitterStreamFactory().getInstance();
 		userStream.setOAuthConsumer(consumerKey, consumerSecret);
 		userStream.setOAuthAccessToken(token);
@@ -149,7 +145,7 @@ public class TwitterIntegration extends StatusAdapter {
 		updateStreamFilters();
 	}
 
-	public void initAccountList() {
+	private void initAccountList() {
 		HashSet<String> tmpAccountHash;
 		Set<Long> tmpUserIds;
 
@@ -172,7 +168,7 @@ public class TwitterIntegration extends StatusAdapter {
 		needFilterUpdate = true;
 	}
 
-	public boolean addAccount(String account, ChannelInfo channel) {
+	boolean addAccount(String account, ChannelInfo channel) {
 		long accountId = checkAccount(account);
 		if (accountId == 0) {
 			return false;
@@ -190,7 +186,7 @@ public class TwitterIntegration extends StatusAdapter {
 		return true;
 	}
 
-	public void removeAccount(String account, ChannelInfo channel) {
+	void removeAccount(String account, ChannelInfo channel) {
 		long accountId = checkAccount(account);
 		if (accountId == 0) {
 			return;
@@ -211,10 +207,10 @@ public class TwitterIntegration extends StatusAdapter {
 		updateStreamFilters();
 	}
 
-	public void updateStreamFilters() {
+	private void updateStreamFilters() {
 		if (needFilterUpdate) {
 			if (publicStream != null) {
-				if (reconnectPending == true) {
+				if (reconnectPending) {
 					return;
 				} else {
 					reconnectPending = true;
@@ -248,7 +244,7 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 	}
 
-	StatusListener publicListener = new StatusListener() {
+	private StatusListener publicListener = new StatusListener() {
 		@Override
 		public void onStatus(Status status) {
 			String colorString;
@@ -308,12 +304,12 @@ public class TwitterIntegration extends StatusAdapter {
 			if (!status.getUser().getScreenName().equals("BotTimmy")) {
 				try {
 					checkFriendship = twitter.showFriendship(BotTimmy.getId(), status.getUser().getId());
-					if (status.getText().toLowerCase().contains("#nanowrimo") && Tim.rand.nextInt(100) < 3 && checkFriendship.isTargetFollowingSource() && status.isRetweet() == false) {
+					if (status.getText().toLowerCase().contains("#nanowrimo") && Tim.rand.nextInt(100) < 3 && checkFriendship.isTargetFollowingSource() && !status.isRetweet()) {
 						String message2;
 
 						if (Tim.rand.nextInt(100) < 20) {
-							int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
-							message2 = "@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r);
+							int r = Tim.rand.nextInt(Tim.amusement.eightBalls.size());
+							message2 = "@" + status.getUser().getScreenName() + " " + Tim.amusement.eightBalls.get(r);
 						} else {
 							message2 = "@" + status.getUser().getScreenName() + " " + Tim.markov.generate_markov("say");
 						}
@@ -354,7 +350,7 @@ public class TwitterIntegration extends StatusAdapter {
 		}
 	};
 
-	UserStreamListener userListener = new UserStreamListener() {
+	private UserStreamListener userListener = new UserStreamListener() {
 		@Override
 		public void onStatus(Status status) {
 			boolean sendReply = false;
@@ -424,7 +420,7 @@ public class TwitterIntegration extends StatusAdapter {
 				}
 			}
 
-			if (status.getUser().getId() == TwitterIntegration.BotTimmy.getId() || status.isRetweet() == true) {
+			if (status.getUser().getId() == TwitterIntegration.BotTimmy.getId() || status.isRetweet()) {
 				sendReply = false;
 			}
 
@@ -432,11 +428,11 @@ public class TwitterIntegration extends StatusAdapter {
 				try {
 					String message;
 					if (getItem) {
-						int r = Tim.rand.nextInt(Tim.amusement.approved_items.size());
-						message = "@" + status.getUser().getScreenName() + " Here, have " + Tim.amusement.approved_items.get(r);
+						int r = Tim.rand.nextInt(Tim.amusement.approvedItems.size());
+						message = "@" + status.getUser().getScreenName() + " Here, have " + Tim.amusement.approvedItems.get(r);
 					} else if (Tim.rand.nextInt(100) < 20) {
-						int r = Tim.rand.nextInt(Tim.amusement.eightballs.size());
-						message = "@" + status.getUser().getScreenName() + " " + Tim.amusement.eightballs.get(r);
+						int r = Tim.rand.nextInt(Tim.amusement.eightBalls.size());
+						message = "@" + status.getUser().getScreenName() + " " + Tim.amusement.eightBalls.get(r);
 					} else {
 						message = "@" + status.getUser().getScreenName() + " " + Tim.markov.generate_markov("say");
 					}

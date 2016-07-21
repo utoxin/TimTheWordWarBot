@@ -27,7 +27,7 @@ import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.ActionEvent;
 import org.pircbotx.hooks.events.MessageEvent;
 
-public class ReactionListener extends ListenerAdapter {
+class ReactionListener extends ListenerAdapter {
 	@Override
 	public void onMessage(MessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
@@ -58,6 +58,11 @@ public class ReactionListener extends ListenerAdapter {
 					if (Tim.rand.nextInt(100) < cdata.fox_odds) {
 						event.respond("Foxes don't talk. Sheesh.");
 						cdata.fox_odds--;
+					}
+				} else if (message.toLowerCase().contains("groot") && cdata.chatter_enabled.get("silly_reactions")) {
+					if (Tim.rand.nextInt(100) < cdata.groot_odds) {
+						event.respond("I am groot!");
+						cdata.groot_odds--;
 					}
 				} else if (message.toLowerCase().contains("when will then be now") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < cdata.soon_odds) {
@@ -91,8 +96,8 @@ public class ReactionListener extends ListenerAdapter {
 					event.respond("To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere");
 				} else if (Pattern.matches("(?i).*are you (thinking|pondering) what i.*m (thinking|pondering).*", message) && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < cdata.aypwip_odds) {
-						int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
-						event.getChannel().send().message(String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
+						int i = Tim.rand.nextInt(Tim.amusement.ponderingList.size());
+						event.getChannel().send().message(String.format(Tim.amusement.ponderingList.get(i), event.getUser().getNick()));
 						cdata.aypwip_odds--;
 					}
 				} else if (Pattern.matches("(?i).*what.*is.*the.*answer.*", message) && cdata.chatter_enabled.get("silly_reactions")) {
@@ -144,6 +149,11 @@ public class ReactionListener extends ListenerAdapter {
 					event.respond("mutters under his breath. \"Foxes don't talk. Sheesh.\"");
 					cdata.fox_odds--;
 				}
+			} else if (message.toLowerCase().contains("groot") && cdata.chatter_enabled.get("silly_reactions")) {
+				if (Tim.rand.nextInt(100) < cdata.groot_odds) {
+					event.respond("mutters, \"I am groot.\"");
+					cdata.groot_odds--;
+				}
 			} else if (message.toLowerCase().contains("when will then be now") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < cdata.soon_odds) {
 					event.respond("replies with certainty, \"Soon.\"");
@@ -176,8 +186,8 @@ public class ReactionListener extends ListenerAdapter {
 				event.respond("To change your name type the following, putting the name you want instead of NewNameHere: /nick NewNameHere");
 			} else if (Pattern.matches("(?i).*are you (thinking|pondering) what i.*m (thinking|pondering).*", message) && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < cdata.aypwip_odds) {
-					int i = Tim.rand.nextInt(Tim.amusement.aypwips.size());
-					event.getChannel().send().message(String.format(Tim.amusement.aypwips.get(i), event.getUser().getNick()));
+					int i = Tim.rand.nextInt(Tim.amusement.ponderingList.size());
+					event.getChannel().send().message(String.format(Tim.amusement.ponderingList.get(i), event.getUser().getNick()));
 					cdata.aypwip_odds--;
 				}
 			} else if (Pattern.matches("(?i).*what.*is.*the.*answer.*", message) && cdata.chatter_enabled.get("silly_reactions")) {
@@ -318,6 +328,9 @@ public class ReactionListener extends ListenerAdapter {
 			}
 			if (cdata.velociraptor_odds < cdata.max_velociraptor_odds) {
 				cdata.velociraptor_odds++;
+			}
+			if (cdata.groot_odds < cdata.max_groot_odds) {
+				cdata.groot_odds++;
 			}
 		}
 	}

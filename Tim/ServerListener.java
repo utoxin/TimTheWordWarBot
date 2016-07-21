@@ -31,7 +31,7 @@ import org.pircbotx.hooks.events.KickEvent;
  *
  * @author Matthew Walker
  */
-public class ServerListener extends ListenerAdapter {
+class ServerListener extends ListenerAdapter {
 
 	@Override
 	public void onConnect(ConnectEvent event) {
@@ -68,9 +68,7 @@ public class ServerListener extends ListenerAdapter {
 
 	@Override
 	public void onJoin(JoinEvent event) {
-		if (event.getUser().getNick().equals(Tim.bot.getNick())) {
-
-		} else {
+		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
 			ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 			int warscount = 0;
 
@@ -78,12 +76,12 @@ public class ServerListener extends ListenerAdapter {
 				String message = "";
 				if (cdata.chatter_enabled.get("silly_reactions")
 					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
-					&& !Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())					
+					&& !Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())
 				) {
 					message = String.format(Tim.db.greetings.get(Tim.rand.nextInt(Tim.db.greetings.size())), event.getUser().getNick());
 				}
 
-				if (cdata.chatter_enabled.get("helpful_reactions") 
+				if (cdata.chatter_enabled.get("helpful_reactions")
 					&& Tim.warticker.wars.size() > 0
 					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
 				) {
@@ -105,15 +103,15 @@ public class ServerListener extends ListenerAdapter {
 					event.getChannel().send().message(message);
 				}
 
-				if (cdata.chatter_enabled.get("helpful_reactions") 
+				if (cdata.chatter_enabled.get("helpful_reactions")
 					&& warscount > 0
 					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
 				) {
-					Tim.warticker.wars.entrySet().stream().filter((wm) -> (wm.getValue().getChannel().equals(event.getChannel()))).forEach((wm) -> {
-						event.getChannel().send().message(wm.getValue().getDescription());
-					});
+					Tim.warticker.wars.entrySet().stream().filter((wm) -> (wm.getValue().getChannel().equals(event.getChannel()))).forEach(
+						(wm) -> event.getChannel().send().message(wm.getValue().getDescription())
+					);
 				}
-				
+
 				if (cdata.chatter_enabled.get("helpful_reactions") && (Pattern.matches("(?i)mib_......", event.getUser().getNick()) || Pattern.matches("(?i)guest.*", event.getUser().getNick()))) {
 					Thread.sleep(500);
 					event.getChannel().send().message(
@@ -122,7 +120,7 @@ public class ServerListener extends ListenerAdapter {
 
 				int r = Tim.rand.nextInt(100);
 
-				if (cdata.chatter_enabled.get("silly_reactions") 
+				if (cdata.chatter_enabled.get("silly_reactions")
 					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
 					&& !Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())
 					&& r < 15
@@ -134,7 +132,7 @@ public class ServerListener extends ListenerAdapter {
 					} else {
 						int velociraptorCount = cdata.activeVelociraptors;
 						String velociraptorDate = cdata.getLastSighting();
-						
+
 						event.getChannel().send().message(String.format("This channel has %d active velociraptors! The last one was spotted on %s.", velociraptorCount, velociraptorDate));
 					}
 				}

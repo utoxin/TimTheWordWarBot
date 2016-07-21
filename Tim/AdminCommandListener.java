@@ -18,6 +18,7 @@ package Tim;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+import java.util.Date;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Colors;
@@ -29,7 +30,7 @@ import org.pircbotx.hooks.events.PrivateMessageEvent;
  *
  * @author Matthew Walker
  */
-public class AdminCommandListener extends ListenerAdapter {
+class AdminCommandListener extends ListenerAdapter {
 
 	@Override
 	public void onMessage(MessageEvent event) {
@@ -99,6 +100,31 @@ public class AdminCommandListener extends ListenerAdapter {
 							event.respond("Usage: $setmuzzleflag <#channel> <0/1>");
 						}
 						break;
+					case "muzzle":
+						if (args != null && ((args.length == 1 && StringUtils.isNumeric(args[0])) || (args.length == 2 && StringUtils.isNumeric(args[1])))) {
+							String target;
+							Date date = new Date();
+							long expires;
+
+							if (args.length == 2) {
+								target = args[0].toLowerCase();
+								expires = date.getTime() + (Long.parseLong(args[1]) * 60 * 1000);
+							} else {
+								target = event.getChannel().getName().toLowerCase();
+								expires = date.getTime() + (Long.parseLong(args[0]) * 60 * 1000);
+							}
+
+							if (Tim.db.channel_data.containsKey(target)) {
+								ChannelInfo ci = Tim.db.channel_data.get(target);
+								ci.setMuzzleFlag(true, false, expires);
+								event.respond("Channel muzzled for specified time.");
+							} else {
+								event.respond("I don't know about " + target);
+							}
+						} else {
+							event.respond("Usage: $muzzle <time in minutes> or $muzzle <#channel> <time in minutes>");
+						}
+						break;
 					case "chatterlevel":
 						if (args != null && args.length == 2 && args[1].equalsIgnoreCase("list")) {
 							String target = args[0].toLowerCase();
@@ -160,9 +186,9 @@ public class AdminCommandListener extends ListenerAdapter {
 
 								event.respond("Sending status of chatter settings for " + target + " via private message.");
 
-								ci.chatter_enabled.keySet().stream().forEach((setting) -> {
-									event.getUser().send().message(setting + ": " + ci.chatter_enabled.get(setting).toString());
-								});
+								ci.chatter_enabled.keySet().forEach(
+									(setting) -> event.getUser().send().message(setting + ": " + ci.chatter_enabled.get(setting).toString())
+								);
 							} else {
 								event.respond("I don't know about " + target);
 							}
@@ -198,7 +224,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							}
 						} else {
 							event.respond("Usage: $chatterflag list <#channel> OR $chatterflag set <#channel> <type> <0/1>");
-							event.respond("Valid Chatter Types: all, chainstory, challenge, creeper, dance, defenestrate, eightball, foof, fridge, get, greetings, helpful_reactions, markov, search, sing, silly_reactions, summon, velociraptor");
+							event.respond("Valid Chatter Types: all, bored, catch, chainstory, challenge, dance, defenestrate, eightball, foof, fridge, get, greetings, helpful_reactions, markov, search, sing, silly_reactions, summon, velociraptor");
 						}
 						break;
 					case "commandflag":
@@ -209,9 +235,9 @@ public class AdminCommandListener extends ListenerAdapter {
 
 								event.respond("Sending status of command settings for " + target + " via private message.");
 
-								ci.commands_enabled.keySet().stream().forEach((setting) -> {
-									event.getUser().send().message(setting + ": " + ci.commands_enabled.get(setting).toString());
-								});
+								ci.commands_enabled.keySet().forEach(
+									(setting) -> event.getUser().send().message(setting + ": " + ci.commands_enabled.get(setting).toString())
+								);
 							} else {
 								event.respond("I don't know about " + target);
 							}
@@ -247,7 +273,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							}
 						} else {
 							event.respond("Usage: $commandflag list <#channel> OR $commandflag set <#channel> <command> <0/1>");
-							event.respond("Valid Commands: all, attack, chainstory, challenge, commandment, creeper, dance, defenestrate, dice, eightball, expound, foof, fridge, get, lick, markov, ping, search, sing, summon, velociraptor, woot");
+							event.respond("Valid Commands: all, attack, catch, chainstory, challenge, commandment, dance, defenestrate, dice, eightball, expound, foof, fridge, get, lick, markov, ping, search, sing, summon, velociraptor, woot");
 						}
 						break;
 					case "twitterrelay":
@@ -258,9 +284,7 @@ public class AdminCommandListener extends ListenerAdapter {
 
 								event.respond("Sending Twitter accounts relayed for " + target + " via private message.");
 
-								ci.twitter_accounts.stream().forEach((account) -> {
-									event.getUser().send().message(account);
-								});
+								ci.twitter_accounts.forEach((account) -> event.getUser().send().message(account));
 							} else {
 								event.respond("I don't know about " + target);
 							}
@@ -298,9 +322,7 @@ public class AdminCommandListener extends ListenerAdapter {
 
 								event.respond(String.format("Current Twitter Bucket settings for %s - Current Bucket: %.2f  Max Bucket: %.1f  Charge Rate / Minute: %.2f", target, ci.tweetBucket, ci.tweetBucketMax, ci.tweetBucketChargeRate));
 
-								ci.twitter_accounts.stream().forEach((account) -> {
-									event.respond(account);
-								});
+								ci.twitter_accounts.forEach(event::respond);
 							} else {
 								event.respond("I don't know about " + target);
 							}
@@ -343,11 +365,13 @@ public class AdminCommandListener extends ListenerAdapter {
 					case "ignore":
 						if (args != null && args.length > 0) {
 							String users = "";
-							for (int i = 0; i < args.length; ++i) {
-								users += " " + args[i];
-								Tim.db.ignore_list.add(args[i]);
-								Tim.db.saveIgnore(args[i], "hard");
+
+							for (String arg : args) {
+								users += " " + arg;
+								Tim.db.ignore_list.add(arg);
+								Tim.db.saveIgnore(arg, "hard");
 							}
+
 							event.respond("The following users have been ignored:" + users);
 						} else {
 							event.respond("Usage: $ignore <user 1> [ <user 2> [<user 3> [...] ] ]");
@@ -356,12 +380,14 @@ public class AdminCommandListener extends ListenerAdapter {
 					case "unignore":
 						if (args != null && args.length > 0) {
 							String users = "";
-							for (int i = 0; i < args.length; ++i) {
-								users += " " + args[i];
-								Tim.db.ignore_list.remove(args[i]);
-								Tim.db.soft_ignore_list.remove(args[i]);
-								Tim.db.deleteIgnore(args[i]);
+
+							for (String arg : args) {
+								users += " " + arg;
+								Tim.db.ignore_list.remove(arg);
+								Tim.db.soft_ignore_list.remove(arg);
+								Tim.db.deleteIgnore(arg);
 							}
+
 							event.respond("The following users have been unignored:" + users);
 						} else {
 							event.respond("Usage: $unignore <user 1> [ <user 2> [<user 3> [...] ] ]");
@@ -369,15 +395,13 @@ public class AdminCommandListener extends ListenerAdapter {
 						break;
 					case "listignores":
 						event.respond("There are " + Tim.db.ignore_list.size() + " users ignored.");
-						Tim.db.ignore_list.stream().forEach((item) -> {
-							event.respond(item);
-				});
+						Tim.db.ignore_list.forEach(event::respond);
 						break;
 					case "listbadwords":
 						event.respond("There are " + Tim.markov.badwordPatterns.keySet().size() + " total bad words.");
-						Tim.markov.badwordPatterns.keySet().stream().forEach((key) -> {
-							event.respond("Key: " + key + "  Pattern: " + Tim.markov.badwordPatterns.get(key).toString());
-				});
+						Tim.markov.badwordPatterns.keySet().forEach(
+							(key) -> event.respond("Key: " + key + "  Pattern: " + Tim.markov.badwordPatterns.get(key).toString())
+						);
 						break;
 					case "shout":
 						for (ChannelInfo cdata : Tim.db.channel_data.values()) {
@@ -409,7 +433,7 @@ public class AdminCommandListener extends ListenerAdapter {
 
 		if (Tim.db.admin_list.contains(event.getUser().getNick().toLowerCase())) {
 			String[] args = message.split(" ");
-			if (args != null && args.length > 2) {
+			if (args.length > 2) {
 				String msg = "";
 				for (int i = 2; i < args.length; i++) {
 					msg += args[i] + " ";
@@ -437,6 +461,7 @@ public class AdminCommandListener extends ListenerAdapter {
 							  "    $listignores              - Prints the list of ignored users",
 							  "    $part                     - Leaves channel message was sent from",
 							  "Channel Setting Commands:",
+			                  "    $muzzle <time in minutes>        - Turns on the muzzle flag temporarily",
 							  "    $setmuzzleflag <#channel> <0/1>  - Sets the channel's current muzzle state",
 							  "    $automuzzlewars <#channel> <0/1> - Whether to auto-muzzle the channel during wars.",
 							  "    $chatterlevel                    - Set the chatter level for Timmy.",
@@ -446,8 +471,8 @@ public class AdminCommandListener extends ListenerAdapter {
 							  "    $twitterbucket                   - Control the frequency of the twitter relays."
 		};
 
-		for (int i = 0; i < helplines.length; ++i) {
-			event.getUser().send().notice(helplines[i]);
+		for (String helpline : helplines) {
+			event.getUser().send().notice(helpline);
 		}
 
 		Tim.challenge.adminHelpSection(event);

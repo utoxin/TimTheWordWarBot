@@ -28,7 +28,7 @@ import org.pircbotx.hooks.events.MessageEvent;
  *
  * @author mwalker
  */
-public class UserCommandListener extends ListenerAdapter {
+class UserCommandListener extends ListenerAdapter {
 
 	@Override
 	public void onMessage(MessageEvent event) {
@@ -122,10 +122,7 @@ public class UserCommandListener extends ListenerAdapter {
 						+ "Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: "
 						+ "https://github.com/utoxin/TimTheWordWarBot, and my NaNoWriMo profile page is here: "
 						+ "http://nanowrimo.org/en/participants/timmybot");
-				} else if (Tim.story.parseUserCommand(event)) {
-				} else if (Tim.challenge.parseUserCommand(event)) {
-				} else if (Tim.amusement.parseUserCommand(event)) {
-				} else {
+				} else if (!Tim.story.parseUserCommand(event) && !Tim.challenge.parseUserCommand(event) && !Tim.amusement.parseUserCommand(event)) {
 					event.respond("!" + command + " was not part of my training.");
 				}
 			}
@@ -146,8 +143,8 @@ public class UserCommandListener extends ListenerAdapter {
 						 "    !ignore <hard/soft> - Make Timmy ignore you. Soft lets you keep using commands. Hard is EVERYTHING.",
 						 "    !unignore - Turn off soft ignores. Hard ignores have to be removed by an admin.",
 						 "    !credits - Details of my creators, and where to find my source code.",};
-		for (int i = 0; i < strs.length; ++i) {
-			event.getUser().send().notice(strs[i]);
+		for (String str : strs) {
+			event.getUser().send().notice(str);
 		}
 
 		Tim.story.helpSection(event);
@@ -157,8 +154,8 @@ public class UserCommandListener extends ListenerAdapter {
 		String[] post = {"I... I think there might be other tricks I know... You'll have to find them!",
 						 "I will also respond to the /invite command if you would like to see me in another channel. "
 		};
-		for (int i = 0; i < post.length; ++i) {
-			event.getUser().send().notice(post[i]);
+		for (String aPost : post) {
+			event.getUser().send().notice(aPost);
 		}
 	}
 }

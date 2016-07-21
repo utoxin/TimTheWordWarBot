@@ -34,46 +34,32 @@ import org.pircbotx.hooks.events.MessageEvent;
  *
  * @author mwalker
  */
-public class MarkovChains {
+class MarkovChains {
 
 	private final DBAccess db = DBAccess.getInstance();
-	protected HashMap<String, Pattern> badwordPatterns = new HashMap<>();
-	protected HashMap<String, Pattern[]> badpairPatterns = new HashMap<>();
-	protected ArrayList<String> alternateWords = new ArrayList<>(64);
-	protected ArrayList<String[]> alternatePairs = new ArrayList<>(64);
+	private HashMap<String, Pattern[]> badpairPatterns = new HashMap<>();
+	private ArrayList<String> alternateWords = new ArrayList<>(64);
+	private ArrayList<String[]> alternatePairs = new ArrayList<>(64);
 	private final long timeout = 3000;
 	private final UrlValidator urlValidator = new UrlValidator();
 	private final EmailValidator emailValidator;
 	private final String[] sentenceEndings = {".", ".", ".", ".", "!", "!", "?", "?", "!", "!", "?", "?", "...", "?!", "...!", "...?"};
 
-	public MarkovChains() {
-		this.emailValidator = EmailValidator.getInstance();
-	}
+	HashMap<String, Pattern> badwordPatterns = new HashMap<>();
 
-	/**
-	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
-	 * not.
-	 *
-	 * @param channel What channel this came from
-	 * @param sender  Who sent the command
-	 * @param prefix  What prefix was on the command
-	 * @param message What was the actual content of the message
-	 *
-	 * @return True if message was handled, false otherwise.
-	 */
-	public boolean parseUserCommand(String channel, String sender, String prefix, String message) {
-		return false;
+	MarkovChains() {
+		this.emailValidator = EmailValidator.getInstance();
 	}
 
 	/**
 	 * Parses admin-level commands passed from the main class. Returns true if the message was handled, false if it was
 	 * not.
 	 *
-	 * @param event
+	 * @param event Event to process
 	 *
 	 * @return True if message was handled, false otherwise
 	 */
-	public boolean parseAdminCommand(MessageEvent event) {
+	boolean parseAdminCommand(MessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String argsString;
@@ -106,25 +92,25 @@ public class MarkovChains {
 		return false;
 	}
 
-	protected void adminHelpSection(MessageEvent event) {
+	void adminHelpSection(MessageEvent event) {
 		String[] strs = {
 			"Markhov Chain Commands:",
 			"    $badword <word> - Add <word> to the 'bad word' list, and purge from the chain data.",
 			"    $badpair <word> <word> - Add pair to the 'bad pair' list, and purge from the chain data.",};
 
-		for (int i = 0; i < strs.length; ++i) {
-			event.getUser().send().notice(strs[i]);
+		for (String str : strs) {
+			event.getUser().send().notice(str);
 		}
 	}
 
-	public void refreshDbLists() {
+	void refreshDbLists() {
 		getAlternatewords();
 		getAlternatepairs();
 		getBadwords();
 		getBadpairs();
 	}
 
-	protected void randomAction(String channel, String type, String message) {
+	void randomAction(String channel, String type, String message) {
 		String[] actions = {
 			"markhov"
 		};
@@ -151,7 +137,7 @@ public class MarkovChains {
 		}
 	}
 
-	public void addBadPair(String word_one, String word_two, Channel channel) {
+	private void addBadPair(String word_one, String word_two, Channel channel) {
 		Connection con;
 		if ("".equals(word_one)) {
 			channel.send().message("I can't add nothing. Please provide the bad word.");
@@ -189,11 +175,9 @@ public class MarkovChains {
 				s.executeUpdate();
 				s.close();
 
-				if (badpairPatterns.get(word_one + ":" + word_two) == null) {
-					badpairPatterns.put(word_one + ":" + word_two, new Pattern[]{
-						Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_one) + ")(\\W|\\b)"),
-						Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_two) + ")(\\W|\\b)"),});
-				}
+				badpairPatterns.putIfAbsent(word_one + ":" + word_two, new Pattern[]{
+					Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_one) + ")(\\W|\\b)"),
+					Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_two) + ")(\\W|\\b)"),});
 
 				channel.send().action("quickly goes through his records, and purges all knowledge of that horrible phrase.");
 
@@ -204,7 +188,7 @@ public class MarkovChains {
 		}
 	}
 
-	public void addBadWord(String word, Channel channel) {
+	private void addBadWord(String word, Channel channel) {
 		Connection con;
 		if ("".equals(word)) {
 			channel.send().message("I can't add nothing. Please provide the bad word.");
@@ -222,9 +206,7 @@ public class MarkovChains {
 				s.executeUpdate();
 				s.close();
 
-				if (badwordPatterns.get(word) == null) {
-					badwordPatterns.put(word, Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word) + ")(\\W|\\b)"));
-				}
+				badwordPatterns.putIfAbsent(word, Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word) + ")(\\W|\\b)"));
 
 				channel.send().action("quickly goes through his records, and purges all knowledge of that horrible word.");
 
@@ -235,11 +217,11 @@ public class MarkovChains {
 		}
 	}
 
-	public String generate_markov(String type) {
+	String generate_markov(String type) {
 		return generate_markov(type, Tim.rand.nextInt(25) + 10, 0);
 	}
 
-	public String generate_markov(String type, String message) {
+	String generate_markov(String type, String message) {
 		int seedWord = 0;
 
 		if (!message.equals("")) {
@@ -249,7 +231,7 @@ public class MarkovChains {
 		return generate_markov(type, Tim.rand.nextInt(25) + 10, seedWord);
 	}
 
-	public String generate_markov(String type, int maxLength, int seedWord) {
+	String generate_markov(String type, int maxLength, int seedWord) {
 		Connection con = null;
 		String sentence = "";
 		try {
@@ -333,7 +315,7 @@ public class MarkovChains {
 		return sentence;
 	}
 
-	public int getSeedWord(String message, String type, int lastSeed) {
+	private int getSeedWord(String message, String type, int lastSeed) {
 		String[] words = message.split(" ");
 		HashSet<Integer> wordIds = new HashSet<>();
 		Connection con = null;
@@ -395,7 +377,7 @@ public class MarkovChains {
 		return 0;
 	}
 	
-	public void getAlternatewords() {
+	private void getAlternatewords() {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -416,7 +398,7 @@ public class MarkovChains {
 		}
 	}
 
-	public void getAlternatepairs() {
+	private void getAlternatepairs() {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -440,7 +422,7 @@ public class MarkovChains {
 		}
 	}
 
-	public void getBadwords() {
+	private void getBadwords() {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -455,9 +437,7 @@ public class MarkovChains {
 			while (rs.next()) {
 				word = rs.getString("word");
 
-				if (badwordPatterns.get(word) == null) {
-					badwordPatterns.put(word, Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word) + ")(\\W|\\b)"));
-				}
+				badwordPatterns.putIfAbsent(word, Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word) + ")(\\W|\\b)"));
 			}
 
 			con.close();
@@ -466,7 +446,7 @@ public class MarkovChains {
 		}
 	}
 
-	public void getBadpairs() {
+	private void getBadpairs() {
 		Connection con;
 		try {
 			con = Tim.db.pool.getConnection(timeout);
@@ -482,11 +462,9 @@ public class MarkovChains {
 				word_one = rs.getString("word_one");
 				word_two = rs.getString("word_two");
 
-				if (badpairPatterns.get(word_one + ":" + word_two) == null) {
-					badpairPatterns.put(word_one + ":" + word_two, new Pattern[]{
-						Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_one) + ")(\\W|\\b)"),
-						Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_two) + ")(\\W|\\b)"),});
-				}
+				badpairPatterns.putIfAbsent(word_one + ":" + word_two, new Pattern[]{
+					Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_one) + ")(\\W|\\b)"),
+					Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_two) + ")(\\W|\\b)"),});
 			}
 
 			con.close();
@@ -503,17 +481,16 @@ public class MarkovChains {
 	 *
 	 * @param message  What is the message to parse
 	 * @param type     What type of message was it (say or emote)
-	 * @param username
+	 * @param username The username it came from
 	 *
 	 */
-	public void process_markov(String message, String type, String username) {
+	void process_markov(String message, String type, String username) {
 		String[] words = message.split(" ");
 
 		for (int i = -1; i <= words.length; i++) {
 			String word1, word2, word3;
 
 			int offset1 = i - 1;
-			int offset2 = i;
 			int offset3 = i + 1;
 
 			if (offset1 < 0) {
@@ -524,12 +501,12 @@ public class MarkovChains {
 				word1 = words[offset1];
 			}
 
-			if (offset2 < 0) {
+			if (i < 0) {
 				word2 = "";
-			} else if (offset2 >= words.length) {
+			} else if (i >= words.length) {
 				word2 = "";
 			} else {
-				word2 = words[offset2];
+				word2 = words[i];
 			}
 
 			if (offset3 < 0) {
@@ -565,8 +542,8 @@ public class MarkovChains {
 				words[offset1] = word1;
 			}
 
-			if (offset2 >= 0 && offset2 < words.length) {
-				words[offset2] = word2;
+			if (i >= 0 && i < words.length) {
+				words[i] = word2;
 			}
 
 			if (offset3 >= 0 && offset3 < words.length) {
