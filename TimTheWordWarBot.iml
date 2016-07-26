@@ -8,5 +8,13 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="Libraries" level="project" />
+    <orderEntry type="library" name="org.pircbotx:pircbotx:2.1" level="project" />
+    <orderEntry type="library" name="org.twitter4j:twitter4j-async:4.0.4" level="project" />
+    <orderEntry type="library" name="org.twitter4j:twitter4j-stream:4.0.4" level="project" />
+    <orderEntry type="library" name="com.tumblr:jumblr:Release" level="project" />
+    <orderEntry type="library" name="net.snaq:dbpool:Release" level="project" />
+    <orderEntry type="library" name="mysql:mysql-connector-java:Release" level="project" />
+    <orderEntry type="library" name="commons-validator:commons-validator:Release" level="project" />
+    <orderEntry type="library" name="Simple Logging Facade for Java:Release" level="project" />
   </component>
 </module>

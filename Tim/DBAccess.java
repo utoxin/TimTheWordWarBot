@@ -18,7 +18,6 @@ package Tim;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-import com.mysql.jdbc.Driver;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,22 +53,8 @@ class DBAccess {
 	}
 
 	private DBAccess() {
-		Class c;
-		Driver driver;
-
-		/*
-		 * Make sure the JDBC driver is initialized. Used by the connection pool.
-		 */
-		try {
-			c = Class.forName("com.mysql.jdbc.Driver");
-			driver = (Driver) c.newInstance();
-			DriverManager.registerDriver(driver);
-		} catch (ClassNotFoundException | IllegalAccessException | InstantiationException | SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
 		// Initialize the connection pool, to prevent SQL timeout issues
-		String url = "jdbc:mysql://" + Tim.config.getString("sql_server") + ":3306/" + Tim.config.getString("sql_database") + "?useUnicode=true&characterEncoding=UTF-8";
+		String url = "jdbc:mysql://" + Tim.config.getString("sql_server") + ":3306/" + Tim.config.getString("sql_database") + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC";
 		pool = new ConnectionPool("local", 5, 25, 150, 180000, url, Tim.config.getString("sql_user"), Tim.config.getString("sql_password"));
 		pool.setValidator(new Select1Validator());
 		pool.setAsyncDestroy(true);
@@ -85,55 +70,76 @@ class DBAccess {
 	}
 
 	void deleteChannel(Channel channel) {
-		Connection con;
+		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("DELETE FROM `channels` WHERE `channel` = ?");
 			s.setString(1, channel.getName().toLowerCase());
 			s.executeUpdate();
+			s.close();
 
 			// Will do nothing if the channel is not in the list.
 			this.channel_data.remove(channel.getName().toLowerCase());
-
-			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 
 	void deleteWar(int id) {
-		Connection con;
+		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("DELETE FROM `wars` WHERE `id` = ?");
 			s.setInt(1, id);
 			s.executeUpdate();
-
-			con.close();
+			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 
 	void deleteIgnore(String username) {
-		Connection con;
+		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("DELETE FROM `ignores` WHERE `name` = ?;");
 			s.setString(1, username.toLowerCase());
 			s.executeUpdate();
-
-			con.close();
+			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 
 	private void getAdminList() {
-		Connection con;
+		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -147,14 +153,23 @@ class DBAccess {
 				this.admin_list.add(rs.getString("name").toLowerCase());
 			}
 
-			con.close();
+			rs.close();
+			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 
 	private void getChannelList() {
-		Connection con;
+		Connection con = null;
 		ChannelInfo ci;
 
 		this.channel_data.clear();
@@ -237,14 +252,21 @@ class DBAccess {
 				}
 			}
 			rs.close();
-			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 
 	private void getGreetingList() {
-		Connection con;
+		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 			try (Statement s = con.createStatement()) {
@@ -265,16 +287,23 @@ class DBAccess {
 					this.extra_greetings.add(rs.getString("string"));
 				}
 				rs.close();
+				s.close();
 			}
-
-			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 
 	private void getCatHerds() {
-		Connection con;
+		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 			try (Statement s = con.createStatement()) {
@@ -287,16 +316,23 @@ class DBAccess {
 					this.cat_herds.add(rs.getString("string"));
 				}
 				rs.close();
+				s.close();
 			}
-
-			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 
 	private void getPokemon() {
-		Connection con;
+		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 			try (Statement s = con.createStatement()) {
@@ -309,16 +345,23 @@ class DBAccess {
 					this.pokemon.add(rs.getString("name"));
 				}
 				rs.close();
+				s.close();
 			}
-
-			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 
 	private void getIgnoreList() {
-		Connection con;
+		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -335,15 +378,23 @@ class DBAccess {
 					this.soft_ignore_list.add(rs.getString("name").toLowerCase());
 				}
 			}
-
-			con.close();
+			rs.close();
+			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 
 	String getSetting(String key) {
-		Connection con;
+		Connection con = null;
 		String value = "";
 
 		try {
@@ -357,23 +408,32 @@ class DBAccess {
 			while (rs.next()) {
 				value = rs.getString("value");
 			}
-
-			con.close();
+			rs.close();
+			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 
 		return value;
 	}
 
 	void joinChannel(Channel channel) {
-		Connection con;
+		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("INSERT INTO `channels` (`channel`) VALUES (?)");
 			s.setString(1, channel.getName().toLowerCase());
 			s.executeUpdate();
+			s.close();
 
 			if (!this.channel_data.containsKey(channel.getName().toLowerCase())) {
 				ChannelInfo new_channel = new ChannelInfo(channel.getName().toLowerCase());
@@ -382,16 +442,22 @@ class DBAccess {
 				this.channel_data.put(channel.getName().toLowerCase(), new_channel);
 			}
 
-			con.close();
-
 			this.saveChannelSettings(this.channel_data.get(channel.getName().toLowerCase()));
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 	
 	String getRandomChannelWithVelociraptors(String exclude) {
-		Connection con;
+		Connection con = null;
 		String value = "";
 
 		try {
@@ -406,16 +472,25 @@ class DBAccess {
 				value = rs.getString("channel");
 			}
 
-			con.close();
+			rs.close();
+			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 
 		return value;
 	}
 
 	void saveChannelSettings(ChannelInfo channel) {
-		Connection con;
+		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -479,14 +554,22 @@ class DBAccess {
 				s.executeUpdate();
 			}
 
-			con.close();
+			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 
 	void saveIgnore(String username, String type) {
-		Connection con;
+		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -494,10 +577,17 @@ class DBAccess {
 			s.setString(1, username.toLowerCase());
 			s.setString(2, type.toLowerCase());
 			s.executeUpdate();
-
-			con.close();
+			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 
@@ -512,12 +602,12 @@ class DBAccess {
 		Tim.amusement.refreshDbLists();
 		Tim.story.refreshDbLists();
 		Tim.challenge.refreshDbLists();
-		Tim.markov.refreshDbLists();
+		Tim.markovProcessor.refreshDbLists();
 	}
 
 	int create_war(Channel channel, User starter, String name, long base_duration, long duration, long remaining, long time_to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness) {
 		int id = 0;
-		Connection con;
+		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -541,16 +631,25 @@ class DBAccess {
 				id = rs.getInt(1);
 			}
 
-			con.close();
+			rs.close();
+			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 
 		return id;
 	}
 
 	void update_war(int db_id, long duration, long remaining, long time_to_start, int current_chain) {
-		Connection con;
+		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 
@@ -561,15 +660,22 @@ class DBAccess {
 			s.setInt(4, current_chain);
 			s.setInt(5, db_id);
 			s.executeUpdate();
-
-			con.close();
+			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 	}
 
 	ConcurrentHashMap<String, WordWar> loadWars() {
-		Connection con;
+		Connection con = null;
 		Channel channel;
 		User user;
 		ConcurrentHashMap<String, WordWar> wars = new ConcurrentHashMap<>(32);
@@ -602,15 +708,20 @@ class DBAccess {
 				wars.put(war.getName(false).toLowerCase(), war);
 			}
 
-			con.close();
+			rs.close();
+			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
 		}
 
 		return wars;
-	}
-
-	public void storeChatInput(String input) {
-
 	}
 }

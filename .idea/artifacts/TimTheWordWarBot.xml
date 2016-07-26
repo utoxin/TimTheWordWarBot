@@ -8,6 +8,10 @@
       <element id="directory" name="lib">
         <element id="library" level="project" name="Libraries" />
       </element>
+      <element id="library" level="project" name="com.tumblr:jumblr:Release" />
+      <element id="library" level="project" name="org.pircbotx:pircbotx:2.1" />
+      <element id="library" level="project" name="org.twitter4j:twitter4j-async:4.0.4" />
+      <element id="library" level="project" name="org.twitter4j:twitter4j-stream:4.0.4" />
     </root>
   </artifact>
 </component>

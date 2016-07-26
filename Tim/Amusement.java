@@ -1051,7 +1051,7 @@ class Amusement {
 				target = StringUtils.join(args, " ");
 
 				for (User t : channel.getUsers()) {
-					if (t.canEqual(target)) {
+					if (t.getNick().toLowerCase().equals(target.toLowerCase())) {
 						target = t.getNick();
 						break;
 					}

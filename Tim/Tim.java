@@ -18,7 +18,6 @@ package Tim;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Random;
 import java.util.logging.Level;
@@ -26,22 +25,25 @@ import java.util.logging.Logger;
 import org.pircbotx.Configuration;
 import org.pircbotx.Configuration.Builder;
 import org.pircbotx.PircBotX;
-import org.pircbotx.exception.IrcException;
 
 public class Tim {
-	public static Amusement amusement;
-	public static PircBotX bot;
-	public static Challenge challenge;
-	public static AppConfig config = AppConfig.getInstance();
-	public static DBAccess db = DBAccess.getInstance();
 	public static Tim instance;
-	public static MarkovChains markov;
+	public static AppConfig config = AppConfig.getInstance();
+	public static PircBotX bot;
+	public static DBAccess db = DBAccess.getInstance();
 	public static Random rand;
-	public static ChainStory story;
-	public static WarTicker warticker;
-	public static DeIdler deidler;
-	public static TwitterIntegration twitterstream;
-	public static VelociraptorHandler raptors;
+
+	static Amusement amusement;
+	static Challenge challenge;
+	static MarkovChains markov;
+	static MarkovProcessor markovProcessor;
+	static ChainStory story;
+	static WarTicker warticker;
+	static DeIdler deidler;
+	static TwitterIntegration twitterstream;
+	static VelociraptorHandler raptors;
+
+	private static Thread markovThread;
 
 	public static void main(String[] args) {
 		instance = new Tim();
@@ -52,18 +54,19 @@ public class Tim {
 		story = new ChainStory();
 		challenge = new Challenge();
 		markov = new MarkovChains();
+		markovProcessor = new MarkovProcessor();
 		amusement = new Amusement();
 		raptors = new VelociraptorHandler();
 
 		Builder configBuilder = new Configuration.Builder()
-			.setName(db.getSetting("nickname"))
-			.setLogin("WarMech")
-			.setNickservPassword(db.getSetting("password"))
 			.addListener(new AdminCommandListener())
 			.addListener(new UserCommandListener())
 			.addListener(new ReactionListener())
 			.addListener(new ServerListener())
-			.setServerHostname(db.getSetting("server"))
+			.setName(db.getSetting("nickname"))
+			.setLogin("WarMech")
+			.setNickservPassword(db.getSetting("password"))
+			.addServer(db.getSetting("server"))
 			.setServerPassword(db.getSetting("server_password"))
 			.setEncoding(Charset.forName("UTF-8"))
 			.setMessageDelay(Long.parseLong(db.getSetting("max_rate")))
@@ -91,14 +94,18 @@ public class Tim {
 		});
 
 		try {
+			markovThread = new Thread(markovProcessor);
+			markovThread.start();
+
 			bot.startBot();
-		} catch (IrcException | IOException ex) {
+		} catch (Exception ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
 	public static void shutdown() {
 		if (Tim.bot.isConnected()) {
+			markovThread.interrupt();
 			Tim.bot.stopBotReconnect();
 			Tim.bot.sendIRC().quitServer("HELP! Utoxin just murdered me! (Again!!!)");
 			Tim.warticker.warTicker.cancel();

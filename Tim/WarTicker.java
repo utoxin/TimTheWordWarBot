@@ -213,7 +213,7 @@ class WarTicker {
 		if (args != null && args.length > 0) {
 			String name = StringUtils.join(args, " ");
 			if (this.wars.containsKey(name.toLowerCase())) {
-				if (event.getUser().canEqual(this.wars.get(name.toLowerCase()).getStarter())
+				if (event.getUser().getNick().equalsIgnoreCase(this.wars.get(name.toLowerCase()).getStarter().getNick())
 					|| Tim.db.admin_list.contains(event.getUser().getNick())
 					|| Tim.db.admin_list.contains(event.getChannel().getName().toLowerCase())) {
 					WordWar war = this.wars.remove(name.toLowerCase());

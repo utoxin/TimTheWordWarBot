@@ -30,12 +30,7 @@ import org.pircbotx.Colors;
 import twitter4j.*;
 import twitter4j.auth.AccessToken;
 
-/**
- *
- * @author Matthew Walker
- */
 class TwitterIntegration extends StatusAdapter {
-
 	private Twitter twitter;
 	private AccessToken token;
 	TwitterStream userStream;
@@ -330,24 +325,19 @@ class TwitterIntegration extends StatusAdapter {
 		}
 
 		@Override
-		public void onDeletionNotice(StatusDeletionNotice sdn) {
-		}
+		public void onDeletionNotice(StatusDeletionNotice sdn) {}
 
 		@Override
-		public void onTrackLimitationNotice(int i) {
-		}
+		public void onTrackLimitationNotice(int i) {}
 
 		@Override
-		public void onScrubGeo(long l, long l1) {
-		}
+		public void onScrubGeo(long l, long l1) {}
 
 		@Override
-		public void onException(Exception excptn) {
-		}
+		public void onException(Exception excptn) {}
 
 		@Override
-		public void onStallWarning(StallWarning sw) {
-		}
+		public void onStallWarning(StallWarning sw) {}
 	};
 
 	private UserStreamListener userListener = new UserStreamListener() {
@@ -452,48 +442,12 @@ class TwitterIntegration extends StatusAdapter {
 		}
 
 		@Override
-		public void onDeletionNotice(StatusDeletionNotice sdn) {
-		}
-
-		@Override
-		public void onTrackLimitationNotice(int i) {
-		}
-
-		@Override
-		public void onScrubGeo(long l, long l1) {
-		}
-
-		@Override
-		public void onException(Exception excptn) {
-		}
-
-		@Override
-		public void onDeletionNotice(long l, long l1) {
-		}
-
-		@Override
-		public void onFriendList(long[] longs) {
-		}
-
-		@Override
-		public void onFavorite(User user, User user1, Status status) {
-		}
-
-		@Override
-		public void onUnfavorite(User user, User user1, Status status) {
-		}
-
-		@Override
 		public void onFollow(User user, User user1) {
 			try {
 				friendIDs = twitter.getFriendsIDs(BotTimmy.getId());
 			} catch (TwitterException ex) {
 				Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
 			}
-		}
-
-		@Override
-		public void onDirectMessage(DirectMessage dm) {
 		}
 
 		@Override
@@ -506,47 +460,78 @@ class TwitterIntegration extends StatusAdapter {
 		}
 
 		@Override
-		public void onUserListMemberAddition(User user, User user1, UserList ul) {
-		}
+		public void onDeletionNotice(StatusDeletionNotice sdn) {}
 
 		@Override
-		public void onUserListMemberDeletion(User user, User user1, UserList ul) {
-		}
+		public void onTrackLimitationNotice(int i) {}
 
 		@Override
-		public void onUserListSubscription(User user, User user1, UserList ul) {
-		}
+		public void onScrubGeo(long l, long l1) {}
 
 		@Override
-		public void onUserListUnsubscription(User user, User user1, UserList ul) {
-		}
+		public void onException(Exception excptn) {}
 
 		@Override
-		public void onUserListCreation(User user, UserList ul) {
-		}
+		public void onDeletionNotice(long l, long l1) {}
 
 		@Override
-		public void onUserListUpdate(User user, UserList ul) {
-		}
+		public void onFriendList(long[] longs) {}
 
 		@Override
-		public void onUserListDeletion(User user, UserList ul) {
-		}
+		public void onFavorite(User user, User user1, Status status) {}
 
 		@Override
-		public void onUserProfileUpdate(User user) {
-		}
+		public void onUnfavorite(User user, User user1, Status status) {}
 
 		@Override
-		public void onBlock(User user, User user1) {
-		}
+		public void onDirectMessage(DirectMessage dm) {}
 
 		@Override
-		public void onUnblock(User user, User user1) {
-		}
+		public void onUserListMemberAddition(User user, User user1, UserList ul) {}
 
 		@Override
-		public void onStallWarning(StallWarning sw) {
-		}
+		public void onUserListMemberDeletion(User user, User user1, UserList ul) {}
+
+		@Override
+		public void onUserListSubscription(User user, User user1, UserList ul) {}
+
+		@Override
+		public void onUserListUnsubscription(User user, User user1, UserList ul) {}
+
+		@Override
+		public void onUserListCreation(User user, UserList ul) {}
+
+		@Override
+		public void onUserListUpdate(User user, UserList ul) {}
+
+		@Override
+		public void onUserListDeletion(User user, UserList ul) {}
+
+		@Override
+		public void onUserProfileUpdate(User user) {}
+
+		@Override
+		public void onUserSuspension(long suspendedUser) {}
+
+		@Override
+		public void onUserDeletion(long deletedUser) {}
+
+		@Override
+		public void onBlock(User user, User user1) {}
+
+		@Override
+		public void onUnblock(User user, User user1) {}
+
+		@Override
+		public void onRetweetedRetweet(User source, User target, Status retweetedStatus) {}
+
+		@Override
+		public void onFavoritedRetweet(User source, User target, Status favoritedRetweeet) {}
+
+		@Override
+		public void onQuotedTweet(User source, User target, Status quotingTweet) {}
+
+		@Override
+		public void onStallWarning(StallWarning sw) {}
 	};
 }

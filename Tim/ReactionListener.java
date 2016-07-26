@@ -71,7 +71,7 @@ class ReactionListener extends ListenerAdapter {
 					}
 				} else if (message.toLowerCase().contains("raptor") && cdata.chatter_enabled.get("velociraptor")) {
 					Tim.raptors.sighting(event);
-					Tim.markov.process_markov(message, "say", event.getUser().getNick());
+					Tim.markovProcessor.storeLine("say", message);
 				} else if (message.toLowerCase().contains("cheeseburger") && cdata.chatter_enabled.get("silly_reactions")) {
 					if (Tim.rand.nextInt(100) < cdata.cheeseburger_odds) {
 						event.respond("I can has cheezburger?");
@@ -112,7 +112,7 @@ class ReactionListener extends ListenerAdapter {
 					}
 				} else {
 					this.interact(event.getUser(), event.getChannel(), message, "say");
-					Tim.markov.process_markov(message, "say", event.getUser().getNick());
+					Tim.markovProcessor.storeLine("say", message);
 				}
 			}
 		}
@@ -161,7 +161,7 @@ class ReactionListener extends ListenerAdapter {
 				}
 			} else if (message.toLowerCase().contains("raptor") && cdata.chatter_enabled.get("velociraptor")) {
 				Tim.raptors.sighting(event);
-				Tim.markov.process_markov(message, "emote", event.getUser().getNick());
+				Tim.markovProcessor.storeLine("emote", message);
 			} else if (message.toLowerCase().contains("cheeseburger") && cdata.chatter_enabled.get("silly_reactions")) {
 				if (Tim.rand.nextInt(100) < cdata.cheeseburger_odds) {
 					event.respond("sniffs the air, and peers around. \"Can has cheezburger?\"");
@@ -202,7 +202,7 @@ class ReactionListener extends ListenerAdapter {
 				}
 			} else {
 				this.interact(event.getUser(), event.getChannel(), message, "emote");
-				Tim.markov.process_markov(message, "emote", event.getUser().getNick());
+				Tim.markovProcessor.storeLine("emote", message);
 			}
 		}
 	}

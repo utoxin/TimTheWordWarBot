@@ -2,24 +2,7 @@
   <library name="Libraries">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/Libraries/commons-configuration.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/commons-validator-1.4.0.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/slf4j-simple-1.7.5.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/mysql-connector-java-5.1.22-bin.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/bitly-api-client-0.7.2.jar!/" />
       <root url="jar://$PROJECT_DIR$/Libraries/commons-lang-2.6.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/guava-15.0.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/commons-lang3-3.1.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/commons-logging.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/twitter4j-async-4.0.2.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/twitter4j-stream-4.0.2.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/pircbotx-2.0.1.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/smackx-3.4.1-0cec571.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/DBPool-5.0.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/jumblr-0.0.8.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/smack-3.4.1-0cec571.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/twitter4j-core-4.0.2.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/commons-collections.jar!/" />
-      <root url="jar://$PROJECT_DIR$/Libraries/slf4j-api-1.7.5.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
