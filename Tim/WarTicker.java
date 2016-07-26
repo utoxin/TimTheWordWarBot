@@ -32,28 +32,21 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.hooks.events.MessageEvent;
 
-/**
- *
- * @author mwalker
- */
 class WarTicker {
-
-	private static final WarTicker instance;
 	WarClockThread warTicker;
 	ConcurrentHashMap<String, WordWar> wars;
-
-	static {
-		instance = new WarTicker();
-	}
 
 	private WarTicker() {
 		Timer ticker;
 
 		this.wars = Tim.db.loadWars();
-
 		this.warTicker = new WarClockThread(this);
 		ticker = new Timer(true);
 		ticker.scheduleAtFixedRate(this.warTicker, 0, 1000);
+	}
+
+	private static class SingletonHelper {
+		private static final WarTicker instance = new WarTicker();
 	}
 
 	/**
@@ -62,7 +55,7 @@ class WarTicker {
 	 * @return Singleton
 	 */
 	public static WarTicker getInstance() {
-		return instance;
+		return SingletonHelper.instance;
 	}
 
 	@SuppressWarnings("WeakerAccess")

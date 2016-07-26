@@ -59,10 +59,6 @@ public class Tim {
 		raptors = new VelociraptorHandler();
 
 		Builder configBuilder = new Configuration.Builder()
-			.addListener(new AdminCommandListener())
-			.addListener(new UserCommandListener())
-			.addListener(new ReactionListener())
-			.addListener(new ServerListener())
 			.setName(db.getSetting("nickname"))
 			.setLogin("WarMech")
 			.setNickservPassword(db.getSetting("password"))
@@ -70,7 +66,11 @@ public class Tim {
 			.setServerPassword(db.getSetting("server_password"))
 			.setEncoding(Charset.forName("UTF-8"))
 			.setMessageDelay(Long.parseLong(db.getSetting("max_rate")))
-			.setAutoNickChange(true);
+			.setAutoNickChange(true)
+			.addListener(new AdminCommandListener())
+			.addListener(new UserCommandListener())
+			.addListener(new ReactionListener())
+			.addListener(new ServerListener());
 
 		db.refreshDbLists();
 

@@ -27,13 +27,7 @@ import java.util.*;
  * @author Matthew Walker
  */
 class DeIdler {
-
-	private static final DeIdler instance;
 	DeIdler.IdleClockThread idleTicker;
-
-	static {
-		instance = new DeIdler();
-	}
 
 	private DeIdler() {
 		Timer ticker;
@@ -43,13 +37,17 @@ class DeIdler {
 		ticker.scheduleAtFixedRate(this.idleTicker, 0, 60000);
 	}
 
+	private static class SingletonHelper {
+		private static final DeIdler instance = new DeIdler();
+	}
+
 	/**
 	 * Singleton access method.
 	 *
 	 * @return Singleton
 	 */
 	public static DeIdler getInstance() {
-		return instance;
+		return SingletonHelper.instance;
 	}
 
 	@SuppressWarnings("WeakerAccess")

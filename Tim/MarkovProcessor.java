@@ -491,8 +491,6 @@ class MarkovProcessor implements Runnable {
 				result[0] = patterns[0].matcher(word_one).replaceAll("$1" + alternate_pair[0] + "$3");
 				result[1] = patterns[1].matcher(word_two).replaceAll("$1" + alternate_pair[1] + "$3");
 
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.INFO, "Replaced pair ''{0} {1}'' with ''{2} {3}''", new Object[]{word_one, word_two, result[0], result[1]});
-
 				return result;
 			}
 		}
@@ -513,7 +511,6 @@ class MarkovProcessor implements Runnable {
 		for (Pattern pattern : badwordPatterns.values()) {
 			word = pattern.matcher(word).replaceAll("$1" + replacement + "$3");
 			if (!old_word.equals(word)) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.INFO, "Replaced string ''{0}'' with ''{1}''", new Object[]{old_word, word});
 				break;
 			}
 		}
@@ -521,16 +518,10 @@ class MarkovProcessor implements Runnable {
 		if (urlValidator.isValid(word.replace("^(?ui)[^a-z0-9]*(.*?)[^a-z0-9]*$", "$1"))
 			|| emailValidator.isValid(word.replace("^(?ui)[^a-z0-9]*(.*?)[^a-z0-9]*$", "$1"))) {
 			word = "http://bit.ly/19VurZW";
-			if (!old_word.equals(word)) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.INFO, "Replaced string ''{0}'' with ''{1}''", new Object[]{old_word, word});
-			}
 		}
 
 		if (Pattern.matches("^\\(?(\\d{3})\\)?[- ]?(\\d{2,3})[- ]?(\\d{4})$", word)) {
 			word = "867-5309";
-			if (!old_word.equals(word)) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.INFO, "Replaced string ''{0}'' with ''{1}''", new Object[]{old_word, word});
-			}
 		}
 
 		return word;

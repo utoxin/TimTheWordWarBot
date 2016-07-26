@@ -21,23 +21,26 @@ package Tim;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
 import org.pircbotx.hooks.ListenerAdapter;
-import org.pircbotx.hooks.events.ConnectEvent;
-import org.pircbotx.hooks.events.InviteEvent;
-import org.pircbotx.hooks.events.JoinEvent;
-import org.pircbotx.hooks.events.KickEvent;
+import org.pircbotx.hooks.events.*;
 
 /**
  *
  * @author Matthew Walker
  */
 class ServerListener extends ListenerAdapter {
-
 	@Override
 	public void onConnect(ConnectEvent event) {
 		String post_identify = Tim.db.getSetting("post_identify");
 		if (!"".equals(post_identify)) {
 			event.respond(post_identify);
+		}
+
+		try {
+			Thread.sleep(30000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 
 		Tim.warticker = WarTicker.getInstance();
