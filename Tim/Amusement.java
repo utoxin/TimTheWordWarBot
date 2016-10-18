@@ -492,7 +492,7 @@ class Amusement {
 		if (sender == null) {
 			HashSet<User> finalUsers = new HashSet<>(10);
 
-			ImmutableSortedSet<User> users = Tim.bot.getUserChannelDao().getChannel(channel).getUsers();
+			ImmutableSortedSet<User> users = Tim.channelStorage.channelList.get(channel).getUsers();
 
 			int size = users.size();
 			users.stream().filter((user) -> (!user.getNick().equalsIgnoreCase("Timmy") 
@@ -530,7 +530,7 @@ class Amusement {
 		}
 
 		String action = enabled_actions.toArray(new String[enabled_actions.size()])[Tim.rand.nextInt(enabled_actions.size())];
-		Channel sendChannel = Tim.bot.getUserChannelDao().getChannel(channel);
+		Channel sendChannel = Tim.channelStorage.channelList.get(channel);
 
 		switch (action) {
 			case "item":

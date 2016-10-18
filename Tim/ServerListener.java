@@ -63,10 +63,6 @@ class ServerListener extends ListenerAdapter {
 	public void onInvite(InviteEvent event) {
 		if (event.getUser() != null && !Tim.db.ignore_list.contains(event.getUser().getNick())) {
 			Tim.bot.sendIRC().joinChannel(event.getChannel());
-
-			if (!Tim.db.channel_data.containsKey(event.getChannel())) {
-				Tim.db.joinChannel(Tim.bot.getUserChannelDao().getChannel(event.getChannel()));
-			}
 		}
 	}
 
@@ -81,6 +77,10 @@ class ServerListener extends ListenerAdapter {
 	public void onJoin(JoinEvent event) {
 		if (event.getUser() != null && event.getUser().equals(Tim.bot.getUserBot())) {
 			Tim.channelStorage.channelList.put(event.getChannel().getName().toLowerCase(), event.getChannel());
+
+			if (!Tim.db.channel_data.containsKey(event.getChannel().getName().toLowerCase())) {
+				Tim.db.joinChannel(event.getChannel());
+			}
 		} else {
 			ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 			int warscount = 0;

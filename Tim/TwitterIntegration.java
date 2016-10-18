@@ -278,7 +278,7 @@ class TwitterIntegration extends StatusAdapter {
 				}
 
 				if (channel.tweetBucket >= 1) {
-					Tim.bot.getUserChannelDao().getChannel(channel.channel).send().message(message);
+					Tim.channelStorage.channelList.get(channel.channel).send().message(message);
 					channel.tweetBucket -= 1f;
 				}
 			}

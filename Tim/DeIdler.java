@@ -101,7 +101,7 @@ class DeIdler {
 			cdata = Tim.db.channel_data.get(cdata.channel);
 
 			// Maybe cure the stale channel mode warnings?
-			Tim.bot.getUserChannelDao().getChannel(cdata.channel).getMode();
+			Tim.channelStorage.channelList.get(cdata.channel).getMode();
 
 			if (cdata.muzzled) {
 				if (cdata.muzzledUntil > 0 && cdata.muzzledUntil < date.getTime() && !cdata.auto_muzzled) {
@@ -147,7 +147,7 @@ class DeIdler {
 						Tim.raptors.swarm(cdata.channel);
 						break;
 					case "bored":
-						Channel sendChannel = Tim.bot.getUserChannelDao().getChannel(cdata.channel);
+						Channel sendChannel = Tim.channelStorage.channelList.get(cdata.channel);
 						sendChannel.send().message("I'm bored.");
 						break;
 				}

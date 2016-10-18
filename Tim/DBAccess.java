@@ -19,8 +19,6 @@ package Tim;
  */
 
 import org.pircbotx.Channel;
-import org.pircbotx.User;
-import org.pircbotx.snapshot.UserChannelDaoSnapshot;
 import snaq.db.ConnectionPool;
 import snaq.db.Select1Validator;
 

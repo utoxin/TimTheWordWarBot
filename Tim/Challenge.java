@@ -289,7 +289,7 @@ class Challenge {
 		String action = actions[Tim.rand.nextInt(actions.length)];
 
 		if ("challenge".equals(action)) {
-			issueChallenge(Tim.bot.getUserChannelDao().getChannel(channel), sender.getNick(), null);
+			issueChallenge(Tim.channelStorage.channelList.get(channel), sender.getNick(), null);
 		}
 	}
 
