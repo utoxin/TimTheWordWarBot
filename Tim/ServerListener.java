@@ -54,15 +54,16 @@ class ServerListener extends ListenerAdapter {
 
 	@Override
 	public void onKick(KickEvent event) {
-		if (event.getRecipient().getNick().equals(Tim.bot.getNick())) {
+		if (event.getRecipient() != null && event.getRecipient().getNick().equals(Tim.bot.getNick())) {
 			Tim.db.deleteChannel(event.getChannel());
 		}
 	}
 
 	@Override
 	public void onInvite(InviteEvent event) {
-		if (!Tim.db.ignore_list.contains(event.getUser())) {
+		if (event.getUser() != null && !Tim.db.ignore_list.contains(event.getUser().getNick())) {
 			Tim.bot.sendIRC().joinChannel(event.getChannel());
+
 			if (!Tim.db.channel_data.containsKey(event.getChannel())) {
 				Tim.db.joinChannel(Tim.bot.getUserChannelDao().getChannel(event.getChannel()));
 			}
@@ -70,8 +71,17 @@ class ServerListener extends ListenerAdapter {
 	}
 
 	@Override
+	public void onPart(PartEvent event) {
+		if (event.getUser().equals(Tim.bot.getUserBot())) {
+			Tim.channelStorage.channelList.remove(event.getChannel().getName().toLowerCase());
+		}
+	}
+
+	@Override
 	public void onJoin(JoinEvent event) {
-		if (!event.getUser().getNick().equals(Tim.bot.getNick())) {
+		if (event.getUser() != null && event.getUser().equals(Tim.bot.getUserBot())) {
+			Tim.channelStorage.channelList.put(event.getChannel().getName().toLowerCase(), event.getChannel());
+		} else {
 			ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 			int warscount = 0;
 

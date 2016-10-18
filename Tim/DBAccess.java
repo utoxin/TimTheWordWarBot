@@ -18,27 +18,31 @@ package Tim;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+import org.pircbotx.Channel;
+import org.pircbotx.User;
+import org.pircbotx.snapshot.UserChannelDaoSnapshot;
+import snaq.db.ConnectionPool;
+import snaq.db.Select1Validator;
+
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.text.SimpleDateFormat;
-import org.pircbotx.Channel;
-import org.pircbotx.User;
-import snaq.db.ConnectionPool;
-import snaq.db.Select1Validator;
 
 /**
- *
  * @author Matthew Walker
  */
-class DBAccess {
+public class DBAccess {
 	private static final DBAccess instance;
+
+	static {
+		instance = new DBAccess();
+	}
+
 	private final long timeout = 3000;
-
-	protected HashMap<String, ChannelInfo> channel_data = new HashMap<>(62);
-
+	public HashMap<String, ChannelInfo> channel_data = new HashMap<>(62);
 	Set<String> admin_list = new HashSet<>(16);
 	List<String> extra_greetings = new ArrayList<>();
 	List<String> cat_herds = new ArrayList<>();
@@ -46,11 +50,8 @@ class DBAccess {
 	List<String> pokemon = new ArrayList<>();
 	Set<String> ignore_list = new HashSet<>(16);
 	Set<String> soft_ignore_list = new HashSet<>(16);
+	public HashMap<String, Set<ChannelInfo>> channel_groups = new HashMap<>();
 	ConnectionPool pool;
-
-	static {
-		instance = new DBAccess();
-	}
 
 	private DBAccess() {
 		// Initialize the connection pool, to prevent SQL timeout issues
@@ -67,6 +68,96 @@ class DBAccess {
 	 */
 	public static DBAccess getInstance() {
 		return instance;
+	}
+
+	private void getChannelGroups() {
+		Connection con = null;
+		try {
+			con = pool.getConnection(timeout);
+
+			Statement s = con.createStatement();
+			s.executeQuery("SELECT `name`, `channels`.`channel` FROM `channel_groups` INNER JOIN `channels` ON (`channel_groups`.`channel_id` = `channels`.`id`)");
+
+			ResultSet rs = s.getResultSet();
+
+			this.channel_groups.clear();
+			while (rs.next()) {
+				if (!this.channel_groups.containsKey(rs.getString("name").toLowerCase())) {
+					this.channel_groups.put(rs.getString("name").toLowerCase(), new HashSet<>());
+				}
+
+				this.channel_groups.get(rs.getString("name").toLowerCase()).add(this.channel_data.get(rs.getString("channel")));
+			}
+
+			rs.close();
+			s.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+	}
+
+	public void removeFromChannelGroup(String group, ChannelInfo channel) {
+		Connection con = null;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("DELETE `channel_groups`.* FROM `channel_groups` INNER JOIN `channels` ON (`channel_groups`.`channel_id` = `channels`.`id`) WHERE `channels`.`channel` = ? AND `channel_groups`.`name` = ?");
+			s.setString(1, channel.channel);
+			s.setString(2, group);
+			s.executeUpdate();
+			s.close();
+
+			// Will do nothing if the channel is not in the list.
+			this.channel_groups.get(group.toLowerCase()).remove(channel);
+		} catch (SQLException ex) {
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+	}
+
+	public void addToChannelGroup(String group, ChannelInfo channel) {
+		Connection con = null;
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement s = con.prepareStatement("REPLACE INTO `channel_groups` SET `name` = ?, `channel_id` = (SELECT `id` FROM `channels` WHERE `channel` = ?)");
+			s.setString(1, group.toLowerCase());
+			s.setString(2, channel.channel.toLowerCase());
+			s.executeUpdate();
+			s.close();
+
+			// Will do nothing if the channel is not in the list.
+			if (!this.channel_groups.containsKey(group.toLowerCase())) {
+				this.channel_groups.put(group.toLowerCase(), new HashSet<>());
+			}
+
+			this.channel_groups.get(group.toLowerCase()).add(channel);
+		} catch (SQLException ex) {
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
 	}
 
 	void deleteChannel(Channel channel) {
@@ -187,7 +278,7 @@ class DBAccess {
 					ci.setDefaultOptions();
 
 					ci.setReactiveChatter(
-						rs.getInt("reactive_chatter_level"), 
+						rs.getInt("reactive_chatter_level"),
 						rs.getInt("chatter_name_multiplier"));
 
 					ci.setRandomChatter(
@@ -199,12 +290,12 @@ class DBAccess {
 
 					ci.setWarAutoMuzzle(
 						rs.getBoolean("auto_muzzle_wars"));
-					
+
 					ci.velociraptorSightings = rs.getInt("velociraptor_sightings");
 					ci.activeVelociraptors = rs.getInt("active_velociraptors");
 					ci.deadVelociraptors = rs.getInt("dead_velociraptors");
 					ci.killedVelociraptors = rs.getInt("killed_velociraptors");
-					
+
 					if (rs.getDate("last_sighting_date") != null) {
 						long time = rs.getDate("last_sighting_date").getTime();
 						ci.lastSighting = new java.util.Date(time);
@@ -455,7 +546,7 @@ class DBAccess {
 			}
 		}
 	}
-	
+
 	String getRandomChannelWithVelociraptors(String exclude) {
 		Connection con = null;
 		String value = "";
@@ -489,13 +580,13 @@ class DBAccess {
 		return value;
 	}
 
-	void saveChannelSettings(ChannelInfo channel) {
+	public void saveChannelSettings(ChannelInfo channel) {
 		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			
+
 			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET reactive_chatter_level = ?, chatter_name_multiplier = ?, random_chatter_level = ?, tweet_bucket_max = ?, "
 				+ "tweet_bucket_charge_rate = ?, auto_muzzle_wars = ?, velociraptor_sightings = ?, active_velociraptors = ?, dead_velociraptors = ?, killed_velociraptors = ?, last_sighting_date = ? WHERE channel = ?;");
 			s.setInt(1, channel.reactiveChatterLevel);
@@ -598,6 +689,7 @@ class DBAccess {
 		this.getGreetingList();
 		this.getCatHerds();
 		this.getPokemon();
+		this.getChannelGroups();
 
 		Tim.amusement.refreshDbLists();
 		Tim.story.refreshDbLists();
@@ -605,7 +697,7 @@ class DBAccess {
 		Tim.markovProcessor.refreshDbLists();
 	}
 
-	int create_war(Channel channel, User starter, String name, long base_duration, long duration, long remaining, long time_to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness) {
+	int create_war(Channel channel, String starter, String name, long base_duration, long duration, long remaining, long time_to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness) {
 		int id = 0;
 		Connection con = null;
 		try {
@@ -613,7 +705,7 @@ class DBAccess {
 
 			PreparedStatement s = con.prepareStatement("INSERT INTO `wars` (`channel`, `starter`, `name`, `base_duration`, `randomness`, `delay`, `duration`, `remaining`, `time_to_start`, `total_chains`, `current_chain`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			s.setString(1, channel.getName().toLowerCase());
-			s.setString(2, starter.getNick());
+			s.setString(2, starter);
 			s.setString(3, name);
 			s.setLong(4, base_duration);
 			s.setBoolean(5, do_randomness);
@@ -677,7 +769,7 @@ class DBAccess {
 	ConcurrentHashMap<String, WordWar> loadWars() {
 		Connection con = null;
 		Channel channel;
-		User user;
+		String user;
 		ConcurrentHashMap<String, WordWar> wars = new ConcurrentHashMap<>(32);
 
 		try {
@@ -687,8 +779,8 @@ class DBAccess {
 			ResultSet rs = s.executeQuery("SELECT * FROM `wars`");
 
 			while (rs.next()) {
-				channel = Tim.bot.getUserChannelDao().getChannel(rs.getString("channel"));
-				user = Tim.bot.getUserChannelDao().getUser(rs.getString("starter"));
+				channel = Tim.channelStorage.channelList.get(rs.getString("channel"));
+				user = rs.getString("starter");
 
 				WordWar war = new WordWar(
 					rs.getLong("base_duration"),

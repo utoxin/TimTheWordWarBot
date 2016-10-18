@@ -20,6 +20,9 @@ package Tim;
 
 import java.util.Date;
 import java.util.regex.Pattern;
+
+import Tim.AdminCommands.ChannelGroups;
+import Tim.AdminCommands.Shout;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Colors;
 import org.pircbotx.hooks.ListenerAdapter;
@@ -59,6 +62,9 @@ class AdminCommandListener extends ListenerAdapter {
 					command = message.substring(1).toLowerCase();
 				}
 				switch (command) {
+					case "channelgroup":
+						ChannelGroups.parseCommand(args, event);
+						break;
 					case "setmuzzleflag":
 						if (args != null && args.length == 2) {
 							String target = args[0].toLowerCase();
@@ -360,6 +366,16 @@ class AdminCommandListener extends ListenerAdapter {
 					case "reload":
 						event.respond("Reading database tables ...");
 						Tim.db.refreshDbLists();
+						event.respond("Loading War Ticker ...");
+						Tim.warticker = WarTicker.getInstance();
+						event.respond("Loading Idle Ticker ...");
+						Tim.deidler = DeIdler.getInstance();
+
+						event.respond("Connecting to Twitter ...");
+						if (!Tim.db.getSetting("twitter_access_key").equals("")) {
+							Tim.twitterstream = new TwitterIntegration();
+							Tim.twitterstream.startStream();
+						}
 						event.respond("Tables reloaded.");
 						break;
 					case "ignore":
@@ -404,9 +420,7 @@ class AdminCommandListener extends ListenerAdapter {
 						);
 						break;
 					case "shout":
-						for (ChannelInfo cdata : Tim.db.channel_data.values()) {
-							Tim.bot.sendIRC().message(cdata.channel, event.getUser().getNick() + " shouts: " + StringUtils.join(args, " "));
-						}
+						Shout.parseCommand(args, event);
 						break;
 					case "part":
 						event.getChannel().send().part();
@@ -468,7 +482,8 @@ class AdminCommandListener extends ListenerAdapter {
 							  "    $chatterflag                     - Control Timmy's chatter settings in your channel",
 							  "    $commandflag                     - Control which commands can be used in your channel",
 							  "    $twitterrelay                    - Control Timmy's twitter relays.",
-							  "    $twitterbucket                   - Control the frequency of the twitter relays."
+							  "    $twitterbucket                   - Control the frequency of the twitter relays.",
+							  "    $channelgroup                    - Channel grouping commands."
 		};
 
 		for (String helpline : helplines) {

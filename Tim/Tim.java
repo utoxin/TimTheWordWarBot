@@ -22,6 +22,8 @@ import java.nio.charset.Charset;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import Tim.Data.ChannelStorage;
 import org.pircbotx.Configuration;
 import org.pircbotx.Configuration.Builder;
 import org.pircbotx.PircBotX;
@@ -42,6 +44,7 @@ public class Tim {
 	static DeIdler deidler;
 	static TwitterIntegration twitterstream;
 	static VelociraptorHandler raptors;
+	static ChannelStorage channelStorage;
 
 	private static Thread markovThread;
 
@@ -57,6 +60,7 @@ public class Tim {
 		markovProcessor = new MarkovProcessor();
 		amusement = new Amusement();
 		raptors = new VelociraptorHandler();
+		channelStorage = new ChannelStorage();
 
 		Builder configBuilder = new Configuration.Builder()
 			.setName(db.getSetting("nickname"))

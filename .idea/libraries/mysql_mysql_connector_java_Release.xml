@@ -7,6 +7,10 @@
       <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.3/mysql-connector-java-6.0.3.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.3/mysql-connector-java-6.0.3.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.3/mysql-connector-java-6.0.3.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.4/mysql-connector-java-6.0.4.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.4/mysql-connector-java-6.0.4.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.4/mysql-connector-java-6.0.4.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.4/mysql-connector-java-6.0.4.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
@@ -15,6 +19,10 @@
       <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.3/mysql-connector-java-6.0.3-sources.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.3/mysql-connector-java-6.0.3-sources.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.3/mysql-connector-java-6.0.3-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.4/mysql-connector-java-6.0.4-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.4/mysql-connector-java-6.0.4-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.4/mysql-connector-java-6.0.4-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/mysql/mysql-connector-java/6.0.4/mysql-connector-java-6.0.4-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

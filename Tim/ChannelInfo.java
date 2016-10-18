@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import org.pircbotx.User;
 
-class ChannelInfo {
+public class ChannelInfo {
 	public String channel;
 
 	HashMap<String, Boolean> chatter_enabled = new HashMap<>(16);
@@ -32,9 +32,9 @@ class ChannelInfo {
 	User lastSpeaker;
 	long lastSpeakerTime;
 
-	int reactiveChatterLevel;
-	int randomChatterLevel;
-	int chatterNameMultiplier;
+	public int reactiveChatterLevel;
+	public int randomChatterLevel;
+	public int chatterNameMultiplier;
 	
 	int velociraptorSightings;
 	int activeVelociraptors;
@@ -234,12 +234,12 @@ class ChannelInfo {
 		}
 	}
 
-	void setReactiveChatter(int chatterLevel, int nameMultiplier) {
+	public void setReactiveChatter(int chatterLevel, int nameMultiplier) {
 		this.reactiveChatterLevel = chatterLevel;
 		this.chatterNameMultiplier = nameMultiplier;
 	}
 
-	void setRandomChatter(int chatterLevel) {
+	public void setRandomChatter(int chatterLevel) {
 		this.randomChatterLevel = chatterLevel;
 	}
 

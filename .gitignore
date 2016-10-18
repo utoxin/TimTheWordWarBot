@@ -3,5 +3,6 @@ BotConfig.xml
 .project
 *.class
 out
+lib
 
 .idea/workspace.xml
