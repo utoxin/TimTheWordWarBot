@@ -29,11 +29,13 @@ import org.pircbotx.Configuration.Builder;
 import org.pircbotx.PircBotX;
 
 public class Tim {
+	// Has to go first, because it's needed for DBAccess below
+	static AppConfig config = AppConfig.getInstance();
+
 	public static PircBotX bot;
 	public static DBAccess db = DBAccess.getInstance();
 	public static Random rand;
 
-	static AppConfig config = AppConfig.getInstance();
 	static Amusement amusement;
 	static Challenge challenge;
 	static MarkovChains markov;

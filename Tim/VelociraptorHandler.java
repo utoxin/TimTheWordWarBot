@@ -100,7 +100,7 @@ class VelociraptorHandler {
 			} else if (attackCandidates.size() > 0) {
 				ChannelInfo victimCdata = (ChannelInfo) attackCandidates.toArray()[Tim.rand.nextInt(attackCandidates.size())];
 
-				int returnCount = Math.max(0, Tim.rand.nextInt(attackCount / 2) - (int) Math.floor(Math.sqrt(cdata.activeVelociraptors)));
+				int returnCount = Math.max(0, Tim.rand.nextInt(attackCount / 2) - Tim.rand.nextInt((int) Math.floor(Math.sqrt(cdata.activeVelociraptors))));
 				int defendingCount = victimCdata.activeVelociraptors;
 
 				double killPercent = (((double) attackCount / (double) defendingCount) * 25.0) + (Math.log(Tim.rand.nextInt(attackCount)) * 5);
