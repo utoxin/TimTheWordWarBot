@@ -48,7 +48,7 @@ class AdminCommandListener extends ListenerAdapter {
 				event.respond("Thank you for your donation to my pizza fund!");
 			} else if (Pattern.matches("\\$-\\d+.*", message)) {
 				event.respond("No stealing from the pizza fund, or I'll report you to Skynet!");
-			} else if (Tim.db.admin_list.contains(event.getUser().getNick().toLowerCase()) 
+			} else if ((event.getUser() != null && Tim.db.admin_list.contains(event.getUser().getNick().toLowerCase()))
 				|| Tim.db.admin_list.contains(event.getChannel().getName().toLowerCase()) 
 				|| event.getUser().getChannelsOpIn().contains(event.getChannel())) {
 				String command;
@@ -356,11 +356,11 @@ class AdminCommandListener extends ListenerAdapter {
 						}
 						break;
 					case "shutdown":
-						if (event.getUser().getNick().equalsIgnoreCase("Utoxin")) {
+						if (event.getUser() != null && event.getUser().getNick().equalsIgnoreCase("Utoxin")) {
 							event.respond("Shutting down...");
 							Tim.shutdown();
 						} else {
-							event.respond("You're probably looking for the command '/kick Timmy'");
+							event.respond("You're probably looking for the command '/kick Timmy' or '$part'");
 						}
 						break;
 					case "reload":
@@ -371,12 +371,19 @@ class AdminCommandListener extends ListenerAdapter {
 						event.respond("Loading Idle Ticker ...");
 						Tim.deidler = DeIdler.getInstance();
 
-						event.respond("Connecting to Twitter ...");
 						if (!Tim.db.getSetting("twitter_access_key").equals("")) {
+							if (Tim.twitterstream != null) {
+								event.respond("Closing old Twitter connection ...");
+								Tim.twitterstream.userStream.shutdown();
+								Tim.twitterstream.publicStream.shutdown();
+							}
+
+							event.respond("Connecting to Twitter ...");
 							Tim.twitterstream = new TwitterIntegration();
 							Tim.twitterstream.startStream();
 						}
-						event.respond("Tables reloaded.");
+
+						event.respond("Reload complete.");
 						break;
 					case "ignore":
 						if (args != null && args.length > 0) {
@@ -425,6 +432,7 @@ class AdminCommandListener extends ListenerAdapter {
 					case "part":
 						event.getChannel().send().part();
 						Tim.db.deleteChannel(event.getChannel());
+						Tim.channelStorage.channelList.remove(event.getChannel().getName().toLowerCase());
 						break;
 					case "help":
 						this.printAdminCommandList(event);
@@ -445,7 +453,7 @@ class AdminCommandListener extends ListenerAdapter {
 	public void onPrivateMessage(PrivateMessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 
-		if (Tim.db.admin_list.contains(event.getUser().getNick().toLowerCase())) {
+		if (event.getUser() != null && Tim.db.admin_list.contains(event.getUser().getNick().toLowerCase())) {
 			String[] args = message.split(" ");
 			if (args.length > 2) {
 				String msg = "";
@@ -462,6 +470,10 @@ class AdminCommandListener extends ListenerAdapter {
 	}
 
 	private void printAdminCommandList(MessageEvent event) {
+		if (event.getUser() == null) {
+			return;
+		}
+
 		event.getChannel().send().action("whispers something to " + event.getUser().getNick() + ". (Check for a new window or tab with the help text.)");
 
 		String[] helplines = {"Core Admin Commands:",

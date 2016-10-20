@@ -8,8 +8,6 @@ import org.pircbotx.hooks.events.MessageEvent;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public final class Shout {
 	public static void parseCommand(String[] args, MessageEvent event) {
@@ -43,7 +41,9 @@ public final class Shout {
 		}
 
 		for (ChannelInfo cdata : destinations) {
-			Tim.bot.sendIRC().message(cdata.channel, event.getUser().getNick() + " shouts @"+ destination +": " + StringUtils.join(argList, " "));
+			if (event.getUser() != null) {
+				Tim.bot.sendIRC().message(cdata.channel, event.getUser().getNick() + " shouts @" + destination + ": " + StringUtils.join(argList, " "));
+			}
 		}
 	}
 }

@@ -29,12 +29,11 @@ import org.pircbotx.Configuration.Builder;
 import org.pircbotx.PircBotX;
 
 public class Tim {
-	public static Tim instance;
-	public static AppConfig config = AppConfig.getInstance();
 	public static PircBotX bot;
 	public static DBAccess db = DBAccess.getInstance();
 	public static Random rand;
 
+	static AppConfig config = AppConfig.getInstance();
 	static Amusement amusement;
 	static Challenge challenge;
 	static MarkovChains markov;
@@ -46,6 +45,7 @@ public class Tim {
 	static VelociraptorHandler raptors;
 	static ChannelStorage channelStorage;
 
+	private static Tim instance;
 	private static Thread markovThread;
 
 	public static void main(String[] args) {
@@ -107,7 +107,7 @@ public class Tim {
 		}
 	}
 
-	public static void shutdown() {
+	static void shutdown() {
 		if (Tim.bot.isConnected()) {
 			markovThread.interrupt();
 			Tim.bot.stopBotReconnect();

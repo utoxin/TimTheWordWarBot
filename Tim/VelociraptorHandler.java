@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  */
 class VelociraptorHandler {
 	void sighting(Event event) {
-		Channel channel;
+		Channel channel = null;
 		boolean action = false;
 		
 		if (event instanceof MessageEvent) {
@@ -41,7 +41,9 @@ class VelociraptorHandler {
 		} else if (event instanceof ActionEvent) {
 			channel = ((ActionEvent) event).getChannel();
 			action = true;
-		} else {
+		}
+
+		if (channel == null) {
 			return;
 		}
 

@@ -60,6 +60,10 @@ class Amusement {
 	 * @return True if message was handled, false otherwise.
 	 */
 	boolean parseUserCommand(MessageEvent event) {
+		if (event.getUser() == null) {
+			return false;
+		}
+
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
 		String[] args = null;
@@ -460,6 +464,10 @@ class Amusement {
 	}
 
 	void helpSection(MessageEvent event) {
+		if (event.getUser() == null) {
+			return;
+		}
+
 		String[] strs = {"Amusement Commands:",
 						 "    !get <anything> - I will fetch you whatever you like.",
 						 "    !getfor <someone> <anything> - I will give someone whatever you like.",
@@ -739,8 +747,8 @@ class Amusement {
 			String argStr = StringUtils.join(args, " ");
 
 			event.getChannel().send().action("licks " + argStr + ". Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
-		} else {
-			event.getChannel().send().action("licks " + event.getUser().getNick() + "! Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
+		} else if (event.getUser() != null) {
+				event.getChannel().send().action("licks " + event.getUser().getNick() + "! Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
 		}
 	}
 	

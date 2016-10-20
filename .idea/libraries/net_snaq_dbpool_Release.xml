@@ -29,6 +29,9 @@
       <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1-jdk7/dbpool-7.0.1-jdk7.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/javax/javaee-web-api/6.0/javaee-web-api-6.0.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.21/slf4j-api-1.7.21.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1-jdk7/dbpool-7.0.1-jdk7.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/javax/javaee-web-api/6.0/javaee-web-api-6.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.21/slf4j-api-1.7.21.jar!/" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0-jdk7/dbpool-7.0-jdk7-javadoc.jar!/" />
@@ -40,6 +43,7 @@
       <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1-jdk7/dbpool-7.0.1-jdk7-javadoc.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1-jdk7/dbpool-7.0.1-jdk7-javadoc.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1-jdk7/dbpool-7.0.1-jdk7-javadoc.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1-jdk7/dbpool-7.0.1-jdk7-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
       <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0-jdk7/dbpool-7.0-jdk7-sources.jar!/" />
@@ -47,6 +51,7 @@
       <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0-jdk7/dbpool-7.0-jdk7-sources.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0-jdk7/dbpool-7.0-jdk7-sources.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0-jdk7/dbpool-7.0-jdk7-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1-jdk7/dbpool-7.0.1-jdk7-sources.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1-jdk7/dbpool-7.0.1-jdk7-sources.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1-jdk7/dbpool-7.0.1-jdk7-sources.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1-jdk7/dbpool-7.0.1-jdk7-sources.jar!/" />

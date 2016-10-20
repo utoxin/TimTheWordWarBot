@@ -39,7 +39,7 @@ class ReactionListener extends ListenerAdapter {
 		
 		updateOdds(cdata);
 
-		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase()) &&
+		if (event.getUser() != null && !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase()) &&
 			!Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())) {
 			if (message.charAt(0) != '$' && message.charAt(0) != '!') {
 				if (!message.equals(":(") && !message.equals("):")) {
@@ -120,10 +120,14 @@ class ReactionListener extends ListenerAdapter {
 
 	@Override
 	public void onAction(ActionEvent event) {
+		if (event.getChannel() == null) {
+			return;
+		}
+
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 
-		if (event.getUser().getLogin().toLowerCase().equals("utoxin")) {
+		if (event.getUser() != null && event.getUser().getNick().toLowerCase().equals("utoxin")) {
 			if (message.equalsIgnoreCase("punches " + Tim.bot.getNick() + " in the face!")) {
 				event.getChannel().send().action("falls over and dies.  x.x");
 				Tim.shutdown();

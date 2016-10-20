@@ -50,6 +50,10 @@ class Challenge {
 	 * @return True if message was handled, false otherwise.
 	 */
 	boolean parseUserCommand(MessageEvent event) {
+		if (event.getUser() == null) {
+			return false;
+		}
+
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 		String command;
@@ -250,6 +254,10 @@ class Challenge {
 	}
 
 	void helpSection(MessageEvent event) {
+		if (event.getUser() == null) {
+			return;
+		}
+
 		String[] strs = {
 			"Challenge Commands:",
 			"    !challenge - Request a challenge",
@@ -263,6 +271,10 @@ class Challenge {
 	}
 
 	void adminHelpSection(MessageEvent event) {
+		if (event.getUser() == null) {
+			return;
+		}
+
 		String[] strs = {
 			"Challenge Commands:",
 			"    $challenge pending [<page>] - List a page of pending items",

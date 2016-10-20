@@ -32,6 +32,10 @@ class UserCommandListener extends ListenerAdapter {
 
 	@Override
 	public void onMessage(MessageEvent event) {
+		if (event.getUser() == null) {
+			return;
+		}
+
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 
 		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())) {
@@ -130,6 +134,10 @@ class UserCommandListener extends ListenerAdapter {
 	}
 
 	private void printCommandList(MessageEvent event) {
+		if (event.getUser() == null) {
+			return;
+		}
+
 		event.getChannel().send().action("whispers something to " + event.getUser().getNick() + ". (Check for a new window or tab with the help text.)");
 
 		String[] strs = {"I am a robot trained by the WordWar Monks of Honolulu. You have "

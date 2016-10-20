@@ -103,7 +103,6 @@ class WarTicker {
 							this.warStartCount(war);
 							break;
 						case 0:
-							// 0 seconds until start. Don't say a damn thing.
 							break;
 						default:
 							if ((war.time_to_start <= (60 * 20) && war.time_to_start % 300 == 0) || (war.time_to_start % 600 == 0)) {
@@ -203,6 +202,10 @@ class WarTicker {
 
 	// !endwar <name>
 	void endWar(MessageEvent event, String[] args) {
+		if (event.getUser() == null) {
+			return;
+		}
+
 		if (args != null && args.length > 0) {
 			String name = StringUtils.join(args, " ");
 			if (this.wars.containsKey(name.toLowerCase())) {
@@ -224,6 +227,10 @@ class WarTicker {
 	}
 
 	void startChainWar(MessageEvent event, String[] args) {
+		if (event.getUser() == null) {
+			return;
+		}
+
 		long time;
 		long to_start = 60;
 		int total_chains;
@@ -318,6 +325,10 @@ class WarTicker {
 	}
 
 	void startWar(MessageEvent event, String[] args) {
+		if (event.getUser() == null) {
+			return;
+		}
+
 		long time;
 		long to_start = 60;
 		String warname;
