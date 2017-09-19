@@ -150,10 +150,10 @@ class TwitterIntegration extends StatusAdapter {
 		needFilterUpdate = true;
 	}
 
-	boolean addAccount(String account, ChannelInfo channel) {
+	void addAccount(String account, ChannelInfo channel) {
 		long accountId = checkAccount(account);
 		if (accountId == 0) {
-			return false;
+			return;
 		}
 
 		if (!accountsToChannels.containsKey(accountId)) {
@@ -165,7 +165,6 @@ class TwitterIntegration extends StatusAdapter {
 		tmpAccountHash.add(channel.channel);
 
 		updateStreamFilters();
-		return true;
 	}
 
 	void removeAccount(String account, ChannelInfo channel) {
@@ -290,8 +289,8 @@ class TwitterIntegration extends StatusAdapter {
 						String message2;
 
 						if (Tim.rand.nextInt(100) < 20) {
-							int r = Tim.rand.nextInt(Tim.amusement.eightBalls.size());
-							message2 = "@" + status.getUser().getScreenName() + " " + Tim.amusement.eightBalls.get(r);
+							int r = Tim.rand.nextInt(Tim.db.eightBalls.size());
+							message2 = "@" + status.getUser().getScreenName() + " " + Tim.db.eightBalls.get(r);
 						} else {
 							message2 = "@" + status.getUser().getScreenName() + " " + Tim.markov.generate_markov("say");
 						}
@@ -368,7 +367,7 @@ class TwitterIntegration extends StatusAdapter {
 							target = status.getUser().getScreenName();
 						}
 
-						StatusUpdate reply = new StatusUpdate("Timmy hurls a " + Tim.amusement.colours.get(Tim.rand.nextInt(Tim.amusement.colours.size())) + " fridge at @" + target + "! #FearTimmy #NaNoWriMo");
+						StatusUpdate reply = new StatusUpdate("Timmy hurls a " + Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size())) + " fridge at @" + target + "! #FearTimmy #NaNoWriMo");
 						reply.setInReplyToStatusId(status.getId());
 
 						twitter.updateStatus(reply);
@@ -408,8 +407,8 @@ class TwitterIntegration extends StatusAdapter {
 						int r = Tim.rand.nextInt(Tim.amusement.approvedItems.size());
 						message = "@" + status.getUser().getScreenName() + " Here, have " + Tim.amusement.approvedItems.get(r);
 					} else if (Tim.rand.nextInt(100) < 20) {
-						int r = Tim.rand.nextInt(Tim.amusement.eightBalls.size());
-						message = "@" + status.getUser().getScreenName() + " " + Tim.amusement.eightBalls.get(r);
+						int r = Tim.rand.nextInt(Tim.db.eightBalls.size());
+						message = "@" + status.getUser().getScreenName() + " " + Tim.db.eightBalls.get(r);
 					} else {
 						message = "@" + status.getUser().getScreenName() + " " + Tim.markov.generate_markov("say");
 					}

@@ -149,7 +149,7 @@ class AdminCommandListener extends ListenerAdapter {
 
 								if (level < 0 || level > 100) {
 									event.respond("Chatter level must be between 0 and 100 (inclusive)");
-								} else if (multi < 0 || level > 100) {
+								} else if (multi < 0 || multi > 100) {
 									event.respond("Name multiplier must be between 0 and 100 (inclusive)");
 								} else {
 									ChannelInfo ci = Tim.db.channel_data.get(target);
@@ -300,7 +300,7 @@ class AdminCommandListener extends ListenerAdapter {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
 
 								if (args[0].equalsIgnoreCase("add")) {
-									if (Tim.twitterstream.checkAccount(args[2]) > 0) {
+									if (Tim.twitterStream.checkAccount(args[2]) > 0) {
 										event.respond("Twitter account added to channel's twitter feed. There may be a short delay (up to 90 seconds) before it takes effect.");
 										ci.addTwitterAccount(args[2], true);
 									} else {
@@ -372,25 +372,25 @@ class AdminCommandListener extends ListenerAdapter {
 						Tim.deidler = DeIdler.getInstance();
 
 						if (!Tim.db.getSetting("twitter_access_key").equals("")) {
-							if (Tim.twitterstream != null) {
+							if (Tim.twitterStream != null) {
 								event.respond("Closing old Twitter connection ...");
-								Tim.twitterstream.userStream.shutdown();
-								Tim.twitterstream.publicStream.shutdown();
+								Tim.twitterStream.userStream.shutdown();
+								Tim.twitterStream.publicStream.shutdown();
 							}
 
 							event.respond("Connecting to Twitter ...");
-							Tim.twitterstream = new TwitterIntegration();
-							Tim.twitterstream.startStream();
+							Tim.twitterStream = new TwitterIntegration();
+							Tim.twitterStream.startStream();
 						}
 
 						event.respond("Reload complete.");
 						break;
 					case "ignore":
 						if (args != null && args.length > 0) {
-							String users = "";
+							StringBuilder users = new StringBuilder();
 
 							for (String arg : args) {
-								users += " " + arg;
+								users.append(" ").append(arg);
 								Tim.db.ignore_list.add(arg);
 								Tim.db.saveIgnore(arg, "hard");
 							}
@@ -402,10 +402,10 @@ class AdminCommandListener extends ListenerAdapter {
 						break;
 					case "unignore":
 						if (args != null && args.length > 0) {
-							String users = "";
+							StringBuilder users = new StringBuilder();
 
 							for (String arg : args) {
-								users += " " + arg;
+								users.append(" ").append(arg);
 								Tim.db.ignore_list.remove(arg);
 								Tim.db.soft_ignore_list.remove(arg);
 								Tim.db.deleteIgnore(arg);
@@ -437,6 +437,13 @@ class AdminCommandListener extends ListenerAdapter {
 					case "help":
 						this.printAdminCommandList(event);
 						break;
+					case "checkuser":
+						if (event.getUser() != null) {
+							event.respond(event.getUser().toString());
+						} else {
+							event.respond("NULL");
+						}
+						break;
 					default:
 						if (!(Tim.amusement.parseAdminCommand(event) || Tim.challenge.parseAdminCommand(event) || Tim.markov.parseAdminCommand(event))) {
 							event.respond("$" + command + " is not a valid admin command - try $help");
@@ -456,14 +463,14 @@ class AdminCommandListener extends ListenerAdapter {
 		if (event.getUser() != null && Tim.db.admin_list.contains(event.getUser().getNick().toLowerCase())) {
 			String[] args = message.split(" ");
 			if (args.length > 2) {
-				String msg = "";
+				StringBuilder msg = new StringBuilder();
 				for (int i = 2; i < args.length; i++) {
-					msg += args[i] + " ";
+					msg.append(args[i]).append(" ");
 				}
 				if (args[0].equalsIgnoreCase("say")) {
-					Tim.bot.sendIRC().message(args[1], msg);
+					Tim.bot.sendIRC().message(args[1], msg.toString());
 				} else if (args[0].equalsIgnoreCase("act")) {
-					Tim.bot.sendIRC().action(args[1], msg);
+					Tim.bot.sendIRC().action(args[1], msg.toString());
 				}
 			}
 		}

@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import org.pircbotx.User;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.*;
 
@@ -47,8 +48,8 @@ class ServerListener extends ListenerAdapter {
 		Tim.deidler = DeIdler.getInstance();
 
 		if (!Tim.db.getSetting("twitter_access_key").equals("")) {
-			Tim.twitterstream = new TwitterIntegration();
-			Tim.twitterstream.startStream();
+			Tim.twitterStream = new TwitterIntegration();
+			Tim.twitterStream.startStream();
 		}
 	}
 
@@ -70,20 +71,42 @@ class ServerListener extends ListenerAdapter {
 	public void onPart(PartEvent event) {
 		if (event.getUser().equals(Tim.bot.getUserBot())) {
 			Tim.channelStorage.channelList.remove(event.getChannel().getName().toLowerCase());
+		} else {
+			Tim.db.channel_data.get(event.getChannel().getName().toLowerCase()).userList.remove(event.getUser().getNick().toLowerCase());
 		}
+	}
+
+	@Override
+	public void onQuit(QuitEvent event) {
+		Tim.db.channel_data.values().stream().filter(cdata -> cdata.userList.containsKey(event.getUser().getNick().toLowerCase())).forEach(cdata -> cdata.userList.remove(event.getUser().getNick().toLowerCase()));
+	}
+
+	@Override
+	public void onNickChange(NickChangeEvent event) {
+		Tim.db.channel_data.values().stream().filter(cdata -> cdata.userList.containsKey(event.getOldNick().toLowerCase())).forEach(cdata -> {
+			cdata.userList.remove(event.getOldNick().toLowerCase());
+			cdata.userList.put(event.getNewNick().toLowerCase(), event.getUser());
+		});
 	}
 
 	@Override
 	public void onJoin(JoinEvent event) {
 		if (event.getUser() != null && event.getUser().equals(Tim.bot.getUserBot())) {
-			Tim.channelStorage.channelList.put(event.getChannel().getName().toLowerCase(), event.getChannel());
+			Tim.channelStorage.channelList.put(event.getChannel().getName().toLowerCase(), event.getChannel().createSnapshot());
 
 			if (!Tim.db.channel_data.containsKey(event.getChannel().getName().toLowerCase())) {
 				Tim.db.joinChannel(event.getChannel());
 			}
+
+			for (User user : event.getChannel().getUsers()) {
+				Tim.db.channel_data.get(event.getChannel().getName().toLowerCase()).userList.put(user.getNick().toLowerCase(), user);
+			}
+
 		} else {
+			Tim.db.channel_data.get(event.getChannel().getName().toLowerCase()).userList.put(event.getUser().getNick().toLowerCase(), event.getUser());
+
 			ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
-			int warscount = 0;
+			int warsCount = 0;
 
 			try {
 				String message = "";
@@ -98,15 +121,15 @@ class ServerListener extends ListenerAdapter {
 					&& Tim.warticker.wars.size() > 0
 					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
 				) {
-					warscount = Tim.warticker.wars.entrySet().stream().filter((wm) -> (wm.getValue().getChannel().equals(event.getChannel()))).map((_item) -> 1).reduce(warscount, Integer::sum);
+					warsCount = Tim.warticker.wars.entrySet().stream().filter((wm) -> (wm.getValue().getChannel().equalsIgnoreCase(event.getChannel().getName()))).map((_item) -> 1).reduce(warsCount, Integer::sum);
 
-					if (warscount > 0) {
-						boolean plural = warscount >= 2;
+					if (warsCount > 0) {
+						boolean plural = warsCount >= 2;
 						if (!message.equals("")) {
 							message += " ";
 						}
 
-						message += "There " + (plural ? "are" : "is") + " " + warscount + " war" + (plural ? "s" : "")
+						message += "There " + (plural ? "are" : "is") + " " + warsCount + " war" + (plural ? "s" : "")
 							+ " currently running in this channel:";
 					}
 				}
@@ -117,10 +140,10 @@ class ServerListener extends ListenerAdapter {
 				}
 
 				if (cdata.chatter_enabled.get("helpful_reactions")
-					&& warscount > 0
+					&& warsCount > 0
 					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
 				) {
-					Tim.warticker.wars.entrySet().stream().filter((wm) -> (wm.getValue().getChannel().equals(event.getChannel()))).forEach(
+					Tim.warticker.wars.entrySet().stream().filter((wm) -> (wm.getValue().getChannel().equalsIgnoreCase(event.getChannel().getName()))).forEach(
 						(wm) -> event.getChannel().send().message(wm.getValue().getDescription())
 					);
 				}
@@ -150,7 +173,7 @@ class ServerListener extends ListenerAdapter {
 					}
 				}
 
-				if (cdata.chatter_enabled.get("silly_reactions") && event.getUser().getNick().toLowerCase().equals("trillian")) {
+				if (cdata.chatter_enabled.get("silly_reactions") && event.getUser().getNick().equalsIgnoreCase("trillian")) {
 					Thread.sleep(1000);
 					event.getChannel().send().message("All hail the velociraptor queen!");
 					Tim.raptors.sighting(event);

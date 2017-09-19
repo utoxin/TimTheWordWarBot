@@ -18,13 +18,14 @@ package Tim;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-import com.google.common.collect.ImmutableSortedSet;
 import java.sql.*;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
+import Tim.UserCommands.Amusement.Fridge;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Channel;
 import org.pircbotx.Colors;
@@ -45,8 +46,6 @@ class Amusement {
 	private final List<String> deities = new ArrayList<>();
 
 	List<String> approvedItems = new ArrayList<>();
-	List<String> colours = new ArrayList<>();
-	List<String> eightBalls = new ArrayList<>();
 	List<String> ponderingList = new ArrayList<>();
 
 	private ChannelInfo cdata;
@@ -84,11 +83,11 @@ class Amusement {
 			case "attack":
 				if (cdata.commands_enabled.get("attack")) {
 					if (args != null && args.length > 0) {
-						String target = args[0];
+						StringBuilder target = new StringBuilder(args[0]);
 						for (int i = 1; i < args.length; ++i) {
-							target = target + " " + args[i];
+							target.append(" ").append(args[i]);
 						}
-						attackCommand(event.getChannel(), event.getUser(), target);
+						attackCommand(event.getChannel(), event.getUser(), target.toString());
 					} else {
 						attackCommand(event.getChannel(), event.getUser(), null);
 					}
@@ -170,12 +169,7 @@ class Amusement {
 
 				return true;
 			case "fridge":
-				if (cdata.commands_enabled.get("fridge")) {
-					throwFridge(event.getChannel(), event.getUser(), args, true);
-				} else {
-					event.respond("I'm sorry. I don't do that here.");
-				}
-
+				Fridge.parseCommand(args, event);
 				return true;
 			case "get":
 				if (cdata.commands_enabled.get("get")) {
@@ -242,7 +236,7 @@ class Amusement {
 					if (Tim.rand.nextInt(100) < 80) {
 						event.respond("Pong!");
 					} else {
-						event.getChannel().send().action("dives for the ball, but misses, and lands on a " + this.colours.get(Tim.rand.nextInt(this.colours.size())) + " couch.");
+						event.getChannel().send().action("dives for the ball, but misses, and lands on a " + Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size())) + " couch.");
 					}
 				} else {
 					event.respond("I'm sorry. I don't do that here.");
@@ -262,11 +256,11 @@ class Amusement {
 			case "search":
 				if (cdata.commands_enabled.get("search")) {
 					if (args != null && args.length > 0) {
-						String target = args[0];
+						StringBuilder target = new StringBuilder(args[0]);
 						for (int i = 1; i < args.length; ++i) {
-							target = target + " " + args[i];
+							target.append(" ").append(args[i]);
 						}
-						search(event.getChannel(), event.getUser(), target);
+						search(event.getChannel(), event.getUser(), target.toString());
 					} else {
 						search(event.getChannel(), event.getUser(), null);
 					}
@@ -387,22 +381,22 @@ class Amusement {
 			case "approveitem":
 				if (args != null && args.length > 0) {
 					int idx;
-					String item;
+					StringBuilder item;
 					try {
 						idx = Integer.parseInt(args[0]);
-						item = this.pendingItems.get(idx);
+						item = new StringBuilder(this.pendingItems.get(idx));
 					} catch (NumberFormatException ex) {
 						// Must be a string
-						item = args[0];
+						item = new StringBuilder(args[0]);
 						for (int i = 1; i < args.length; ++i) {
-							item = item + " " + args[i];
+							item.append(" ").append(args[i]);
 						}
-						idx = this.pendingItems.indexOf(item);
+						idx = this.pendingItems.indexOf(item.toString());
 					}
 					if (idx >= 0) {
-						this.setItemApproved(item, true);
+						this.setItemApproved(item.toString(), true);
 						this.pendingItems.remove(idx);
-						this.approvedItems.add(item);
+						this.approvedItems.add(item.toString());
 						event.respond(String.format("Item %s approved.", args[0]));
 					} else {
 						event.respond(String.format("Item %s is not pending approval.", args[0]));
@@ -412,21 +406,21 @@ class Amusement {
 			case "disapproveitem":
 				if (args != null && args.length > 0) {
 					int idx;
-					String item;
+					StringBuilder item;
 					try {
 						idx = Integer.parseInt(args[0]);
-						item = this.approvedItems.get(idx);
+						item = new StringBuilder(this.approvedItems.get(idx));
 					} catch (NumberFormatException ex) {
 						// Must be a string
-						item = args[0];
+						item = new StringBuilder(args[0]);
 						for (int i = 1; i < args.length; ++i) {
-							item = item + " " + args[i];
+							item.append(" ").append(args[i]);
 						}
-						idx = this.approvedItems.indexOf(item);
+						idx = this.approvedItems.indexOf(item.toString());
 					}
 					if (idx >= 0) {
-						this.setItemApproved(item, false);
-						this.pendingItems.add(item);
+						this.setItemApproved(item.toString(), false);
+						this.pendingItems.add(item.toString());
 						this.approvedItems.remove(idx);
 						event.respond(String.format("Item %s disapproved.", args[0]));
 					} else {
@@ -437,21 +431,21 @@ class Amusement {
 			case "deleteitem":
 				if (args != null && args.length > 0) {
 					int idx;
-					String item;
+					StringBuilder item;
 					try {
 						idx = Integer.parseInt(args[0]);
-						item = this.pendingItems.get(idx);
+						item = new StringBuilder(this.pendingItems.get(idx));
 					} catch (NumberFormatException ex) {
 						// Must be a string
-						item = args[0];
+						item = new StringBuilder(args[0]);
 						for (int i = 1; i < args.length; ++i) {
-							item = item + " " + args[i];
+							item.append(" ").append(args[i]);
 						}
-						idx = this.pendingItems.indexOf(item);
+						idx = this.pendingItems.indexOf(item.toString());
 					}
 					if (idx >= 0) {
-						this.removeItem(item);
-						this.pendingItems.remove(item);
+						this.removeItem(item.toString());
+						this.pendingItems.remove(item.toString());
 						event.respond(String.format("Item %s has been deleted from pending list.", args[0]));
 					} else {
 						event.respond(String.format("Item %s is not pending approval.", args[0]));
@@ -481,10 +475,8 @@ class Amusement {
 
 	void refreshDbLists() {
 		this.getAypwipList();
-		this.getColourList();
 		this.getCommandmentList();
 		this.getDeityList();
-		this.getEightballList();
 		this.getFlavourList();
 		this.getApprovedItems();
 		this.getPendingItems();
@@ -500,7 +492,7 @@ class Amusement {
 		if (sender == null) {
 			HashSet<User> finalUsers = new HashSet<>(10);
 
-			ImmutableSortedSet<User> users = Tim.channelStorage.channelList.get(channel).getUsers();
+			Collection<User> users = Tim.db.channel_data.get(channel).userList.values();
 
 			int size = users.size();
 			users.stream().filter((user) -> (!user.getNick().equalsIgnoreCase("Timmy") 
@@ -549,7 +541,7 @@ class Amusement {
 				eightball(sendChannel, sender, true, "");
 				break;
 			case "fridge":
-				throwFridge(sendChannel, sender, null, false);
+				Fridge.throwFridge(sendChannel, sender, null, false);
 				break;
 			case "defenestrate":
 				defenestrate(sendChannel, sender, null, false);
@@ -639,21 +631,21 @@ class Amusement {
 	}
 
 	private void getItem(Channel channel, String target, String[] args) {
-		String item = "";
+		StringBuilder item = new StringBuilder();
 		if (args != null) {
 			if (Tim.rand.nextInt(100) < 65) {
-				item = args[0];
+				item = new StringBuilder(args[0]);
 				for (int i = 1; i < args.length; ++i) {
-					item = item + " " + args[i];
+					item.append(" ").append(args[i]);
 				}
 
-				if (!(this.approvedItems.contains(item) || this.pendingItems.contains(item)) && item.length() < 300) {
-					this.insertPendingItem(item);
-					this.pendingItems.add(item);
+				if (!(this.approvedItems.contains(item.toString()) || this.pendingItems.contains(item.toString())) && item.length() < 300) {
+					this.insertPendingItem(item.toString());
+					this.pendingItems.add(item.toString());
 				}
 
-				if (item.toLowerCase().contains("spoon")) {
-					item = "";
+				if (item.toString().toLowerCase().contains("spoon")) {
+					item = new StringBuilder();
 					channel.send().action("rummages around in the back room for a bit, then calls out. \"Sorry... there is no spoon. Maybe this will do...\"");
 				}
 			} else {
@@ -661,31 +653,31 @@ class Amusement {
 			}
 		}
 
-		if (item.isEmpty()) {
+		if (item.length() == 0) {
 			// Find a random item.
 			int i = Tim.rand.nextInt(this.approvedItems.size());
-			item = this.approvedItems.get(i);
+			item = new StringBuilder(this.approvedItems.get(i));
 		}
 
-		channel.send().action(String.format("gets %s %s.", target, item));
+		channel.send().action(String.format("gets %s %s.", target, item.toString()));
 	}
 
 	private void getItemFrom(Channel channel, String recipient, String target, String[] args) {
-		String item = "";
+		StringBuilder item = new StringBuilder();
 		if (args != null) {
 			if (Tim.rand.nextInt(100) < 65) {
-				item = args[0];
+				item = new StringBuilder(args[0]);
 				for (int i = 1; i < args.length; ++i) {
-					item = item + " " + args[i];
+					item.append(" ").append(args[i]);
 				}
 
-				if (!(this.approvedItems.contains(item) || this.pendingItems.contains(item)) && item.length() < 300) {
-					this.insertPendingItem(item);
-					this.pendingItems.add(item);
+				if (!(this.approvedItems.contains(item.toString()) || this.pendingItems.contains(item.toString())) && item.length() < 300) {
+					this.insertPendingItem(item.toString());
+					this.pendingItems.add(item.toString());
 				}
 
-				if (item.toLowerCase().contains("spoon")) {
-					item = "";
+				if (item.toString().toLowerCase().contains("spoon")) {
+					item = new StringBuilder();
 					channel.send().action("rummages around in " + target + "'s things for a bit, then calls out. \"Sorry... there is no spoon. But I did find something else...\"");
 				}
 			} else {
@@ -693,34 +685,34 @@ class Amusement {
 			}
 		}
 
-		if (item.isEmpty()) {
+		if (item.length() == 0) {
 			// Find a random item.
 			int i = Tim.rand.nextInt(this.approvedItems.size());
-			item = this.approvedItems.get(i);
+			item = new StringBuilder(this.approvedItems.get(i));
 		}
 
-		channel.send().action(String.format("takes %s from %s, and gives it to %s.", item, target, recipient));
+		channel.send().action(String.format("takes %s from %s, and gives it to %s.", item.toString(), target, recipient));
 	}
 
 	private void search(Channel channel, User sender, String target) {
-		String item = "";
+		StringBuilder item = new StringBuilder();
 
 		int count = Tim.rand.nextInt(4);
 		if (count == 1) {
-			item = this.approvedItems.get(Tim.rand.nextInt(this.approvedItems.size()));
+			item = new StringBuilder(this.approvedItems.get(Tim.rand.nextInt(this.approvedItems.size())));
 		} else if (count > 1) {
 			for (int i = 0; i < count; i++) {
 				if (i > 0 && count > 2) {
-					item = item + ",";
+					item.append(",");
 				}
 
 				if (i == (count - 1)) {
-					item = item + " and ";
+					item.append(" and ");
 				} else if (i > 0) {
-					item = item + " ";
+					item.append(" ");
 				}
 
-				item = item + this.approvedItems.get(Tim.rand.nextInt(this.approvedItems.size()));
+				item.append(this.approvedItems.get(Tim.rand.nextInt(this.approvedItems.size())));
 			}
 		}
 
@@ -735,10 +727,10 @@ class Amusement {
 			channel.send().action("searches through " + target + "'s things, looking for contraband...");
 		}
 
-		if (item.equals("")) {
+		if (item.toString().equals("")) {
 			channel.send().action(String.format("can't find anything, and grudgingly clears %s.", target));
 		} else {
-			channel.send().action(String.format("reports %s to Skynet for possesion of %s.", target, item));
+			channel.send().action(String.format("reports %s to Skynet for possesion of %s.", target, item.toString()));
 		}
 	}
 
@@ -768,17 +760,17 @@ class Amusement {
 
 	void eightball(Channel channel, User sender, boolean mutter, String argStr) {
 		try {
-			int r = Tim.rand.nextInt(this.eightBalls.size());
+			int r = Tim.rand.nextInt(Tim.db.eightBalls.size());
 			int delay = Tim.rand.nextInt(1000) + 1000;
 			Thread.sleep(delay);
 
 			if (mutter) {
-				channel.send().action("mutters under his breath, \"" + this.eightBalls.get(r) + "\"");
+				channel.send().action("mutters under his breath, \"" + Tim.db.eightBalls.get(r) + "\"");
 			} else {
 				if (Tim.rand.nextInt(100) < 5) {
 					channel.send().message(sender.getNick() + ": " + Tim.markov.generate_markov("say", argStr));
 				} else {
-					channel.send().message(sender.getNick() + ": " + this.eightBalls.get(r));
+					channel.send().message(sender.getNick() + ": " + Tim.db.eightBalls.get(r));
 				}
 			}
 		} catch (InterruptedException ex) {
@@ -955,70 +947,13 @@ class Amusement {
 		channel.send().message(this.commandments.get(r));
 	}
 
-	private void throwFridge(Channel channel, User sender, String[] args, Boolean righto) {
-		try {
-			String target = sender.getNick();
-			if (args != null && args.length > 0) {
-				target = StringUtils.join(args, " ");
-
-				for (User t : channel.getUsers()) {
-					if (t.getNick().toLowerCase().equals(target.toLowerCase())) {
-						target = t.getNick();
-						break;
-					}
-				}
-			}
-
-			if (righto) {
-				channel.send().message("Righto...");
-			}
-
-			int time;
-			time = Tim.rand.nextInt(1500) + 1500;
-			Thread.sleep(time);
-			channel.send().action("looks back and forth, then slinks off...");
-
-			String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
-			switch (colour.charAt(0)) {
-				case 'a':
-				case 'e':
-				case 'i':
-				case 'o':
-				case 'u':
-					colour = "n " + colour;
-					break;
-				default:
-					colour = " " + colour;
-			}
-
-			int i = Tim.rand.nextInt(100);
-
-			String act;
-
-			if (i > 33) {
-				act = "hurls a" + colour + " fridge at " + target;
-			} else if (i > 11) {
-				target = sender.getNick();
-				act = "hurls a" + colour + " fridge at " + target + " and runs away giggling";
-			} else {
-				act = "trips and drops a" + colour + " fridge on himself";
-			}
-
-			time = Tim.rand.nextInt(3000) + 2000;
-			Thread.sleep(time);
-			channel.send().action(act);
-		} catch (InterruptedException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
 	private void herd(Channel channel, User sender, String[] args) {
 		try {
 			String target = sender.getNick();
 			if (args != null && args.length > 0) {
 				target = StringUtils.join(args, " ");
 
-				for (User t : channel.getUsers()) {
+				for (User t : Tim.db.channel_data.get(channel.getName().toLowerCase()).userList.values()) {
 					if (t.getNick().toLowerCase().equals(target.toLowerCase())) {
 						target = t.getNick();
 						break;
@@ -1029,7 +964,7 @@ class Amusement {
 			int time;
 			time = Tim.rand.nextInt(1000) + 500;
 			Thread.sleep(time);
-			channel.send().action("collects several " + this.colours.get(Tim.rand.nextInt(this.colours.size())) + " boxes, and lays them around to attract cats...");
+			channel.send().action("collects several " + Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size())) + " boxes, and lays them around to attract cats...");
 
 			int i = Tim.rand.nextInt(100);
 			String herd = Tim.db.cat_herds.get(Tim.rand.nextInt(Tim.db.cat_herds.size()));
@@ -1058,7 +993,7 @@ class Amusement {
 			if (args != null && args.length > 0) {
 				target = StringUtils.join(args, " ");
 
-				for (User t : channel.getUsers()) {
+				for (User t : Tim.db.channel_data.get(channel.getName().toLowerCase()).userList.values()) {
 					if (t.getNick().toLowerCase().equals(target.toLowerCase())) {
 						target = t.getNick();
 						break;
@@ -1078,7 +1013,7 @@ class Amusement {
 			int i = Tim.rand.nextInt(100);
 
 			String act;
-			String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
+			String colour = Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size()));
 			if (i > 33) {
 				act = "throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " pillows.";
 			} else if (i > 11) {
@@ -1181,10 +1116,10 @@ class Amusement {
 				target = StringUtils.join(args, " ");
 			}
 
-			String colour1 = this.colours.get(Tim.rand.nextInt(this.colours.size()));
+			String colour1 = Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size()));
 			String colour2;
 			do {
-				colour2 = this.colours.get(Tim.rand.nextInt(this.colours.size()));
+				colour2 = Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size()));
 			} while(Objects.equals(colour2, colour1));
 
 			channel.send().action(String.format("grabs a %s and %s pokeball, and attempts to catch %s!", colour1, colour2, target));
@@ -1230,7 +1165,7 @@ class Amusement {
 			channel.send().action("surreptitiously works his way over to the couch, looking ever so casual...");
 			int i = Tim.rand.nextInt(100);
 			String act;
-			String colour = this.colours.get(Tim.rand.nextInt(this.colours.size()));
+			String colour = Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size()));
 
 			if (i > 33) {
 				act = "grabs a " + colour + " pillow, and throws it at " + target
@@ -1360,26 +1295,6 @@ class Amusement {
 		}
 	}
 
-	private void getColourList() {
-		Connection con;
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
-			Statement s = con.createStatement();
-			s.executeQuery("SELECT `string` FROM `colours`");
-
-			ResultSet rs = s.getResultSet();
-			this.colours.clear();
-			while (rs.next()) {
-				this.colours.add(rs.getString("string"));
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
 	private void getCommandmentList() {
 		Connection con;
 		try {
@@ -1412,26 +1327,6 @@ class Amusement {
 			this.deities.clear();
 			while (rs.next()) {
 				this.deities.add(rs.getString("string"));
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void getEightballList() {
-		Connection con;
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
-			Statement s = con.createStatement();
-			s.executeQuery("SELECT `string` FROM `eightballs`");
-
-			ResultSet rs = s.getResultSet();
-			this.eightBalls.clear();
-			while (rs.next()) {
-				this.eightBalls.add(rs.getString("string"));
 			}
 
 			con.close();

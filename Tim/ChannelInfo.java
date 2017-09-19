@@ -26,7 +26,7 @@ public class ChannelInfo {
 	public String channel;
 
 	HashMap<String, Boolean> chatter_enabled = new HashMap<>(16);
-	HashMap<String, Boolean> commands_enabled = new HashMap<>(16);
+	public HashMap<String, Boolean> commands_enabled = new HashMap<>(16);
 	Set<String> twitter_accounts = new HashSet<>(16);
 	
 	User lastSpeaker;
@@ -77,6 +77,8 @@ public class ChannelInfo {
 	final int max_soon_odds = 100;
 	final int max_velociraptor_odds = 100;
 	final int max_groot_odds = 100;
+
+	HashMap<String, User> userList = new HashMap<>();
 
 	public ChannelInfo(String channel) {
 		this.channel = channel;
@@ -271,13 +273,13 @@ public class ChannelInfo {
 		this.twitter_accounts.add(name);
 
 		if (triggerUpdate) {
-			Tim.twitterstream.addAccount(name, this);
+			Tim.twitterStream.addAccount(name, this);
 		}
 	}
 
 	void removeTwitterAccount(String name) {
 		this.twitter_accounts.remove(name);
-		Tim.twitterstream.removeAccount(name, this);
+		Tim.twitterStream.removeAccount(name, this);
 	}
 
 	void setMuzzleFlag(boolean muzzled, boolean auto) {

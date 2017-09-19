@@ -75,7 +75,8 @@ class DeIdler {
 		Calendar cal = Calendar.getInstance();
 		Date date = new Date();
 
-		boolean isNovember = (10 == cal.get(Calendar.MONTH));
+		//noinspection MagicConstant
+		boolean isNovember = (Calendar.NOVEMBER == cal.get(Calendar.MONTH));
 		boolean aheadOfPace = (((cal.get(Calendar.DAY_OF_MONTH) + 1) * (50000 / 30)) < Tim.story.wordcount());
 
 		if (isNovember && ((!aheadOfPace && Tim.rand.nextInt(100) < 8) || (aheadOfPace && Tim.rand.nextInt(100) < 4))) {
@@ -94,7 +95,7 @@ class DeIdler {
 		}
 
 		if (Tim.rand.nextInt(100) < 1) {
-			Tim.twitterstream.sendDeidleTweet(Tim.markov.generate_markov("say"));
+			Tim.twitterStream.sendDeidleTweet(Tim.markov.generate_markov("say"));
 		}
 
 		for (ChannelInfo cdata : Tim.db.channel_data.values()) {

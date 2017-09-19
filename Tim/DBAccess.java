@@ -46,6 +46,8 @@ public class DBAccess {
 	List<String> cat_herds = new ArrayList<>();
 	List<String> greetings = new ArrayList<>();
 	List<String> pokemon = new ArrayList<>();
+	public List<String> colours = new ArrayList<>();
+	public List<String> eightBalls = new ArrayList<>();
 	Set<String> ignore_list = new HashSet<>(16);
 	Set<String> soft_ignore_list = new HashSet<>(16);
 	public HashMap<String, Set<ChannelInfo>> channel_groups = new HashMap<>();
@@ -66,6 +68,46 @@ public class DBAccess {
 	 */
 	public static DBAccess getInstance() {
 		return instance;
+	}
+
+	private void getEightballList() {
+		Connection con;
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			Statement s = con.createStatement();
+			s.executeQuery("SELECT `string` FROM `eightballs`");
+
+			ResultSet rs = s.getResultSet();
+			this.eightBalls.clear();
+			while (rs.next()) {
+				this.eightBalls.add(rs.getString("string"));
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getColourList() {
+		Connection con;
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			Statement s = con.createStatement();
+			s.executeQuery("SELECT `string` FROM `colours`");
+
+			ResultSet rs = s.getResultSet();
+			this.colours.clear();
+			while (rs.next()) {
+				this.colours.add(rs.getString("string"));
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	private void getChannelGroups() {
@@ -272,7 +314,7 @@ public class DBAccess {
 				PreparedStatement s2;
 				ResultSet rs2;
 				while (rs.next()) {
-					ci = new ChannelInfo(rs.getString("channel"));
+					ci = new ChannelInfo(rs.getString("channel").toLowerCase());
 					ci.setDefaultOptions();
 
 					ci.setReactiveChatter(
@@ -545,40 +587,7 @@ public class DBAccess {
 		}
 	}
 
-	String getRandomChannelWithVelociraptors(String exclude) {
-		Connection con = null;
-		String value = "";
-
-		try {
-			con = pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("SELECT `channel` FROM `channels` WHERE `channel` != ? AND `active_velociraptors` > 0 ORDER BY (RAND() * active_velociraptors) DESC LIMIT 1;");
-			s.setString(1, exclude);
-			s.executeQuery();
-
-			ResultSet rs = s.getResultSet();
-			while (rs.next()) {
-				value = rs.getString("channel");
-			}
-
-			rs.close();
-			s.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
-
-		return value;
-	}
-
-	public void saveChannelSettings(ChannelInfo channel) {
+	void saveChannelSettings(ChannelInfo channel) {
 		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
@@ -688,6 +697,8 @@ public class DBAccess {
 		this.getCatHerds();
 		this.getPokemon();
 		this.getChannelGroups();
+		this.getColourList();
+		this.getEightballList();
 
 		Tim.amusement.refreshDbLists();
 		Tim.story.refreshDbLists();
@@ -695,14 +706,14 @@ public class DBAccess {
 		Tim.markovProcessor.refreshDbLists();
 	}
 
-	int create_war(Channel channel, String starter, String name, long base_duration, long duration, long remaining, long time_to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness) {
+	int create_war(String channel, String starter, String name, long base_duration, long duration, long remaining, long time_to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness) {
 		int id = 0;
 		Connection con = null;
 		try {
 			con = pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("INSERT INTO `wars` (`channel`, `starter`, `name`, `base_duration`, `randomness`, `delay`, `duration`, `remaining`, `time_to_start`, `total_chains`, `current_chain`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-			s.setString(1, channel.getName().toLowerCase());
+			s.setString(1, channel.toLowerCase());
 			s.setString(2, starter);
 			s.setString(3, name);
 			s.setLong(4, base_duration);
@@ -766,8 +777,6 @@ public class DBAccess {
 
 	ConcurrentHashMap<String, WordWar> loadWars() {
 		Connection con = null;
-		Channel channel;
-		String user;
 		ConcurrentHashMap<String, WordWar> wars = new ConcurrentHashMap<>(32);
 
 		try {
@@ -777,25 +786,24 @@ public class DBAccess {
 			ResultSet rs = s.executeQuery("SELECT * FROM `wars`");
 
 			while (rs.next()) {
-				channel = Tim.channelStorage.channelList.get(rs.getString("channel"));
-				user = rs.getString("starter");
+				if (channel_data.get(rs.getString("channel")) != null) {
+					WordWar war = new WordWar(
+						rs.getLong("base_duration"),
+						rs.getLong("duration"),
+						rs.getLong("remaining"),
+						rs.getLong("time_to_start"),
+						rs.getInt("total_chains"),
+						rs.getInt("current_chain"),
+						rs.getInt("delay"),
+						rs.getBoolean("randomness"),
+						rs.getString("name"),
+						rs.getString("starter"),
+						rs.getString("channel"),
+						rs.getInt("id")
+					);
 
-				WordWar war = new WordWar(
-					rs.getLong("base_duration"),
-					rs.getLong("duration"),
-					rs.getLong("remaining"),
-					rs.getLong("time_to_start"),
-					rs.getInt("total_chains"),
-					rs.getInt("current_chain"),
-					rs.getInt("delay"),
-					rs.getBoolean("randomness"),
-					rs.getString("name"),
-					user,
-					channel,
-					rs.getInt("id")
-				);
-
-				wars.put(war.getName(false).toLowerCase(), war);
+					wars.put(war.getName(false).toLowerCase(), war);
+				}
 			}
 
 			rs.close();

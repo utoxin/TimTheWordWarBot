@@ -56,7 +56,9 @@ class ChainStory {
 		}
 
 		Calendar cal = Calendar.getInstance();
-		boolean isNovember = (10 == cal.get(Calendar.MONTH));
+
+		//noinspection MagicConstant
+		boolean isNovember = (Calendar.NOVEMBER == cal.get(Calendar.MONTH));
 
 		switch (command) {
 			case "chainlast":

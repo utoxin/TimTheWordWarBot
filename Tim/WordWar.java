@@ -18,8 +18,10 @@ package Tim;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-import org.pircbotx.Channel;
 import org.pircbotx.User;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -40,11 +42,11 @@ class WordWar {
 	boolean do_randomness;
 
 	private final int db_id;
-	private final Channel channel;
+	private final String channel;
 	private final String starter;
 	private final String name;
 
-	WordWar(long time, long to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness, String warname, User startingUser, Channel hosting_channel) {
+	WordWar(long time, long to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness, String warname, User startingUser, String hosting_channel) {
 		this.starter = startingUser.getNick();
 		this.time_to_start = to_start;
 		this.total_chains = total_chains;
@@ -54,7 +56,7 @@ class WordWar {
 		this.do_randomness = do_randomness;
 		this.name = warname;
 		this.channel = hosting_channel;
-		this.cdata = Tim.db.channel_data.get(hosting_channel.getName().toLowerCase());
+		this.cdata = Tim.db.channel_data.get(hosting_channel.toLowerCase());
 
 		if (total_chains > 1 && do_randomness) {
 			this.duration = base_duration + (Tim.rand.nextInt((int) Math.floor(base_duration * 0.2))) - ((long) Math.floor(base_duration * 0.1));
@@ -71,7 +73,7 @@ class WordWar {
 		}
 	}
 
-	WordWar(long base_duration, long duration, long remaining, long to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness, String warname, String startingUser, Channel hosting_channel, int db_id) {
+	WordWar(long base_duration, long duration, long remaining, long to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness, String warname, String startingUser, String hosting_channel, int db_id) {
 		this.starter = startingUser;
 		this.time_to_start = to_start;
 		this.base_duration = base_duration;
@@ -83,7 +85,14 @@ class WordWar {
 		this.do_randomness = do_randomness;
 		this.name = warname;
 		this.channel = hosting_channel;
-		this.cdata = Tim.db.channel_data.get(hosting_channel.getName().toLowerCase());
+
+		String channelName = hosting_channel.toLowerCase();
+		this.cdata = Tim.db.channel_data.get(channelName);
+
+		if (this.cdata == null) {
+			Logger.getLogger(WordWar.class.getName()).log(Level.INFO, "PANIC!!!!!!");
+			Logger.getLogger(WordWar.class.getName()).log(Level.INFO, "Failed To Get ChannelInfo For: "+channelName);
+		}
 
 		if (this.base_duration == 0) {
 			this.base_duration = duration;
@@ -110,7 +119,7 @@ class WordWar {
 		Tim.db.update_war(db_id, duration, remaining, time_to_start, current_chain);
 	}
 
-	public Channel getChannel() {
+	public String getChannel() {
 		return this.channel;
 	}
 
@@ -198,6 +207,6 @@ class WordWar {
 	}
 
 	String getDescriptionWithChannel() {
-		return this.getDescription() + " in " + this.channel.getName();
+		return this.getDescription() + " in " + this.channel;
 	}
 }

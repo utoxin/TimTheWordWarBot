@@ -174,22 +174,22 @@ class Challenge {
 				case "approve":
 					if (args.length > 1) {
 						int idx;
-						String challenge;
+						StringBuilder challenge;
 						try {
 							idx = Integer.parseInt(args[1]);
-							challenge = this.pending.get(idx);
+							challenge = new StringBuilder(this.pending.get(idx));
 						} catch (NumberFormatException ex) {
 							// Must be a string
-							challenge = args[1];
+							challenge = new StringBuilder(args[1]);
 							for (int i = 2; i < args.length; ++i) {
-								challenge = challenge + " " + args[i];
+								challenge.append(" ").append(args[i]);
 							}
-							idx = this.pending.indexOf(challenge);
+							idx = this.pending.indexOf(challenge.toString());
 						}
 						if (idx >= 0) {
-							this.setChallengeApproved(challenge, true);
+							this.setChallengeApproved(challenge.toString(), true);
 							this.pending.remove(idx);
-							this.approved.add(challenge);
+							this.approved.add(challenge.toString());
 							event.respond(String.format("Challenge %s approved.", args[1]));
 						} else {
 							event.respond(String.format("Challenge %s is not pending approval.", args[1]));
@@ -199,21 +199,21 @@ class Challenge {
 				case "unapprove":
 					if (args.length > 1) {
 						int idx;
-						String challenge;
+						StringBuilder challenge;
 						try {
 							idx = Integer.parseInt(args[1]);
-							challenge = this.approved.get(idx);
+							challenge = new StringBuilder(this.approved.get(idx));
 						} catch (NumberFormatException ex) {
 							// Must be a string
-							challenge = args[1];
+							challenge = new StringBuilder(args[1]);
 							for (int i = 2; i < args.length; ++i) {
-								challenge = challenge + " " + args[i];
+								challenge.append(" ").append(args[i]);
 							}
-							idx = this.approved.indexOf(challenge);
+							idx = this.approved.indexOf(challenge.toString());
 						}
 						if (idx >= 0) {
-							this.setChallengeApproved(challenge, false);
-							this.pending.add(challenge);
+							this.setChallengeApproved(challenge.toString(), false);
+							this.pending.add(challenge.toString());
 							this.approved.remove(idx);
 							event.respond(String.format("Challenge %s unapproved.", args[1]));
 						} else {
@@ -225,21 +225,21 @@ class Challenge {
 				case "delete":
 					if (args.length > 1) {
 						int idx;
-						String challenge;
+						StringBuilder challenge;
 						try {
 							idx = Integer.parseInt(args[1]);
-							challenge = this.pending.get(idx);
+							challenge = new StringBuilder(this.pending.get(idx));
 						} catch (NumberFormatException ex) {
 							// Must be a string
-							challenge = args[1];
+							challenge = new StringBuilder(args[1]);
 							for (int i = 2; i < args.length; ++i) {
-								challenge = challenge + " " + args[i];
+								challenge.append(" ").append(args[i]);
 							}
-							idx = this.pending.indexOf(challenge);
+							idx = this.pending.indexOf(challenge.toString());
 						}
 						if (idx >= 0) {
-							this.removeChallenge(challenge);
-							this.pending.remove(challenge);
+							this.removeChallenge(challenge.toString());
+							this.pending.remove(challenge.toString());
 							event.respond(String.format("Challenge %s deleted from pending list.", args[0]));
 						} else {
 							event.respond(String.format("Challenge %s is not pending approval.", args[0]));

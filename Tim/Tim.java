@@ -43,7 +43,7 @@ public class Tim {
 	static ChainStory story;
 	static WarTicker warticker;
 	static DeIdler deidler;
-	static TwitterIntegration twitterstream;
+	static TwitterIntegration twitterStream;
 	static VelociraptorHandler raptors;
 	static ChannelStorage channelStorage;
 
@@ -81,23 +81,20 @@ public class Tim {
 		db.refreshDbLists();
 
 		// Join our channels
-		db.channel_data.entrySet().forEach((entry) -> configBuilder.addAutoJoinChannel(entry.getValue().channel));
+		db.channel_data.forEach((key, value) -> configBuilder.addAutoJoinChannel(value.channel));
 
 		bot = new PircBotX(configBuilder.buildConfiguration());
 
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				if (Tim.bot.isConnected()) {
-					try {
-						Tim.shutdown();
-						Thread.sleep(1000);
-					} catch (InterruptedException ex) {
-						Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-					}
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			if (Tim.bot.isConnected()) {
+				try {
+					Tim.shutdown();
+					Thread.sleep(1000);
+				} catch (InterruptedException ex) {
+					Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			}
-		});
+		}));
 
 		try {
 			markovThread = new Thread(markovProcessor);
@@ -116,8 +113,8 @@ public class Tim {
 			Tim.bot.sendIRC().quitServer("HELP! Utoxin just murdered me! (Again!!!)");
 			Tim.warticker.warTicker.cancel();
 			Tim.deidler.idleTicker.cancel();
-			Tim.twitterstream.userStream.shutdown();
-			Tim.twitterstream.publicStream.shutdown();
+			Tim.twitterStream.userStream.shutdown();
+			Tim.twitterStream.publicStream.shutdown();
 		}
 	}
 

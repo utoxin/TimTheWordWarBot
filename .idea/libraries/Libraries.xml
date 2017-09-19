@@ -3,6 +3,7 @@
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/Libraries/commons-configuration.jar!/" />
       <root url="jar://$PROJECT_DIR$/Libraries/commons-lang-2.6.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Libraries/mysql-connector-java-8.0.7-dmr.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

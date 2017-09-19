@@ -147,28 +147,28 @@ class WarTicker {
 
 	private void warStartCount(WordWar war) {
 		if (war.time_to_start < 60) {
-			war.getChannel().send().message(war.getName() + ": Starting in " + war.time_to_start + (war.time_to_start == 1 ? " second" : " seconds") + "!");
+			Tim.bot.sendIRC().message(war.getChannel(), war.getName() + ": Starting in " + war.time_to_start + (war.time_to_start == 1 ? " second" : " seconds") + "!");
 		} else {
 			int time_to_start = (int) war.time_to_start / 60;
 			if (time_to_start * 60 == war.time_to_start) {
-				war.getChannel().send().message(war.getName() + ": Starting in " + time_to_start + (time_to_start == 1 ? " minute" : " minutes") + "!");
+				Tim.bot.sendIRC().message(war.getChannel(), war.getName() + ": Starting in " + time_to_start + (time_to_start == 1 ? " minute" : " minutes") + "!");
 			} else {
-				war.getChannel().send().message(war.getName() + ": Starting in " + new DecimalFormat("###.#").format(war.time_to_start / 60.0) + " minutes!");
+				Tim.bot.sendIRC().message(war.getChannel(), war.getName() + ": Starting in " + new DecimalFormat("###.#").format(war.time_to_start / 60.0) + " minutes!");
 			}
 		}
 	}
 
 	private void warEndCount(WordWar war) {
 		if (war.remaining < 60) {
-			war.getChannel().send().message(war.getName() + ": " + war.remaining + (war.remaining == 1 ? " second" : " seconds") + " remaining!");
+			Tim.bot.sendIRC().message(war.getChannel(), war.getName() + ": " + war.remaining + (war.remaining == 1 ? " second" : " seconds") + " remaining!");
 		} else {
 			int remaining = (int) war.remaining / 60;
-			war.getChannel().send().message(war.getName() + ": " + remaining + (remaining == 1 ? " minute" : " minutes") + " remaining.");
+			Tim.bot.sendIRC().message(war.getChannel(), war.getName() + ": " + remaining + (remaining == 1 ? " minute" : " minutes") + " remaining.");
 		}
 	}
 
 	private void beginWar(WordWar war) {
-		war.getChannel().send().message("WordWar '" + war.getName() + "' starts now!");
+		Tim.bot.sendIRC().message(war.getChannel(), "WordWar '" + war.getName() + "' starts now!");
 
 		if (war.cdata.auto_muzzle_wars && (!war.cdata.muzzled || war.cdata.auto_muzzled)) {
 			war.cdata.setMuzzleFlag(true, true);
@@ -176,7 +176,7 @@ class WarTicker {
 	}
 
 	private void endWar(WordWar war) {
-		war.getChannel().send().message("WordWar '" + war.getName() + "' is over!");
+		Tim.bot.sendIRC().message(war.getChannel(), "WordWar '" + war.getName() + "' is over!");
 		if (war.current_chain >= war.total_chains) {
 			war.endWar();
 		} else {
@@ -237,7 +237,7 @@ class WarTicker {
 		int delay;
 		boolean do_randomness = true;
 
-		String warName = "";
+		StringBuilder warName = new StringBuilder();
 
 		try {
 			time = (long) (Double.parseDouble(args[0]) * 60);
@@ -299,20 +299,20 @@ class WarTicker {
 					continue;
 				}
 
-				if (warName.equals("")) {
-					warName = args[i];
+				if (warName.toString().equals("")) {
+					warName = new StringBuilder(args[i]);
 				} else {
-					warName = warName + " " + args[i];
+					warName.append(" ").append(args[i]);
 				}
 			}
 		}
 
-		if (warName.equals("")) {
-			warName = event.getUser().getNick() + "'s War";
+		if (warName.toString().equals("")) {
+			warName = new StringBuilder(event.getUser().getNick() + "'s War");
 		}
 
-		if (!this.wars.containsKey(warName.toLowerCase())) {
-			WordWar war = new WordWar(time, to_start, total_chains, 1, delay, do_randomness, warName, event.getUser(), event.getChannel());
+		if (!this.wars.containsKey(warName.toString().toLowerCase())) {
+			WordWar war = new WordWar(time, to_start, total_chains, 1, delay, do_randomness, warName.toString(), event.getUser(), event.getChannel().getName());
 			this.wars.put(war.getName(false).toLowerCase(), war);
 			if (to_start > 0) {
 				event.respond("Your wordwar '" + warName + "' will start in " + to_start / 60.0 + " minutes.");
@@ -331,7 +331,7 @@ class WarTicker {
 
 		long time;
 		long to_start = 60;
-		String warname;
+		StringBuilder warname;
 		try {
 			time = (long) (Double.parseDouble(args[0]) * 60);
 		} catch (NumberFormatException e) {
@@ -358,16 +358,16 @@ class WarTicker {
 		}
 
 		if (args.length >= 3) {
-			warname = args[2];
+			warname = new StringBuilder(args[2]);
 			for (int i = 3; i < args.length; i++) {
-				warname = warname + " " + args[i];
+				warname.append(" ").append(args[i]);
 			}
 		} else {
-			warname = event.getUser().getNick() + "'s War";
+			warname = new StringBuilder(event.getUser().getNick() + "'s War");
 		}
 
-		if (!this.wars.containsKey(warname.toLowerCase())) {
-			WordWar war = new WordWar(time, to_start, 1, 1, 0, false, warname, event.getUser(), event.getChannel());
+		if (!this.wars.containsKey(warname.toString().toLowerCase())) {
+			WordWar war = new WordWar(time, to_start, 1, 1, 0, false, warname.toString(), event.getUser(), event.getChannel().getName());
 			this.wars.put(war.getName(false).toLowerCase(), war);
 			if (to_start > 0) {
 				event.respond("Your wordwar will start in " + to_start / 60.0 + " minutes.");
@@ -388,7 +388,7 @@ class WarTicker {
 
 		if (this.wars != null && this.wars.size() > 0) {
 			for (WordWar war : this.wars.values()) {
-				if (all || war.getChannel().getName().toLowerCase().equals(event.getChannel().getName().toLowerCase())) {
+				if (all || war.getChannel().equalsIgnoreCase(event.getChannel().getName())) {
 					event.respond(all ? war.getDescriptionWithChannel() : war.getDescription());
 					responded = true;
 				}
