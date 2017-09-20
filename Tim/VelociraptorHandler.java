@@ -120,7 +120,7 @@ class VelociraptorHandler {
 				cdata.recordSwarmKills(attackCount - returnCount, killCount);
 				victimCdata.recordSwarmDeaths(killCount);
 
-				Tim.bot.sendIRC().message(channel, AttackMessage(channel, attackCount, killCount, returnCount));
+				Tim.bot.sendIRC().message(channel, AttackMessage(victimCdata.channel, attackCount, killCount, returnCount));
 
 				if (victimCdata.chatter_enabled.get("velociraptor") && !victimCdata.muzzled) {
 					Tim.bot.sendIRC().message(victimCdata.channel, DefenseMessage(cdata.channel, attackCount, killCount));

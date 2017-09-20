@@ -48,6 +48,7 @@ public class DBAccess {
 	List<String> pokemon = new ArrayList<>();
 	public List<String> colours = new ArrayList<>();
 	public List<String> eightBalls = new ArrayList<>();
+	public List<String> deities = new ArrayList<>();
 	Set<String> ignore_list = new HashSet<>(16);
 	Set<String> soft_ignore_list = new HashSet<>(16);
 	public HashMap<String, Set<ChannelInfo>> channel_groups = new HashMap<>();
@@ -68,6 +69,26 @@ public class DBAccess {
 	 */
 	public static DBAccess getInstance() {
 		return instance;
+	}
+
+	private void getDeityList() {
+		Connection con;
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			Statement s = con.createStatement();
+			s.executeQuery("SELECT `string` FROM `deities`");
+
+			ResultSet rs = s.getResultSet();
+			this.deities.clear();
+			while (rs.next()) {
+				this.deities.add(rs.getString("string"));
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	private void getEightballList() {
@@ -699,6 +720,7 @@ public class DBAccess {
 		this.getChannelGroups();
 		this.getColourList();
 		this.getEightballList();
+		this.getDeityList();
 
 		Tim.amusement.refreshDbLists();
 		Tim.story.refreshDbLists();

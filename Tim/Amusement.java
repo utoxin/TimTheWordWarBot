@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import Tim.UserCommands.Amusement.Fridge;
+import Tim.UserCommands.Amusement.Summon;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Channel;
 import org.pircbotx.Colors;
@@ -43,12 +44,14 @@ class Amusement {
 	private final List<String> pendingItems = new ArrayList<>();
 	private final List<String> commandments = new ArrayList<>();
 	private final List<String> flavours = new ArrayList<>();
-	private final List<String> deities = new ArrayList<>();
 
 	List<String> approvedItems = new ArrayList<>();
 	List<String> ponderingList = new ArrayList<>();
 
 	private ChannelInfo cdata;
+
+	private Fridge fridge = new Fridge();
+	private Summon summon = new Summon();
 
 	/**
 	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
@@ -97,11 +100,8 @@ class Amusement {
 
 				return true;
 			case "banish":
-				if (cdata.commands_enabled.get("banish")) {
-					banish(event.getChannel(), args, true);
-				} else {
-					event.respond("I'm sorry. I don't do that here.");
-				}
+			case "summon":
+				summon.parseCommand(command, args, event);
 
 				return true;
 			case "catch":
@@ -169,8 +169,9 @@ class Amusement {
 
 				return true;
 			case "fridge":
-				Fridge.parseCommand(args, event);
+				fridge.parseCommand(command, args, event);
 				return true;
+
 			case "get":
 				if (cdata.commands_enabled.get("get")) {
 					getItem(event.getChannel(), event.getUser().getNick(), args);
@@ -277,14 +278,7 @@ class Amusement {
 				}
 
 				return true;
-			case "summon":
-				if (cdata.commands_enabled.get("summon")) {
-					summon(event.getChannel(), args, true);
-				} else {
-					event.respond("I'm sorry. I don't do that here.");
-				}
 
-				return true;
 			case "woot":
 				if (cdata.commands_enabled.get("woot")) {
 					event.getChannel().send().action("cheers! Hooray!");
@@ -476,7 +470,6 @@ class Amusement {
 	void refreshDbLists() {
 		this.getAypwipList();
 		this.getCommandmentList();
-		this.getDeityList();
 		this.getFlavourList();
 		this.getApprovedItems();
 		this.getPendingItems();
@@ -541,7 +534,7 @@ class Amusement {
 				eightball(sendChannel, sender, true, "");
 				break;
 			case "fridge":
-				Fridge.throwFridge(sendChannel, sender, null, false);
+				fridge.throwFridge(sendChannel, sender, null, false);
 				break;
 			case "defenestrate":
 				defenestrate(sendChannel, sender, null, false);
@@ -556,10 +549,10 @@ class Amusement {
 				dance(sendChannel);
 				break;
 			case "summon":
-				summon(sendChannel, null, false);
+				summon.summon(sendChannel);
 				break;
 			case "banish":
-				banish(sendChannel, null, false);
+				summon.banish(sendChannel);
 				break;
 			case "catch":
 				catchCommand(sendChannel, null);
@@ -1031,82 +1024,6 @@ class Amusement {
 		}
 	}
 
-	private void summon(Channel channel, String[] args, Boolean righto) {
-		try {
-			String target;
-			if (args == null || args.length == 0) {
-				target = this.deities.get(Tim.rand.nextInt(this.deities.size()));
-			} else {
-				target = StringUtils.join(args, " ");
-			}
-
-			if (righto) {
-				channel.send().message("Righto...");
-			}
-
-			int time;
-			time = Tim.rand.nextInt(1500) + 1500;
-			Thread.sleep(time);
-			channel.send().action("prepares the summoning circle required to bring " + target + " into the world...");
-
-			int i = Tim.rand.nextInt(100);
-			String act;
-
-			if (i > 50) {
-				act = "completes the ritual successfully, drawing " + target + " through, and binding them into the summoning circle!";
-			} else if (i > 30) {
-				act = "completes the ritual, drawing " + target + " through, but something goes wrong and they fade away after just a few moments.";
-			} else {
-				String target2 = this.deities.get(Tim.rand.nextInt(this.deities.size()));
-				act = "attempts to summon " + target + ", but something goes horribly wrong. After the smoke clears, " + target2 + " is left standing on the smoldering remains of the summoning circle.";
-			}
-
-			time = Tim.rand.nextInt(3000) + 2000;
-			Thread.sleep(time);
-			channel.send().action(act);
-		} catch (InterruptedException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void banish(Channel channel, String[] args, Boolean righto) {
-		try {
-			String target;
-			if (args == null || args.length == 0) {
-				target = this.deities.get(Tim.rand.nextInt(this.deities.size()));
-			} else {
-				target = StringUtils.join(args, " ");
-			}
-
-			if (righto) {
-				channel.send().message("Righto...");
-			}
-
-			int time;
-			time = Tim.rand.nextInt(1500) + 1500;
-			Thread.sleep(time);
-			channel.send().action("gathers the supplies necessary to banish " + target + " to the outer darkness...");
-
-			int i = Tim.rand.nextInt(100);
-			String act;
-
-			if (i > 50) {
-				act = "completes the ritual successfully, banishing " + target + " to the outer darkness, where they can't interfere with Timmy's affairs!";
-			} else if (i > 30) {
-				act = "completes the ritual to banish " + target + ", but they reappear after a short absence, looking a bit annoyed.";
-			} else {
-				String target2 = this.deities.get(Tim.rand.nextInt(this.deities.size()));
-				act = "attempts to banish " + target + ", but something goes horribly wrong. As the ritual is completed, " + target2 + " appears to chastise "+Tim.bot.getNick()+" for his temerity.";
-			}
-
-			time = Tim.rand.nextInt(3000) + 2000;
-			Thread.sleep(time);
-			channel.send().action(act);
-		} catch (InterruptedException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
 	private void catchCommand(Channel channel, String[] args) {
 		try {
 			String target;
@@ -1307,26 +1224,6 @@ class Amusement {
 			this.commandments.clear();
 			while (rs.next()) {
 				this.commandments.add(rs.getString("string"));
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void getDeityList() {
-		Connection con;
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
-			Statement s = con.createStatement();
-			s.executeQuery("SELECT `string` FROM `deities`");
-
-			ResultSet rs = s.getResultSet();
-			this.deities.clear();
-			while (rs.next()) {
-				this.deities.add(rs.getString("string"));
 			}
 
 			con.close();
