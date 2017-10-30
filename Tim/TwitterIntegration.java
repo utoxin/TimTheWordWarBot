@@ -403,10 +403,7 @@ class TwitterIntegration extends StatusAdapter {
 			if (sendReply) {
 				try {
 					String message;
-					if (getItem) {
-						int r = Tim.rand.nextInt(Tim.amusement.approvedItems.size());
-						message = "@" + status.getUser().getScreenName() + " Here, have " + Tim.amusement.approvedItems.get(r);
-					} else if (Tim.rand.nextInt(100) < 20) {
+					if (Tim.rand.nextInt(100) < 20) {
 						int r = Tim.rand.nextInt(Tim.db.eightBalls.size());
 						message = "@" + status.getUser().getScreenName() + " " + Tim.db.eightBalls.get(r);
 					} else {

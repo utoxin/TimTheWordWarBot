@@ -237,9 +237,6 @@ class ReactionListener extends ListenerAdapter {
 				enabled_actions.add("amusement");
 				enabled_actions.add("amusement");
 			}
-			if (cdata.chatter_enabled.get("challenge")) {
-				enabled_actions.add("challenge");
-			}
 
 			if (enabled_actions.isEmpty()) {
 				return;
@@ -255,9 +252,6 @@ class ReactionListener extends ListenerAdapter {
 						type = "mutter";
 					}
 					Tim.markov.randomAction(channel.getName().toLowerCase(), type, message);
-					break;
-				case "challenge":
-					Tim.challenge.randomAction(sender, cdata.channel);
 					break;
 				case "amusement":
 					Tim.amusement.randomAction(sender, cdata.channel);

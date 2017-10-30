@@ -445,7 +445,7 @@ class AdminCommandListener extends ListenerAdapter {
 						}
 						break;
 					default:
-						if (!(Tim.amusement.parseAdminCommand(event) || Tim.challenge.parseAdminCommand(event) || Tim.markov.parseAdminCommand(event))) {
+						if (!(Tim.amusement.parseAdminCommand(event) || Tim.markov.parseAdminCommand(event))) {
 							event.respond("$" + command + " is not a valid admin command - try $help");
 						}
 						break;
@@ -509,7 +509,6 @@ class AdminCommandListener extends ListenerAdapter {
 			event.getUser().send().notice(helpline);
 		}
 
-		Tim.challenge.adminHelpSection(event);
 		Tim.markov.adminHelpSection(event);
 	}
 }

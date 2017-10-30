@@ -3,18 +3,16 @@ package Tim.UserCommands.Amusement;
 import Tim.ChannelInfo;
 import Tim.Tim;
 import Tim.UserCommands.UserCommandInterface;
+import Tim.Utility.TagReplacer;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
 import org.pircbotx.Channel;
 import org.pircbotx.User;
 import org.pircbotx.hooks.events.MessageEvent;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Fridge implements UserCommandInterface {
-	public void parseCommand(String command, String[] args, MessageEvent event) {
+	public boolean parseCommand(String command, String[] args, MessageEvent event) {
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 
 		if (cdata.commands_enabled.get("fridge")) {
@@ -22,6 +20,8 @@ public class Fridge implements UserCommandInterface {
 		} else {
 			event.respond("I'm sorry. I don't do that here.");
 		}
+
+		return true;
 	}
 
 	public void throwFridge(Channel channel, User sender, String[] args, Boolean righto) {
@@ -43,27 +43,14 @@ public class Fridge implements UserCommandInterface {
 			}
 
 			int time;
+
 			time = Tim.rand.nextInt(1500) + 1500;
 			Thread.sleep(time);
 			channel.send().action(sneakyMessage());
 
-			String colour = Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size()));
-			switch (colour.charAt(0)) {
-				case 'a':
-				case 'e':
-				case 'i':
-				case 'o':
-				case 'u':
-					colour = "n " + colour;
-					break;
-				default:
-					colour = " " + colour;
-			}
-
 			time = Tim.rand.nextInt(3000) + 2000;
 			Thread.sleep(time);
-
-			channel.send().action(throwMessage(colour, target, sender.getNick()));
+			channel.send().action(throwMessage(target, sender.getNick()));
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Fridge.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -79,23 +66,22 @@ public class Fridge implements UserCommandInterface {
 		return messages[Tim.rand.nextInt(messages.length)];
 	}
 
-	private String throwMessage(String color, String target, String thrower) {
+	private String throwMessage(String target, String thrower) {
 		String[] messages = {
-			"hurls a%(color) fridge at %(target).",
-			"hurls a%(color) fridge at %(thrower) and runs away giggling.",
-			"trips and drops a%(color) fridge on himself.",
-			"rigs a complicated mechanism, and drops a%(color) fridge onto %(target)",
-			"tries to build a complicated mechanism, but it breaks, and a%(color) fridge squishes him.",
-			"picks the wrong target, and launches a%(color) fridge at %(thrower) with a trebuchet.",
-			"grabs a%(color) fridge, but forgets to empty it first. What a mess!"
+			"hurls a%(acolor) fridge at %(target).",
+			"hurls a%(acolor) fridge at %(thrower) and runs away giggling.",
+			"trips and drops a%(acolor) fridge on himself.",
+			"rigs a complicated mechanism, and drops a%(acolor) fridge onto %(target)",
+			"tries to build a complicated mechanism, but it breaks, and a%(acolor) fridge squishes him.",
+			"picks the wrong target, and launches a%(acolor) fridge at %(thrower) with a trebuchet.",
+			"grabs a%(acolor) fridge, but forgets to empty it first. What a mess!"
 		};
 
-		Map<String, String> values = new HashMap<>();
-		values.put("color", color);
-		values.put("target", target);
-		values.put("thrower", thrower);
+		TagReplacer tagReplacer = new TagReplacer();
 
-		StrSubstitutor sub = new StrSubstitutor(values, "%(", ")");
-		return sub.replace(messages[Tim.rand.nextInt(messages.length)]);
+		tagReplacer.setDynamicTag("target", target);
+		tagReplacer.setDynamicTag("thrower", thrower);
+
+		return tagReplacer.doTagReplacment(messages[Tim.rand.nextInt(messages.length)]);
 	}
 }

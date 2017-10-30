@@ -126,7 +126,7 @@ class UserCommandListener extends ListenerAdapter {
 						+ "Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: "
 						+ "https://github.com/utoxin/TimTheWordWarBot, and my NaNoWriMo profile page is here: "
 						+ "http://nanowrimo.org/en/participants/timmybot");
-				} else if (!Tim.story.parseUserCommand(event) && !Tim.challenge.parseUserCommand(event) && !Tim.amusement.parseUserCommand(event)) {
+				} else if (!Tim.story.parseUserCommand(event) && !Tim.challenge.parseCommand(command, args, event) && !Tim.amusement.parseUserCommand(event)) {
 					event.respond("!" + command + " was not part of my training.");
 				}
 			}

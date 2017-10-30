@@ -2,18 +2,16 @@ package Tim.UserCommands.Amusement;
 
 import Tim.ChannelInfo;
 import Tim.Tim;
+import Tim.UserCommands.UserCommandInterface;
+import Tim.Utility.TagReplacer;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
 import org.pircbotx.Channel;
 import org.pircbotx.hooks.events.MessageEvent;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Summon {
-	public void parseCommand(String command, String[] args, MessageEvent event) {
+public class Summon implements UserCommandInterface {
+	public boolean parseCommand(String command, String[] args, MessageEvent event) {
 		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
 
 		String nick = Tim.bot.getNick();
@@ -29,6 +27,8 @@ public class Summon {
 		} else {
 			event.respond("I'm sorry. I don't do that here.");
 		}
+
+		return true;
 	}
 
 	public void summon(Channel channel) {
@@ -96,13 +96,13 @@ public class Summon {
 			"writes a program called \"Summon%(target).exe\" in an arcane programming language...",
 		};
 
-		Map<String, String> values = new HashMap<>();
-		values.put("target", target);
-		values.put("alternate", alternate);
-		values.put("summoner", summoner);
+		TagReplacer tagReplacer = new TagReplacer();
 
-		StrSubstitutor sub = new StrSubstitutor(values, "%(", ")");
-		return sub.replace(messages[Tim.rand.nextInt(messages.length)]);
+		tagReplacer.setDynamicTag("target", target);
+		tagReplacer.setDynamicTag("alternate", alternate);
+		tagReplacer.setDynamicTag("summoner", summoner);
+
+		return tagReplacer.doTagReplacment(messages[Tim.rand.nextInt(messages.length)]);
 	}
 
 	private String SummonEnd(String target, String alternate, String summoner) {
@@ -115,13 +115,13 @@ public class Summon {
 			"fails to summon %(target). But a small note addressed to %(summoner) does appear. Unfortunately, it's written in a lost language..."
 		};
 
-		Map<String, String> values = new HashMap<>();
-		values.put("target", target);
-		values.put("alternate", alternate);
-		values.put("summoner", summoner);
+		TagReplacer tagReplacer = new TagReplacer();
 
-		StrSubstitutor sub = new StrSubstitutor(values, "%(", ")");
-		return sub.replace(messages[Tim.rand.nextInt(messages.length)]);
+		tagReplacer.setDynamicTag("target", target);
+		tagReplacer.setDynamicTag("alternate", alternate);
+		tagReplacer.setDynamicTag("summoner", summoner);
+
+		return tagReplacer.doTagReplacment(messages[Tim.rand.nextInt(messages.length)]);
 	}
 
 	private String BanishStart(String target, String alternate, String banisher) {
@@ -132,13 +132,13 @@ public class Summon {
 			"writes a program called \"Banish%(target).exe\" in an arcane programming language...",
 		};
 
-		Map<String, String> values = new HashMap<>();
-		values.put("target", target);
-		values.put("alternate", alternate);
-		values.put("banisher", banisher);
+		TagReplacer tagReplacer = new TagReplacer();
 
-		StrSubstitutor sub = new StrSubstitutor(values, "%(", ")");
-		return sub.replace(messages[Tim.rand.nextInt(messages.length)]);
+		tagReplacer.setDynamicTag("target", target);
+		tagReplacer.setDynamicTag("alternate", alternate);
+		tagReplacer.setDynamicTag("banisher", banisher);
+
+		return tagReplacer.doTagReplacment(messages[Tim.rand.nextInt(messages.length)]);
 	}
 
 	private String BanishEnd(String target, String alternate, String banisher) {
@@ -151,13 +151,12 @@ public class Summon {
 			"must have messed up his attempt to banish %(target) pretty badly. %(banisher) disappears instead."
 		};
 
-		Map<String, String> values = new HashMap<>();
-		values.put("target", target);
-		values.put("alternate", alternate);
-		values.put("banisher", banisher);
+		TagReplacer tagReplacer = new TagReplacer();
 
-		StrSubstitutor sub = new StrSubstitutor(values, "%(", ")");
-		return sub.replace(messages[Tim.rand.nextInt(messages.length)]);
+		tagReplacer.setDynamicTag("target", target);
+		tagReplacer.setDynamicTag("alternate", alternate);
+		tagReplacer.setDynamicTag("banisher", banisher);
+
+		return tagReplacer.doTagReplacment(messages[Tim.rand.nextInt(messages.length)]);
 	}
-
 }

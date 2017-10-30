@@ -43,9 +43,7 @@ class Amusement {
 
 	private final List<String> pendingItems = new ArrayList<>();
 	private final List<String> commandments = new ArrayList<>();
-	private final List<String> flavours = new ArrayList<>();
 
-	List<String> approvedItems = new ArrayList<>();
 	List<String> ponderingList = new ArrayList<>();
 
 	private ChannelInfo cdata;
@@ -327,7 +325,7 @@ class Amusement {
 		}
 		switch (command) {
 			case "listitems": {
-				int pages = (this.approvedItems.size() + 9) / 10;
+				int pages = (Tim.db.items.size() + 9) / 10;
 				int wantPage = 0;
 				if (args != null && args.length > 0) {
 					try {
@@ -343,9 +341,9 @@ class Amusement {
 				}
 
 				int list_idx = wantPage * 10;
-				event.respond(String.format("Showing page %d of %d (%d items total)", wantPage + 1, pages, this.approvedItems.size()));
-				for (int i = 0; i < 10 && list_idx < this.approvedItems.size(); ++i, list_idx = wantPage * 10 + i) {
-					event.respond(String.format("%d: %s", list_idx, this.approvedItems.get(list_idx)));
+				event.respond(String.format("Showing page %d of %d (%d items total)", wantPage + 1, pages, Tim.db.items.size()));
+				for (int i = 0; i < 10 && list_idx < Tim.db.items.size(); ++i, list_idx = wantPage * 10 + i) {
+					event.respond(String.format("%d: %s", list_idx, Tim.db.items.get(list_idx)));
 				}
 				return true;
 			}
@@ -390,7 +388,7 @@ class Amusement {
 					if (idx >= 0) {
 						this.setItemApproved(item.toString(), true);
 						this.pendingItems.remove(idx);
-						this.approvedItems.add(item.toString());
+						Tim.db.items.add(item.toString());
 						event.respond(String.format("Item %s approved.", args[0]));
 					} else {
 						event.respond(String.format("Item %s is not pending approval.", args[0]));
@@ -403,19 +401,19 @@ class Amusement {
 					StringBuilder item;
 					try {
 						idx = Integer.parseInt(args[0]);
-						item = new StringBuilder(this.approvedItems.get(idx));
+						item = new StringBuilder(Tim.db.items.get(idx));
 					} catch (NumberFormatException ex) {
 						// Must be a string
 						item = new StringBuilder(args[0]);
 						for (int i = 1; i < args.length; ++i) {
 							item.append(" ").append(args[i]);
 						}
-						idx = this.approvedItems.indexOf(item.toString());
+						idx = Tim.db.items.indexOf(item.toString());
 					}
 					if (idx >= 0) {
 						this.setItemApproved(item.toString(), false);
 						this.pendingItems.add(item.toString());
-						this.approvedItems.remove(idx);
+						Tim.db.items.remove(idx);
 						event.respond(String.format("Item %s disapproved.", args[0]));
 					} else {
 						event.respond(String.format("Item %s is not in approved list.", args[0]));
@@ -470,8 +468,6 @@ class Amusement {
 	void refreshDbLists() {
 		this.getAypwipList();
 		this.getCommandmentList();
-		this.getFlavourList();
-		this.getApprovedItems();
 		this.getPendingItems();
 	}
 
@@ -583,7 +579,7 @@ class Amusement {
 
 	private void attackCommand(Channel channel, User sender, String target) {
 		DecimalFormat formatter = new DecimalFormat("#,###");
-		String item = this.approvedItems.get(Tim.rand.nextInt(this.approvedItems.size()));
+		String item = Tim.db.items.get(Tim.rand.nextInt(Tim.db.items.size()));
 
 		if (target != null && Tim.rand.nextInt(100) > 75) {
 			channel.send().action(String.format("decides he likes %s, so he attacks %s instead...", target, sender.getNick()));
@@ -632,7 +628,7 @@ class Amusement {
 					item.append(" ").append(args[i]);
 				}
 
-				if (!(this.approvedItems.contains(item.toString()) || this.pendingItems.contains(item.toString())) && item.length() < 300) {
+				if (!(Tim.db.items.contains(item.toString()) || this.pendingItems.contains(item.toString())) && item.length() < 300) {
 					this.insertPendingItem(item.toString());
 					this.pendingItems.add(item.toString());
 				}
@@ -648,8 +644,8 @@ class Amusement {
 
 		if (item.length() == 0) {
 			// Find a random item.
-			int i = Tim.rand.nextInt(this.approvedItems.size());
-			item = new StringBuilder(this.approvedItems.get(i));
+			int i = Tim.rand.nextInt(Tim.db.items.size());
+			item = new StringBuilder(Tim.db.items.get(i));
 		}
 
 		channel.send().action(String.format("gets %s %s.", target, item.toString()));
@@ -664,7 +660,7 @@ class Amusement {
 					item.append(" ").append(args[i]);
 				}
 
-				if (!(this.approvedItems.contains(item.toString()) || this.pendingItems.contains(item.toString())) && item.length() < 300) {
+				if (!(Tim.db.items.contains(item.toString()) || this.pendingItems.contains(item.toString())) && item.length() < 300) {
 					this.insertPendingItem(item.toString());
 					this.pendingItems.add(item.toString());
 				}
@@ -680,8 +676,8 @@ class Amusement {
 
 		if (item.length() == 0) {
 			// Find a random item.
-			int i = Tim.rand.nextInt(this.approvedItems.size());
-			item = new StringBuilder(this.approvedItems.get(i));
+			int i = Tim.rand.nextInt(Tim.db.items.size());
+			item = new StringBuilder(Tim.db.items.get(i));
 		}
 
 		channel.send().action(String.format("takes %s from %s, and gives it to %s.", item.toString(), target, recipient));
@@ -692,7 +688,7 @@ class Amusement {
 
 		int count = Tim.rand.nextInt(4);
 		if (count == 1) {
-			item = new StringBuilder(this.approvedItems.get(Tim.rand.nextInt(this.approvedItems.size())));
+			item = new StringBuilder(Tim.db.items.get(Tim.rand.nextInt(Tim.db.items.size())));
 		} else if (count > 1) {
 			for (int i = 0; i < count; i++) {
 				if (i > 0 && count > 2) {
@@ -705,7 +701,7 @@ class Amusement {
 					item.append(" ");
 				}
 
-				item.append(this.approvedItems.get(Tim.rand.nextInt(this.approvedItems.size())));
+				item.append(Tim.db.items.get(Tim.rand.nextInt(Tim.db.items.size())));
 			}
 		}
 
@@ -731,9 +727,9 @@ class Amusement {
 		if (args != null && args.length >= 1) {
 			String argStr = StringUtils.join(args, " ");
 
-			event.getChannel().send().action("licks " + argStr + ". Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
+			event.getChannel().send().action("licks " + argStr + ". Tastes like " + Tim.db.flavours.get(Tim.rand.nextInt(Tim.db.flavours.size())));
 		} else if (event.getUser() != null) {
-				event.getChannel().send().action("licks " + event.getUser().getNick() + "! Tastes like " + this.flavours.get(Tim.rand.nextInt(this.flavours.size())));
+				event.getChannel().send().action("licks " + event.getUser().getNick() + "! Tastes like " + Tim.db.flavours.get(Tim.rand.nextInt(Tim.db.flavours.size())));
 		}
 	}
 	
@@ -1104,27 +1100,6 @@ class Amusement {
 		}
 	}
 
-	private void getApprovedItems() {
-		Connection con;
-		String value;
-
-		try {
-			this.approvedItems.clear();
-
-			con = Tim.db.pool.getConnection(timeout);
-			PreparedStatement s = con.prepareStatement("SELECT `item` FROM `items` WHERE `approved` = TRUE");
-			ResultSet rs = s.executeQuery();
-			while (rs.next()) {
-				value = rs.getString("item");
-				this.approvedItems.add(value);
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
 	private void getPendingItems() {
 		Connection con;
 		String value;
@@ -1224,26 +1199,6 @@ class Amusement {
 			this.commandments.clear();
 			while (rs.next()) {
 				this.commandments.add(rs.getString("string"));
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void getFlavourList() {
-		Connection con;
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
-			Statement s = con.createStatement();
-			s.executeQuery("SELECT `string` FROM `flavours`");
-
-			ResultSet rs = s.getResultSet();
-			this.flavours.clear();
-			while (rs.next()) {
-				this.flavours.add(rs.getString("string"));
 			}
 
 			con.close();

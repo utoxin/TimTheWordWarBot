@@ -45,7 +45,9 @@ public class DBAccess {
 	List<String> extra_greetings = new ArrayList<>();
 	List<String> cat_herds = new ArrayList<>();
 	List<String> greetings = new ArrayList<>();
-	List<String> pokemon = new ArrayList<>();
+	public List<String> pokemon = new ArrayList<>();
+	public List<String> items = new ArrayList<>();
+	public List<String> flavours = new ArrayList<>();
 	public List<String> colours = new ArrayList<>();
 	public List<String> eightBalls = new ArrayList<>();
 	public List<String> deities = new ArrayList<>();
@@ -69,6 +71,46 @@ public class DBAccess {
 	 */
 	public static DBAccess getInstance() {
 		return instance;
+	}
+
+	private void getItemList() {
+		Connection con;
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			Statement s = con.createStatement();
+			s.executeQuery("SELECT `item` FROM `items` WHERE `approved` = TRUE");
+
+			ResultSet rs = s.getResultSet();
+			this.items.clear();
+			while (rs.next()) {
+				this.items.add(rs.getString("item"));
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	private void getFlavourList() {
+		Connection con;
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			Statement s = con.createStatement();
+			s.executeQuery("SELECT `string` FROM `flavours`");
+
+			ResultSet rs = s.getResultSet();
+			this.flavours.clear();
+			while (rs.next()) {
+				this.flavours.add(rs.getString("string"));
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	private void getDeityList() {
@@ -721,10 +763,11 @@ public class DBAccess {
 		this.getColourList();
 		this.getEightballList();
 		this.getDeityList();
+		this.getFlavourList();
+		this.getItemList();
 
 		Tim.amusement.refreshDbLists();
 		Tim.story.refreshDbLists();
-		Tim.challenge.refreshDbLists();
 		Tim.markovProcessor.refreshDbLists();
 	}
 
