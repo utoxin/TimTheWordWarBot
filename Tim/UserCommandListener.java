@@ -152,7 +152,7 @@ class UserCommandListener extends ListenerAdapter {
 						 "    !unignore - Turn off soft ignores. Hard ignores have to be removed by an admin.",
 						 "    !credits - Details of my creators, and where to find my source code.",};
 		for (String str : strs) {
-			event.getUser().send().notice(str);
+			event.getUser().send().message(str);
 		}
 
 		Tim.story.helpSection(event);
@@ -163,7 +163,7 @@ class UserCommandListener extends ListenerAdapter {
 						 "I will also respond to the /invite command if you would like to see me in another channel. "
 		};
 		for (String aPost : post) {
-			event.getUser().send().notice(aPost);
+			event.getUser().send().message(aPost);
 		}
 	}
 }

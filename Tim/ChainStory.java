@@ -118,7 +118,7 @@ class ChainStory {
 			"    !chaincount - Just the word count and author stats.",};
 
 		for (String str : strs) {
-			event.getUser().send().notice(str);
+			event.getUser().send().message(str);
 		}
 	}
 

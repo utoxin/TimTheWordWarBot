@@ -367,7 +367,7 @@ class TwitterIntegration extends StatusAdapter {
 							target = status.getUser().getScreenName();
 						}
 
-						StatusUpdate reply = new StatusUpdate("Timmy hurls a " + Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size())) + " fridge at @" + target + "! #FearTimmy #NaNoWriMo");
+						StatusUpdate reply = new StatusUpdate("Timmy hurls a " + Tim.db.dynamic_lists.get("color").get(Tim.rand.nextInt(Tim.db.dynamic_lists.get("color").size())) + " fridge at @" + target + "! #FearTimmy #NaNoWriMo");
 						reply.setInReplyToStatusId(status.getId());
 
 						twitter.updateStatus(reply);

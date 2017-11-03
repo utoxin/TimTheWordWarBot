@@ -41,19 +41,15 @@ public class DBAccess {
 
 	private final long timeout = 3000;
 	public HashMap<String, ChannelInfo> channel_data = new HashMap<>(62);
-	Set<String> admin_list = new HashSet<>(16);
-	List<String> extra_greetings = new ArrayList<>();
+	public Set<String> admin_list = new HashSet<>(16);
 	List<String> cat_herds = new ArrayList<>();
-	List<String> greetings = new ArrayList<>();
-	public List<String> pokemon = new ArrayList<>();
 	public List<String> items = new ArrayList<>();
 	public List<String> flavours = new ArrayList<>();
-	public List<String> colours = new ArrayList<>();
 	public List<String> eightBalls = new ArrayList<>();
-	public List<String> deities = new ArrayList<>();
 	Set<String> ignore_list = new HashSet<>(16);
 	Set<String> soft_ignore_list = new HashSet<>(16);
 	public HashMap<String, Set<ChannelInfo>> channel_groups = new HashMap<>();
+	public HashMap<String, List<String>> dynamic_lists = new HashMap<>();
 	ConnectionPool pool;
 
 	private DBAccess() {
@@ -71,6 +67,30 @@ public class DBAccess {
 	 */
 	public static DBAccess getInstance() {
 		return instance;
+	}
+
+	private void getDynamicLists() {
+		Connection con;
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			Statement s = con.createStatement();
+			s.executeQuery("SELECT `name`, `item_name` FROM `lists` INNER JOIN `list_items` ON `lists`.`id` = `list_items`.`list_id`");
+
+			ResultSet rs = s.getResultSet();
+			this.dynamic_lists.clear();
+			while (rs.next()) {
+				if (!dynamic_lists.containsKey(rs.getString("name"))) {
+					this.dynamic_lists.put(rs.getString("name"), new ArrayList<>());
+				}
+
+				this.dynamic_lists.get(rs.getString("name")).add(rs.getString("item_name"));
+			}
+
+			con.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 
 	private void getItemList() {
@@ -113,26 +133,6 @@ public class DBAccess {
 		}
 	}
 
-	private void getDeityList() {
-		Connection con;
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
-			Statement s = con.createStatement();
-			s.executeQuery("SELECT `string` FROM `deities`");
-
-			ResultSet rs = s.getResultSet();
-			this.deities.clear();
-			while (rs.next()) {
-				this.deities.add(rs.getString("string"));
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
 	private void getEightballList() {
 		Connection con;
 		try {
@@ -145,26 +145,6 @@ public class DBAccess {
 			this.eightBalls.clear();
 			while (rs.next()) {
 				this.eightBalls.add(rs.getString("string"));
-			}
-
-			con.close();
-		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
-	private void getColourList() {
-		Connection con;
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
-			Statement s = con.createStatement();
-			s.executeQuery("SELECT `string` FROM `colours`");
-
-			ResultSet rs = s.getResultSet();
-			this.colours.clear();
-			while (rs.next()) {
-				this.colours.add(rs.getString("string"));
 			}
 
 			con.close();
@@ -459,43 +439,6 @@ public class DBAccess {
 		}
 	}
 
-	private void getGreetingList() {
-		Connection con = null;
-		try {
-			con = pool.getConnection(timeout);
-			try (Statement s = con.createStatement()) {
-				ResultSet rs;
-
-				s.executeQuery("SELECT `string` FROM `greetings`");
-				rs = s.getResultSet();
-				this.greetings.clear();
-				while (rs.next()) {
-					this.greetings.add(rs.getString("string"));
-				}
-				rs.close();
-
-				s.executeQuery("SELECT `string` FROM `extra_greetings`");
-				rs = s.getResultSet();
-				this.extra_greetings.clear();
-				while (rs.next()) {
-					this.extra_greetings.add(rs.getString("string"));
-				}
-				rs.close();
-				s.close();
-			}
-		} catch (SQLException ex) {
-			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
-	}
-
 	private void getCatHerds() {
 		Connection con = null;
 		try {
@@ -508,35 +451,6 @@ public class DBAccess {
 				this.cat_herds.clear();
 				while (rs.next()) {
 					this.cat_herds.add(rs.getString("string"));
-				}
-				rs.close();
-				s.close();
-			}
-		} catch (SQLException ex) {
-			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
-	}
-
-	private void getPokemon() {
-		Connection con = null;
-		try {
-			con = pool.getConnection(timeout);
-			try (Statement s = con.createStatement()) {
-				ResultSet rs;
-
-				s.executeQuery("SELECT `name` FROM `pokemon`");
-				rs = s.getResultSet();
-				this.pokemon.clear();
-				while (rs.next()) {
-					this.pokemon.add(rs.getString("name"));
 				}
 				rs.close();
 				s.close();
@@ -756,15 +670,12 @@ public class DBAccess {
 		this.getAdminList();
 		this.getChannelList();
 		this.getIgnoreList();
-		this.getGreetingList();
 		this.getCatHerds();
-		this.getPokemon();
 		this.getChannelGroups();
-		this.getColourList();
 		this.getEightballList();
-		this.getDeityList();
 		this.getFlavourList();
 		this.getItemList();
+		this.getDynamicLists();
 
 		Tim.amusement.refreshDbLists();
 		Tim.story.refreshDbLists();

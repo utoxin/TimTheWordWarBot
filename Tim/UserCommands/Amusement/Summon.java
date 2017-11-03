@@ -43,12 +43,12 @@ public class Summon implements UserCommandInterface {
 		try {
 			String target;
 			if (args == null || args.length == 0) {
-				target = Tim.db.deities.get(Tim.rand.nextInt(Tim.db.deities.size()));
+				target = Tim.db.dynamic_lists.get("deity").get(Tim.rand.nextInt(Tim.db.dynamic_lists.get("deity").size()));
 			} else {
 				target = StringUtils.join(args, " ");
 			}
 
-			String target2 = Tim.db.deities.get(Tim.rand.nextInt(Tim.db.deities.size()));
+			String target2 = Tim.db.dynamic_lists.get("deity").get(Tim.rand.nextInt(Tim.db.dynamic_lists.get("deity").size()));
 
 			if (righto) {
 				channel.send().message("Righto...");
@@ -68,12 +68,12 @@ public class Summon implements UserCommandInterface {
 		try {
 			String target;
 			if (args == null || args.length == 0) {
-				target = Tim.db.deities.get(Tim.rand.nextInt(Tim.db.deities.size()));
+				target = Tim.db.dynamic_lists.get("deity").get(Tim.rand.nextInt(Tim.db.dynamic_lists.get("deity").size()));
 			} else {
 				target = StringUtils.join(args, " ");
 			}
 
-			String target2 = Tim.db.deities.get(Tim.rand.nextInt(Tim.db.deities.size()));
+			String target2 = Tim.db.dynamic_lists.get("deity").get(Tim.rand.nextInt(Tim.db.dynamic_lists.get("deity").size()));
 
 			if (righto) {
 				channel.send().message("Righto...");

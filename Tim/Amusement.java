@@ -25,8 +25,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import Tim.UserCommands.Amusement.Defenestrate;
 import Tim.UserCommands.Amusement.Fridge;
 import Tim.UserCommands.Amusement.Summon;
+import Tim.Utility.TagReplacer;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Channel;
 import org.pircbotx.Colors;
@@ -50,6 +52,8 @@ class Amusement {
 
 	private Fridge fridge = new Fridge();
 	private Summon summon = new Summon();
+	private Defenestrate defenestrate = new Defenestrate();
+	private TagReplacer tagReplacer = new TagReplacer();
 
 	/**
 	 * Parses user-level commands passed from the main class. Returns true if the message was handled, false if it was
@@ -99,9 +103,8 @@ class Amusement {
 				return true;
 			case "banish":
 			case "summon":
-				summon.parseCommand(command, args, event);
+				return summon.parseCommand(command, args, event);
 
-				return true;
 			case "catch":
 				if (cdata.commands_enabled.get("catch")) {
 					catchCommand(event.getChannel(), args);
@@ -127,13 +130,8 @@ class Amusement {
 
 				return true;
 			case "defenestrate":
-				if (cdata.commands_enabled.get("defenestrate")) {
-					defenestrate(event.getChannel(), event.getUser(), args, true);
-				} else {
-					event.respond("I'm sorry. I don't do that here.");
-				}
+				return defenestrate.parseCommand(command, args, event);
 
-				return true;
 			case "eightball":
 				if (cdata.commands_enabled.get("eightball")) {
 					eightball(event.getChannel(), event.getUser(), false, argStr);
@@ -167,8 +165,7 @@ class Amusement {
 
 				return true;
 			case "fridge":
-				fridge.parseCommand(command, args, event);
-				return true;
+				return fridge.parseCommand(command, args, event);
 
 			case "get":
 				if (cdata.commands_enabled.get("get")) {
@@ -235,7 +232,7 @@ class Amusement {
 					if (Tim.rand.nextInt(100) < 80) {
 						event.respond("Pong!");
 					} else {
-						event.getChannel().send().action("dives for the ball, but misses, and lands on a " + Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size())) + " couch.");
+						event.getChannel().send().action(tagReplacer.doTagReplacment("dives for the ball, but misses, and lands on a%(acolor) couch."));
 					}
 				} else {
 					event.respond("I'm sorry. I don't do that here.");
@@ -461,7 +458,7 @@ class Amusement {
 						 "    !raptorstats - Details about this channel's raptor activity.",};
 
 		for (String str : strs) {
-			event.getUser().send().notice(str);
+			event.getUser().send().message(str);
 		}
 	}
 
@@ -533,7 +530,7 @@ class Amusement {
 				fridge.throwFridge(sendChannel, sender, null, false);
 				break;
 			case "defenestrate":
-				defenestrate(sendChannel, sender, null, false);
+				defenestrate.defenestrate(sendChannel, sender, null, false);
 				break;
 			case "sing":
 				sing(sendChannel);
@@ -636,6 +633,9 @@ class Amusement {
 				if (item.toString().toLowerCase().contains("spoon")) {
 					item = new StringBuilder();
 					channel.send().action("rummages around in the back room for a bit, then calls out. \"Sorry... there is no spoon. Maybe this will do...\"");
+				} else if (Tim.rand.nextInt(100) > 10 && Pattern.matches("(\\W|^)rum(\\W|$)", item.toString().toLowerCase())) {
+					item = new StringBuilder();
+					channel.send().action("rummages around in the back room for a bit, then calls out. \"All the rum is gone. I have this instead...\"");
 				}
 			} else {
 				channel.send().action("rummages around in the back room for a bit, then calls out. \"Sorry... I don't think I have that. Maybe this will do...\"");
@@ -668,6 +668,9 @@ class Amusement {
 				if (item.toString().toLowerCase().contains("spoon")) {
 					item = new StringBuilder();
 					channel.send().action("rummages around in " + target + "'s things for a bit, then calls out. \"Sorry... there is no spoon. But I did find something else...\"");
+				} else if (Tim.rand.nextInt(100) > 10 && Pattern.matches("(\\W|^)rum(\\W|$)", item.toString().toLowerCase())) {
+					item = new StringBuilder();
+					channel.send().action("rummages around in the back room for a bit, then calls out. \"All the rum is gone. But they did have this...\"");
 				}
 			} else {
 				channel.send().action("rummages around in " + target + "'s things for a bit, then calls out. \"Sorry... I don't think they have that. But I did find something else...\"");
@@ -953,7 +956,7 @@ class Amusement {
 			int time;
 			time = Tim.rand.nextInt(1000) + 500;
 			Thread.sleep(time);
-			channel.send().action("collects several " + Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size())) + " boxes, and lays them around to attract cats...");
+			channel.send().action(tagReplacer.doTagReplacment("collects several %(color) boxes, and lays them around to attract cats..."));
 
 			int i = Tim.rand.nextInt(100);
 			String herd = Tim.db.cat_herds.get(Tim.rand.nextInt(Tim.db.cat_herds.size()));
@@ -976,81 +979,34 @@ class Amusement {
 		}
 	}
 
-	private void defenestrate(Channel channel, User sender, String[] args, Boolean righto) {
-		try {
-			String target = sender.getNick();
-			if (args != null && args.length > 0) {
-				target = StringUtils.join(args, " ");
-
-				for (User t : Tim.db.channel_data.get(channel.getName().toLowerCase()).userList.values()) {
-					if (t.getNick().toLowerCase().equals(target.toLowerCase())) {
-						target = t.getNick();
-						break;
-					}
-				}
-			}
-
-			if (righto) {
-				channel.send().message("Righto...");
-			}
-
-			int time;
-			time = Tim.rand.nextInt(1500) + 1500;
-			Thread.sleep(time);
-			channel.send().action("looks around for a convenient window, then slinks off...");
-
-			int i = Tim.rand.nextInt(100);
-
-			String act;
-			String colour = Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size()));
-			if (i > 33) {
-				act = "throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " pillows.";
-			} else if (i > 11) {
-				target = sender.getNick();
-				act = "laughs maniacally then throws " + target + " through the nearest window, where they land on a giant pile of fluffy " + colour + " pillows.";
-			} else {
-				act = "trips and falls out the window!";
-			}
-
-			time = Tim.rand.nextInt(3000) + 2000;
-			Thread.sleep(time);
-			channel.send().action(act);
-		} catch (InterruptedException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
 	private void catchCommand(Channel channel, String[] args) {
 		try {
 			String target;
 			if (args == null || args.length == 0) {
-				target = Tim.db.pokemon.get(Tim.rand.nextInt(Tim.db.pokemon.size()));
+				target = Tim.db.dynamic_lists.get("pokemon").get(Tim.rand.nextInt(Tim.db.dynamic_lists.get("pokemon").size()));
 			} else {
 				target = StringUtils.join(args, " ");
 			}
 
-			String colour1 = Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size()));
-			String colour2;
-			do {
-				colour2 = Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size()));
-			} while(Objects.equals(colour2, colour1));
+			tagReplacer.setDynamicTag("target", target);
 
-			channel.send().action(String.format("grabs a %s and %s pokeball, and attempts to catch %s!", colour1, colour2, target));
+			channel.send().action(tagReplacer.doTagReplacment("grabs a%(acolor) and %(color.2) pokeball, and attempts to catch %(target)!"));
 
 			int i = Tim.rand.nextInt(100);
 			String act;
 
 			if (i > 65) {
-				act = String.format("catches %s, and adds them to his collection!", target);
+				act = tagReplacer.doTagReplacment("catches %(target), and adds them to his collection!");
 			} else if (i > 50) {
-				act = String.format("almost catches %s, but they manage to break out of the pokeball and escape!", target);
+				act = tagReplacer.doTagReplacment("almost catches %(target), but they manage to break out of the pokeball and escape!");
 			} else if (i > 25) {
 				String target2;
 				do {
-					target2 = Tim.db.pokemon.get(Tim.rand.nextInt(Tim.db.pokemon.size()));
+					target2 = Tim.db.dynamic_lists.get("pokemon").get(Tim.rand.nextInt(Tim.db.dynamic_lists.get("pokemon").size()));
 				} while (Objects.equals(target2, target));
+				tagReplacer.setDynamicTag("target2", target2);
 
-				act = String.format("somehow misses %s, and his pokeball captures %s instead. Oops!", target, target2);
+				act = tagReplacer.doTagReplacment("somehow misses %(target), and his pokeball captures %(target2) instead. Oops!");
 			} else {
 				act = "misses his throw completely, and catches nothing. Awwwww.";
 			}
@@ -1078,19 +1034,18 @@ class Amusement {
 			channel.send().action("surreptitiously works his way over to the couch, looking ever so casual...");
 			int i = Tim.rand.nextInt(100);
 			String act;
-			String colour = Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size()));
 
 			if (i > 33) {
-				act = "grabs a " + colour + " pillow, and throws it at " + target
-					+ ", hitting them squarely in the back of the head.";
+				act = "grabs a%(acolor) pillow, and throws it at %(target), hitting them squarely in the back of the head.";
 			} else if (i > 11) {
 				target = sender.getNick();
-				act = "laughs maniacally then throws a " + colour + " pillow at "
-					+ target
-					+ ", then runs off and hides behind the nearest couch.";
+				act = "laughs maniacally then throws a%(acolor) pillow at %(target), then runs off and hides behind the nearest couch.";
 			} else {
-				act = "trips and lands on a " + colour + " pillow. Oof!";
+				act = "trips and lands on a%(acolor) pillow. Oof!";
 			}
+
+			tagReplacer.setDynamicTag("target", target);
+			act = tagReplacer.doTagReplacment(act);
 
 			time = Tim.rand.nextInt(3000) + 2000;
 			Thread.sleep(time);

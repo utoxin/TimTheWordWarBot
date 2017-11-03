@@ -70,24 +70,13 @@ public class Challenge implements UserCommandInterface {
 		};
 
 		for (String str : strs) {
-			event.getUser().send().notice(str);
+			event.getUser().send().message(str);
 		}
 	}
 
 	private void issueChallenge(Channel channel, String target) {
-		String[] challenges = {
-			"Your character finds the only remaining %(item) on the entire planet. What do they do with it?",
-			"Your character loses their prized %(item). How do they react?",
-			"Your character dreams about %(item) and %(item.2).",
-			"Introduce a character who worships %(deity).",
-			"A new character arrives, wearing a%(acolor) piece of clothing, and carrying %(item).",
-			"Your character has a sudden craving for %(flavor) ice-cream.",
-			"Did your character just see %(pokemon)? Or was it something else?",
-			"Your character sees a news report that %(number) of %(item) have disappeared. What's going on?",
-		};
-
 		TagReplacer tagReplacer = new TagReplacer();
 
-		channel.send().action(String.format("challenges %s: %s", target, tagReplacer.doTagReplacment(challenges[Tim.rand.nextInt(challenges.length)])));
+		channel.send().action(String.format("challenges %s: %s", target, tagReplacer.doTagReplacment(Tim.db.dynamic_lists.get("challenge_templates").get(Tim.rand.nextInt(Tim.db.dynamic_lists.get("challenge_templates").size())))));
 	}
 }

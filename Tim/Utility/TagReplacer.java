@@ -35,25 +35,22 @@ public class TagReplacer {
 	private boolean handleListValue(String tag) {
 		switch (tag) {
 			case "acolor":
-			case "color":
 			case "colour":
-			case "deity":
 			case "flavor":
 			case "flavour":
 			case "item":
 			case "number":
-			case "pokemon":
 				return true;
 
 			default:
-				return false;
+				return Tim.db.dynamic_lists.containsKey(tag);
 		}
 	}
 
 	private String getRandomListValue(String list) {
 		switch (list) {
 			case "acolor":
-				String color = Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size()));
+				String color = Tim.db.dynamic_lists.get("color").get(Tim.rand.nextInt(Tim.db.dynamic_lists.get("color").size()));
 				switch (color.charAt(0)) {
 					case 'a':
 					case 'e':
@@ -70,10 +67,7 @@ public class TagReplacer {
 
 			case "color":
 			case "colour":
-				return Tim.db.colours.get(Tim.rand.nextInt(Tim.db.colours.size()));
-
-			case "deity":
-				return Tim.db.deities.get(Tim.rand.nextInt(Tim.db.deities.size()));
+				return Tim.db.dynamic_lists.get("color").get(Tim.rand.nextInt(Tim.db.dynamic_lists.get("color").size()));
 
 			case "flavor":
 			case "flavour":
@@ -85,11 +79,8 @@ public class TagReplacer {
 			case "number":
 				return String.format("%d", Tim.rand.nextInt(100));
 
-			case "pokemon":
-				return Tim.db.pokemon.get(Tim.rand.nextInt(Tim.db.pokemon.size()));
-
 			default:
-				return list;
+				return Tim.db.dynamic_lists.get(list).get(Tim.rand.nextInt(Tim.db.dynamic_lists.get(list).size()));
 		}
 	}
 }

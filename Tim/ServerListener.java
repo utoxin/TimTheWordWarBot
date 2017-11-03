@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import Tim.Utility.TagReplacer;
 import org.pircbotx.User;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.*;
@@ -114,7 +115,9 @@ class ServerListener extends ListenerAdapter {
 					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
 					&& !Tim.db.soft_ignore_list.contains(event.getUser().getNick().toLowerCase())
 				) {
-					message = String.format(Tim.db.greetings.get(Tim.rand.nextInt(Tim.db.greetings.size())), event.getUser().getNick());
+					TagReplacer tagReplacer = new TagReplacer();
+					tagReplacer.setDynamicTag("target", event.getUser().getNick());
+					message = tagReplacer.doTagReplacment(Tim.db.dynamic_lists.get("greetings").get(Tim.rand.nextInt(Tim.db.dynamic_lists.get("greetings").size())));
 				}
 
 				if (cdata.chatter_enabled.get("helpful_reactions")
@@ -163,8 +166,7 @@ class ServerListener extends ListenerAdapter {
 				) {
 					Thread.sleep(500);
 					if (Tim.rand.nextBoolean()) {
-						r = Tim.rand.nextInt(Tim.db.extra_greetings.size());
-						event.getChannel().send().message(Tim.db.extra_greetings.get(r));
+						event.getChannel().send().message(Tim.db.dynamic_lists.get("extra_greetings").get(Tim.rand.nextInt(Tim.db.dynamic_lists.get("extra_greetings").size())));
 					} else {
 						int velociraptorCount = cdata.activeVelociraptors;
 						String velociraptorDate = cdata.getLastSighting();

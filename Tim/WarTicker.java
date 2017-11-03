@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import Tim.Utility.Permissions;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.hooks.events.MessageEvent;
 
@@ -210,8 +211,7 @@ class WarTicker {
 			String name = StringUtils.join(args, " ");
 			if (this.wars.containsKey(name.toLowerCase())) {
 				if (event.getUser().getNick().equalsIgnoreCase(this.wars.get(name.toLowerCase()).getStarter())
-					|| Tim.db.admin_list.contains(event.getUser().getNick())
-					|| Tim.db.admin_list.contains(event.getChannel().getName().toLowerCase())) {
+					|| Permissions.isAdmin(event)) {
 					WordWar war = this.wars.remove(name.toLowerCase());
 					war.endWar();
 					event.respond("The war '" + war.getName(false) + "' has been ended.");

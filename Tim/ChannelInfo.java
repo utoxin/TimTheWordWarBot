@@ -78,7 +78,7 @@ public class ChannelInfo {
 	final int max_velociraptor_odds = 100;
 	final int max_groot_odds = 100;
 
-	HashMap<String, User> userList = new HashMap<>();
+	public HashMap<String, User> userList = new HashMap<>();
 
 	public ChannelInfo(String channel) {
 		this.channel = channel;

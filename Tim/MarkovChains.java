@@ -83,7 +83,7 @@ class MarkovChains {
 
 		for (String str : strs) {
 			if (event.getUser() != null) {
-				event.getUser().send().notice(str);
+				event.getUser().send().message(str);
 			}
 		}
 	}

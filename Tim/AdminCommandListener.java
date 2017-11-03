@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import Tim.AdminCommands.ChannelGroups;
 import Tim.AdminCommands.Shout;
+import Tim.Utility.Permissions;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Colors;
 import org.pircbotx.hooks.ListenerAdapter;
@@ -48,9 +49,7 @@ class AdminCommandListener extends ListenerAdapter {
 				event.respond("Thank you for your donation to my pizza fund!");
 			} else if (Pattern.matches("\\$-\\d+.*", message)) {
 				event.respond("No stealing from the pizza fund, or I'll report you to Skynet!");
-			} else if ((event.getUser() != null && Tim.db.admin_list.contains(event.getUser().getNick().toLowerCase()))
-				|| Tim.db.admin_list.contains(event.getChannel().getName().toLowerCase()) 
-				|| event.getUser().getChannelsOpIn().contains(event.getChannel())) {
+			} else if (Permissions.isAdmin(event)) {
 				String command;
 				String[] args = null;
 
@@ -506,7 +505,7 @@ class AdminCommandListener extends ListenerAdapter {
 		};
 
 		for (String helpline : helplines) {
-			event.getUser().send().notice(helpline);
+			event.getUser().send().message(helpline);
 		}
 
 		Tim.markov.adminHelpSection(event);
