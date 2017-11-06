@@ -75,6 +75,10 @@ class UserCommandListener extends ListenerAdapter {
 					Tim.warticker.listWars(event, false);
 				} else if (command.equals("listall")) {
 					Tim.warticker.listAllWars(event);
+				} else if (command.equals("joinwar")) {
+					Tim.warticker.joinWar(event, args);
+				} else if (command.equals("leavewar")) {
+					Tim.warticker.leaveWar(event, args);
 				} else if (command.equals("boxodoom")) {
 					Tim.amusement.boxodoom(event, args);
 				} else if (command.equals("pickone")) {
@@ -142,10 +146,17 @@ class UserCommandListener extends ListenerAdapter {
 
 		String[] strs = {"I am a robot trained by the WordWar Monks of Honolulu. You have "
 			+ "never heard of them. It is because they are awesome.",
-						 "Core Commands:",
-						 "    !startwar <duration> <time to start> <an optional name> - Starts a word war",
-						 "    !chainwar <base duration> <war count> - Starts a series of wars, with some randomness",
-						 "    !listwars - I will tell you about the wars currently in progress.",
+						 "Word Wars:",
+						 "    !startwar <duration> <time to start> [<optional name>] - Starts a word war.",
+						 "    !chainwar <base duration> <war count> [<advanced controls>] [<name>] - Starts a series of wars.",
+						 "    !joinwar <war id> - Receive start and end private messages for the given war.",
+						 "    !leavewar <war id> - Unsubscribe from private messages about the given war.",
+			             "    !listwars - List the wars currently in progress in this channel.",
+			             "Advanced Chain War Controls:",
+			             "    break:<number of minutes> - How many minutes to use for the breaks between wars.",
+			             "    start:<number of minutes> - How many minutes to delay before starting the wars.",
+			             "    random:1 - Randomly vary the war duration by a small amount.",
+			             "Other Commands:",
 						 "    !boxodoom <difficulty> <duration> - Difficulty is extraeasy/easy/average/hard/extreme/insane/impossible/tadiera, duration in minutes.",
 						 "    !eggtimer <time> - I will send you a message after <time> minutes.",
 						 "    !ignore <hard/soft> - Make Timmy ignore you. Soft lets you keep using commands. Hard is EVERYTHING.",

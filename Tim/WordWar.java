@@ -20,6 +20,9 @@ package Tim;
 
 import org.pircbotx.User;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,10 +44,12 @@ class WordWar {
 	long break_duration;
 	boolean do_randomness;
 
-	private final int db_id;
+	final Integer db_id;
 	private final String channel;
 	private final String starter;
 	private final String name;
+
+	ConcurrentHashMap<String, Integer> members = new ConcurrentHashMap<>();
 
 	WordWar(long time, long to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness, String warname, User startingUser, String hosting_channel) {
 		this.starter = startingUser.getNick();
@@ -70,6 +75,10 @@ class WordWar {
 
 		if (this.time_to_start <= 0 && (!cdata.muzzled || cdata.auto_muzzled)) {
 			cdata.setMuzzleFlag(true, true);
+		}
+
+		if (Tim.warticker != null) {
+			Tim.warticker.wars_by_id.put(db_id, this);
 		}
 	}
 
@@ -103,6 +112,11 @@ class WordWar {
 		if (this.time_to_start <= 0 && (!cdata.muzzled || cdata.auto_muzzled)) {
 			cdata.setMuzzleFlag(true, true);
 		}
+
+		if (Tim.warticker != null) {
+			Tim.warticker.wars_by_id.put(db_id, this);
+		}
+		members = Tim.db.loadWarMembers(db_id);
 	}
 
 	void endWar() {
@@ -117,33 +131,56 @@ class WordWar {
 
 	void updateDb() {
 		Tim.db.update_war(db_id, duration, remaining, time_to_start, current_chain);
+		Tim.db.updateWarMembers(db_id, members);
+	}
+
+	public void addMember(String nick, Integer count) {
+		members.put(nick, count);
+		Tim.db.updateWarMembers(db_id, members);
+	}
+
+	public void removeMember(String nick) {
+		members.remove(nick);
+		Tim.db.updateWarMembers(db_id, members);
 	}
 
 	public String getChannel() {
 		return this.channel;
 	}
 
-	public String getName() {
-		String nameString;
+	public String getName(boolean includeId, boolean includeDuration, int idFieldWidth, int durationFieldWidth) {
+		ArrayList<String> nameParts = new ArrayList<>();
+
+		if (includeId) {
+			nameParts.add(String.format("[ID %"+idFieldWidth+"d]", db_id));
+		}
+
+		if (includeDuration) {
+			nameParts.add(String.format("[%"+durationFieldWidth+"s]", getDurationText(duration)));
+		}
+
+		nameParts.add(name);
 
 		if (total_chains > 1) {
-			nameString = name + " (" + current_chain + " / " + total_chains + ")";
-		} else {
-			nameString = name;
+			nameParts.add(String.format("(%d/%d)", current_chain, total_chains));
 		}
 
-		return nameString + " [" + getDurationText() + "]";
+		return String.join(" ", nameParts);
 	}
 
-	public String getName(boolean includeCounter) {
-		if (includeCounter) {
-			return getName();
-		} else {
-			return name;
-		}
+	public String getName(boolean includeId, boolean includeDuration) {
+		return getName(includeId, includeDuration, 1, 1);
 	}
 
-	private String getDurationText() {
+	public String getSimpleName() {
+		return getName(false, false);
+	}
+
+	public String getInternalName() {
+		return name.toLowerCase();
+	}
+
+	public String getDurationText(long duration) {
 		String text = "";
 		long hours = 0, minutes = 0, seconds, tmp;
 
@@ -181,32 +218,27 @@ class WordWar {
 	}
 
 	String getDescription() {
-		long minutes;
-		long seconds;
+		return getDescription(1, 1);
+	}
 
-		String about = "WordWar " + this.getName() + ":";
+	String getDescription(int idFieldWidth, int durationFieldWidth) {
+		String about = this.getName(true, true, idFieldWidth, durationFieldWidth) + " :: ";
 		if (this.time_to_start > 0) {
-			minutes = this.time_to_start / 60;
-			seconds = this.time_to_start % 60;
-			about += " starts in ";
+			about += "Starts In: ";
+			about += getDurationText(time_to_start);
 		} else {
-			minutes = this.remaining / 60;
-			seconds = this.remaining % 60;
-			about += " ends in ";
+			about += "Ends In: ";
+			about += getDurationText(remaining);
 		}
-		if (minutes > 0) {
-			about += minutes + " minutes";
-			if (seconds > 0) {
-				about += " and ";
-			}
-		}
-		if (seconds > 0) {
-			about += seconds + " seconds";
-		}
+
 		return about;
 	}
 
 	String getDescriptionWithChannel() {
-		return this.getDescription() + " in " + this.channel;
+		return this.getDescription(1, 1) + " :: " + this.channel;
+	}
+
+	String getDescriptionWithChannel(int idFieldWidth, int durationFieldWidth) {
+		return this.getDescription(idFieldWidth, durationFieldWidth) + " :: " + this.channel;
 	}
 }

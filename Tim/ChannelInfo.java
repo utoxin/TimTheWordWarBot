@@ -32,9 +32,9 @@ public class ChannelInfo {
 	User lastSpeaker;
 	long lastSpeakerTime;
 
-	int reactiveChatterLevel;
-	int randomChatterLevel;
-	int chatterNameMultiplier;
+	float reactiveChatterLevel;
+	float randomChatterLevel;
+	float chatterNameMultiplier;
 	
 	int velociraptorSightings;
 	int activeVelociraptors;
@@ -236,12 +236,12 @@ public class ChannelInfo {
 		}
 	}
 
-	void setReactiveChatter(int chatterLevel, int nameMultiplier) {
+	void setReactiveChatter(float chatterLevel, float nameMultiplier) {
 		this.reactiveChatterLevel = chatterLevel;
 		this.chatterNameMultiplier = nameMultiplier;
 	}
 
-	void setRandomChatter(int chatterLevel) {
+	void setRandomChatter(float chatterLevel) {
 		this.randomChatterLevel = chatterLevel;
 	}
 

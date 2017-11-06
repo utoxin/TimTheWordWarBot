@@ -135,16 +135,16 @@ class AdminCommandListener extends ListenerAdapter {
 							String target = args[0].toLowerCase();
 							if (Tim.db.channel_data.containsKey(target)) {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
-								event.respond("Reactive Chatter Level: " + ci.reactiveChatterLevel + "%/Msg - Name Multiplier: " + ci.chatterNameMultiplier);
-								event.respond("Random Chatter Level: " + ci.randomChatterLevel + "%/Min");
+								event.respond(String.format("Reactive Chatter Level: %6.3f%%/Msg - Name Multiplier: %6.3f", ci.reactiveChatterLevel, ci.chatterNameMultiplier));
+								event.respond(String.format("Random Chatter Level: %6.3f%%/Min", ci.randomChatterLevel));
 							} else {
 								event.respond("I don't know about " + target);
 							}
 						} else if (args != null && args.length == 4 && args[1].equalsIgnoreCase("reactive")) {
 							String target = args[0].toLowerCase();
 							if (Tim.db.channel_data.containsKey(target)) {
-								int level = Integer.parseInt(args[2]);
-								int multi = Integer.parseInt(args[3]);
+								float level = Float.parseFloat(args[2]);
+								float multi = Float.parseFloat(args[3]);
 
 								if (level < 0 || level > 100) {
 									event.respond("Chatter level must be between 0 and 100 (inclusive)");
@@ -163,7 +163,7 @@ class AdminCommandListener extends ListenerAdapter {
 						} else if (args != null && args.length == 3 && args[1].equalsIgnoreCase("random")) {
 							String target = args[0].toLowerCase();
 							if (Tim.db.channel_data.containsKey(target)) {
-								int level = Integer.parseInt(args[2]);
+								float level = Float.parseFloat(args[2]);
 
 								if (level < 0 || level > 100) {
 									event.respond("Chatter level must be between 0 and 100 (inclusive)");

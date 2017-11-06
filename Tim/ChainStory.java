@@ -122,9 +122,6 @@ class ChainStory {
 		}
 	}
 
-	void refreshDbLists() {
-	}
-
 	int wordcount() {
 		Connection con;
 		ResultSet rs;

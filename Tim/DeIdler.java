@@ -102,7 +102,9 @@ class DeIdler {
 			cdata = Tim.db.channel_data.get(cdata.channel);
 
 			// Maybe cure the stale channel mode warnings?
-			Tim.channelStorage.channelList.get(cdata.channel).getMode();
+			if (cdata.channel != null) {
+				Tim.channelStorage.channelList.get(cdata.channel).getMode();
+			}
 
 			if (cdata.muzzled) {
 				if (cdata.muzzledUntil > 0 && cdata.muzzledUntil < date.getTime() && !cdata.auto_muzzled) {
@@ -113,7 +115,7 @@ class DeIdler {
 				}
 			}
 
-			if (Tim.rand.nextInt(100) < cdata.randomChatterLevel) {
+			if ((Tim.rand.nextFloat() * 100) < cdata.randomChatterLevel) {
 				ArrayList<String> actions = new ArrayList<>();
 
 				if (cdata.chatter_enabled.get("markov")) {

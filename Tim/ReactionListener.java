@@ -218,13 +218,13 @@ class ReactionListener extends ListenerAdapter {
 			return;
 		}
 
-		long odds = cdata.reactiveChatterLevel;
+		float odds = cdata.reactiveChatterLevel;
 
 		if (message.toLowerCase().contains(Tim.bot.getNick().toLowerCase())) {
 			odds = odds * cdata.chatterNameMultiplier;
 		}
 
-		if (Tim.rand.nextInt(100) < odds) {
+		if ((Tim.rand.nextFloat() * 100) < odds) {
 			ArrayList<String> enabled_actions = new ArrayList<>(16);
 
 			if (cdata.chatter_enabled.get("markov")) {

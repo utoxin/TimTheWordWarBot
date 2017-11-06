@@ -361,11 +361,11 @@ public class DBAccess {
 					ci.setDefaultOptions();
 
 					ci.setReactiveChatter(
-						rs.getInt("reactive_chatter_level"),
-						rs.getInt("chatter_name_multiplier"));
+						rs.getFloat("reactive_chatter_level"),
+						rs.getFloat("chatter_name_multiplier"));
 
 					ci.setRandomChatter(
-						rs.getInt("random_chatter_level"));
+						rs.getFloat("random_chatter_level"));
 
 					ci.setTwitterTimers(
 						rs.getFloat("tweet_bucket_max"),
@@ -573,9 +573,9 @@ public class DBAccess {
 
 			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET reactive_chatter_level = ?, chatter_name_multiplier = ?, random_chatter_level = ?, tweet_bucket_max = ?, "
 				+ "tweet_bucket_charge_rate = ?, auto_muzzle_wars = ?, velociraptor_sightings = ?, active_velociraptors = ?, dead_velociraptors = ?, killed_velociraptors = ?, last_sighting_date = ? WHERE channel = ?;");
-			s.setInt(1, channel.reactiveChatterLevel);
-			s.setInt(2, channel.chatterNameMultiplier);
-			s.setInt(3, channel.randomChatterLevel);
+			s.setFloat(1, channel.reactiveChatterLevel);
+			s.setFloat(2, channel.chatterNameMultiplier);
+			s.setFloat(3, channel.randomChatterLevel);
 			s.setFloat(4, channel.tweetBucketMax);
 			s.setFloat(5, channel.tweetBucketChargeRate);
 			s.setBoolean(6, channel.auto_muzzle_wars);
@@ -678,7 +678,6 @@ public class DBAccess {
 		this.getDynamicLists();
 
 		Tim.amusement.refreshDbLists();
-		Tim.story.refreshDbLists();
 		Tim.markovProcessor.refreshDbLists();
 	}
 
@@ -751,6 +750,40 @@ public class DBAccess {
 		}
 	}
 
+	void updateWarMembers(int war_id, ConcurrentHashMap<String, Integer> warMembers) {
+		Connection con = null;
+		try {
+			con = pool.getConnection(timeout);
+			PreparedStatement purgeOld = con.prepareStatement("DELETE FROM war_members WHERE war_id = ?");
+			purgeOld.setInt(1, war_id);
+			purgeOld.execute();
+			purgeOld.close();
+
+			PreparedStatement addCurrent = con.prepareStatement("INSERT INTO war_members SET war_id = ?, nickname = ?, starting_count = ?");
+			for(Map.Entry<String, Integer> entry : warMembers.entrySet()) {
+				String nick = entry.getKey();
+				Integer wordCount = entry.getValue();
+
+				addCurrent.setInt(1, war_id);
+				addCurrent.setString(2, nick);
+				addCurrent.setInt(3, wordCount);
+				addCurrent.executeUpdate();
+			}
+
+			addCurrent.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+	}
+
 	ConcurrentHashMap<String, WordWar> loadWars() {
 		Connection con = null;
 		ConcurrentHashMap<String, WordWar> wars = new ConcurrentHashMap<>(32);
@@ -778,7 +811,7 @@ public class DBAccess {
 						rs.getInt("id")
 					);
 
-					wars.put(war.getName(false).toLowerCase(), war);
+					wars.put(war.getInternalName(), war);
 				}
 			}
 
@@ -797,5 +830,37 @@ public class DBAccess {
 		}
 
 		return wars;
+	}
+
+	ConcurrentHashMap<String, Integer> loadWarMembers(Integer war_id) {
+		Connection con = null;
+		ConcurrentHashMap<String, Integer> warMembers = new ConcurrentHashMap<>();
+
+		try {
+			con = pool.getConnection(timeout);
+
+			PreparedStatement fetchMembers = con.prepareStatement("SELECT * FROM `war_members` WHERE war_id = ?");
+			fetchMembers.setInt(1, war_id);
+			ResultSet rs = fetchMembers.executeQuery();
+
+			while (rs.next()) {
+				warMembers.put(rs.getString("nickname"), rs.getInt("starting_count"));
+			}
+
+			rs.close();
+			fetchMembers.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+
+		return warMembers;
 	}
 }
