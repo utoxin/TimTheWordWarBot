@@ -18,120 +18,121 @@ package Tim;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.pircbotx.Colors;
+import Tim.Commands.Amusement.Defenestrate;
+import Tim.Commands.Amusement.Dice;
+import Tim.Commands.Amusement.Fridge;
+import Tim.Commands.Amusement.Summon;
+import Tim.Commands.CommandHandler;
+import Tim.Commands.Utility.InteractionControls;
+import Tim.Data.CommandData;
+import Tim.Utility.CommandParser;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.MessageEvent;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- *
  * @author mwalker
  */
 class UserCommandListener extends ListenerAdapter {
+	private CommandHandler[] commandHandlers = {
+		new InteractionControls(),
+		Tim.story,
+		Tim.challenge,
+		Tim.amusement,
+		new Summon(),
+		new Defenestrate(),
+		new Fridge()
+	};
 
 	@Override
 	public void onMessage(MessageEvent event) {
-		if (event.getUser() == null) {
-			return;
-		}
+		if (event.getUser() != null && !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())) {
+			CommandData commandData = CommandParser.parseCommand(event);
 
-		String message = Colors.removeFormattingAndColors(event.getMessage());
+			if (commandData.type == CommandData.CommandType.TIMMY_USER) {
+				switch (commandData.command) {
+					case "eggtimer":
+						double time = 15;
+						if (commandData.args.length > 0) {
+							try {
+								time = Double.parseDouble(commandData.args[0]);
+							} catch (NumberFormatException e) {
+								event.respond("Could not understand first parameter. Was it numeric?");
+								return;
+							}
+						}
 
-		if (!Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())) {
-			if (message.charAt(0) == '!') {
-				if (message.startsWith("!skynet")) {
-					return;
-				}
-
-				String command;
-				String[] args = null;
-
-				int space = message.indexOf(" ");
-				if (space > 0) {
-					command = message.substring(1, space).toLowerCase();
-					args = message.substring(space + 1).split(" ", 0);
-				} else {
-					command = message.substring(1).toLowerCase();
-				}
-
-				if (command.equals("startwar")) {
-					if (args != null && args.length >= 1) {
-						Tim.warticker.startWar(event, args);
-					} else {
-						event.respond("Usage: !startwar <duration in min> [<time to start in min> [<name>]]");
-					}
-				} else if (command.equals("chainwar")) {
-					if (args != null && args.length > 1) {
-						Tim.warticker.startChainWar(event, args);
-					} else {
-						event.respond("Usage: !chainwar <duration in min> <war count> [<name>]");
-					}
-				} else if (command.equals("starwar")) {
-					event.respond("A long time ago, in a galaxy far, far away...");
-				} else if (command.equals("endwar")) {
-					Tim.warticker.endWar(event, args);
-				} else if (command.equals("listwars")) {
-					Tim.warticker.listWars(event, false);
-				} else if (command.equals("listall")) {
-					Tim.warticker.listAllWars(event);
-				} else if (command.equals("joinwar")) {
-					Tim.warticker.joinWar(event, args);
-				} else if (command.equals("leavewar")) {
-					Tim.warticker.leaveWar(event, args);
-				} else if (command.equals("boxodoom")) {
-					Tim.amusement.boxodoom(event, args);
-				} else if (command.equals("pickone")) {
-					Tim.amusement.pickone(event, args);
-				} else if (command.equals("eggtimer")) {
-					double time = 15;
-					if (args != null) {
+						event.respond("Your timer has been set.");
 						try {
-							time = Double.parseDouble(args[0]);
-						} catch (NumberFormatException e) {
-							event.respond("Could not understand first parameter. Was it numeric?");
-							return;
+							Thread.sleep((long) (time * 60 * 1000));
+						} catch (InterruptedException ex) {
+							Logger.getLogger(UserCommandListener.class.getName()).log(Level.SEVERE, null, ex);
 						}
-					}
+						event.respond("Your timer has expired!");
+						break;
 
-					event.respond("Your timer has been set.");
-					try {
-						Thread.sleep((long) (time * 60 * 1000));
-					} catch (InterruptedException ex) {
-						Logger.getLogger(UserCommandListener.class.getName()).log(Level.SEVERE, null, ex);
-					}
-					event.respond("Your timer has expired!");
-				} else if (command.equals("ignore")) {
-					if (args != null && (args[0].equals("soft") || args[0].equals("hard"))) {
-						if (args[0].equals("hard")) {
-							Tim.db.ignore_list.add(event.getUser().getNick().toLowerCase());
-							event.respond("Fine. I didn't like you either. See if I talk to you ever again...");
+					case "ignore":
+						if (commandData.args.length > 0 && (commandData.args[0].equals("soft") || commandData.args[0].equals("hard"))) {
+							if (commandData.args[0].equals("hard")) {
+								Tim.db.ignore_list.add(event.getUser().getNick().toLowerCase());
+								event.respond("Fine. I didn't like you either. See if I talk to you ever again...");
+							} else {
+								Tim.db.soft_ignore_list.add(event.getUser().getNick().toLowerCase());
+								event.respond("Okay, I'll stop bothering you. Sorry!");
+							}
+							Tim.db.saveIgnore(event.getUser().getNick().toLowerCase(), commandData.args[0]);
 						} else {
-							Tim.db.soft_ignore_list.add(event.getUser().getNick().toLowerCase());
-							event.respond("Okay, I'll stop bothering you. Sorry!");
+							event.respond("Usage: !ignore <soft/hard>");
+							event.respond("Warning: Hard ignores can only be cleared by admins.");
 						}
-						Tim.db.saveIgnore(event.getUser().getNick().toLowerCase(), args[0]);
-					} else {
-						event.respond("Usage: !ignore <soft/hard>");
-						event.respond("Warning: Hard ignores can only be cleared by admins.");
-					}
-				} else if (command.equals("unignore")) {
-					if (Tim.db.soft_ignore_list.remove(event.getUser().getNick().toLowerCase())) {
-						event.respond("Okay! Thanks! I'll try not to be /TOO/ annoying...");
-						Tim.db.deleteIgnore(event.getUser().getNick().toLowerCase());
-					} else {
-						event.respond("Okay... I wasn't ignoring you anyway. :)");
-					}
-				} else if (command.equals("help")) {
-					this.printCommandList(event);
-				} else if (command.equals("credits")) {
-					event.respond(
-						"I was created by MysteriousAges in 2008 using PHP, and ported to the Java PircBot library in 2009. "
-						+ "Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: "
-						+ "https://github.com/utoxin/TimTheWordWarBot, and my NaNoWriMo profile page is here: "
-						+ "http://nanowrimo.org/en/participants/timmybot");
-				} else if (!Tim.story.parseUserCommand(event) && !Tim.challenge.parseCommand(command, args, event) && !Tim.amusement.parseUserCommand(event)) {
-					event.respond("!" + command + " was not part of my training.");
+						break;
+
+					case "unignore":
+						if (Tim.db.soft_ignore_list.remove(event.getUser().getNick().toLowerCase())) {
+							event.respond("Okay! Thanks! I'll try not to be /TOO/ annoying...");
+							Tim.db.deleteIgnore(event.getUser().getNick().toLowerCase());
+						} else {
+							event.respond("Okay... I wasn't ignoring you anyway. :)");
+						}
+						break;
+
+					case "help":
+						this.printCommandList(event);
+						break;
+
+					case "credits":
+						event.respond(
+							"I was created by MysteriousAges in 2008 using PHP, and ported to the Java PircBot library in 2009. "
+								+ "Utoxin started helping during NaNoWriMo 2010. Sourcecode is available here: "
+								+ "https://github.com/utoxin/TimTheWordWarBot, and my NaNoWriMo profile page is here: "
+								+ "http://nanowrimo.org/en/participants/timmybot");
+						break;
+
+					default:
+						boolean commandHandled = false;
+
+						if (Tim.warticker != null) {
+							commandHandled = Tim.warticker.handleCommand(commandData);
+						}
+
+						if (!commandHandled) {
+							for (CommandHandler handler : this.commandHandlers) {
+								if (handler != null) {
+									if (handler.handleCommand(commandData)) {
+										commandHandled = true;
+										break;
+									}
+								}
+							}
+						}
+
+						if (!commandHandled) {
+							event.respond("!" + commandData.command + " was not part of my training.");
+						}
+
+						break;
 				}
 			}
 		}
@@ -146,22 +147,24 @@ class UserCommandListener extends ListenerAdapter {
 
 		String[] strs = {"I am a robot trained by the WordWar Monks of Honolulu. You have "
 			+ "never heard of them. It is because they are awesome.",
-						 "Word Wars:",
-						 "    !startwar <duration> <time to start> [<optional name>] - Starts a word war.",
-						 "    !chainwar <base duration> <war count> [<advanced controls>] [<name>] - Starts a series of wars.",
-						 "    !joinwar <war id> - Receive start and end private messages for the given war.",
-						 "    !leavewar <war id> - Unsubscribe from private messages about the given war.",
-			             "    !listwars - List the wars currently in progress in this channel.",
-			             "Advanced Chain War Controls:",
-			             "    break:<number of minutes> - How many minutes to use for the breaks between wars.",
-			             "    start:<number of minutes> - How many minutes to delay before starting the wars.",
-			             "    random:1 - Randomly vary the war duration by a small amount.",
-			             "Other Commands:",
-						 "    !boxodoom <difficulty> <duration> - Difficulty is extraeasy/easy/average/hard/extreme/insane/impossible/tadiera, duration in minutes.",
-						 "    !eggtimer <time> - I will send you a message after <time> minutes.",
-						 "    !ignore <hard/soft> - Make Timmy ignore you. Soft lets you keep using commands. Hard is EVERYTHING.",
-						 "    !unignore - Turn off soft ignores. Hard ignores have to be removed by an admin.",
-						 "    !credits - Details of my creators, and where to find my source code.",};
+			"Word Wars:",
+			"    !startwar <duration> <time to start> [<optional name>] - Starts a word war.",
+			"    !chainwar <base duration> <war count> [<advanced controls>] [<name>] - Starts a series of wars.",
+			"    !joinwar <war id> - Receive start and end private messages for the given war.",
+			"    !leavewar <war id> - Unsubscribe from private messages about the given war.",
+			"    !listwars - List the wars currently in progress in this channel.",
+			"    !listall - List the all wars currently in progress on the server.",
+			"    !endwar <war name or id> - Ends the indicated war early.",
+			"Advanced Chain War Controls:",
+			"    break:<number of minutes> - How many minutes to use for the breaks between wars.",
+			"    start:<number of minutes> - How many minutes to delay before starting the wars.",
+			"    random:1 - Randomly vary the war duration by a small amount.",
+			"Other Commands:",
+			"    !boxodoom <difficulty> <duration> - Difficulty is extraeasy/easy/average/hard/extreme/insane/impossible/tadiera, duration in minutes.",
+			"    !eggtimer <time> - I will send you a message after <time> minutes.",
+			"    !ignore <hard/soft> - Make Timmy ignore you. Soft lets you keep using commands. Hard is EVERYTHING.",
+			"    !unignore - Turn off soft ignores. Hard ignores have to be removed by an admin.",
+			"    !credits - Details of my creators, and where to find my source code.",};
 		for (String str : strs) {
 			event.getUser().send().message(str);
 		}
@@ -169,9 +172,11 @@ class UserCommandListener extends ListenerAdapter {
 		Tim.story.helpSection(event);
 		Tim.challenge.helpSection(event);
 		Tim.amusement.helpSection(event);
+		InteractionControls.helpSection(event);
+		Dice.helpSection(event);
 
 		String[] post = {"I... I think there might be other tricks I know... You'll have to find them!",
-						 "I will also respond to the /invite command if you would like to see me in another channel. "
+			"I will also respond to the /invite command if you would like to see me in another channel. "
 		};
 		for (String aPost : post) {
 			event.getUser().send().message(aPost);

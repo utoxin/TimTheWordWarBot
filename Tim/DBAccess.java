@@ -50,6 +50,7 @@ public class DBAccess {
 	Set<String> soft_ignore_list = new HashSet<>(16);
 	public HashMap<String, Set<ChannelInfo>> channel_groups = new HashMap<>();
 	public HashMap<String, List<String>> dynamic_lists = new HashMap<>();
+	public HashMap<String, HashMap<String, Boolean>> userInteractionSettings = new HashMap<>();
 	ConnectionPool pool;
 
 	private DBAccess() {
@@ -676,6 +677,7 @@ public class DBAccess {
 		this.getFlavourList();
 		this.getItemList();
 		this.getDynamicLists();
+		this.loadInteractionSettings();
 
 		Tim.amusement.refreshDbLists();
 		Tim.markovProcessor.refreshDbLists();
@@ -862,5 +864,81 @@ public class DBAccess {
 		}
 
 		return warMembers;
+	}
+
+	private void loadInteractionSettings() {
+		Connection con = null;
+		try {
+			con = pool.getConnection(timeout);
+
+			Statement s = con.createStatement();
+			s.executeQuery("SELECT `username`, `setting`, `value` FROM `user_interaction_settings`");
+
+			ResultSet rs = s.getResultSet();
+			this.userInteractionSettings.clear();
+
+			while (rs.next()) {
+				String username = rs.getString("username");
+				String setting = rs.getString("setting");
+				Boolean value = rs.getBoolean("value");
+
+				HashMap<String, Boolean> userMap;
+				if (!userInteractionSettings.containsKey(username)) {
+					userMap = new HashMap<>();
+					userInteractionSettings.put(username, userMap);
+				} else {
+					userMap = userInteractionSettings.get(username);
+				}
+
+				userMap.put(setting, value);
+			}
+
+			rs.close();
+			s.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+	}
+
+	public void saveInteractionSettings() {
+		Connection con = null;
+		try {
+			con = pool.getConnection(timeout);
+
+			con.createStatement().execute("TRUNCATE `user_interaction_settings`");
+			PreparedStatement s = con.prepareStatement("INSERT INTO `user_interaction_settings` SET `username` = ?, `setting` = ?, `value` = ?");
+
+			for (String user : userInteractionSettings.keySet()) {
+				HashMap<String, Boolean> userMap = userInteractionSettings.get(user);
+
+				for (String setting : userMap.keySet()) {
+					s.setString(1, user);
+					s.setString(2, setting);
+					s.setBoolean(3, userMap.get(setting));
+
+					s.execute();
+				}
+			}
+
+			s.close();
+		} catch (SQLException ex) {
+			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+		} finally {
+			try {
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException ex) {
+				Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
 	}
 }

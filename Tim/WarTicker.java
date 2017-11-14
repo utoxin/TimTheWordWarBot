@@ -26,18 +26,17 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import Tim.Commands.CommandHandler;
+import Tim.Data.CommandData;
 import Tim.Utility.Permissions;
 import org.apache.commons.lang3.StringUtils;
-import org.pircbotx.hooks.events.MessageEvent;
 
-class WarTicker {
+class WarTicker implements CommandHandler {
 	WarClockThread warTicker;
 	ConcurrentHashMap<String, WordWar> wars;
-	ConcurrentHashMap<Integer, WordWar> wars_by_id = new ConcurrentHashMap<Integer, WordWar>();
+	ConcurrentHashMap<Integer, WordWar> wars_by_id = new ConcurrentHashMap<>();
 
 	private WarTicker() {
-		Logger.getLogger(WarTicker.class.getName()).log(Level.INFO, "War Ticker Loading...");
-
 		Timer ticker;
 
 		this.wars = Tim.db.loadWars();
@@ -45,13 +44,59 @@ class WarTicker {
 			this.wars_by_id.put(war.db_id, war);
 		}
 
-		Logger.getLogger(WarTicker.class.getName()).log(Level.INFO, "War Ticker Scheduling...");
-
 		this.warTicker = new WarClockThread(this);
 		ticker = new Timer(true);
 		ticker.scheduleAtFixedRate(this.warTicker, 0, 1000);
+	}
 
-		Logger.getLogger(WarTicker.class.getName()).log(Level.INFO, "War Ticker Loaded");
+	@Override
+	public boolean handleCommand(CommandData commandData) {
+		String[] args = commandData.args;
+
+		switch (commandData.command) {
+			case "startwar":
+				if (args != null && args.length >= 1) {
+					startWar(commandData);
+				} else {
+					commandData.event.respond("Usage: !startwar <duration in min> [<time to start in min> [<name>]]");
+				}
+				return true;
+
+			case "chainwar":
+				if (args != null && args.length > 1) {
+					startChainWar(commandData);
+				} else {
+					commandData.event.respond("Usage: !chainwar <duration in min> <war count> [<name>]");
+				}
+				return true;
+
+			case "starwar":
+				commandData.event.respond("A long time ago, in a galaxy far, far away...");
+				return true;
+
+			case "endwar":
+				endWar(commandData);
+				return true;
+
+			case "listwars":
+				listWars(commandData, false);
+				return true;
+
+			case "listall":
+				listAllWars(commandData);
+				return true;
+
+			case "joinwar":
+				joinWar(commandData);
+				return true;
+
+			case "leavewar":
+				leaveWar(commandData);
+				return true;
+
+			default:
+				return false;
+		}
 	}
 
 	private static class SingletonHelper {
@@ -69,7 +114,6 @@ class WarTicker {
 
 	@SuppressWarnings("WeakerAccess")
 	class WarClockThread extends TimerTask {
-
 		private final WarTicker parent;
 
 		WarClockThread(WarTicker parent) {
@@ -237,82 +281,70 @@ class WarTicker {
 		}
 	}
 
-	void joinWar(MessageEvent event, String[] args) {
-		if (event.getUser() == null) {
-			return;
-		}
-
-		if (args == null || args.length == 0) {
-			event.respond("Usage: !joinwar <war id> [<starting wordcount>]");
+	private void joinWar(CommandData commandData) {
+		if (commandData.args == null || commandData.args.length == 0) {
+			commandData.event.respond("Usage: !joinwar <war id> [<starting wordcount>]");
 		} else {
-			Integer war_id, wordcount = null;
+			Integer war_id, wordcount;
 
 			try {
-				war_id = Integer.parseInt(args[0]);
+				war_id = Integer.parseInt(commandData.args[0]);
 
 				if (!wars_by_id.containsKey(war_id)) {
-					event.respond("That war id was not found.");
+					commandData.event.respond("That war id was not found.");
 					return;
 				}
 			} catch (NumberFormatException exception) {
-				event.respond("Could not understand first parameter. Was it a number?");
+				commandData.event.respond("Could not understand first parameter. Was it a number?");
 				return;
 			}
 
-			if (args.length == 2) {
+			if (commandData.args.length == 2) {
 				try {
-					wordcount = Integer.parseInt(args[1]);
+					wordcount = Integer.parseInt(commandData.args[1]);
 				} catch (NumberFormatException exception) {
-					event.respond("Could not understand second parameter. Was it a number?");
+					commandData.event.respond("Could not understand second parameter. Was it a number?");
 				}
 			}
 
 			// TODO: This is a hack to get this working. Replace once we have working stats
 			wordcount = 0;
 
-			wars_by_id.get(war_id).addMember(event.getUser().getNick(), wordcount);
-			event.respond("You have joined the war.");
+			wars_by_id.get(war_id).addMember(commandData.issuer, wordcount);
+			commandData.event.respond("You have joined the war.");
 		}
 	}
 
-	void leaveWar(MessageEvent event, String[] args) {
-		if (event.getUser() == null) {
-			return;
-		}
-
-		if (args == null || args.length == 0) {
-			event.respond("Usage: !leavewar <war id>");
+	private void leaveWar(CommandData commandData) {
+		if (commandData.args == null || commandData.args.length == 0) {
+			commandData.event.respond("Usage: !leavewar <war id>");
 		} else {
 			Integer war_id, wordcount = null;
 
 			try {
-				war_id = Integer.parseInt(args[0]);
+				war_id = Integer.parseInt(commandData.args[0]);
 
 				if (!wars_by_id.containsKey(war_id)) {
-					event.respond("That war id was not found.");
+					commandData.event.respond("That war id was not found.");
 					return;
 				}
 			} catch (NumberFormatException exception) {
-				event.respond("Could not understand first parameter. Was it a number?");
+				commandData.event.respond("Could not understand first parameter. Was it a number?");
 				return;
 			}
 
-			wars_by_id.get(war_id).removeMember(event.getUser().getNick());
-			event.respond("You have left the war.");
+			wars_by_id.get(war_id).removeMember(commandData.issuer);
+			commandData.event.respond("You have left the war.");
 		}
 	}
 
 	// !endwar <name>
-	void endWar(MessageEvent event, String[] args) {
-		if (event.getUser() == null) {
-			return;
-		}
-
-		if (args != null && args.length > 0) {
-			String name = StringUtils.join(args, " ");
+	private void endWar(CommandData commandData) {
+		if (commandData.args != null && commandData.args.length > 0) {
+			String name = StringUtils.join(commandData.args, " ");
 
 			if (this.wars.containsKey(name.toLowerCase())) {
-				removeWar(event, this.wars.get(name.toLowerCase()));
+				removeWar(commandData, this.wars.get(name.toLowerCase()));
 			} else {
 				int war_id = 0;
 				try {
@@ -322,38 +354,30 @@ class WarTicker {
 				}
 
 				if (this.wars_by_id.containsKey(war_id)) {
-					removeWar(event, this.wars_by_id.get(war_id));
+					removeWar(commandData, this.wars_by_id.get(war_id));
 				} else {
-					event.respond("I don't know of a war with name or ID '" + name + "'.");
+					commandData.event.respond("I don't know of a war with name or ID '" + name + "'.");
 				}
 			}
 		} else {
-			event.respond("Syntax: !endwar <name or war id>");
+			commandData.event.respond("Syntax: !endwar <name or war id>");
 		}
 	}
 
-	private void removeWar(MessageEvent event, WordWar war) {
-		if (event.getUser() == null) {
-			return;
-		}
-
-		if (event.getUser().getNick().equalsIgnoreCase(war.getStarter())
-			|| Permissions.isAdmin(event)) {
+	private void removeWar(CommandData commandData, WordWar war) {
+		if (commandData.issuer.equalsIgnoreCase(war.getStarter())
+			|| Permissions.isAdmin(commandData)) {
 			this.wars.remove(war.getInternalName());
 			this.wars_by_id.remove(war.db_id);
 
 			war.endWar();
-			event.respond(war.getSimpleName() + " has been ended.");
+			commandData.event.respond(war.getSimpleName() + " has been ended.");
 		} else {
-			event.respond("Only the starter of a war can end it early.");
+			commandData.event.respond("Only the starter of a war can end it early.");
 		}
 	}
 
-	void startChainWar(MessageEvent event, String[] args) {
-		if (event.getUser() == null) {
-			return;
-		}
-
+	private void startChainWar(CommandData commandData) {
 		long time;
 		long to_start = 60;
 		int total_chains;
@@ -363,21 +387,21 @@ class WarTicker {
 		StringBuilder warName = new StringBuilder();
 
 		try {
-			time = (long) (Double.parseDouble(args[0]) * 60);
+			time = (long) (Double.parseDouble(commandData.args[0]) * 60);
 		} catch (NumberFormatException e) {
-			event.respond("I could not understand the duration parameter. Was it numeric?");
+			commandData.event.respond("I could not understand the duration parameter. Was it numeric?");
 			return;
 		}
 
 		try {
-			total_chains = Integer.parseInt(args[1]);
+			total_chains = Integer.parseInt(commandData.args[1]);
 		} catch (NumberFormatException e) {
-			event.respond("I could not understand the time to start parameter. Was it numeric?");
+			commandData.event.respond("I could not understand the time to start parameter. Was it numeric?");
 			return;
 		}
 
 		if (time < 60) {
-			event.respond("Duration must be at least 1 minute.");
+			commandData.event.respond("Duration must be at least 1 minute.");
 			return;
 		}
 
@@ -388,125 +412,126 @@ class WarTicker {
 		Pattern startDelayPattern = Pattern.compile("^start:([0-9.]+)$");
 		Matcher m;
 
-		if (args.length >= 3) {
-			for (int i = 2; i < args.length; i++) {
-				m = breakPattern.matcher(args[i]);
+		if (commandData.args.length >= 3) {
+			for (int i = 2; i < commandData.args.length; i++) {
+				m = breakPattern.matcher(commandData.args[i]);
 				if (m.find()) {
 					try {
 						delay = (int) (Double.parseDouble(m.group(1)) * 60);
 					} catch (NumberFormatException e) {
-						Logger.getLogger(WarTicker.class.getName()).log(Level.INFO, "Input: ''{0}'' Found String: ''{1}''", new Object[]{args[1], m.group(1)});
+						Logger.getLogger(WarTicker.class.getName()).log(Level.INFO, "Input: ''{0}'' Found String: ''{1}''", new Object[]{commandData.args[1], m.group(1)});
 					}
 					continue;
 				}
 
-				m = startDelayPattern.matcher(args[i]);
+				m = startDelayPattern.matcher(commandData.args[i]);
 				if (m.find()) {
 					try {
 						to_start = (int) (Double.parseDouble(m.group(1)) * 60);
 					} catch (NumberFormatException e) {
-						Logger.getLogger(WarTicker.class.getName()).log(Level.INFO, "Input: ''{0}'' Found String: ''{1}''", new Object[]{args[1], m.group(1)});
+						Logger.getLogger(WarTicker.class.getName()).log(Level.INFO, "Input: ''{0}'' Found String: ''{1}''", new Object[]{commandData.args[1], m.group(1)});
 					}
 					continue;
 				}
 
-				m = randomnessPattern.matcher(args[i]);
+				m = randomnessPattern.matcher(commandData.args[i]);
 				if (m.find()) {
 					try {
 						if (Integer.parseInt(m.group(1)) == 1) {
 							do_randomness = true;
 						}
 					} catch (NumberFormatException e) {
-						Logger.getLogger(WarTicker.class.getName()).log(Level.INFO, "Input: ''{0}'' Found String: ''{1}''", new Object[]{args[1], m.group(1)});
+						Logger.getLogger(WarTicker.class.getName()).log(Level.INFO, "Input: ''{0}'' Found String: ''{1}''", new Object[]{commandData.args[1], m.group(1)});
 					}
 					continue;
 				}
 
 				if (warName.toString().equals("")) {
-					warName = new StringBuilder(args[i]);
+					warName = new StringBuilder(commandData.args[i]);
 				} else {
-					warName.append(" ").append(args[i]);
+					warName.append(" ").append(commandData.args[i]);
 				}
 			}
 		}
 
 		if (warName.toString().equals("")) {
-			warName = new StringBuilder(event.getUser().getNick() + "'s War");
+			warName = new StringBuilder(commandData.issuer + "'s War");
 		}
 
 		if (!this.wars.containsKey(warName.toString().toLowerCase())) {
-			WordWar war = new WordWar(time, to_start, total_chains, 1, delay, do_randomness, warName.toString(), event.getUser(), event.getChannel().getName());
+			WordWar war = new WordWar(time, to_start, total_chains, 1, delay, do_randomness, warName.toString(), commandData.getUserEvent().getUser(), commandData.event.getChannel().getName());
 			this.wars.put(war.getInternalName(), war);
+			war.addMember(commandData.issuer, 0);
+
 			if (to_start > 0) {
-				event.respond(String.format("Your word war, %s, will start in " + to_start / 60.0 + " minutes. The ID is: %d.", war.getSimpleName(), war.db_id));
+				commandData.event.respond(String.format("Your word war, %s, will start in " + to_start / 60.0 + " minutes. The ID is: %d.", war.getSimpleName(), war.db_id));
 			} else {
 				this.beginWar(war);
 			}
 		} else {
-			event.respond("There is already a war with the name '" + warName + "'");
+			commandData.event.respond("There is already a war with the name '" + warName + "'");
 		}
 	}
 
-	void startWar(MessageEvent event, String[] args) {
-		if (event.getUser() == null) {
-			return;
-		}
-
+	private void startWar(CommandData commandData) {
 		long time;
 		long to_start = 60;
 		StringBuilder warname;
 		try {
-			time = (long) (Double.parseDouble(args[0]) * 60);
+			time = (long) (Double.parseDouble(commandData.args[0]) * 60);
 		} catch (NumberFormatException e) {
-			event.respond("I could not understand the duration parameter. Was it numeric?");
+			commandData.event.respond("I could not understand the duration parameter. Was it numeric?");
 			return;
 		}
 
-		if (args.length >= 2) {
+		if (commandData.args.length >= 2) {
 			try {
-				to_start = (long) (Double.parseDouble(args[1]) * 60);
+				to_start = (long) (Double.parseDouble(commandData.args[1]) * 60);
 			} catch (NumberFormatException e) {
-				if (args[1].equalsIgnoreCase("now")) {
+				if (commandData.args[1].equalsIgnoreCase("now")) {
 					to_start = 0;
 				} else {
-					event.respond("I could not understand the time to start parameter. Was it numeric?");
+					commandData.event.respond("I could not understand the time to start parameter. Was it numeric?");
 					return;
 				}
 			}
 		}
 
 		if (time < 60) {
-			event.respond("Duration must be at least 1 minute.");
+			commandData.event.respond("Duration must be at least 1 minute.");
 			return;
 		}
 
-		if (args.length >= 3) {
-			warname = new StringBuilder(args[2]);
-			for (int i = 3; i < args.length; i++) {
-				warname.append(" ").append(args[i]);
+		if (commandData.args.length >= 3) {
+			warname = new StringBuilder(commandData.args[2]);
+			for (int i = 3; i < commandData.args.length; i++) {
+				warname.append(" ").append(commandData.args[i]);
 			}
 		} else {
-			warname = new StringBuilder(event.getUser().getNick() + "'s War");
+			warname = new StringBuilder(commandData.getUserEvent().getUser().getNick() + "'s War");
 		}
 
 		if (!this.wars.containsKey(warname.toString().toLowerCase())) {
-			WordWar war = new WordWar(time, to_start, 1, 1, 0, false, warname.toString(), event.getUser(), event.getChannel().getName());
+			WordWar war = new WordWar(time, to_start, 1, 1, 0, false, warname.toString(),
+				commandData.getUserEvent().getUser(), commandData.event.getChannel().getName());
 			this.wars.put(war.getInternalName(), war);
+			war.addMember(commandData.issuer, 0);
+
 			if (to_start > 0) {
-				event.respond(String.format("Your word war, %s, will start in " + to_start / 60.0 + " minutes. The ID is: %d.", war.getSimpleName(), war.db_id));
+				commandData.event.respond(String.format("Your word war, %s, will start in " + to_start / 60.0 + " minutes. The ID is: %d.", war.getSimpleName(), war.db_id));
 			} else {
 				this.beginWar(war);
 			}
 		} else {
-			event.respond("There is already a war with the name '" + warname + "'");
+			commandData.event.respond("There is already a war with the name '" + warname + "'");
 		}
 	}
 
-	void listAllWars(MessageEvent event) {
-		this.listWars(event, true);
+	private void listAllWars(CommandData commandData) {
+		this.listWars(commandData, true);
 	}
 
-	void listWars(MessageEvent event, boolean all) {
+	private void listWars(CommandData commandData, boolean all) {
 		boolean responded = false;
 
 		if (this.wars != null && this.wars.size() > 0) {
@@ -524,15 +549,15 @@ class WarTicker {
 			}
 
 			for (WordWar war : this.wars.values()) {
-				if (all || war.getChannel().equalsIgnoreCase(event.getChannel().getName())) {
-					event.respond(all ? war.getDescriptionWithChannel(maxIdLength, maxDurationLength) : war.getDescription(maxIdLength, maxDurationLength));
+				if (all || war.getChannel().equalsIgnoreCase(commandData.event.getChannel().getName())) {
+					commandData.event.respond(all ? war.getDescriptionWithChannel(maxIdLength, maxDurationLength) : war.getDescription(maxIdLength, maxDurationLength));
 					responded = true;
 				}
 			}
 		}
 
 		if (!responded) {
-			event.respond("No wars are currently available.");
+			commandData.event.respond("No wars are currently available.");
 		}
 	}
 }

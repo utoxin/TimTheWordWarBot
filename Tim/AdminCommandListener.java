@@ -21,8 +21,10 @@ package Tim;
 import java.util.Date;
 import java.util.regex.Pattern;
 
-import Tim.AdminCommands.ChannelGroups;
-import Tim.AdminCommands.Shout;
+import Tim.Commands.Utility.ChannelGroups;
+import Tim.Commands.Utility.Shout;
+import Tim.Data.CommandData;
+import Tim.Utility.CommandParser;
 import Tim.Utility.Permissions;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Colors;
@@ -35,10 +37,13 @@ import org.pircbotx.hooks.events.PrivateMessageEvent;
  * @author Matthew Walker
  */
 class AdminCommandListener extends ListenerAdapter {
+	private ChannelGroups channelGroups = new ChannelGroups();
+	private Shout shout = new Shout();
 
 	@Override
 	public void onMessage(MessageEvent event) {
 		String message = Colors.removeFormattingAndColors(event.getMessage());
+		CommandData commandData = CommandParser.parseCommand(event);
 
 		if (message.charAt(0) == '$') {
 			if (message.startsWith("$skynet")) {
@@ -49,20 +54,14 @@ class AdminCommandListener extends ListenerAdapter {
 				event.respond("Thank you for your donation to my pizza fund!");
 			} else if (Pattern.matches("\\$-\\d+.*", message)) {
 				event.respond("No stealing from the pizza fund, or I'll report you to Skynet!");
-			} else if (Permissions.isAdmin(event)) {
-				String command;
-				String[] args = null;
+			} else if (Permissions.isAdmin(commandData)) {
+				String command = commandData.command;
+				String[] args = commandData.args;
 
-				int space = message.indexOf(" ");
-				if (space > 0) {
-					command = message.substring(1, space).toLowerCase();
-					args = message.substring(space + 1).split(" ", 0);
-				} else {
-					command = message.substring(1).toLowerCase();
-				}
 				switch (command) {
 					case "channelgroup":
-						ChannelGroups.parseCommand(args, event);
+						//noinspection ResultOfMethodCallIgnored
+						channelGroups.parseAdminCommand(command, args, event);
 						break;
 					case "setmuzzleflag":
 						if (args != null && args.length == 2) {
@@ -426,7 +425,7 @@ class AdminCommandListener extends ListenerAdapter {
 						);
 						break;
 					case "shout":
-						Shout.parseCommand(args, event);
+						shout.parseAdminCommand(message, args, event);
 						break;
 					case "part":
 						event.getChannel().send().part();

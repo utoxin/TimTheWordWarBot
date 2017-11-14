@@ -1,29 +1,48 @@
-package Tim.UserCommands.Amusement;
+package Tim.Commands.Amusement;
 
 import Tim.ChannelInfo;
+import Tim.Commands.CommandHandler;
+import Tim.Commands.Utility.InteractionControls;
+import Tim.Data.CommandData;
 import Tim.Tim;
-import Tim.UserCommands.UserCommandInterface;
+import Tim.Utility.Response;
 import Tim.Utility.TagReplacer;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Channel;
 import org.pircbotx.User;
-import org.pircbotx.hooks.events.MessageEvent;
 
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Defenestrate implements UserCommandInterface {
+public class Defenestrate implements CommandHandler {
+	private HashSet<String> handledCommands = new HashSet<>();
+
+	public Defenestrate() {
+		handledCommands.add("defenestrate");
+	}
+
 	@Override
-	public boolean parseCommand(String command, String[] args, MessageEvent event) {
-		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
+	public boolean handleCommand(CommandData commandData) {
+		if (handledCommands.contains(commandData.command)) {
+			ChannelInfo cdata = Tim.db.channel_data.get(commandData.event.getChannel().getName().toLowerCase());
 
-		if (cdata.commands_enabled.get("defenestrate")) {
-			defenestrate(event.getChannel(), event.getUser(), args, true);
+			if (cdata.commands_enabled.get("defenestrate")) {
+				if (
+					((commandData.args == null || commandData.args.length == 0) && InteractionControls.interactWithUser(commandData.issuer, "defenestrate")) ||
+						(commandData.args != null && commandData.args.length > 0 && InteractionControls.interactWithUser(commandData.args[0], "defenestrate"))) {
+					defenestrate(commandData.event.getChannel(), commandData.getUserEvent().getUser(), commandData.args, true);
+				} else {
+					commandData.event.respond("I'm sorry, it's been requested that I not do that.");
+				}
+			} else {
+				commandData.event.respond("I'm sorry. I don't do that here.");
+			}
+
+			return true;
 		} else {
-			event.respond("I'm sorry. I don't do that here.");
+			return false;
 		}
-
-		return true;
 	}
 
 	public void defenestrate(Channel channel, User sender, String[] args, Boolean righto) {
@@ -38,6 +57,11 @@ public class Defenestrate implements UserCommandInterface {
 						break;
 					}
 				}
+			}
+
+			if (!InteractionControls.interactWithUser(target, "defenestrate")) {
+				Response.sendResponse(channel.getName(), sender.getNick(), "I'm sorry, it's been requested that I not do that.");
+				return;
 			}
 
 			if (righto) {
@@ -73,5 +97,4 @@ public class Defenestrate implements UserCommandInterface {
 			Logger.getLogger(Defenestrate.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-
 }

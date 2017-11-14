@@ -84,6 +84,62 @@ public class ChannelInfo {
 		this.channel = channel;
 	}
 
+	static public HashMap<String, Boolean> getCommandDefaults() {
+		HashMap<String, Boolean> command_defaults = new HashMap<>();
+
+		command_defaults.put("attack", Boolean.TRUE);
+		command_defaults.put("banish", Boolean.TRUE);
+		command_defaults.put("catch", Boolean.TRUE);
+		command_defaults.put("chainstory", Boolean.TRUE);
+		command_defaults.put("challenge", Boolean.TRUE);
+		command_defaults.put("commandment", Boolean.TRUE);
+		command_defaults.put("defenestrate", Boolean.TRUE);
+		command_defaults.put("dance", Boolean.TRUE);
+		command_defaults.put("dice", Boolean.TRUE);
+		command_defaults.put("eightball", Boolean.TRUE);
+		command_defaults.put("expound", Boolean.TRUE);
+		command_defaults.put("foof", Boolean.TRUE);
+		command_defaults.put("fridge", Boolean.TRUE);
+		command_defaults.put("get", Boolean.TRUE);
+		command_defaults.put("herd", Boolean.TRUE);
+		command_defaults.put("lick", Boolean.FALSE);
+		command_defaults.put("ping", Boolean.TRUE);
+		command_defaults.put("search", Boolean.TRUE);
+		command_defaults.put("sing", Boolean.TRUE);
+		command_defaults.put("summon", Boolean.TRUE);
+		command_defaults.put("velociraptor", Boolean.TRUE);
+		command_defaults.put("woot", Boolean.TRUE);
+
+		return command_defaults;
+	}
+
+	static public HashMap<String, Boolean> getChatterDefaults() {
+		HashMap<String, Boolean> chatter_defaults = new HashMap<>();
+
+		chatter_defaults.put("banish", Boolean.TRUE);
+		chatter_defaults.put("bored", Boolean.FALSE);
+		chatter_defaults.put("catch", Boolean.TRUE);
+		chatter_defaults.put("chainstory", Boolean.TRUE);
+		chatter_defaults.put("challenge", Boolean.TRUE);
+		chatter_defaults.put("dance", Boolean.TRUE);
+		chatter_defaults.put("defenestrate", Boolean.TRUE);
+		chatter_defaults.put("eightball", Boolean.TRUE);
+		chatter_defaults.put("foof", Boolean.TRUE);
+		chatter_defaults.put("fridge", Boolean.TRUE);
+		chatter_defaults.put("get", Boolean.TRUE);
+		chatter_defaults.put("greetings", Boolean.TRUE);
+		chatter_defaults.put("helpful_reactions", Boolean.TRUE);
+		chatter_defaults.put("herd", Boolean.TRUE);
+		chatter_defaults.put("markov", Boolean.TRUE);
+		chatter_defaults.put("search", Boolean.TRUE);
+		chatter_defaults.put("silly_reactions", Boolean.TRUE);
+		chatter_defaults.put("sing", Boolean.TRUE);
+		chatter_defaults.put("summon", Boolean.TRUE);
+		chatter_defaults.put("velociraptor", Boolean.TRUE);
+
+		return chatter_defaults;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
@@ -121,49 +177,8 @@ public class ChannelInfo {
 		tweetBucket = 5;
 		tweetBucketChargeRate = 0.5f;
 
-		chatter_enabled.put("banish", Boolean.TRUE);
-		chatter_enabled.put("bored", Boolean.FALSE);
-		chatter_enabled.put("catch", Boolean.TRUE);
-		chatter_enabled.put("chainstory", Boolean.TRUE);
-		chatter_enabled.put("challenge", Boolean.TRUE);
-		chatter_enabled.put("dance", Boolean.TRUE);
-		chatter_enabled.put("defenestrate", Boolean.TRUE);
-		chatter_enabled.put("eightball", Boolean.TRUE);
-		chatter_enabled.put("foof", Boolean.TRUE);
-		chatter_enabled.put("fridge", Boolean.TRUE);
-		chatter_enabled.put("get", Boolean.TRUE);
-		chatter_enabled.put("greetings", Boolean.TRUE);
-		chatter_enabled.put("helpful_reactions", Boolean.TRUE);
-		chatter_enabled.put("herd", Boolean.TRUE);
-		chatter_enabled.put("markov", Boolean.TRUE);
-		chatter_enabled.put("search", Boolean.TRUE);
-		chatter_enabled.put("silly_reactions", Boolean.TRUE);
-		chatter_enabled.put("sing", Boolean.TRUE);
-		chatter_enabled.put("summon", Boolean.TRUE);
-		chatter_enabled.put("velociraptor", Boolean.TRUE);
-
-		commands_enabled.put("attack", Boolean.TRUE);
-		commands_enabled.put("banish", Boolean.TRUE);
-		commands_enabled.put("catch", Boolean.TRUE);
-		commands_enabled.put("chainstory", Boolean.TRUE);
-		commands_enabled.put("challenge", Boolean.TRUE);
-		commands_enabled.put("commandment", Boolean.TRUE);
-		commands_enabled.put("defenestrate", Boolean.TRUE);
-		commands_enabled.put("dance", Boolean.TRUE);
-		commands_enabled.put("dice", Boolean.TRUE);
-		commands_enabled.put("eightball", Boolean.TRUE);
-		commands_enabled.put("expound", Boolean.TRUE);
-		commands_enabled.put("foof", Boolean.TRUE);
-		commands_enabled.put("fridge", Boolean.TRUE);
-		commands_enabled.put("get", Boolean.TRUE);
-		commands_enabled.put("herd", Boolean.TRUE);
-		commands_enabled.put("lick", Boolean.FALSE);
-		commands_enabled.put("ping", Boolean.TRUE);
-		commands_enabled.put("search", Boolean.TRUE);
-		commands_enabled.put("sing", Boolean.TRUE);
-		commands_enabled.put("summon", Boolean.TRUE);
-		commands_enabled.put("velociraptor", Boolean.TRUE);
-		commands_enabled.put("woot", Boolean.TRUE);
+		chatter_enabled.putAll(getChatterDefaults());
+		commands_enabled.putAll(getCommandDefaults());
 	}
 
 	boolean amusement_chatter_available() {

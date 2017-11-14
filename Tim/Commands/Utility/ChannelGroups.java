@@ -1,10 +1,10 @@
-package Tim.AdminCommands;
+package Tim.Commands.Utility;
 
+import Tim.Commands.AdminCommandInterface;
 import Tim.Tim;
 import Tim.ChannelInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.hooks.events.MessageEvent;
-
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,8 +17,9 @@ import java.util.stream.Collectors;
  *     $channelgroups destroy <group>
  */
 
-public final class ChannelGroups {
-	public static void parseCommand(String[] args, MessageEvent event) {
+public final class ChannelGroups implements AdminCommandInterface {
+	@Override
+	public boolean parseAdminCommand(String command, String[] args, MessageEvent event) {
 		if (args != null && args.length == 1 && args[0].equalsIgnoreCase("list")) {
 			if (Tim.db.channel_groups.size() > 0) {
 				event.respond("Channel Groups: " + StringUtils.join(Tim.db.channel_groups.keySet(), ", "));
@@ -76,5 +77,7 @@ public final class ChannelGroups {
 			event.respond("Usage: $channelgroup remove <group> <#channel>");
 			event.respond("Usage: $channelgroup destroy <group>");
 		}
+
+		return true;
 	}
 }

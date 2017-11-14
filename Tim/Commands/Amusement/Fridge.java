@@ -1,27 +1,45 @@
-package Tim.UserCommands.Amusement;
+package Tim.Commands.Amusement;
 
 import Tim.ChannelInfo;
+import Tim.Commands.CommandHandler;
+import Tim.Commands.Utility.InteractionControls;
+import Tim.Data.CommandData;
 import Tim.Tim;
-import Tim.UserCommands.UserCommandInterface;
 import Tim.Utility.TagReplacer;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Channel;
 import org.pircbotx.User;
-import org.pircbotx.hooks.events.MessageEvent;
+
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Fridge implements UserCommandInterface {
-	public boolean parseCommand(String command, String[] args, MessageEvent event) {
-		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
+public class Fridge implements CommandHandler {
+	private HashSet<String> handledCommands = new HashSet<>();
 
-		if (cdata.commands_enabled.get("fridge")) {
-			throwFridge(event.getChannel(), event.getUser(), args, true);
+	public Fridge() {
+		handledCommands.add("fridge");
+	}
+
+	@Override
+	public boolean handleCommand(CommandData commandData) {
+		if (handledCommands.contains(commandData.command)) {
+			ChannelInfo cdata = Tim.db.channel_data.get(commandData.event.getChannel().getName().toLowerCase());
+
+			if (cdata.commands_enabled.get("fridge")) {
+				if (InteractionControls.interactWithUser(commandData.issuer, "fridge") && InteractionControls.interactWithUser(commandData.argString, "fridge")) {
+					throwFridge(commandData.event.getChannel(), commandData.getUserEvent().getUser(), commandData.args, true);
+				} else {
+					commandData.event.respond("I'm sorry, it's been requested that I not do that.");
+				}
+			} else {
+				commandData.event.respond("I'm sorry. I don't do that here.");
+			}
+
+			return true;
 		} else {
-			event.respond("I'm sorry. I don't do that here.");
+			return false;
 		}
-
-		return true;
 	}
 
 	public void throwFridge(Channel channel, User sender, String[] args, Boolean righto) {

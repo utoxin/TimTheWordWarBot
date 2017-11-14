@@ -1,34 +1,59 @@
-package Tim.UserCommands.Amusement;
+package Tim.Commands.Amusement;
 
 import Tim.ChannelInfo;
+import Tim.Commands.CommandHandler;
+import Tim.Commands.Utility.InteractionControls;
+import Tim.Data.CommandData;
 import Tim.Tim;
-import Tim.UserCommands.UserCommandInterface;
 import Tim.Utility.TagReplacer;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Channel;
-import org.pircbotx.hooks.events.MessageEvent;
+
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Summon implements UserCommandInterface {
-	public boolean parseCommand(String command, String[] args, MessageEvent event) {
-		ChannelInfo cdata = Tim.db.channel_data.get(event.getChannel().getName().toLowerCase());
+public class Summon implements CommandHandler {
+	private HashSet<String> handledCommands = new HashSet<>();
 
-		String nick = Tim.bot.getNick();
+	public Summon() {
+		handledCommands.add("summon");
+		handledCommands.add("banish");
+	}
 
-		if (event.getUser() != null) {
-			nick = event.getUser().getNick();
+	@Override
+	public boolean handleCommand(CommandData commandData) {
+		if (handledCommands.contains(commandData.command)) {
+			ChannelInfo cdata = Tim.db.channel_data.get(commandData.event.getChannel().getName().toLowerCase());
+
+			String nick = Tim.bot.getNick();
+
+			if (commandData.issuer != null) {
+				nick = commandData.issuer;
+			}
+
+			String target = String.join(" ", commandData.args);
+
+			if (commandData.command.equalsIgnoreCase("banish") && cdata.commands_enabled.get("banish")) {
+				if (InteractionControls.interactWithUser(target, "banish")) {
+					banish(commandData.event.getChannel(), commandData.args, nick, true);
+				} else {
+					commandData.event.respond("I'm sorry, it's been requested that I not do that.");
+				}
+			} else if (commandData.command.equalsIgnoreCase("summon") && cdata.commands_enabled.get("summon")) {
+				if (InteractionControls.interactWithUser(target, "summon")) {
+					summon(commandData.event.getChannel(), commandData.args, nick, true);
+				} else {
+					commandData.event.respond("I'm sorry, it's been requested that I not do that.");
+				}
+			} else {
+				commandData.event.respond("I'm sorry. I don't do that here.");
+			}
+
+			return true;
 		}
 
-		if (command.equalsIgnoreCase("banish") && cdata.commands_enabled.get("banish")) {
-			banish(event.getChannel(), args, nick, true);
-		} else if (command.equalsIgnoreCase("summon") && cdata.commands_enabled.get("summon")) {
-			summon(event.getChannel(), args, nick, true);
-		} else {
-			event.respond("I'm sorry. I don't do that here.");
-		}
-
-		return true;
+		return false;
 	}
 
 	public void summon(Channel channel) {

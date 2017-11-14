@@ -37,6 +37,7 @@ class ServerListener extends ListenerAdapter {
 		String post_identify = Tim.db.getSetting("post_identify");
 		if (!"".equals(post_identify)) {
 			String[] post_identify_lines = post_identify.split("\n");
+
 			event.respond(post_identify);
 		}
 
