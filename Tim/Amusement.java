@@ -155,7 +155,11 @@ class Amusement implements CommandHandler {
 
 			case "foof":
 				if (cdata.commands_enabled.get("foof")) {
-					foof(commandData.getChannelEvent().getChannel(), commandData.getUserEvent().getUser(), args, true);
+					if (InteractionControls.interactWithUser(commandData.argString, "foof")) {
+						foof(commandData.getChannelEvent().getChannel(), commandData.getUserEvent().getUser(), args, true);
+					} else {
+						commandData.getMessageEvent().respond("I'm sorry, it's been requested that I not do that.");
+					}
 				} else {
 					commandData.getMessageEvent().respond("I'm sorry. I don't do that here.");
 				}
@@ -172,13 +176,17 @@ class Amusement implements CommandHandler {
 			case "getfor":
 				if (args != null && args.length > 0) {
 					if (cdata.commands_enabled.get("get")) {
-						if (args.length > 1) {
-							// Want a new args array less the first old element.
-							String[] newargs = new String[args.length - 1];
-							System.arraycopy(args, 1, newargs, 0, args.length - 1);
-							getItem(commandData.getChannelEvent().getChannel(), args[0], newargs);
+						if (InteractionControls.interactWithUser(commandData.args[0], "get")) {
+							if (args.length > 1) {
+								// Want a new args array less the first old element.
+								String[] newargs = new String[args.length - 1];
+								System.arraycopy(args, 1, newargs, 0, args.length - 1);
+								getItem(commandData.getChannelEvent().getChannel(), args[0], newargs);
+							} else {
+								getItem(commandData.getChannelEvent().getChannel(), args[0], null);
+							}
 						} else {
-							getItem(commandData.getChannelEvent().getChannel(), args[0], null);
+							commandData.getMessageEvent().respond("I'm sorry, it's been requested that I not do that.");
 						}
 					} else {
 						commandData.getMessageEvent().respond("I'm sorry. I don't do that here.");
@@ -191,18 +199,21 @@ class Amusement implements CommandHandler {
 			case "getfrom":
 				if (args != null && args.length > 0) {
 					if (cdata.commands_enabled.get("get")) {
-						if (args.length > 1) {
-							// Want a new args array less the first old element.
-							String[] newargs = new String[args.length - 1];
-							System.arraycopy(args, 1, newargs, 0, args.length - 1);
-							getItemFrom(commandData.getChannelEvent().getChannel(), commandData.issuer, args[0], newargs);
+						if (InteractionControls.interactWithUser(commandData.args[0], "get")) {
+							if (args.length > 1) {
+								// Want a new args array less the first old element.
+								String[] newargs = new String[args.length - 1];
+								System.arraycopy(args, 1, newargs, 0, args.length - 1);
+								getItemFrom(commandData.getChannelEvent().getChannel(), commandData.issuer, args[0], newargs);
+							} else {
+								getItemFrom(commandData.getChannelEvent().getChannel(), commandData.issuer, args[0], null);
+							}
 						} else {
-							getItemFrom(commandData.getChannelEvent().getChannel(), commandData.issuer, args[0], null);
+							commandData.getMessageEvent().respond("I'm sorry, it's been requested that I not do that.");
 						}
 					} else {
 						commandData.getMessageEvent().respond("I'm sorry. I don't do that here.");
 					}
-
 				} else {
 					commandData.event.respond("Syntax: !getfrom <user> [<item>]");
 				}
@@ -210,7 +221,11 @@ class Amusement implements CommandHandler {
 
 			case "herd":
 				if (cdata.commands_enabled.get("herd")) {
-					herd(commandData.getChannelEvent().getChannel(), commandData.getUserEvent().getUser(), args);
+					if (InteractionControls.interactWithUser(commandData.argString, "herd")) {
+						herd(commandData.getChannelEvent().getChannel(), commandData.getUserEvent().getUser(), args);
+					} else {
+						commandData.getMessageEvent().respond("I'm sorry, it's been requested that I not do that.");
+					}
 				} else {
 					commandData.getMessageEvent().respond("I'm sorry. I don't do that here.");
 				}
@@ -218,7 +233,11 @@ class Amusement implements CommandHandler {
 
 			case "lick":
 				if (cdata.commands_enabled.get("lick")) {
-					lick(commandData);
+					if (InteractionControls.interactWithUser(commandData.argString, "lick")) {
+						lick(commandData);
+					} else {
+						commandData.getMessageEvent().respond("I'm sorry, it's been requested that I not do that.");
+					}
 				} else {
 					commandData.getMessageEvent().respond("I'm sorry. I don't do that here.");
 				}
@@ -253,11 +272,15 @@ class Amusement implements CommandHandler {
 			case "search":
 				if (cdata.commands_enabled.get("search")) {
 					if (args != null && args.length > 0) {
-						StringBuilder target = new StringBuilder(args[0]);
-						for (int i = 1; i < args.length; ++i) {
-							target.append(" ").append(args[i]);
+						if (InteractionControls.interactWithUser(commandData.argString, "search")) {
+							StringBuilder target = new StringBuilder(args[0]);
+							for (int i = 1; i < args.length; ++i) {
+								target.append(" ").append(args[i]);
+							}
+							search(commandData.getChannelEvent().getChannel(), commandData.getUserEvent().getUser(), target.toString());
+						} else {
+							commandData.getMessageEvent().respond("I'm sorry, it's been requested that I not do that.");
 						}
-						search(commandData.getChannelEvent().getChannel(), commandData.getUserEvent().getUser(), target.toString());
 					} else {
 						search(commandData.getChannelEvent().getChannel(), commandData.getUserEvent().getUser(), null);
 					}

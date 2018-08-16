@@ -133,7 +133,7 @@ class TwitterIntegration extends StatusAdapter {
 
 		for (ChannelInfo channel : Tim.db.channel_data.values()) {
 			if (channel.twitter_accounts.size() > 0) {
-				tmpUserIds = getTwitterIds(channel.twitter_accounts.toArray(new String[channel.twitter_accounts.size()]));
+				tmpUserIds = getTwitterIds(channel.twitter_accounts.toArray(new String[0]));
 
 				for (Long userId : tmpUserIds) {
 					if (!accountsToChannels.containsKey(userId)) {
@@ -209,7 +209,7 @@ class TwitterIntegration extends StatusAdapter {
 			}
 
 			String[] hashtags = {"#NaNoWriMo"};
-			long[] finalUserIds = ArrayUtils.toPrimitive(accountsToChannels.keySet().toArray(new Long[accountsToChannels.size()]));
+			long[] finalUserIds = ArrayUtils.toPrimitive(accountsToChannels.keySet().toArray(new Long[0]));
 
 			publicStream = new TwitterStreamFactory().getInstance();
 			publicStream.setOAuthConsumer(consumerKey, consumerSecret);
@@ -292,7 +292,7 @@ class TwitterIntegration extends StatusAdapter {
 							int r = Tim.rand.nextInt(Tim.db.eightBalls.size());
 							message2 = "@" + status.getUser().getScreenName() + " " + Tim.db.eightBalls.get(r);
 						} else {
-							message2 = "@" + status.getUser().getScreenName() + " " + Tim.markov.generate_markov("say");
+							message2 = "@" + status.getUser().getScreenName() + " " + Tim.markov.generate_markov();
 						}
 
 						if (message2.length() > 118) {
@@ -330,8 +330,7 @@ class TwitterIntegration extends StatusAdapter {
 		@Override
 		public void onStatus(Status status) {
 			boolean sendReply = false;
-			boolean getItem = false;
-			
+
 			if (status.getText().toLowerCase().startsWith("@bottimmy")) {
 				try {
 					if (status.getText().toLowerCase().contains("!unfollow")) {
@@ -381,19 +380,10 @@ class TwitterIntegration extends StatusAdapter {
 
 			if (status.getInReplyToUserId() == TwitterIntegration.BotTimmy.getId()) {
 				sendReply = true;
-				if (Tim.rand.nextInt(100) < 15) {
-					getItem = true;
-				}
 			} else if (status.getText().toLowerCase().contains("@bottimmy") && Tim.rand.nextInt(100) < 80) {
 				sendReply = true;
-				if (Tim.rand.nextInt(100) < 25) {
-					getItem = true;
-				}
 			} else if (Tim.rand.nextInt(100) < 2) {
 				sendReply = true;
-				if (Tim.rand.nextInt(100) < 25) {
-					getItem = true;
-				}
 			}
 
 			if (status.getUser().getId() == TwitterIntegration.BotTimmy.getId() || status.isRetweet()) {
@@ -407,7 +397,7 @@ class TwitterIntegration extends StatusAdapter {
 						int r = Tim.rand.nextInt(Tim.db.eightBalls.size());
 						message = "@" + status.getUser().getScreenName() + " " + Tim.db.eightBalls.get(r);
 					} else {
-						message = "@" + status.getUser().getScreenName() + " " + Tim.markov.generate_markov("say");
+						message = "@" + status.getUser().getScreenName() + " " + Tim.markov.generate_markov();
 					}
 
 					if (message.length() > 118) {

@@ -89,34 +89,26 @@ class MarkovChains {
 	}
 
 	void randomAction(String channel, String type, String message) {
-		String[] actions = {
-			"markhov"
-		};
-
-		String action = actions[Tim.rand.nextInt(actions.length)];
-
-		if ("markhov".equals(action)) {
-			try {
-				Thread.sleep(Tim.rand.nextInt(1000) + 500);
-				switch (type) {
-					case "say":
-						Tim.bot.sendIRC().message(channel, generate_markov(type, message));
-						break;
-					case "mutter":
-						Tim.bot.sendIRC().action(channel, "mutters under his breath, \"" + generate_markov("say", message) + "\"");
-						break;
-					default:
-						Tim.bot.sendIRC().action(channel, generate_markov(type, message));
-						break;
-				}
-			} catch (InterruptedException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
+		try {
+			Thread.sleep(Tim.rand.nextInt(1000) + 500);
+			switch (type) {
+				case "say":
+					Tim.bot.sendIRC().message(channel, generate_markov(type, message));
+					break;
+				case "mutter":
+					Tim.bot.sendIRC().action(channel, "mutters under his breath, \"" + generate_markov("say", message) + "\"");
+					break;
+				default:
+					Tim.bot.sendIRC().action(channel, generate_markov(type, message));
+					break;
 			}
+		} catch (InterruptedException ex) {
+			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	String generate_markov(String type) {
-		return generate_markov(type, Tim.rand.nextInt(25) + 10, 0);
+	String generate_markov() {
+		return generate_markov("say", Tim.rand.nextInt(25) + 10, 0);
 	}
 
 	String generate_markov(String type, String message) {

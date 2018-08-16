@@ -335,8 +335,8 @@ class AdminCommandListener extends ListenerAdapter {
 							if (Tim.db.channel_data.containsKey(target)) {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
 
-								Float max = Float.parseFloat(args[2]);
-								Float charge = Float.parseFloat(args[3]);
+								float max = Float.parseFloat(args[2]);
+								float charge = Float.parseFloat(args[3]);
 
 								if (max > 0 && charge > 0) {
 									ci.setTwitterTimers(max, charge);

@@ -45,7 +45,7 @@ public class DBAccess {
 	List<String> cat_herds = new ArrayList<>();
 	public List<String> items = new ArrayList<>();
 	public List<String> flavours = new ArrayList<>();
-	public List<String> eightBalls = new ArrayList<>();
+	List<String> eightBalls = new ArrayList<>();
 	Set<String> ignore_list = new HashSet<>(16);
 	Set<String> soft_ignore_list = new HashSet<>(16);
 	public HashMap<String, Set<ChannelInfo>> channel_groups = new HashMap<>();
@@ -454,7 +454,6 @@ public class DBAccess {
 					this.cat_herds.add(rs.getString("string"));
 				}
 				rs.close();
-				s.close();
 			}
 		} catch (SQLException ex) {
 			Logger.getLogger(DBAccess.class.getName()).log(Level.SEVERE, null, ex);
@@ -878,16 +877,16 @@ public class DBAccess {
 			this.userInteractionSettings.clear();
 
 			while (rs.next()) {
-				String username = rs.getString("username");
+				String username = rs.getString("username").toLowerCase();
 				String setting = rs.getString("setting");
 				Boolean value = rs.getBoolean("value");
 
 				HashMap<String, Boolean> userMap;
-				if (!userInteractionSettings.containsKey(username)) {
+				if (!userInteractionSettings.containsKey(username.toLowerCase())) {
 					userMap = new HashMap<>();
-					userInteractionSettings.put(username, userMap);
+					userInteractionSettings.put(username.toLowerCase(), userMap);
 				} else {
-					userMap = userInteractionSettings.get(username);
+					userMap = userInteractionSettings.get(username.toLowerCase());
 				}
 
 				userMap.put(setting, value);
@@ -917,10 +916,10 @@ public class DBAccess {
 			PreparedStatement s = con.prepareStatement("INSERT INTO `user_interaction_settings` SET `username` = ?, `setting` = ?, `value` = ?");
 
 			for (String user : userInteractionSettings.keySet()) {
-				HashMap<String, Boolean> userMap = userInteractionSettings.get(user);
+				HashMap<String, Boolean> userMap = userInteractionSettings.get(user.toLowerCase());
 
 				for (String setting : userMap.keySet()) {
-					s.setString(1, user);
+					s.setString(1, user.toLowerCase());
 					s.setString(2, setting);
 					s.setBoolean(3, userMap.get(setting));
 

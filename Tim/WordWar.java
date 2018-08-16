@@ -21,16 +21,10 @@ package Tim;
 import org.pircbotx.User;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author Marc
- *
- */
 class WordWar {
 
 	long remaining;
@@ -95,19 +89,20 @@ class WordWar {
 		this.name = warname;
 		this.channel = hosting_channel;
 
+		this.db_id = db_id;
+
+		if (this.base_duration == 0) {
+			this.base_duration = duration;
+		}
+
 		String channelName = hosting_channel.toLowerCase();
 		this.cdata = Tim.db.channel_data.get(channelName);
 
 		if (this.cdata == null) {
 			Logger.getLogger(WordWar.class.getName()).log(Level.INFO, "PANIC!!!!!!");
 			Logger.getLogger(WordWar.class.getName()).log(Level.INFO, "Failed To Get ChannelInfo For: "+channelName);
+			return;
 		}
-
-		if (this.base_duration == 0) {
-			this.base_duration = duration;
-		}
-
-		this.db_id = db_id;
 
 		if (this.time_to_start <= 0 && (!cdata.muzzled || cdata.auto_muzzled)) {
 			cdata.setMuzzleFlag(true, true);
@@ -134,12 +129,12 @@ class WordWar {
 		Tim.db.updateWarMembers(db_id, members);
 	}
 
-	public void addMember(String nick, Integer count) {
+	void addMember(String nick, Integer count) {
 		members.put(nick, count);
 		Tim.db.updateWarMembers(db_id, members);
 	}
 
-	public void removeMember(String nick) {
+	void removeMember(String nick) {
 		members.remove(nick);
 		Tim.db.updateWarMembers(db_id, members);
 	}
@@ -172,15 +167,15 @@ class WordWar {
 		return getName(includeId, includeDuration, 1, 1);
 	}
 
-	public String getSimpleName() {
+	String getSimpleName() {
 		return getName(false, false);
 	}
 
-	public String getInternalName() {
+	String getInternalName() {
 		return name.toLowerCase();
 	}
 
-	public String getDurationText(long duration) {
+	String getDurationText(long duration) {
 		String text = "";
 		long hours = 0, minutes = 0, seconds, tmp;
 
@@ -232,10 +227,6 @@ class WordWar {
 		}
 
 		return about;
-	}
-
-	String getDescriptionWithChannel() {
-		return this.getDescription(1, 1) + " :: " + this.channel;
 	}
 
 	String getDescriptionWithChannel(int idFieldWidth, int durationFieldWidth) {

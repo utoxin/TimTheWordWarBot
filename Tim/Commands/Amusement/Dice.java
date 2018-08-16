@@ -4,9 +4,9 @@ import Tim.ChannelInfo;
 import Tim.Commands.CommandHandler;
 import Tim.Data.CommandData;
 import Tim.Tim;
-import com.wandrell.tabletop.dice.parser.DefaultDiceNotationExpressionParser;
-import com.wandrell.tabletop.dice.parser.DiceNotationExpressionParser;
-import com.wandrell.tabletop.dice.roller.DefaultRoller;
+import com.bernardomg.tabletop.dice.parser.DefaultDiceNotationExpressionParser;
+import com.bernardomg.tabletop.dice.parser.DiceNotationExpressionParser;
+import com.bernardomg.tabletop.dice.roller.DefaultRoller;
 import org.pircbotx.hooks.types.GenericUserEvent;
 
 import java.util.HashSet;

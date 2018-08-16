@@ -1,8 +1,8 @@
 <component name="libraryTable">
-  <library name="com.wandrell.tabletop:dice:Release" type="repository">
-    <properties maven-id="com.wandrell.tabletop:dice:RELEASE" />
+  <library name="com.bernardomg.tabletop:dice:1.2.1" type="repository">
+    <properties maven-id="com.bernardomg.tabletop:dice:1.2.1" />
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/dice-1.0.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/dice-1.2.1.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/antlr4-4.7.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/antlr4-runtime-4.7.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/antlr-runtime-3.5.2.jar!/" />
@@ -10,10 +10,15 @@
       <root url="jar://$PROJECT_DIR$/lib/org.abego.treelayout.core-1.0.3.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/javax.json-1.0.4.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/icu4j-58.2.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/guava-20.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/guava-23.5-jre.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jsr305-1.3.9.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/checker-qual-2.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/error_prone_annotations-2.0.18.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/j2objc-annotations-1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/animal-sniffer-annotations-1.14.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$PROJECT_DIR$/lib/dice-1.0.2-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/dice-1.2.1-javadoc.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/antlr4-4.7-javadoc.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/antlr4-runtime-4.7-javadoc.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/antlr-runtime-3.5.2-javadoc.jar!/" />
@@ -21,10 +26,14 @@
       <root url="jar://$PROJECT_DIR$/lib/org.abego.treelayout.core-1.0.3-javadoc.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/javax.json-1.0.4-javadoc.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/icu4j-58.2-javadoc.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/guava-20.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/guava-23.5-jre-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/checker-qual-2.0.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/error_prone_annotations-2.0.18-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/j2objc-annotations-1.1-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/animal-sniffer-annotations-1.14-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://$PROJECT_DIR$/lib/dice-1.0.2-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/dice-1.2.1-sources.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/antlr4-4.7-sources.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/antlr4-runtime-4.7-sources.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/antlr-runtime-3.5.2-sources.jar!/" />
@@ -32,7 +41,11 @@
       <root url="jar://$PROJECT_DIR$/lib/org.abego.treelayout.core-1.0.3-sources.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/javax.json-1.0.4-sources.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/icu4j-58.2-sources.jar!/" />
-      <root url="jar://$PROJECT_DIR$/lib/guava-20.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/guava-23.5-jre-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/checker-qual-2.0.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/error_prone_annotations-2.0.18-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/j2objc-annotations-1.1-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/animal-sniffer-annotations-1.14-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

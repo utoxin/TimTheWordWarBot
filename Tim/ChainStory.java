@@ -160,12 +160,9 @@ class ChainStory implements CommandHandler {
 			rs = s.getResultSet();
 			rs.setFetchDirection(ResultSet.FETCH_REVERSE);
 			rs.last();
-			while (true) {
+			do {
 				event.getUser().send().message(rs.getString("string"));
-				if (!rs.previous()) {
-					break;
-				}
-			}
+			} while (rs.previous());
 
 			event.respond("You can read an excerpt in my profile here: http://www.nanowrimo.org/en/participants/timmybot");
 
@@ -192,12 +189,9 @@ class ChainStory implements CommandHandler {
 			ResultSet rs = s.getResultSet();
 			rs.setFetchDirection(ResultSet.FETCH_REVERSE);
 			rs.last();
-			while (true) {
+			do {
 				event.getUser().send().message(rs.getString("string"));
-				if (!rs.previous()) {
-					break;
-				}
-			}
+			} while (rs.previous());
 
 			con.close();
 		} catch (SQLException ex) {

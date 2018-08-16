@@ -4,8 +4,6 @@ import Tim.Commands.CommandHandler;
 import Tim.Data.CommandData;
 import Tim.Tim;
 import Tim.ChannelInfo;
-import Tim.Commands.UserCommandInterface;
-import org.pircbotx.hooks.events.MessageEvent;
 import org.pircbotx.hooks.types.GenericMessageEvent;
 import org.pircbotx.hooks.types.GenericUserEvent;
 
@@ -52,11 +50,11 @@ public class InteractionControls implements CommandHandler {
 	}
 
 	public static boolean interactWithUser(String username, String interaction) {
-		if (!Tim.db.userInteractionSettings.containsKey(username)) {
+		if (!Tim.db.userInteractionSettings.containsKey(username.toLowerCase())) {
 			return true;
 		}
 
-		HashMap<String, Boolean> userSettings = Tim.db.userInteractionSettings.get(username);
+		HashMap<String, Boolean> userSettings = Tim.db.userInteractionSettings.get(username.toLowerCase());
 		if (!userSettings.containsKey(interaction)) {
 			return true;
 		}
@@ -75,8 +73,8 @@ public class InteractionControls implements CommandHandler {
 				if (checkVerified(commandData.getMessageEvent())) {
 					if (commandData.args.length == 1 && commandData.args[0].equalsIgnoreCase("list")) {
 						String target = commandData.issuer;
-						if (Tim.db.userInteractionSettings.containsKey(target)) {
-							HashMap<String, Boolean> data = Tim.db.userInteractionSettings.get(target);
+						if (Tim.db.userInteractionSettings.containsKey(target.toLowerCase())) {
+							HashMap<String, Boolean> data = Tim.db.userInteractionSettings.get(target.toLowerCase());
 
 							commandData.event.respond("Sending status of interaction settings via private message.");
 
@@ -88,11 +86,11 @@ public class InteractionControls implements CommandHandler {
 						}
 					} else if (commandData.args.length == 3 && commandData.args[0].equalsIgnoreCase("set")) {
 						String target = commandData.issuer;
-						if (!Tim.db.userInteractionSettings.containsKey(target)) {
-							Tim.db.userInteractionSettings.put(target, new HashMap<>());
+						if (!Tim.db.userInteractionSettings.containsKey(target.toLowerCase())) {
+							Tim.db.userInteractionSettings.put(target.toLowerCase(), new HashMap<>());
 						}
 
-						HashMap<String, Boolean> userData = Tim.db.userInteractionSettings.get(target);
+						HashMap<String, Boolean> userData = Tim.db.userInteractionSettings.get(target.toLowerCase());
 
 						boolean flag = false;
 						if (!"0".equals(commandData.args[2])) {
