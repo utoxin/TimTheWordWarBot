@@ -23,8 +23,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.lang3.ArrayUtils;
 import org.pircbotx.Colors;
 import twitter4j.*;
@@ -33,7 +31,6 @@ import twitter4j.auth.AccessToken;
 class TwitterIntegration extends StatusAdapter {
 	private Twitter twitter;
 	private AccessToken token;
-	TwitterStream userStream;
 	TwitterStream publicStream;
 	private String consumerKey;
 	private String consumerSecret;
@@ -117,12 +114,6 @@ class TwitterIntegration extends StatusAdapter {
 	}
 
 	void startStream() {
-		userStream = new TwitterStreamFactory().getInstance();
-		userStream.setOAuthConsumer(consumerKey, consumerSecret);
-		userStream.setOAuthAccessToken(token);
-		userStream.addListener(userListener);
-		userStream.user();
-
 		initAccountList();
 		updateStreamFilters();
 	}
@@ -321,188 +312,6 @@ class TwitterIntegration extends StatusAdapter {
 
 		@Override
 		public void onException(Exception excptn) {}
-
-		@Override
-		public void onStallWarning(StallWarning sw) {}
-	};
-
-	private UserStreamListener userListener = new UserStreamListener() {
-		@Override
-		public void onStatus(Status status) {
-			boolean sendReply = false;
-
-			if (status.getText().toLowerCase().startsWith("@bottimmy")) {
-				try {
-					if (status.getText().toLowerCase().contains("!unfollow")) {
-						twitter.destroyFriendship(status.getUser().getId());
-
-						StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " Okay, I won't follow you anymore... #SadTimmy #NaNoWriMo");
-						reply.setInReplyToStatusId(status.getId());
-
-						twitter.updateStatus(reply);
-						
-						friendIDs = twitter.getFriendsIDs(BotTimmy.getId());
-
-						return;
-					} else if (status.getText().toLowerCase().contains("!follow")) {
-						twitter.createFriendship(status.getUser().getId());
-
-						StatusUpdate reply = new StatusUpdate("@" + status.getUser().getScreenName() + " Hurray! A new friend! #HappyTimmy #NaNoWriMo");
-						reply.setInReplyToStatusId(status.getId());
-
-						twitter.updateStatus(reply);
-												
-						friendIDs = twitter.getFriendsIDs(BotTimmy.getId());
-						
-						return;
-					} else if (status.getText().toLowerCase().contains("!fridge")) {
-						Pattern fridgeVictimPattern = Pattern.compile("!fridge @(\\S+)", Pattern.CASE_INSENSITIVE);
-						Matcher fridgeVictimMatcher = fridgeVictimPattern.matcher(status.getText());
-
-						String target;
-						if (fridgeVictimMatcher.find() && Tim.rand.nextInt(100) > 33) {
-							target = fridgeVictimMatcher.group(1);
-						} else {
-							target = status.getUser().getScreenName();
-						}
-
-						StatusUpdate reply = new StatusUpdate("Timmy hurls a " + Tim.db.dynamic_lists.get("color").get(Tim.rand.nextInt(Tim.db.dynamic_lists.get("color").size())) + " fridge at @" + target + "! #FearTimmy #NaNoWriMo");
-						reply.setInReplyToStatusId(status.getId());
-
-						twitter.updateStatus(reply);
-						
-						return;
-					}
-				} catch (TwitterException ex) {
-					Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			}
-
-			if (status.getInReplyToUserId() == TwitterIntegration.BotTimmy.getId()) {
-				sendReply = true;
-			} else if (status.getText().toLowerCase().contains("@bottimmy") && Tim.rand.nextInt(100) < 80) {
-				sendReply = true;
-			} else if (Tim.rand.nextInt(100) < 2) {
-				sendReply = true;
-			}
-
-			if (status.getUser().getId() == TwitterIntegration.BotTimmy.getId() || status.isRetweet()) {
-				sendReply = false;
-			}
-
-			if (sendReply) {
-				try {
-					String message;
-					if (Tim.rand.nextInt(100) < 20) {
-						int r = Tim.rand.nextInt(Tim.db.eightBalls.size());
-						message = "@" + status.getUser().getScreenName() + " " + Tim.db.eightBalls.get(r);
-					} else {
-						message = "@" + status.getUser().getScreenName() + " " + Tim.markov.generate_markov();
-					}
-
-					if (message.length() > 118) {
-						message = message.substring(0, 115) + "...";
-					}
-
-					StatusUpdate reply = new StatusUpdate(message + " #NaNoWriMo #FearTimmy");
-					reply.setInReplyToStatusId(status.getId());
-
-					twitter.updateStatus(reply);
-				} catch (TwitterException ex) {
-					Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			}
-		}
-
-		@Override
-		public void onFollow(User user, User user1) {
-			try {
-				friendIDs = twitter.getFriendsIDs(BotTimmy.getId());
-			} catch (TwitterException ex) {
-				Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
-
-		@Override
-		public void onUnfollow(User user, User user1) {
-			try {
-				friendIDs = twitter.getFriendsIDs(BotTimmy.getId());
-			} catch (TwitterException ex) {
-				Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
-
-		@Override
-		public void onDeletionNotice(StatusDeletionNotice sdn) {}
-
-		@Override
-		public void onTrackLimitationNotice(int i) {}
-
-		@Override
-		public void onScrubGeo(long l, long l1) {}
-
-		@Override
-		public void onException(Exception excptn) {}
-
-		@Override
-		public void onDeletionNotice(long l, long l1) {}
-
-		@Override
-		public void onFriendList(long[] longs) {}
-
-		@Override
-		public void onFavorite(User user, User user1, Status status) {}
-
-		@Override
-		public void onUnfavorite(User user, User user1, Status status) {}
-
-		@Override
-		public void onDirectMessage(DirectMessage dm) {}
-
-		@Override
-		public void onUserListMemberAddition(User user, User user1, UserList ul) {}
-
-		@Override
-		public void onUserListMemberDeletion(User user, User user1, UserList ul) {}
-
-		@Override
-		public void onUserListSubscription(User user, User user1, UserList ul) {}
-
-		@Override
-		public void onUserListUnsubscription(User user, User user1, UserList ul) {}
-
-		@Override
-		public void onUserListCreation(User user, UserList ul) {}
-
-		@Override
-		public void onUserListUpdate(User user, UserList ul) {}
-
-		@Override
-		public void onUserListDeletion(User user, UserList ul) {}
-
-		@Override
-		public void onUserProfileUpdate(User user) {}
-
-		@Override
-		public void onUserSuspension(long suspendedUser) {}
-
-		@Override
-		public void onUserDeletion(long deletedUser) {}
-
-		@Override
-		public void onBlock(User user, User user1) {}
-
-		@Override
-		public void onUnblock(User user, User user1) {}
-
-		@Override
-		public void onRetweetedRetweet(User source, User target, Status retweetedStatus) {}
-
-		@Override
-		public void onFavoritedRetweet(User source, User target, Status favoritedRetweeet) {}
-
-		@Override
-		public void onQuotedTweet(User source, User target, Status quotingTweet) {}
 
 		@Override
 		public void onStallWarning(StallWarning sw) {}
