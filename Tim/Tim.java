@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 
 import Tim.Data.ChannelStorage;
 import Tim.Commands.Writing.Challenge;
+import Tim.Utility.UserDirectory;
 import org.pircbotx.Configuration;
 import org.pircbotx.Configuration.Builder;
 import org.pircbotx.PircBotX;
@@ -47,6 +48,7 @@ public class Tim {
 	static TwitterIntegration twitterStream;
 	static VelociraptorHandler raptors;
 	static ChannelStorage channelStorage;
+	static UserDirectory userDirectory;
 
 	private static Tim instance;
 	private static Thread markovThread;
@@ -64,6 +66,7 @@ public class Tim {
 		amusement = new Amusement();
 		raptors = new VelociraptorHandler();
 		channelStorage = new ChannelStorage();
+		userDirectory = new UserDirectory();
 
 		Builder configBuilder = new Configuration.Builder()
 			.setName(db.getSetting("nickname"))
@@ -77,7 +80,8 @@ public class Tim {
 			.addListener(new AdminCommandListener())
 			.addListener(new UserCommandListener())
 			.addListener(new ReactionListener())
-			.addListener(new ServerListener());
+			.addListener(new ServerListener())
+			.addListener(userDirectory);
 
 		db.refreshDbLists();
 
@@ -114,7 +118,6 @@ public class Tim {
 			Tim.bot.sendIRC().quitServer("HELP! Utoxin just murdered me! (Again!!!)");
 			Tim.warticker.warTicker.cancel();
 			Tim.deidler.idleTicker.cancel();
-			Tim.twitterStream.userStream.shutdown();
 			Tim.twitterStream.publicStream.shutdown();
 		}
 	}

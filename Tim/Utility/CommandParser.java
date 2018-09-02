@@ -13,6 +13,7 @@ public class CommandParser {
 		CommandData<T> commandData = new CommandData<>();
 		commandData.setEvent(event);
 		commandData.issuer = event.getUser().getNick();
+		event.getUser();
 
 		String message = Colors.removeFormattingAndColors(event.getMessage());
 
