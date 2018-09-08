@@ -1,7 +1,7 @@
 package Tim.Commands.Amusement;
 
 import Tim.ChannelInfo;
-import Tim.Commands.CommandHandler;
+import Tim.Commands.ICommandHandler;
 import Tim.Commands.Utility.InteractionControls;
 import Tim.Data.CommandData;
 import Tim.Tim;
@@ -10,10 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Channel;
 
 import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-public class Summon implements CommandHandler {
+public class Summon implements ICommandHandler {
 	private HashSet<String> handledCommands = new HashSet<>();
 
 	public Summon() {
@@ -85,7 +83,7 @@ public class Summon implements CommandHandler {
 			Thread.sleep(Tim.rand.nextInt(3000) + 2000);
 			channel.send().action(SummonEnd(target, target2, summoner));
 		} catch (InterruptedException ex) {
-			Logger.getLogger(Summon.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -110,7 +108,7 @@ public class Summon implements CommandHandler {
 			Thread.sleep(Tim.rand.nextInt(3000) + 2000);
 			channel.send().action(BanishEnd(target, target2, banisher));
 		} catch (InterruptedException ex) {
-			Logger.getLogger(Summon.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 

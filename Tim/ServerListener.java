@@ -18,8 +18,6 @@ package Tim;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import Tim.Utility.TagReplacer;
@@ -38,7 +36,9 @@ class ServerListener extends ListenerAdapter {
 		if (!"".equals(post_identify)) {
 			String[] post_identify_lines = post_identify.split("\n");
 
-			event.respond(post_identify);
+			for (String line : post_identify_lines) {
+				if (!line.equals("")) event.respond(line);
+			}
 		}
 
 		try {
@@ -183,7 +183,7 @@ class ServerListener extends ListenerAdapter {
 					Tim.raptors.sighting(event);
 				}
 			} catch (InterruptedException ex) {
-				Logger.getLogger(ServerListener.class.getName()).log(Level.SEVERE, null, ex);
+				Tim.printStackTrace(ex);
 			}
 		}
 	}

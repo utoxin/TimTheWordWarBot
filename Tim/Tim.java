@@ -26,9 +26,11 @@ import java.util.logging.Logger;
 import Tim.Data.ChannelStorage;
 import Tim.Commands.Writing.Challenge;
 import Tim.Utility.UserDirectory;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.pircbotx.Configuration;
 import org.pircbotx.Configuration.Builder;
 import org.pircbotx.PircBotX;
+import org.pircbotx.hooks.managers.BackgroundListenerManager;
 
 public class Tim {
 	// Has to go first, because it's needed for DBAccess below
@@ -68,6 +70,17 @@ public class Tim {
 		channelStorage = new ChannelStorage();
 		userDirectory = new UserDirectory();
 
+		BackgroundListenerManager backgroundListenerManager = new BackgroundListenerManager();
+
+		// Stuff that needs to fully process all events
+		backgroundListenerManager.addListener(userDirectory, true);
+
+		// Foreground events that can stomp on eachother
+		backgroundListenerManager.addListener(new UserCommandListener(), false);
+		backgroundListenerManager.addListener(new ReactionListener(), false);
+		backgroundListenerManager.addListener(new AdminCommandListener(), false);
+		backgroundListenerManager.addListener(new ServerListener(), false);
+		
 		Builder configBuilder = new Configuration.Builder()
 			.setName(db.getSetting("nickname"))
 			.setLogin("WarMech")
@@ -77,11 +90,7 @@ public class Tim {
 			.setEncoding(Charset.forName("UTF-8"))
 			.setMessageDelay(Long.parseLong(db.getSetting("max_rate")))
 			.setAutoNickChange(true)
-			.addListener(new AdminCommandListener())
-			.addListener(new UserCommandListener())
-			.addListener(new ReactionListener())
-			.addListener(new ServerListener())
-			.addListener(userDirectory);
+			.setListenerManager(backgroundListenerManager);
 
 		db.refreshDbLists();
 
@@ -108,6 +117,14 @@ public class Tim {
 			bot.startBot();
 		} catch (Exception ex) {
 			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+	
+	public static void printStackTrace(Throwable exception) {
+		String stackTrace = ExceptionUtils.getStackTrace(exception);
+		String[] stackTraceLines = stackTrace.split("\n");
+		for(String line : stackTraceLines) {
+			Tim.bot.send().message("#commandcenter", line);
 		}
 	}
 

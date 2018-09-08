@@ -9,8 +9,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 class MarkovProcessor implements Runnable {
@@ -48,10 +46,7 @@ class MarkovProcessor implements Runnable {
 	}
 
 	private void getAlternatewords() {
-		Connection con = null;
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			PreparedStatement s = con.prepareStatement("SELECT `word` FROM `alternate_words`");
 			s.executeQuery();
 
@@ -61,27 +56,13 @@ class MarkovProcessor implements Runnable {
 			while (rs.next()) {
 				alternateWords.add(rs.getString("word"));
 			}
-
-			rs.close();
-			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-			}
+			Tim.printStackTrace(ex);
 		}
 	}
 
 	private void getAlternatepairs() {
-		Connection con = null;
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			PreparedStatement s = con.prepareStatement("SELECT `word_one`, `word_two` FROM `bad_pairs`");
 			s.executeQuery();
 
@@ -94,27 +75,13 @@ class MarkovProcessor implements Runnable {
 					rs.getString("word_two")
 				});
 			}
-
-			rs.close();
-			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-			}
+			Tim.printStackTrace(ex);
 		}
 	}
 
 	private void getBadwords() {
-		Connection con = null;
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			PreparedStatement s = con.prepareStatement("SELECT `word` FROM `bad_words`");
 			s.executeQuery();
 
@@ -127,27 +94,13 @@ class MarkovProcessor implements Runnable {
 
 				badwordPatterns.putIfAbsent(word, Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word) + ")(\\W|\\b)"));
 			}
-
-			rs.close();
-			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-			}
+			Tim.printStackTrace(ex);
 		}
 	}
 
 	private void getBadpairs() {
-		Connection con = null;
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			PreparedStatement s = con.prepareStatement("SELECT `word_one`, `word_two` FROM `bad_pairs`");
 			s.executeQuery();
 
@@ -163,27 +116,13 @@ class MarkovProcessor implements Runnable {
 					Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_one) + ")(\\W|\\b)"),
 					Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_two) + ")(\\W|\\b)"),});
 			}
-
-			rs.close();
-			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-			}
+			Tim.printStackTrace(ex);
 		}
 	}
 
 	private void processing_loop() {
-		Connection con = null;
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			PreparedStatement s = con.prepareStatement("SELECT `id`, `type`, `text` FROM markov_processing_queue");
 			PreparedStatement deleteQuery = con.prepareStatement("DELETE FROM markov_processing_queue WHERE `id` = ?");
 
@@ -201,19 +140,8 @@ class MarkovProcessor implements Runnable {
 				deleteQuery.setInt(1, id);
 				deleteQuery.execute();
 			}
-
-			rs.close();
-			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-			}
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -339,13 +267,11 @@ class MarkovProcessor implements Runnable {
 	}
 
 	private void storeTriad(String word1, String word2, String word3, String type) {
-		Connection con = null;
 		int first = getMarkovWordId(word1);
 		int second = getMarkovWordId(word2);
 		int third = getMarkovWordId(word3);
-
-		try {
-			con = db.pool.getConnection(timeout);
+		
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			PreparedStatement addTriad;
 
 			if ("emote".equals(type)) {
@@ -359,52 +285,26 @@ class MarkovProcessor implements Runnable {
 			addTriad.setInt(3, third);
 
 			addTriad.executeUpdate();
-
-			addTriad.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-			}
+			Tim.printStackTrace(ex);
 		}
 	}
 
 	void storeLine(String type, String text) {
-		Connection con = null;
-
-		try {
-			con = db.pool.getConnection(timeout);
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			PreparedStatement insert = con.prepareStatement("INSERT INTO markov_processing_queue (`type`, `text`, `created`) VALUES (?, ?, NOW())");
 
 			insert.setString(1, type);
 			insert.setString(2, text);
 
 			insert.executeUpdate();
-
-			insert.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-			}
+			Tim.printStackTrace(ex);
 		}
 	}
 
 	int getMarkovWordId(String word) {
-		Connection con = null;
-
-		try {
-			con = db.pool.getConnection(timeout);
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			PreparedStatement checkword, addword;
 
 			checkword = con.prepareStatement("SELECT id FROM markov_words WHERE word = ?");
@@ -424,25 +324,14 @@ class MarkovProcessor implements Runnable {
 				}
 			}
 		} catch (SQLException ex) {
-			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-			}
+			Tim.printStackTrace(ex);
 		}
 
 		return 0;
 	}
 
 	String getMarkovWordById(int wordID) {
-		Connection con = null;
-
-		try {
-			con = db.pool.getConnection(timeout);
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			PreparedStatement checkword;
 
 			checkword = con.prepareStatement("SELECT word FROM markov_words WHERE id = ?");
@@ -453,15 +342,7 @@ class MarkovProcessor implements Runnable {
 				return checkRes.getString("word");
 			}
 		} catch (SQLException ex) {
-			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-			}
+			Tim.printStackTrace(ex);
 		}
 
 		return "";
@@ -469,6 +350,9 @@ class MarkovProcessor implements Runnable {
 
 	private String[] replaceBadPair(String word_one, String word_two) {
 		String[] result = {word_one, word_two};
+		
+		if (badpairPatterns.size() == 0) return result;
+		
 		String[] alternate_pair = alternatePairs.get(Tim.rand.nextInt(alternatePairs.size()));
 		String working1, working2;
 		working1 = word_one.replaceAll("[^a-zA-Z]", "");
@@ -499,6 +383,8 @@ class MarkovProcessor implements Runnable {
 	}
 
 	private String replaceBadWord(String word) {
+		if (badwordPatterns.size() == 0) return word;
+		
 		String old_word = word, working, replacement = alternateWords.get(Tim.rand.nextInt(alternateWords.size()));
 		working = word.replaceAll("[^a-zA-Z]", "");
 
@@ -528,42 +414,34 @@ class MarkovProcessor implements Runnable {
 	}
 
 	void addBadPair(String word_one, String word_two, Channel channel) {
-		Connection con = null;
 		if ("".equals(word_one)) {
 			channel.send().message("I can't add nothing. Please provide the bad word.");
 		} else {
-			try {
-				con = db.pool.getConnection(timeout);
-
+			try (Connection con = Tim.db.pool.getConnection(timeout)) {
 				PreparedStatement s = con.prepareStatement("REPLACE INTO bad_pairs SET word_one = ?, word_two = ?");
 				s.setString(1, word_one);
 				s.setString(2, word_two);
 				s.executeUpdate();
-				s.close();
 
 				s = con.prepareStatement("DELETE msd.* FROM markov3_say_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
 				s.setString(1, "^[[:punct:]]*" + word_one + "[[:punct:]]*$");
 				s.setString(2, "^[[:punct:]]*" + word_two + "[[:punct:]]*$");
 				s.executeUpdate();
-				s.close();
 
 				s = con.prepareStatement("DELETE msd.* FROM markov3_say_data msd INNER JOIN markov_words mw1 ON (msd.second_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.third_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
 				s.setString(1, "^[[:punct:]]*" + word_one + "[[:punct:]]*$");
 				s.setString(2, "^[[:punct:]]*" + word_two + "[[:punct:]]*$");
 				s.executeUpdate();
-				s.close();
 
 				s = con.prepareStatement("DELETE msd.* FROM markov3_emote_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
 				s.setString(1, "^[[:punct:]]*" + word_one + "[[:punct:]]*$");
 				s.setString(2, "^[[:punct:]]*" + word_two + "[[:punct:]]*$");
 				s.executeUpdate();
-				s.close();
 
 				s = con.prepareStatement("DELETE msd.* FROM markov3_emote_data msd INNER JOIN markov_words mw1 ON (msd.second_id = mw1.id) INNER JOIN markov_words mw2 ON (msd.third_id = mw2.id) WHERE mw1.word COLLATE utf8_general_ci REGEXP ? AND mw2.word COLLATE utf8_general_ci REGEXP ?");
 				s.setString(1, "^[[:punct:]]*" + word_one + "[[:punct:]]*$");
 				s.setString(2, "^[[:punct:]]*" + word_two + "[[:punct:]]*$");
 				s.executeUpdate();
-				s.close();
 
 				badpairPatterns.putIfAbsent(word_one + ":" + word_two, new Pattern[]{
 					Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word_one) + ")(\\W|\\b)"),
@@ -571,50 +449,29 @@ class MarkovProcessor implements Runnable {
 
 				channel.send().action("quickly goes through his records, and purges all knowledge of that horrible phrase.");
 			} catch (SQLException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-			} finally {
-				try {
-					if (con != null) {
-						con.close();
-					}
-				} catch (SQLException ex) {
-					Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-				}
+				Tim.printStackTrace(ex);
 			}
 		}
 	}
 
 	void addBadWord(String word, Channel channel) {
-		Connection con = null;
 		if ("".equals(word)) {
 			channel.send().message("I can't add nothing. Please provide the bad word.");
 		} else {
-			try {
-				con = db.pool.getConnection(timeout);
-
+			try (Connection con = Tim.db.pool.getConnection(timeout)) {
 				PreparedStatement s = con.prepareStatement("REPLACE INTO bad_words SET word = ?");
 				s.setString(1, word);
 				s.executeUpdate();
-				s.close();
 
 				s = con.prepareStatement("DELETE FROM markov_words WHERE word COLLATE utf8_general_ci REGEXP ?");
 				s.setString(1, "^[[:punct:]]*" + word + "[[:punct:]]*$");
 				s.executeUpdate();
-				s.close();
 
 				badwordPatterns.putIfAbsent(word, Pattern.compile("(?ui)(\\W|\\b)(" + Pattern.quote(word) + ")(\\W|\\b)"));
 
 				channel.send().action("quickly goes through his records, and purges all knowledge of that horrible word.");
 			} catch (SQLException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-			} finally {
-				try {
-					if (con != null) {
-						con.close();
-					}
-				} catch (SQLException ex) {
-					Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-				}
+				Tim.printStackTrace(ex);
 			}
 		}
 	}

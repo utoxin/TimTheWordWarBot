@@ -1,7 +1,7 @@
 package Tim.Commands.Utility;
 
 import Tim.ChannelInfo;
-import Tim.Commands.AdminCommandInterface;
+import Tim.Commands.IAdminCommand;
 import Tim.Tim;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.hooks.events.MessageEvent;
@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-public final class Shout implements AdminCommandInterface {
+public final class Shout implements IAdminCommand {
 	@Override
 	public boolean parseAdminCommand(String command, String[] args, MessageEvent event) {
 		if (args.length < 1) {

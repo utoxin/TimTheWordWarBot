@@ -20,15 +20,12 @@ package Tim;
 
 import java.sql.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Colors;
 import org.pircbotx.hooks.events.MessageEvent;
 
 class MarkovChains {
-	private final DBAccess db = DBAccess.getInstance();
 	private final long timeout = 3000;
 	private final String[] sentenceEndings = {".", ".", ".", ".", "!", "!", "?", "?", "!", "!", "?", "?", "...", "?!", "...!", "...?"};
 
@@ -103,7 +100,7 @@ class MarkovChains {
 					break;
 			}
 		} catch (InterruptedException ex) {
-			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -122,10 +119,8 @@ class MarkovChains {
 	}
 
 	String generate_markov(String type, int maxLength, int seedWord) {
-		Connection con = null;
 		String sentence = "";
-		try {
-			con = db.pool.getConnection(timeout);
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			CallableStatement nextSentenceStmt;
 
 			if ("emote".equals(type)) {
@@ -188,18 +183,8 @@ class MarkovChains {
 					break;
 				}
 			}
-
-			nextSentenceStmt.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-			}
+			Tim.printStackTrace(ex);
 		}
 
 		return sentence;
@@ -208,7 +193,6 @@ class MarkovChains {
 	private int getSeedWord(String message, String type, int lastSeed) {
 		String[] words = message.split(" ");
 		HashSet<Integer> wordIds = new HashSet<>();
-		Connection con = null;
 
 		for (String word : words) {
 			wordIds.add(Tim.markovProcessor.getMarkovWordId(word));
@@ -220,10 +204,8 @@ class MarkovChains {
 		}
 		
 		String ids = StringUtils.join(wordIds, ",");
-
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
+		
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			PreparedStatement s;
 			if (type.equals("say")) {
 				s = con.prepareStatement("SELECT * FROM (SELECT second_id FROM markov3_say_data msd WHERE msd.first_id = 1 AND msd.third_id != 1 AND msd.second_id IN ("+ids+") "
@@ -250,18 +232,8 @@ class MarkovChains {
 					return id;
 				}
 			}
-
-			s.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-			} catch (SQLException ex) {
-				Logger.getLogger(MarkovChains.class.getName()).log(Level.SEVERE, null, ex);
-			}
+			Tim.printStackTrace(ex);
 		}
 		
 		return 0;

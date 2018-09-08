@@ -1,7 +1,7 @@
 package Tim.Commands.Amusement;
 
 import Tim.ChannelInfo;
-import Tim.Commands.CommandHandler;
+import Tim.Commands.ICommandHandler;
 import Tim.Commands.Utility.InteractionControls;
 import Tim.Data.CommandData;
 import Tim.Tim;
@@ -11,10 +11,8 @@ import org.pircbotx.Channel;
 import org.pircbotx.User;
 
 import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-public class Fridge implements CommandHandler {
+public class Fridge implements ICommandHandler {
 	private HashSet<String> handledCommands = new HashSet<>();
 
 	public Fridge() {
@@ -70,7 +68,7 @@ public class Fridge implements CommandHandler {
 			Thread.sleep(time);
 			channel.send().action(throwMessage(target, sender.getNick()));
 		} catch (InterruptedException ex) {
-			Logger.getLogger(Fridge.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 

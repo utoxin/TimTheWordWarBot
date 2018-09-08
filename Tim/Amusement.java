@@ -22,7 +22,7 @@ import Tim.Commands.Amusement.Defenestrate;
 import Tim.Commands.Amusement.Dice;
 import Tim.Commands.Amusement.Fridge;
 import Tim.Commands.Amusement.Summon;
-import Tim.Commands.CommandHandler;
+import Tim.Commands.ICommandHandler;
 import Tim.Commands.Utility.InteractionControls;
 import Tim.Data.CommandData;
 import Tim.Utility.TagReplacer;
@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
 /**
  * @author mwalker
  */
-class Amusement implements CommandHandler {
+class Amusement implements ICommandHandler {
 	private final long timeout = 3000;
 
 	private final List<String> pendingItems = new ArrayList<>();
@@ -58,7 +58,7 @@ class Amusement implements CommandHandler {
 	private Defenestrate defenestrate = new Defenestrate();
 	private TagReplacer tagReplacer = new TagReplacer();
 
-	private CommandHandler[] commandHandlers = {
+	private ICommandHandler[] commandHandlers = {
 		new Dice()
 	};
 
@@ -308,7 +308,7 @@ class Amusement implements CommandHandler {
 			default:
 				boolean commandHandled = false;
 
-				for (CommandHandler handler : this.commandHandlers) {
+				for (ICommandHandler handler : this.commandHandlers) {
 					if (handler.handleCommand(commandData)) {
 						commandHandled = true;
 						break;
@@ -801,7 +801,7 @@ class Amusement implements CommandHandler {
 				}
 			}
 		} catch (InterruptedException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -835,7 +835,7 @@ class Amusement implements CommandHandler {
 			Thread.sleep(r);
 			channel.send().action(String.format(response, songName));
 		} catch (SQLException | InterruptedException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -867,7 +867,7 @@ class Amusement implements CommandHandler {
 			channel.send().action(String.format(response, danceNameRes.getString("name")));
 			con.close();
 		} catch (SQLException | InterruptedException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -935,7 +935,7 @@ class Amusement implements CommandHandler {
 
 			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 
 		base_wpm = (long) Double.parseDouble(value);
@@ -1010,7 +1010,7 @@ class Amusement implements CommandHandler {
 			Thread.sleep(time);
 			channel.send().action(act);
 		} catch (InterruptedException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -1049,7 +1049,7 @@ class Amusement implements CommandHandler {
 			Thread.sleep(1000);
 			channel.send().action(act);
 		} catch (InterruptedException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -1086,7 +1086,7 @@ class Amusement implements CommandHandler {
 			Thread.sleep(time);
 			channel.send().action(act);
 		} catch (InterruptedException ex) {
-			Logger.getLogger(Amusement.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -1107,7 +1107,7 @@ class Amusement implements CommandHandler {
 
 			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -1122,7 +1122,7 @@ class Amusement implements CommandHandler {
 
 			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -1138,7 +1138,7 @@ class Amusement implements CommandHandler {
 
 			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -1153,7 +1153,7 @@ class Amusement implements CommandHandler {
 
 			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -1173,7 +1173,7 @@ class Amusement implements CommandHandler {
 
 			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -1193,7 +1193,7 @@ class Amusement implements CommandHandler {
 
 			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 }

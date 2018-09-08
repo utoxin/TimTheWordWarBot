@@ -1,7 +1,7 @@
 package Tim.Commands.Amusement;
 
 import Tim.ChannelInfo;
-import Tim.Commands.CommandHandler;
+import Tim.Commands.ICommandHandler;
 import Tim.Data.CommandData;
 import Tim.Tim;
 import com.bernardomg.tabletop.dice.parser.DefaultDiceNotationExpressionParser;
@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Dice implements CommandHandler {
+public class Dice implements ICommandHandler {
 	private final DiceNotationExpressionParser diceParser = new DefaultDiceNotationExpressionParser(new DefaultRoller());
 	private HashSet<String> handledCommands = new HashSet<>();
 	private Pattern basicDicePattern = Pattern.compile("^d(\\d+)$");
@@ -36,7 +36,7 @@ public class Dice implements CommandHandler {
 		if (handledCommands.contains(commandData.command)) {
 			if (cdata.commands_enabled.get("dice")) {
 				try {
-					int result = diceParser.parse(commandData.argString).getValue();
+					int result = diceParser.parse(commandData.argString).roll();
 
 					if (result < 9000) {
 						commandData.getMessageEvent().respond("Your result is " + result);

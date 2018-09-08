@@ -1,16 +1,16 @@
 <component name="libraryTable">
-  <library name="net.snaq:dbpool:Release" type="repository">
-    <properties maven-id="net.snaq:dbpool:RELEASE" />
+  <library name="net.snaq:dbpool:7.0.1" type="repository">
+    <properties maven-id="net.snaq:dbpool:7.0.1" />
     <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1-jdk7/dbpool-7.0.1-jdk7.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1/dbpool-7.0.1.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.21/slf4j-api-1.7.21.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1-jdk7/dbpool-7.0.1-jdk7-javadoc.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1/dbpool-7.0.1-javadoc.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.21/slf4j-api-1.7.21-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1-jdk7/dbpool-7.0.1-jdk7-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/snaq/dbpool/7.0.1/dbpool-7.0.1-sources.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.21/slf4j-api-1.7.21-sources.jar!/" />
     </SOURCES>
   </library>

@@ -1,7 +1,7 @@
 package Tim.Commands.Writing;
 
 import Tim.ChannelInfo;
-import Tim.Commands.CommandHandler;
+import Tim.Commands.ICommandHandler;
 import Tim.Commands.Utility.InteractionControls;
 import Tim.Data.CommandData;
 import Tim.Tim;
@@ -9,7 +9,7 @@ import Tim.Utility.TagReplacer;
 import org.pircbotx.Channel;
 import org.pircbotx.hooks.events.MessageEvent;
 
-public class Challenge implements CommandHandler {
+public class Challenge implements ICommandHandler {
 	@Override
 	public boolean handleCommand(CommandData commandData) {
 		ChannelInfo cdata = Tim.db.channel_data.get(commandData.getChannelEvent().getChannel().getName().toLowerCase());

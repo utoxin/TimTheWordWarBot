@@ -1,42 +1,21 @@
 package Tim;
 
-/*
- * Copyright (C) 2015 mwalker
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
-
 import Tim.Commands.Amusement.Defenestrate;
 import Tim.Commands.Amusement.Dice;
 import Tim.Commands.Amusement.Fridge;
 import Tim.Commands.Amusement.Summon;
-import Tim.Commands.CommandHandler;
+import Tim.Commands.ICommandHandler;
 import Tim.Commands.Utility.InteractionControls;
 import Tim.Data.CommandData;
 import Tim.Utility.CommandParser;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.MessageEvent;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * @author mwalker
  */
 class UserCommandListener extends ListenerAdapter {
-	private CommandHandler[] commandHandlers = {
+	private ICommandHandler[] commandHandlers = {
 		new InteractionControls(),
 		Tim.story,
 		Tim.challenge,
@@ -68,7 +47,7 @@ class UserCommandListener extends ListenerAdapter {
 						try {
 							Thread.sleep((long) (time * 60 * 1000));
 						} catch (InterruptedException ex) {
-							Logger.getLogger(UserCommandListener.class.getName()).log(Level.SEVERE, null, ex);
+							Tim.printStackTrace(ex);
 						}
 						event.respond("Your timer has expired!");
 						break;
@@ -118,7 +97,7 @@ class UserCommandListener extends ListenerAdapter {
 						}
 
 						if (!commandHandled) {
-							for (CommandHandler handler : this.commandHandlers) {
+							for (ICommandHandler handler : this.commandHandlers) {
 								if (handler != null) {
 									if (handler.handleCommand(commandData)) {
 										commandHandled = true;

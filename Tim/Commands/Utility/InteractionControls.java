@@ -1,6 +1,6 @@
 package Tim.Commands.Utility;
 
-import Tim.Commands.CommandHandler;
+import Tim.Commands.ICommandHandler;
 import Tim.Data.CommandData;
 import Tim.Tim;
 import Tim.ChannelInfo;
@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class InteractionControls implements CommandHandler {
+public class InteractionControls implements ICommandHandler {
 	private HashSet<String> interactions = new HashSet<>();
 
 	public InteractionControls() {

@@ -18,7 +18,7 @@ package Tim;
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-import Tim.Commands.CommandHandler;
+import Tim.Commands.ICommandHandler;
 import Tim.Data.CommandData;
 import org.pircbotx.hooks.types.GenericMessageEvent;
 import org.pircbotx.hooks.types.GenericUserEvent;
@@ -32,7 +32,7 @@ import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class ChainStory implements CommandHandler {
+class ChainStory implements ICommandHandler {
 	private final long timeout = 3000;
 
 	public boolean handleCommand(CommandData commandData) {
@@ -113,7 +113,10 @@ class ChainStory implements CommandHandler {
 			s.executeQuery();
 			rs = s.getResultSet();
 			while (rs.next()) {
-				word_count = Integer.parseInt(rs.getString("word_count"));
+				String count = rs.getString("word_count");
+				if (count != null && !count.equals("")) {
+					word_count = Integer.parseInt(count);
+				}
 			}
 
 			con.close();
@@ -168,7 +171,7 @@ class ChainStory implements CommandHandler {
 
 			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -195,7 +198,7 @@ class ChainStory implements CommandHandler {
 
 			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -217,7 +220,7 @@ class ChainStory implements CommandHandler {
 
 			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 
 		return name;
@@ -251,7 +254,7 @@ class ChainStory implements CommandHandler {
 
 			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
@@ -283,7 +286,7 @@ class ChainStory implements CommandHandler {
 
 				con.close();
 			} catch (SQLException ex) {
-				Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+				Tim.printStackTrace(ex);
 			}
 		}
 	}
@@ -300,7 +303,7 @@ class ChainStory implements CommandHandler {
 
 			con.close();
 		} catch (SQLException ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 }

@@ -1,23 +1,5 @@
 package Tim;
 
-/*
- * Copyright (C) 2015 mwalker
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,6 +24,8 @@ class TwitterIntegration extends StatusAdapter {
 	private HashMap<String, Long> accountCache = new HashMap<>(32);
 	private HashMap<Long, HashSet<String>> accountsToChannels = new HashMap<>(32);
 	private IDs friendIDs;
+	
+	private boolean connected = false;
 
 	TwitterIntegration() {
 		String accessKey = Tim.db.getSetting("twitter_access_key");
@@ -49,20 +33,25 @@ class TwitterIntegration extends StatusAdapter {
 		consumerKey = Tim.db.getSetting("twitter_consumer_key");
 		consumerSecret = Tim.db.getSetting("twitter_consumer_secret");
 
-		token = new AccessToken(accessKey, accessSecret);
-		twitter = new TwitterFactory().getInstance();
-		twitter.setOAuthConsumer(consumerKey, consumerSecret);
-		twitter.setOAuthAccessToken(token);
-
-		try {
-			BotTimmy = twitter.showUser("BotTimmy");
-			friendIDs = twitter.getFriendsIDs(BotTimmy.getId());
-		} catch (TwitterException ex) {
-			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+		if (!accessKey.equals("") && !accessSecret.equals("") && !consumerKey.equals("") && !consumerSecret.equals("")) {
+			token = new AccessToken(accessKey, accessSecret);
+			twitter = new TwitterFactory().getInstance();
+			twitter.setOAuthConsumer(consumerKey, consumerSecret);
+			twitter.setOAuthAccessToken(token);
+			
+			try {
+				BotTimmy = twitter.showUser("BotTimmy");
+				friendIDs = twitter.getFriendsIDs(BotTimmy.getId());
+				connected = true;
+			} catch (TwitterException ex) {
+				Tim.printStackTrace(ex);
+			}
 		}
 	}
 
 	long checkAccount(String accountName) {
+		if (!connected) return 0;
+
 		if (accountCache.containsKey(accountName)) {
 			return accountCache.get(accountName);
 		} else {
@@ -71,15 +60,17 @@ class TwitterIntegration extends StatusAdapter {
 				accountCache.put(accountName, check.getId());
 				return check.getId();
 			} catch (TwitterException ex) {
-				Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+				Tim.printStackTrace(ex);
 			}
-
+			
 			return 0;
 		}
 	}
 
 	void sendDeidleTweet(String message) {
 		try {
+			if (!connected) return;
+
 			if (friendIDs.getIDs().length > 0 && Tim.rand.nextInt(100) < 15) {
 				long userId = friendIDs.getIDs()[Tim.rand.nextInt(friendIDs.getIDs().length)];
 				User tempUser = twitter.showUser(userId);
@@ -94,26 +85,28 @@ class TwitterIntegration extends StatusAdapter {
 			StatusUpdate status = new StatusUpdate(message + " #FearTimmy");
 			twitter.updateStatus(status);
 		} catch (TwitterException ex) {
-			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 	}
 
 	private Set<Long> getTwitterIds(String[] usernames) {
 		ResponseList<User> check;
 		Set<Long> userIds = new HashSet<>(128);
-
+		
 		try {
 			check = twitter.lookupUsers(usernames);
 
 			check.forEach((user) -> userIds.add(user.getId()));
 		} catch (TwitterException ex) {
-			Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+			Tim.printStackTrace(ex);
 		}
 
 		return userIds;
 	}
 
 	void startStream() {
+		if (!connected) return;
+
 		initAccountList();
 		updateStreamFilters();
 	}
@@ -142,6 +135,8 @@ class TwitterIntegration extends StatusAdapter {
 	}
 
 	void addAccount(String account, ChannelInfo channel) {
+		if (!connected) return;
+
 		long accountId = checkAccount(account);
 		if (accountId == 0) {
 			return;
@@ -159,6 +154,8 @@ class TwitterIntegration extends StatusAdapter {
 	}
 
 	void removeAccount(String account, ChannelInfo channel) {
+		if (!connected) return;
+
 		long accountId = checkAccount(account);
 		if (accountId == 0) {
 			return;
@@ -192,7 +189,7 @@ class TwitterIntegration extends StatusAdapter {
 						try {
 							Thread.sleep(nextConnect);
 						} catch (InterruptedException ex) {
-							Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+							Tim.printStackTrace(ex);
 						}
 					}
 					publicStream.cleanUp();
@@ -296,7 +293,7 @@ class TwitterIntegration extends StatusAdapter {
 						twitter.updateStatus(reply);
 					}
 				} catch (TwitterException ex) {
-					Logger.getLogger(TwitterIntegration.class.getName()).log(Level.SEVERE, null, ex);
+					Tim.printStackTrace(ex);
 				}
 			}
 		}

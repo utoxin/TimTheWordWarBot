@@ -372,7 +372,6 @@ class AdminCommandListener extends ListenerAdapter {
 						if (!Tim.db.getSetting("twitter_access_key").equals("")) {
 							if (Tim.twitterStream != null) {
 								event.respond("Closing old Twitter connection ...");
-								Tim.twitterStream.userStream.shutdown();
 								Tim.twitterStream.publicStream.shutdown();
 							}
 

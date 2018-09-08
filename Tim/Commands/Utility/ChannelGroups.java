@@ -1,6 +1,6 @@
 package Tim.Commands.Utility;
 
-import Tim.Commands.AdminCommandInterface;
+import Tim.Commands.IAdminCommand;
 import Tim.Tim;
 import Tim.ChannelInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  *     $channelgroups destroy <group>
  */
 
-public final class ChannelGroups implements AdminCommandInterface {
+public final class ChannelGroups implements IAdminCommand {
 	@Override
 	public boolean parseAdminCommand(String command, String[] args, MessageEvent event) {
 		if (args != null && args.length == 1 && args[0].equalsIgnoreCase("list")) {
