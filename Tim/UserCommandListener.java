@@ -1,9 +1,6 @@
 package Tim;
 
-import Tim.Commands.Amusement.Defenestrate;
-import Tim.Commands.Amusement.Dice;
-import Tim.Commands.Amusement.Fridge;
-import Tim.Commands.Amusement.Summon;
+import Tim.Commands.Amusement.*;
 import Tim.Commands.ICommandHandler;
 import Tim.Commands.Utility.InteractionControls;
 import Tim.Data.CommandData;
@@ -22,7 +19,8 @@ class UserCommandListener extends ListenerAdapter {
 		Tim.amusement,
 		new Summon(),
 		new Defenestrate(),
-		new Fridge()
+		new Fridge(),
+		new Raptor()
 	};
 
 	@Override

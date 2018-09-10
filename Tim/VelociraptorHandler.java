@@ -12,13 +12,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * @author mwalker
- */
 class VelociraptorHandler {
 	void sighting(Event event) {
+		String[] actionResponses = {
+			"jots down a note in a red notebook labeled 'Velociraptor Sighting Log'.",
+			};
+
+		String[] messageResponses = {
+			"Velociraptor sighted! Incident has been logged.",
+			};
+
 		Channel channel = null;
-		boolean action = false;
+		boolean action  = false;
 
 		if (event instanceof MessageEvent) {
 			channel = ((MessageEvent) event).getChannel();
@@ -31,20 +36,21 @@ class VelociraptorHandler {
 			return;
 		}
 
-		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName().toLowerCase());
+		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName()
+														   .toLowerCase());
 
 		if (Tim.rand.nextInt(100) < cdata.velociraptor_odds) {
 			cdata.recordVelociraptorSighting();
 
 			if (action) {
-				event.respond("jots down a note in a red notebook labeled 'Velociraptor Sighting Log'.");
+				event.respond(actionResponses[Tim.rand.nextInt(actionResponses.length)]);
 			} else {
-				event.respond("Velociraptor sighted! Incident has been logged.");
+				event.respond(messageResponses[Tim.rand.nextInt(messageResponses.length)]);
 			}
 
 			cdata.velociraptor_odds--;
 
-			if (Tim.rand.nextInt(100) < 10) {
+			if (Tim.rand.nextInt(100) < 2) {
 				swarm(cdata.channel);
 			}
 		}
@@ -61,33 +67,60 @@ class VelociraptorHandler {
 	void swarm(String channel) {
 		ChannelInfo cdata = Tim.db.channel_data.get(channel.toLowerCase());
 
-		Collection<ChannelInfo> attackCandidates = Tim.db.channel_data.entrySet().stream().filter(map -> map.getValue().chatter_enabled.get("velociraptor") && map.getValue().activeVelociraptors >= cdata.activeVelociraptors * 0.9).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)).values();
+		Collection<ChannelInfo> attackCandidates = Tim.db.channel_data.entrySet()
+																	  .stream()
+																	  .filter(map -> map.getValue().chatter_enabled.get(
+																		  "velociraptor") &&
+																					 map.getValue().activeVelociraptors
+																					 >= cdata.activeVelociraptors * 0.9)
+																	  .collect(Collectors.toMap(Map.Entry::getKey,
+																								Map.Entry::getValue))
+																	  .values();
 
-		Collection<ChannelInfo> migrateCandidates = Tim.db.channel_data.entrySet().stream().filter(map -> map.getValue().chatter_enabled.get("velociraptor") && map.getValue().activeVelociraptors <= cdata.activeVelociraptors * 0.25).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)).values();
+		Collection<ChannelInfo> migrateCandidates = Tim.db.channel_data.entrySet()
+																	   .stream()
+																	   .filter(map ->
+																				   map.getValue().chatter_enabled.get(
+																					   "velociraptor")
+																				   && map.getValue().activeVelociraptors
+																					  <= cdata.activeVelociraptors
+																						 * 0.25)
+																	   .collect(Collectors.toMap(Map.Entry::getKey,
+																								 Map.Entry::getValue))
+																	   .values();
 
 		if (cdata.activeVelociraptors > 10 && Tim.rand.nextInt(100) < oddsDecreasing(cdata.activeVelociraptors)) {
 			int attackCount = Tim.rand.nextInt(cdata.activeVelociraptors / 2);
 
 			if (migrateCandidates.size() > 0 && Tim.rand.nextInt(100) < oddsIncreasing(cdata.activeVelociraptors)) {
-				ChannelInfo victimCdata = (ChannelInfo) migrateCandidates.toArray()[Tim.rand.nextInt(migrateCandidates.size())];
+				ChannelInfo victimCdata = (ChannelInfo) migrateCandidates.toArray()[Tim.rand.nextInt(
+					migrateCandidates.size())];
 
 				cdata.recordSwarmKills(attackCount, 0);
 				victimCdata.recordSwarmDeaths(-attackCount);
 
-				Tim.bot.sendIRC().message(channel, String.format("Apparently feeling crowded, %d of the velociraptors head off in search of new territory. "
-					+ "After a searching, they settle in %s.", attackCount, victimCdata.channel));
+				Tim.bot.sendIRC()
+					   .message(channel, String.format(
+						   "Apparently feeling crowded, %d of the velociraptors head off in search of new territory. "
+						   + "After a searching, they settle in %s.", attackCount, victimCdata.channel));
 
 				if (victimCdata.chatter_enabled.get("velociraptor") && !victimCdata.muzzled) {
-					Tim.bot.sendIRC().message(victimCdata.channel, String.format("A swarm of %d velociraptors appears from the direction of %s. "
-						+ "The local raptors are nervous, but the strangers simply want to join the colony.", attackCount, cdata.channel));
+					Tim.bot.sendIRC()
+						   .message(victimCdata.channel, String.format(
+							   "A swarm of %d velociraptors appears from the direction of %s. "
+							   + "The local raptors are nervous, but the strangers simply want to join the colony.",
+							   attackCount, cdata.channel));
 				}
 			} else if (attackCandidates.size() > 0) {
-				ChannelInfo victimCdata = (ChannelInfo) attackCandidates.toArray()[Tim.rand.nextInt(attackCandidates.size())];
+				ChannelInfo victimCdata = (ChannelInfo) attackCandidates.toArray()[Tim.rand.nextInt(
+					attackCandidates.size())];
 
-				int returnCount = Math.max(0, Tim.rand.nextInt(attackCount / 2) - Tim.rand.nextInt((int) Math.floor(Math.sqrt(cdata.activeVelociraptors))));
+				int returnCount    = Math.max(0, Tim.rand.nextInt(attackCount / 2) - Tim.rand.nextInt(
+					(int) Math.floor(Math.sqrt(cdata.activeVelociraptors))));
 				int defendingCount = victimCdata.activeVelociraptors;
 
-				double killPercent = (((double) attackCount / (double) defendingCount) * 25.0) + (Math.log(Tim.rand.nextInt(attackCount)) * 5);
+				double killPercent = (((double) attackCount / (double) defendingCount) * 25.0) + (
+					Math.log(Tim.rand.nextInt(attackCount)) * 5);
 
 				if (killPercent > 100) {
 					killPercent = 100;
@@ -101,10 +134,12 @@ class VelociraptorHandler {
 				cdata.recordSwarmKills(attackCount - returnCount, killCount);
 				victimCdata.recordSwarmDeaths(killCount);
 
-				Tim.bot.sendIRC().message(channel, AttackMessage(victimCdata.channel, attackCount, killCount, returnCount));
+				Tim.bot.sendIRC()
+					   .message(channel, AttackMessage(victimCdata.channel, attackCount, killCount, returnCount));
 
 				if (victimCdata.chatter_enabled.get("velociraptor") && !victimCdata.muzzled) {
-					Tim.bot.sendIRC().message(victimCdata.channel, DefenseMessage(cdata.channel, attackCount, killCount));
+					Tim.bot.sendIRC()
+						   .message(victimCdata.channel, DefenseMessage(cdata.channel, attackCount, killCount));
 				}
 			}
 		} else {
@@ -121,7 +156,8 @@ class VelociraptorHandler {
 
 				cdata.recordVelociraptorSighting(newCount);
 
-				Tim.bot.sendIRC().message(channel, HatchingRaptors(newCount));
+				Tim.bot.sendIRC()
+					   .message(channel, HatchingRaptors(newCount));
 			} else if (cdata.activeVelociraptors < 0) {
 				cdata.activeVelociraptors = 0;
 			}
@@ -142,7 +178,8 @@ class VelociraptorHandler {
 			"You hear a chorus of chirps, and it doesn't take long to discover a flock of %d baby raptors. Oh dear.",
 			"Back away carefully... there's %d baby raptors right there in the corner.",
 			"You could have sworn there weren't %d baby raptors here a few minutes ago...",
-			"You are momentarily deafened by the proud new mothers, arguing over which of the %d baby raptors is cutest."
+			"You are momentarily deafened by the proud new mothers, arguing over which of the %d baby raptors is "
+			+ "cutest."
 		};
 
 		if (quantity == 1) {
@@ -154,9 +191,12 @@ class VelociraptorHandler {
 
 	private String AttackMessage(String channel, int attackCount, int killCount, int returnCount) {
 		String[] attackMessages = {
-			"Suddenly, %(attackCount) of the raptors go charging off to attack a group in %(channel)! After a horrific battle, they manage to kill %(killCount) of them, and %(returnCount) return home!",
-			"A group of %(attackCount) local raptors are restless, and head off to %(channel), where they kill %(killCount) raptors. Eventually, %(returnCount) of them make their way back home.",
-			"Outraged by previous attacks, %(attackCount) of the local raptors head off to %(channel), killing %(killCount) others to satisfy their thirst for revenge. Only %(returnCount) return home."
+			"Suddenly, %(attackCount) of the raptors go charging off to attack a group in %(channel)! After a horrific"
+			+ " battle, they manage to kill %(killCount) of them, and %(returnCount) return home!",
+			"A group of %(attackCount) local raptors are restless, and head off to %(channel), where they kill %"
+			+ "(killCount) raptors. Eventually, %(returnCount) of them make their way back home.",
+			"Outraged by previous attacks, %(attackCount) of the local raptors head off to %(channel), killing %"
+			+ "(killCount) others to satisfy their thirst for revenge. Only %(returnCount) return home."
 		};
 
 		DecimalFormat formatter = new DecimalFormat("#,###");
@@ -173,8 +213,10 @@ class VelociraptorHandler {
 
 	private String DefenseMessage(String channel, int attackCount, int deathCount) {
 		String[] defenseMessages = {
-			"A swarm of %(attackCount) raptors suddenly appears from the direction of %(channel). The local raptors do their best to fight them off, and %(deathCount) of them die before the swarm disappears.",
-			"A group of %(attackCount) restless raptors from %(channel) shows up without warning, and manage to kill %(deathCount) local raptors before they move on.",
+			"A swarm of %(attackCount) raptors suddenly appears from the direction of %(channel). The local raptors do"
+			+ " their best to fight them off, and %(deathCount) of them die before the swarm disappears.",
+			"A group of %(attackCount) restless raptors from %(channel) shows up without warning, and manage to kill %"
+			+ "(deathCount) local raptors before they move on.",
 			"In a completely unjustified attack from %(channel), %(attackCount) raptors charge in, savage %(deathCount) of the local raptors, and then run off into the sunset."
 		};
 

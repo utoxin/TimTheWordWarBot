@@ -62,7 +62,7 @@ public class ChannelInfo {
 	int answer_odds = 65;
 	int eightball_odds = 100;
 	int soon_odds = 100;
-	int velociraptor_odds = 100;
+	int velociraptor_odds = 50;
 	int groot_odds = 100;
 
 	final int max_lights_odds = 100;
@@ -75,7 +75,7 @@ public class ChannelInfo {
 	final int max_answer_odds = 65;
 	final int max_eightball_odds = 100;
 	final int max_soon_odds = 100;
-	final int max_velociraptor_odds = 100;
+	final int max_velociraptor_odds = 50;
 	final int max_groot_odds = 100;
 
 	public HashMap<String, User> userList = new HashMap<>();

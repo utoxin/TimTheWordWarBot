@@ -39,6 +39,7 @@ public class Tim {
 	public static PircBotX bot;
 	public static DBAccess db = DBAccess.getInstance();
 	public static Random rand;
+	public static UserDirectory userDirectory;
 
 	static Amusement amusement;
 	static Challenge challenge;
@@ -50,7 +51,6 @@ public class Tim {
 	static TwitterIntegration twitterStream;
 	static VelociraptorHandler raptors;
 	static ChannelStorage channelStorage;
-	static UserDirectory userDirectory;
 
 	private static Tim instance;
 	private static Thread markovThread;
