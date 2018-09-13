@@ -10,13 +10,14 @@ import java.util.regex.Pattern;
 
 import Tim.Commands.ICommandHandler;
 import Tim.Data.CommandData;
+import Tim.Data.WordWar;
 import Tim.Utility.Permissions;
 import org.apache.commons.lang3.StringUtils;
 
-class WarTicker implements ICommandHandler {
-	WarClockThread warTicker;
-	ConcurrentHashMap<String, WordWar> wars;
-	ConcurrentHashMap<Integer, WordWar> wars_by_id = new ConcurrentHashMap<>();
+public class WarTicker implements ICommandHandler {
+	WarClockThread                      warTicker;
+	ConcurrentHashMap<String, WordWar>  wars;
+	public ConcurrentHashMap<Integer, WordWar> wars_by_id = new ConcurrentHashMap<>();
 
 	private WarTicker() {
 		Timer ticker;

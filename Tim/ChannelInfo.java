@@ -47,9 +47,10 @@ public class ChannelInfo {
 	float tweetBucketMax;
 	float tweetBucketChargeRate;
 
-	boolean muzzled = false;
-	boolean auto_muzzle_wars = true;
-	boolean auto_muzzled = false;
+	// TODO : Rework this to check through the current wars for the channel and automatically muzzle if needed
+	public boolean muzzled = false;
+	public boolean auto_muzzle_wars = true;
+	public boolean auto_muzzled = false;
 	long muzzledUntil = 0;
 
 	int fox_odds = 75;
@@ -297,7 +298,7 @@ public class ChannelInfo {
 		Tim.twitterStream.removeAccount(name, this);
 	}
 
-	void setMuzzleFlag(boolean muzzled, boolean auto) {
+	public void setMuzzleFlag(boolean muzzled, boolean auto) {
 		setMuzzleFlag(muzzled, auto, 0);
 	}
 

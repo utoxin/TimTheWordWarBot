@@ -41,16 +41,16 @@ public class Tim {
 	public static Random rand;
 	public static UserDirectory userDirectory;
 
-	static Amusement amusement;
-	static Challenge challenge;
-	static MarkovChains markov;
-	static MarkovProcessor markovProcessor;
-	static ChainStory story;
-	static WarTicker warticker;
-	static DeIdler deidler;
-	static TwitterIntegration twitterStream;
-	static VelociraptorHandler raptors;
-	static ChannelStorage channelStorage;
+	static        Amusement           amusement;
+	static        Challenge           challenge;
+	static        MarkovChains        markov;
+	static        MarkovProcessor     markovProcessor;
+	static        ChainStory          story;
+	public static WarTicker           warticker;
+	static        DeIdler             deidler;
+	static        TwitterIntegration  twitterStream;
+	static        VelociraptorHandler raptors;
+	static        ChannelStorage      channelStorage;
 
 	private static Tim instance;
 	private static Thread markovThread;
@@ -126,6 +126,10 @@ public class Tim {
 		for(String line : stackTraceLines) {
 			Tim.bot.send().message("#commandcenter", line);
 		}
+	}
+
+	public static void logErrorString(String error) {
+		Tim.bot.send().message("#commandcenter", error);
 	}
 
 	static void shutdown() {

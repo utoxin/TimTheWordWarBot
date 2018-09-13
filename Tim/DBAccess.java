@@ -1,5 +1,6 @@
 package Tim;
 
+import Tim.Data.WordWar;
 import org.pircbotx.Channel;
 import snaq.db.ConnectionPool;
 import snaq.db.Select1Validator;
@@ -177,10 +178,10 @@ public class DBAccess {
 		}
 	}
 
-	void deleteWar(int id) {
+	public void deleteWar(UUID uuid) {
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
-			PreparedStatement s = con.prepareStatement("DELETE FROM `wars` WHERE `id` = ?");
-			s.setInt(1, id);
+			PreparedStatement s = con.prepareStatement("UPDATE `new_wars` SET `deleted` = 1 WHERE `uuid` = ?");
+			s.setString(1, uuid.toString());
 			s.executeUpdate();
 		} catch (SQLException ex) {
 			Tim.printStackTrace(ex);
@@ -464,66 +465,48 @@ public class DBAccess {
 		Tim.markovProcessor.refreshDbLists();
 	}
 
-	int create_war(String channel, String starter, String name, long base_duration, long duration, long remaining, long time_to_start, int total_chains, int current_chain, int break_duration, boolean do_randomness) {
-		int id = 0;
-
+	public void create_war(WordWar war) {
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
-			PreparedStatement s = con.prepareStatement("INSERT INTO `wars` (`channel`, `starter`, `name`, `base_duration`, `randomness`, `delay`, `duration`, `remaining`, `time_to_start`, `total_chains`, `current_chain`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-			s.setString(1, channel.toLowerCase());
-			s.setString(2, starter);
-			s.setString(3, name);
-			s.setLong(4, base_duration);
-			s.setBoolean(5, do_randomness);
-			s.setLong(6, break_duration);
-			s.setLong(7, duration);
-			s.setLong(8, remaining);
-			s.setLong(9, time_to_start);
-			s.setInt(10, total_chains);
-			s.setInt(11, current_chain);
+			PreparedStatement s = con.prepareStatement("INSERT INTO `new_wars` (`year`, `uuid`, `channel`, `starter`, `name`, `base_duration`, `base_break`, `total_chains`, `current_chain`, `start_epoch`, `end_epoch`, `randomness`, `deleted`, `completed`, `created`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())", Statement.RETURN_GENERATED_KEYS);
+
+			s.setShort(1, war.year);
+			s.setString(2, war.uuid.toString());
+			s.setString(3, war.channel);
+			s.setString(4, war.starter);
+			s.setString(5, war.name);
+			s.setInt(6, war.baseDuration);
+			s.setInt(7, war.baseBreak);
+			s.setByte(8, war.totalChains);
+			s.setByte(9, war.currentChain);
+			s.setLong(10, war.startEpoch);
+			s.setLong(11, war.endEpoch);
+			s.setBoolean(12, war.randomness);
+			s.setBoolean(13, war.deleted);
+			s.setBoolean(14, war.completed);
+
 			s.executeUpdate();
 
 			ResultSet rs = s.getGeneratedKeys();
 
 			if (rs.next()) {
-				id = rs.getInt(1);
+				war.warId = rs.getShort(1);
 			}
 		} catch (SQLException ex) {
 			Tim.printStackTrace(ex);
 		}
-
-		return id;
 	}
 
-	void update_war(int db_id, long duration, long remaining, long time_to_start, int current_chain) {
+	public void update_war(WordWar war) {
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
-			PreparedStatement s = con.prepareStatement("UPDATE `wars` SET `duration` = ? ,`remaining` = ?, `time_to_start` = ?, `current_chain` = ? WHERE id = ?");
-			s.setLong(1, duration);
-			s.setLong(2, remaining);
-			s.setLong(3, time_to_start);
-			s.setInt(4, current_chain);
-			s.setInt(5, db_id);
+			PreparedStatement s = con.prepareStatement("UPDATE `new_wars` SET `current_chain` = ?, `start_epoch` = ?, `end_epoch` = ?, `deleted` = ?, `completed` = ? WHERE `uuid` = ?");
+
+			s.setByte(1, war.currentChain);
+			s.setLong(2, war.startEpoch);
+			s.setLong(3, war.endEpoch);
+			s.setBoolean(4, war.deleted);
+			s.setBoolean(5, war.completed);
+
 			s.executeUpdate();
-		} catch (SQLException ex) {
-			Tim.printStackTrace(ex);
-		}
-	}
-
-	void updateWarMembers(int war_id, ConcurrentHashMap<String, Integer> warMembers) {
-		try (Connection con = Tim.db.pool.getConnection(timeout)) {
-			PreparedStatement purgeOld = con.prepareStatement("DELETE FROM war_members WHERE war_id = ?");
-			purgeOld.setInt(1, war_id);
-			purgeOld.execute();
-
-			PreparedStatement addCurrent = con.prepareStatement("INSERT INTO war_members SET war_id = ?, nickname = ?, starting_count = ?");
-			for(Map.Entry<String, Integer> entry : warMembers.entrySet()) {
-				String nick = entry.getKey();
-				Integer wordCount = entry.getValue();
-
-				addCurrent.setInt(1, war_id);
-				addCurrent.setString(2, nick);
-				addCurrent.setInt(3, wordCount);
-				addCurrent.executeUpdate();
-			}
 		} catch (SQLException ex) {
 			Tim.printStackTrace(ex);
 		}
@@ -534,23 +517,26 @@ public class DBAccess {
 		
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			Statement s = con.createStatement();
-			ResultSet rs = s.executeQuery("SELECT * FROM `wars`");
+			ResultSet rs = s.executeQuery("SELECT * FROM `new_wars` WHERE deleted = 0 AND completed = 0");
 
 			while (rs.next()) {
 				if (channel_data.get(rs.getString("channel")) != null) {
 					WordWar war = new WordWar(
-						rs.getLong("base_duration"),
-						rs.getLong("duration"),
-						rs.getLong("remaining"),
-						rs.getLong("time_to_start"),
-						rs.getInt("total_chains"),
-						rs.getInt("current_chain"),
-						rs.getInt("delay"),
-						rs.getBoolean("randomness"),
-						rs.getString("name"),
-						rs.getString("starter"),
+						rs.getShort("year"),
+						rs.getShort("war_id"),
+						UUID.fromString(rs.getString("uuid")),
 						rs.getString("channel"),
-						rs.getInt("id")
+						rs.getString("starter"),
+						rs.getString("name"),
+						rs.getInt("base_duration"),
+						rs.getInt("base_break"),
+						rs.getByte("total_chains"),
+						rs.getByte("current_chain"),
+						rs.getLong("start_epoch"),
+						rs.getLong("end_epoch"),
+						rs.getBoolean("randomness"),
+						rs.getBoolean("deleted"),
+						rs.getBoolean("completed")
 					);
 
 					wars.put(war.getInternalName(), war);
@@ -561,24 +547,6 @@ public class DBAccess {
 		}
 
 		return wars;
-	}
-
-	ConcurrentHashMap<String, Integer> loadWarMembers(Integer war_id) {
-		ConcurrentHashMap<String, Integer> warMembers = new ConcurrentHashMap<>();
-		
-		try (Connection con = Tim.db.pool.getConnection(timeout)) {
-			PreparedStatement fetchMembers = con.prepareStatement("SELECT * FROM `war_members` WHERE war_id = ?");
-			fetchMembers.setInt(1, war_id);
-			ResultSet rs = fetchMembers.executeQuery();
-
-			while (rs.next()) {
-				warMembers.put(rs.getString("nickname"), rs.getInt("starting_count"));
-			}
-		} catch (SQLException ex) {
-			Tim.printStackTrace(ex);
-		}
-
-		return warMembers;
 	}
 
 	private void loadInteractionSettings() {

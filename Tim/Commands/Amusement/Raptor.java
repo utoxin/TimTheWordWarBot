@@ -22,11 +22,9 @@ public class Raptor implements ICommandHandler {
 			if (userData == null) {
 				commandData.event.respond("I'm sorry, you must be registered before you can work with raptors... (Please ensure you are registered and identified with NickServ.)");
 			} else if (commandData.args.length < 1) {
-				commandData.event.respond("Raptors have recently become fascinated by writing, so we have created a raptor adoption program. They will monitor your writing sprints, and share those details with you when asked. Don't worry, they probably won't eat your cat.");
-				commandData.event.respond("Valid subcommands: adopt, release, details");
+				commandData.event.respond("Raptors recently became fascinated by writing, so we created a raptor adoption program. They will monitor your word sprints, and share the details with you when asked. Don't worry, they probably won't eat your cat.");
+				commandData.event.respond("Valid subcommands: adopt, release, details, rename");
 			} else {
-				// TODO: Add renaming support.
-
 				String subcommand = commandData.args[0];
 				switch (subcommand) {
 					case "adopt":
@@ -56,6 +54,19 @@ public class Raptor implements ICommandHandler {
 							userData.raptorBunniesStolen = 0;
 							userData.lastBunnyRaid = null;
 							userData.save();
+						}
+						break;
+
+					case "rename":
+						if (!userData.raptorAdopted) {
+							commandData.event.respond("I don't have any record of you having a raptor. I can't rename your children.");
+						} else if (commandData.args.length < 2) {
+							commandData.event.respond("You need to provide a new name.");
+						} else {
+							userData.raptorName = commandData.args[1];
+							userData.save();
+
+							commandData.event.respond("Okay... your raptor should respond to the name " + commandData.args[1] + " now. Don't do this too often. You'll confuse the poor thing.");
 						}
 						break;
 

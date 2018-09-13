@@ -5,10 +5,7 @@ import Tim.Tim;
 import org.apache.commons.lang3.time.DateUtils;
 import org.pircbotx.User;
 import org.pircbotx.hooks.ListenerAdapter;
-import org.pircbotx.hooks.events.JoinEvent;
-import org.pircbotx.hooks.events.NickChangeEvent;
-import org.pircbotx.hooks.events.UserListEvent;
-import org.pircbotx.hooks.events.WhoisEvent;
+import org.pircbotx.hooks.events.*;
 
 import java.sql.*;
 import java.util.Date;
@@ -64,10 +61,22 @@ public class UserDirectory extends ListenerAdapter {
 	@Override
 	public void onNickChange(NickChangeEvent event) {
 		if (event.getUser() != null && !event.getUser().getNick().equalsIgnoreCase(Tim.bot.getNick())) {
-			String nick = event.getNewNick().toLowerCase();
-			handleNickEvent(nick);
-			nickLookup.remove(event.getOldNick().toLowerCase());
-			tempStorage.remove(event.getOldNick().toLowerCase());
+			String oldNick = event.getOldNick().toLowerCase();
+			String newNick = event.getNewNick().toLowerCase();
+
+			if (nickLookup.containsKey(oldNick)) {
+				UserData data = nickLookup.get(oldNick);
+				nickLookup.put(newNick, data);
+				nickLookup.remove(oldNick);
+			}
+
+			if (tempStorage.containsKey(oldNick)) {
+				UserData data = tempStorage.get(oldNick);
+				tempStorage.put(newNick, data);
+				tempStorage.remove(oldNick);
+			}
+
+			handleNickEvent(newNick);
 		}
 	}
 	
@@ -86,7 +95,23 @@ public class UserDirectory extends ListenerAdapter {
 			handleNickEvent(user.getNick().toLowerCase());
 		}
 	}
-	
+
+	@Override
+	public void onMessage(MessageEvent event) {
+		if (event.getUser() != null && !event.getUser().getNick().equalsIgnoreCase(Tim.bot.getNick())) {
+			String nick = event.getUser().getNick().toLowerCase();
+			handleNickEvent(nick);
+		}
+	}
+
+	@Override
+	public void onAction(ActionEvent event) {
+		if (event.getUser() != null && !event.getUser().getNick().equalsIgnoreCase(Tim.bot.getNick())) {
+			String nick = event.getUser().getNick().toLowerCase();
+			handleNickEvent(nick);
+		}
+	}
+
 	private void handleNickEvent(String nick) {
 		try {
 			mutex.acquire(1);
@@ -103,7 +128,7 @@ public class UserDirectory extends ListenerAdapter {
 				
 				Tim.bot.send().message("#commandcenter", "Sending initial whois request for '" + nick + "'.");
 				sendWhois(nick);
-			} else if (!userData.registrationDataRetrieved && DateUtils.addMinutes(userData.lastWhoisCheck, 1).compareTo(new Date()) < 1) {
+			} else if (!userData.registrationDataRetrieved && DateUtils.addMinutes(userData.lastWhoisCheck, 10).compareTo(new Date()) < 1) {
 				userData.lastWhoisCheck = new Date();
 
 				Tim.bot.send().message("#commandcenter", "Sending another whois request for '" + nick + "'.");
