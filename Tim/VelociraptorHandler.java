@@ -1,5 +1,6 @@
 package Tim;
 
+import Tim.Data.ChannelInfo;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.pircbotx.Channel;
 import org.pircbotx.hooks.Event;

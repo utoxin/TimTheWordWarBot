@@ -1,7 +1,6 @@
 package Tim.Data;
 
 import Tim.Tim;
-import Tim.ChannelInfo;
 import org.pircbotx.User;
 
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ public class WordWar {
 
 	public ChannelInfo cdata;
 
-	WordWar(ChannelInfo cdata, User startingUser, String name, int baseDuration, long startEpoch) {
+	public WordWar(ChannelInfo cdata, User startingUser, String name, int baseDuration, long startEpoch) {
 		this.uuid = UUID.randomUUID();
 		this.channel = cdata.channel;
 		this.starter = startingUser.getNick();
@@ -45,6 +44,7 @@ public class WordWar {
 		this.totalChains = 1;
 		this.currentChain = 1;
 		this.randomness = false;
+		this.deleted = false;
 		this.completed = false;
 
 		this.cdata = cdata;
@@ -55,7 +55,7 @@ public class WordWar {
 		Tim.db.create_war(this);
 	}
 
-	WordWar(ChannelInfo cdata, User startingUser, String name, int baseDuration, long startEpoch, byte totalChains, int baseBreak, boolean randomness) {
+	public WordWar(ChannelInfo cdata, User startingUser, String name, int baseDuration, long startEpoch, byte totalChains, int baseBreak, boolean randomness) {
 		this.uuid = UUID.randomUUID();
 		this.channel = cdata.channel;
 		this.starter = startingUser.getNick();
@@ -69,6 +69,7 @@ public class WordWar {
 		this.totalChains = totalChains;
 		this.currentChain = 1;
 		this.randomness = randomness;
+		this.deleted = false;
 		this.completed = false;
 
 		this.cdata = cdata;
@@ -124,7 +125,6 @@ public class WordWar {
 		ArrayList<String> nameParts = new ArrayList<>();
 
 		if (includeId) {
-			// 2018-298
 			String db_id = String.format("%d-%d", this.year, this.warId);
 			nameParts.add(String.format("[ID %"+idFieldWidth+"s]", db_id));
 		}
@@ -146,7 +146,7 @@ public class WordWar {
 		return getName(includeId, includeDuration, 1, 1);
 	}
 
-	String getSimpleName() {
+	public String getSimpleName() {
 		return getName(false, false);
 	}
 

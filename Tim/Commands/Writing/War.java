@@ -6,9 +6,9 @@ import java.util.regex.Pattern;
 
 import Tim.Commands.ICommandHandler;
 import Tim.Data.CommandData;
+import Tim.Data.WordWar;
 import Tim.Tim;
-import Tim.WarTicker;
-import Tim.WordWar;
+import Tim.Data.ChannelInfo;
 import org.apache.commons.lang3.StringUtils;
 
 public class War implements ICommandHandler {
@@ -31,16 +31,16 @@ public class War implements ICommandHandler {
 			switch (subcommand) {
 				case "start":
 					if (commandData.args.length >= 2) {
-						long time;
-						long to_start = 60;
-						int total_chains = 1;
+						int time;
+						int to_start = 60;
+						byte total_chains = 1;
 						int delay;
 						boolean do_randomness = false;
 
 						StringBuilder warName = new StringBuilder();
 
 						try {
-							time = (long) (Double.parseDouble(commandData.args[1]) * 60);
+							time = (int) (Double.parseDouble(commandData.args[1]) * 60);
 						} catch (NumberFormatException e) {
 							commandData.event.respond("I could not understand the duration. Was it numeric?");
 							return true;
@@ -65,26 +65,38 @@ public class War implements ICommandHandler {
 
 						if (commandData.args.length >= 3) {
 							for (int i = 2; i < commandData.args.length; i++) {
-								m = breakPattern.matcher(commandData.args[i]);
-								if (m.find()) {
-									try {
-										delay = (int) (Double.parseDouble(m.group(1)) * 60);
-									} catch (NumberFormatException ex) {
-										Tim.printStackTrace(ex);
-										Tim.logErrorString(String.format("Input: ''%s'' Found String: ''%s''",
-																		 commandData.args[1], m.group(1)));
-									}
-									continue;
-								}
-
 								m = startDelayPattern.matcher(commandData.args[i]);
 								if (m.find()) {
 									try {
 										to_start = (int) (Double.parseDouble(m.group(1)) * 60);
 									} catch (NumberFormatException ex) {
 										Tim.printStackTrace(ex);
-										Tim.logErrorString(String.format("Input: ''%s'' Found String: ''%s''",
-																		 commandData.args[1], m.group(1)));
+										Tim.logErrorString(String.format("Start Delay Match -- Input: ''%s'' Found String: ''%s''",
+											commandData.argString, m.group(1)));
+									}
+									continue;
+								}
+
+								m = chainPattern.matcher(commandData.args[i]);
+								if (m.find()) {
+									try {
+										total_chains = (byte) Double.parseDouble(m.group(1));
+									} catch (NumberFormatException ex) {
+										Tim.printStackTrace(ex);
+										Tim.logErrorString(String.format("Chain Match -- Input: ''%s'' Found String: ''%s''",
+											commandData.argString, m.group(1)));
+									}
+									continue;
+								}
+
+								m = breakPattern.matcher(commandData.args[i]);
+								if (m.find()) {
+									try {
+										delay = (int) (Double.parseDouble(m.group(1)) * 60);
+									} catch (NumberFormatException ex) {
+										Tim.printStackTrace(ex);
+										Tim.logErrorString(String.format("Break Match -- Input: ''%s'' Found String: ''%s''",
+											commandData.argString, m.group(1)));
 									}
 									continue;
 								}
@@ -97,8 +109,8 @@ public class War implements ICommandHandler {
 										}
 									} catch (NumberFormatException ex) {
 										Tim.printStackTrace(ex);
-										Tim.logErrorString(String.format("Input: ''%s'' Found String: ''%s''",
-																		 commandData.args[1], m.group(1)));
+										Tim.logErrorString(String.format("Randomness Match -- Input: ''%s'' Found String: ''%s''",
+											commandData.argString, m.group(1)));
 									}
 									continue;
 								}
@@ -115,15 +127,21 @@ public class War implements ICommandHandler {
 							warName = new StringBuilder(commandData.issuer + "'s War");
 						}
 
-						if (!this.wars.containsKey(warName.toString().toLowerCase())) {
-							WordWar war = new WordWar(time, to_start, total_chains, 1, delay, do_randomness, warName.toString(), commandData.getUserEvent().getUser(), commandData.event.getChannel().getName());
-							this.wars.put(war.getInternalName(), war);
-							war.addMember(commandData.issuer, 0);
+						if (!Tim.warticker.wars.containsKey(warName.toString().toLowerCase())) {
+							long currentEpoch = System.currentTimeMillis() / 1000;
+							ChannelInfo cdata = Tim.db.channel_data.get(commandData.event.getChannel().getName().toLowerCase());
+							WordWar war;
+
+							if (total_chains <= 1) {
+								war = new WordWar(cdata, commandData.getMessageEvent().getUser(), warName.toString(), time, currentEpoch + to_start);
+							} else {
+								war = new WordWar(cdata, commandData.getMessageEvent().getUser(), warName.toString(), time, currentEpoch + to_start, total_chains, delay, do_randomness);
+							}
+
+							Tim.warticker.wars.put(war.getInternalName(), war);
 
 							if (to_start > 0) {
-								commandData.event.respond(String.format("Your word war, %s, will start in " + to_start / 60.0 + " minutes. The ID is: %d.", war.getSimpleName(), war.db_id));
-							} else {
-								this.beginWar(war);
+								commandData.event.respond(String.format("Your word war, %s, will start in %f minutes. The ID is: %d-%d.", war.getSimpleName(), to_start / 60.0, war.year, war.warId));
 							}
 						} else {
 							commandData.event.respond("There is already a war with the name '" + warName + "'");
@@ -156,26 +174,6 @@ public class War implements ICommandHandler {
 		}
 
 		switch (commandData.command) {
-			case "startwar":
-				if (args != null && args.length >= 1) {
-					startWar(commandData);
-				} else {
-					commandData.event.respond("Usage: !startwar <duration in min> [<time to start in min> [<name>]]");
-				}
-				return true;
-
-			case "chainwar":
-				if (args != null && args.length > 1) {
-					startChainWar(commandData);
-				} else {
-					commandData.event.respond("Usage: !chainwar <duration in min> <war count> [<name>]");
-				}
-				return true;
-
-			case "starwar":
-				commandData.event.respond("A long time ago, in a galaxy far, far away...");
-				return true;
-
 			case "endwar":
 				endWar(commandData);
 				return true;

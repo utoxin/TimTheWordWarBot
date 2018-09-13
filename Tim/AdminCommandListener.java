@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import Tim.Commands.Utility.ChannelGroups;
 import Tim.Commands.Utility.Shout;
+import Tim.Data.ChannelInfo;
 import Tim.Data.CommandData;
 import Tim.Utility.CommandParser;
 import Tim.Utility.Permissions;

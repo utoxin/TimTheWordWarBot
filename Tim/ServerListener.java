@@ -20,6 +20,7 @@ package Tim;
 
 import java.util.regex.Pattern;
 
+import Tim.Data.ChannelInfo;
 import Tim.Utility.TagReplacer;
 import org.pircbotx.User;
 import org.pircbotx.hooks.ListenerAdapter;

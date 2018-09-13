@@ -2,7 +2,7 @@ package Tim.Commands.Utility;
 
 import Tim.Commands.IAdminCommand;
 import Tim.Tim;
-import Tim.ChannelInfo;
+import Tim.Data.ChannelInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.hooks.events.MessageEvent;
 import java.util.Set;

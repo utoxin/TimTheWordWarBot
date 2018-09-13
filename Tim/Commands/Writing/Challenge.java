@@ -1,6 +1,6 @@
 package Tim.Commands.Writing;
 
-import Tim.ChannelInfo;
+import Tim.Data.ChannelInfo;
 import Tim.Commands.ICommandHandler;
 import Tim.Commands.Utility.InteractionControls;
 import Tim.Data.CommandData;

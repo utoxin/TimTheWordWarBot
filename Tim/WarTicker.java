@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class WarTicker implements ICommandHandler {
 	WarClockThread                      warTicker;
-	ConcurrentHashMap<String, WordWar>  wars;
+	public ConcurrentHashMap<String, WordWar>  wars;
 	public ConcurrentHashMap<Integer, WordWar> wars_by_id = new ConcurrentHashMap<>();
 
 	private WarTicker() {
@@ -37,26 +37,6 @@ public class WarTicker implements ICommandHandler {
 		String[] args = commandData.args;
 
 		switch (commandData.command) {
-			case "startwar":
-				if (args != null && args.length >= 1) {
-					startWar(commandData);
-				} else {
-					commandData.event.respond("Usage: !startwar <duration in min> [<time to start in min> [<name>]]");
-				}
-				return true;
-
-			case "chainwar":
-				if (args != null && args.length > 1) {
-					startChainWar(commandData);
-				} else {
-					commandData.event.respond("Usage: !chainwar <duration in min> <war count> [<name>]");
-				}
-				return true;
-
-			case "starwar":
-				commandData.event.respond("A long time ago, in a galaxy far, far away...");
-				return true;
-
 			case "endwar":
 				endWar(commandData);
 				return true;

@@ -1,6 +1,6 @@
 package Tim.Commands.Utility;
 
-import Tim.ChannelInfo;
+import Tim.Data.ChannelInfo;
 import Tim.Commands.IAdminCommand;
 import Tim.Tim;
 import org.apache.commons.lang3.StringUtils;

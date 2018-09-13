@@ -19,6 +19,7 @@ package Tim;
  */
 
 import Tim.Commands.ICommandHandler;
+import Tim.Data.ChannelInfo;
 import Tim.Data.CommandData;
 import org.pircbotx.hooks.types.GenericMessageEvent;
 import org.pircbotx.hooks.types.GenericUserEvent;

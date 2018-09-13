@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import Tim.Data.ChannelInfo;
 import org.apache.commons.lang3.ArrayUtils;
 import org.pircbotx.Colors;
 import twitter4j.*;
@@ -134,7 +136,7 @@ class TwitterIntegration extends StatusAdapter {
 		needFilterUpdate = true;
 	}
 
-	void addAccount(String account, ChannelInfo channel) {
+	public void addAccount(String account, ChannelInfo channel) {
 		if (!connected) return;
 
 		long accountId = checkAccount(account);
@@ -153,7 +155,7 @@ class TwitterIntegration extends StatusAdapter {
 		updateStreamFilters();
 	}
 
-	void removeAccount(String account, ChannelInfo channel) {
+	public void removeAccount(String account, ChannelInfo channel) {
 		if (!connected) return;
 
 		long accountId = checkAccount(account);

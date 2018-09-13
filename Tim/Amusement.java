@@ -24,6 +24,7 @@ import Tim.Commands.Amusement.Fridge;
 import Tim.Commands.Amusement.Summon;
 import Tim.Commands.ICommandHandler;
 import Tim.Commands.Utility.InteractionControls;
+import Tim.Data.ChannelInfo;
 import Tim.Data.CommandData;
 import Tim.Utility.TagReplacer;
 import org.apache.commons.lang3.StringUtils;
@@ -36,8 +37,6 @@ import org.pircbotx.hooks.types.GenericMessageEvent;
 import java.sql.*;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**

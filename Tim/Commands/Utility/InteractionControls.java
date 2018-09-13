@@ -3,7 +3,7 @@ package Tim.Commands.Utility;
 import Tim.Commands.ICommandHandler;
 import Tim.Data.CommandData;
 import Tim.Tim;
-import Tim.ChannelInfo;
+import Tim.Data.ChannelInfo;
 import org.pircbotx.hooks.types.GenericMessageEvent;
 import org.pircbotx.hooks.types.GenericUserEvent;
 

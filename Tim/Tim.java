@@ -48,7 +48,7 @@ public class Tim {
 	static        ChainStory          story;
 	public static WarTicker           warticker;
 	static        DeIdler             deidler;
-	static        TwitterIntegration  twitterStream;
+	public static TwitterIntegration  twitterStream;
 	static        VelociraptorHandler raptors;
 	static        ChannelStorage      channelStorage;
 

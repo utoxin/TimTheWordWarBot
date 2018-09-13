@@ -1,6 +1,6 @@
 package Tim.Commands.Amusement;
 
-import Tim.ChannelInfo;
+import Tim.Data.ChannelInfo;
 import Tim.Commands.ICommandHandler;
 import Tim.Data.CommandData;
 import Tim.Tim;

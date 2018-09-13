@@ -1,5 +1,6 @@
 package Tim;
 
+import Tim.Data.ChannelInfo;
 import Tim.Data.WordWar;
 import org.pircbotx.Channel;
 import snaq.db.ConnectionPool;
@@ -372,7 +373,7 @@ public class DBAccess {
 		}
 	}
 
-	void saveChannelSettings(ChannelInfo channel) {
+	public void saveChannelSettings(ChannelInfo channel) {
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
