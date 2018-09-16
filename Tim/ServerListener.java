@@ -127,7 +127,7 @@ class ServerListener extends ListenerAdapter {
 					&& Tim.warticker.wars.size() > 0
 					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
 				) {
-					warsCount = Tim.warticker.wars.entrySet().stream().filter((wm) -> (wm.getValue().getChannel().equalsIgnoreCase(event.getChannel().getName()))).map((_item) -> 1).reduce(warsCount, Integer::sum);
+					warsCount = Tim.warticker.wars.stream().filter((wm) -> (wm.getChannel().equalsIgnoreCase(event.getChannel().getName()))).map((_item) -> 1).reduce(warsCount, Integer::sum);
 
 					if (warsCount > 0) {
 						boolean plural = warsCount >= 2;
@@ -149,8 +149,8 @@ class ServerListener extends ListenerAdapter {
 					&& warsCount > 0
 					&& !Tim.db.ignore_list.contains(event.getUser().getNick().toLowerCase())
 				) {
-					Tim.warticker.wars.entrySet().stream().filter((wm) -> (wm.getValue().getChannel().equalsIgnoreCase(event.getChannel().getName()))).forEach(
-						(wm) -> event.getChannel().send().message(wm.getValue().getDescription())
+					Tim.warticker.wars.stream().filter((wm) -> (wm.getChannel().equalsIgnoreCase(event.getChannel().getName()))).forEach(
+						(wm) -> event.getChannel().send().message(wm.getDescription())
 					);
 				}
 

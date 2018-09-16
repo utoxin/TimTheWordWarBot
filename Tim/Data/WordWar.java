@@ -5,9 +5,14 @@ import org.pircbotx.User;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.UUID;
 
 public class WordWar {
+	public enum State {
+		PENDING, ACTIVE, CANCELLED, FINISHED
+	}
+
 	public short year;
 	public short warId;
 	public UUID uuid;
@@ -26,10 +31,12 @@ public class WordWar {
 	public long endEpoch;
 
 	public boolean randomness;
-	public boolean deleted;
-	public boolean completed;
+
+	public State warState;
 
 	public ChannelInfo cdata;
+
+	public HashSet<String> warMembers = new HashSet<>();
 
 	public WordWar(ChannelInfo cdata, User startingUser, String name, int baseDuration, long startEpoch) {
 		this.uuid = UUID.randomUUID();
@@ -44,8 +51,8 @@ public class WordWar {
 		this.totalChains = 1;
 		this.currentChain = 1;
 		this.randomness = false;
-		this.deleted = false;
-		this.completed = false;
+
+		this.warState = State.PENDING;
 
 		this.cdata = cdata;
 
@@ -69,8 +76,8 @@ public class WordWar {
 		this.totalChains = totalChains;
 		this.currentChain = 1;
 		this.randomness = randomness;
-		this.deleted = false;
-		this.completed = false;
+
+		this.warState = State.PENDING;
 
 		this.cdata = cdata;
 
@@ -82,7 +89,7 @@ public class WordWar {
 
 	public WordWar(short year, short warId, UUID uuid, String channel, String starter, String name, int baseDuration,
 				   int baseBreak, byte totalChains, byte currentChain, long startEpoch, long endEpoch,
-				   boolean randomness, boolean deleted, boolean completed) {
+				   boolean randomness, State warState) {
 		this.uuid = uuid;
 		this.year = year;
 		this.warId = warId;
@@ -96,8 +103,7 @@ public class WordWar {
 		this.startEpoch = startEpoch;
 		this.endEpoch = endEpoch;
 		this.randomness = randomness;
-		this.deleted = deleted;
-		this.completed = completed;
+		this.warState = warState;
 
 		String channelName = channel.toLowerCase();
 		this.cdata = Tim.db.channel_data.get(channelName);
@@ -108,13 +114,32 @@ public class WordWar {
 		}
 	}
 
-	void endWar() {
-		this.deleted = true;
-		Tim.db.deleteWar(this.uuid);
+	public void endWar() {
+		this.warState = State.FINISHED;
+		this.updateDb();
 	}
 
-	void updateDb() {
-		Tim.db.update_war(this);
+	public void cancelWar() {
+		this.warState = State.CANCELLED;
+		this.updateDb();
+	}
+
+	public void beginWar() {
+		this.warState = State.ACTIVE;
+		this.updateDb();
+	}
+
+	public void chainWarBreak() {
+		this.warState = State.PENDING;
+		this.updateDb();
+	}
+
+	public long duration() {
+		return this.endEpoch - this.startEpoch;
+	}
+
+	private void updateDb() {
+		Tim.db.updateWar(this);
 	}
 
 	public String getChannel() {
@@ -154,7 +179,7 @@ public class WordWar {
 		return name.toLowerCase();
 	}
 
-	String getDurationText(long duration) {
+	public String getDurationText(long duration) {
 		String text = "";
 		long hours = 0, minutes = 0, seconds, tmp;
 
@@ -187,15 +212,15 @@ public class WordWar {
 		return text.trim();
 	}
 
-	String getStarter() {
+	public String getStarter() {
 		return starter;
 	}
 
-	String getDescription() {
+	public String getDescription() {
 		return getDescription(1, 1);
 	}
 
-	String getDescription(int idFieldWidth, int durationFieldWidth) {
+	public String getDescription(int idFieldWidth, int durationFieldWidth) {
 		long currentEpoch = System.currentTimeMillis() / 1000;
 
 		String about = this.getName(true, true, idFieldWidth, durationFieldWidth) + " :: ";
@@ -210,7 +235,15 @@ public class WordWar {
 		return about;
 	}
 
-	String getDescriptionWithChannel(int idFieldWidth, int durationFieldWidth) {
+	public String getDescriptionWithChannel(int idFieldWidth, int durationFieldWidth) {
 		return this.getDescription(idFieldWidth, durationFieldWidth) + " :: " + this.channel;
+	}
+
+	public void addMember(String nick) {
+		warMembers.add(nick);
+	}
+
+	public void removeMember(String nick) {
+		warMembers.remove(nick);
 	}
 }

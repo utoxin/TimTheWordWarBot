@@ -1,23 +1,5 @@
 package Tim;
 
-/*
- * Copyright (C) 2015 mwalker
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
-
 import Tim.Data.ChannelInfo;
 import org.pircbotx.Channel;
 
@@ -51,9 +33,7 @@ class DeIdler {
 		return SingletonHelper.instance;
 	}
 
-	@SuppressWarnings("WeakerAccess")
 	class IdleClockThread extends TimerTask {
-
 		private final DeIdler parent;
 
 		IdleClockThread(DeIdler parent) {
@@ -76,7 +56,6 @@ class DeIdler {
 		Calendar cal = Calendar.getInstance();
 		Date date = new Date();
 
-		//noinspection MagicConstant
 		boolean isNovember = (Calendar.NOVEMBER == cal.get(Calendar.MONTH));
 		boolean aheadOfPace = (((cal.get(Calendar.DAY_OF_MONTH) + 1) * (50000 / 30)) < Tim.story.wordcount());
 
@@ -92,7 +71,7 @@ class DeIdler {
 			}
 
 			Tim.story.storeLine(new_text, "Timmy");
-			Tim.db.channel_data.values().stream().filter((cdata) -> (Tim.rand.nextInt(100) < 15 && cdata.chatter_enabled.get("chainstory") && !cdata.muzzled && cdata.randomChatterLevel >= 0)).forEach((cdata) -> Tim.bot.sendIRC().action(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)"));
+			Tim.db.channel_data.values().stream().filter((cdata) -> (Tim.rand.nextInt(100) < 15 && cdata.chatter_enabled.get("chainstory") && !cdata.isMuzzled() && cdata.randomChatterLevel >= 0)).forEach((cdata) -> Tim.bot.sendIRC().action(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)"));
 		}
 
 		if (Tim.rand.nextInt(100) < 1) {
@@ -109,13 +88,10 @@ class DeIdler {
 				Tim.channelStorage.channelList.get(cdata.channel).getMode();
 			}
 
-			if (cdata.muzzled) {
-				if (cdata.muzzledUntil > 0 && cdata.muzzledUntil < date.getTime() && !cdata.auto_muzzled) {
-					cdata.muzzled = false;
-					cdata.muzzledUntil = 0;
-				} else {
-					continue;
-				}
+			cdata.clearTimedMuzzle();
+
+			if (cdata.isMuzzled()) {
+				continue;
 			}
 
 			if ((Tim.rand.nextFloat() * 100) < cdata.randomChatterLevel) {

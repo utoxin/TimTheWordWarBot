@@ -12,10 +12,9 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 class MarkovProcessor implements Runnable {
-	private final DBAccess db = DBAccess.getInstance();
 	private HashMap<String, Pattern[]> badpairPatterns = new HashMap<>();
-	private ArrayList<String> alternateWords = new ArrayList<>(64);
-	private ArrayList<String[]> alternatePairs = new ArrayList<>(64);
+	private ArrayList<String> alternateWords = new ArrayList<>();
+	private ArrayList<String[]> alternatePairs = new ArrayList<>();
 	private final long timeout = 3000;
 	private final UrlValidator urlValidator = new UrlValidator();
 	private final EmailValidator emailValidator;

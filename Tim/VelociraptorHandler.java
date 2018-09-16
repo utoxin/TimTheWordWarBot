@@ -105,7 +105,7 @@ class VelociraptorHandler {
 						   "Apparently feeling crowded, %d of the velociraptors head off in search of new territory. "
 						   + "After a searching, they settle in %s.", attackCount, victimCdata.channel));
 
-				if (victimCdata.chatter_enabled.get("velociraptor") && !victimCdata.muzzled) {
+				if (victimCdata.chatter_enabled.get("velociraptor") && !victimCdata.isMuzzled()) {
 					Tim.bot.sendIRC()
 						   .message(victimCdata.channel, String.format(
 							   "A swarm of %d velociraptors appears from the direction of %s. "
@@ -138,7 +138,7 @@ class VelociraptorHandler {
 				Tim.bot.sendIRC()
 					   .message(channel, AttackMessage(victimCdata.channel, attackCount, killCount, returnCount));
 
-				if (victimCdata.chatter_enabled.get("velociraptor") && !victimCdata.muzzled) {
+				if (victimCdata.chatter_enabled.get("velociraptor") && !victimCdata.isMuzzled()) {
 					Tim.bot.sendIRC()
 						   .message(victimCdata.channel, DefenseMessage(cdata.channel, attackCount, killCount));
 				}

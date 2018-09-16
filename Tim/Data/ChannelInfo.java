@@ -8,9 +8,10 @@ import java.util.*;
 
 public class ChannelInfo {
 	public String channel;
-	public HashMap<String, Boolean> chatter_enabled = new HashMap<>(16);
-	public HashMap<String, Boolean> commands_enabled = new HashMap<>(16);
-	public Set<String> twitter_accounts = new HashSet<>(16);
+
+	public HashMap<String, Boolean> chatter_enabled = new HashMap<>();
+	public HashMap<String, Boolean> commands_enabled = new HashMap<>();
+	public Set<String> twitter_accounts = new HashSet<>();
 	public User lastSpeaker;
 	public long lastSpeakerTime;
 	public float reactiveChatterLevel;
@@ -28,10 +29,8 @@ public class ChannelInfo {
 	public float tweetBucketMax;
 	public float tweetBucketChargeRate;
 
-	// TODO : Rework this to check through the current wars for the channel and automatically muzzle if needed
-	public boolean muzzled = false;
+	private boolean muzzled = false;
 	public boolean auto_muzzle_wars = true;
-	public boolean auto_muzzled = false;
 	public long muzzledUntil = 0;
 
 	// Current Odds
@@ -286,13 +285,32 @@ public class ChannelInfo {
 		Tim.twitterStream.removeAccount(name, this);
 	}
 
-	public void setMuzzleFlag(boolean muzzled, boolean auto) {
-		setMuzzleFlag(muzzled, auto, 0);
+	public void setMuzzleFlag(boolean muzzled) {
+		setMuzzleFlag(muzzled, 0);
 	}
 
-	public void setMuzzleFlag(boolean muzzled, boolean auto, long expires) {
+	public void setMuzzleFlag(boolean muzzled, long expires) {
 		this.muzzled = muzzled;
-		this.auto_muzzled = auto;
 		this.muzzledUntil = expires;
+	}
+
+	public boolean isMuzzled() {
+		boolean automuzzle = false;
+
+		for (WordWar war : Tim.warticker.wars) {
+			if (war.channel.equalsIgnoreCase(this.channel) && this.auto_muzzle_wars) {
+				automuzzle = true;
+				break;
+			}
+		}
+
+		return this.muzzled || automuzzle;
+	}
+
+	public void clearTimedMuzzle() {
+		if (this.muzzledUntil > 0 && this.muzzledUntil < (System.currentTimeMillis() / 1000)) {
+			this.muzzled = false;
+			this.muzzledUntil = 0;
+		}
 	}
 }

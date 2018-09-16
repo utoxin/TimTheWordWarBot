@@ -3,6 +3,7 @@ package Tim;
 import Tim.Commands.Amusement.*;
 import Tim.Commands.ICommandHandler;
 import Tim.Commands.Utility.InteractionControls;
+import Tim.Commands.Writing.War;
 import Tim.Data.CommandData;
 import Tim.Utility.CommandParser;
 import org.pircbotx.hooks.ListenerAdapter;
@@ -20,7 +21,8 @@ class UserCommandListener extends ListenerAdapter {
 		new Summon(),
 		new Defenestrate(),
 		new Fridge(),
-		new Raptor()
+		new Raptor(),
+		new War()
 	};
 
 	@Override
@@ -90,17 +92,11 @@ class UserCommandListener extends ListenerAdapter {
 					default:
 						boolean commandHandled = false;
 
-						if (Tim.warticker != null) {
-							commandHandled = Tim.warticker.handleCommand(commandData);
-						}
-
-						if (!commandHandled) {
-							for (ICommandHandler handler : this.commandHandlers) {
-								if (handler != null) {
-									if (handler.handleCommand(commandData)) {
-										commandHandled = true;
-										break;
-									}
+						for (ICommandHandler handler : this.commandHandlers) {
+							if (handler != null) {
+								if (handler.handleCommand(commandData)) {
+									commandHandled = true;
+									break;
 								}
 							}
 						}
@@ -124,19 +120,7 @@ class UserCommandListener extends ListenerAdapter {
 
 		String[] strs = {"I am a robot trained by the WordWar Monks of Honolulu. You have "
 			+ "never heard of them. It is because they are awesome.",
-			"Word Wars:",
-			"    !startwar <duration> <time to start> [<optional name>] - Starts a word war.",
-			"    !chainwar <base duration> <war count> [<advanced controls>] [<name>] - Starts a series of wars.",
-			"    !joinwar <war id> - Receive start and end private messages for the given war.",
-			"    !leavewar <war id> - Unsubscribe from private messages about the given war.",
-			"    !listwars - List the wars currently in progress in this channel.",
-			"    !listall - List the all wars currently in progress on the server.",
-			"    !endwar <war name or id> - Ends the indicated war early.",
-			"Advanced Chain War Controls:",
-			"    break:<number of minutes> - How many minutes to use for the breaks between wars.",
-			"    start:<number of minutes> - How many minutes to delay before starting the wars.",
-			"    random:1 - Randomly vary the war duration by a small amount.",
-			"Other Commands:",
+			"General Commands:",
 			"    !boxodoom <difficulty> <duration> - Difficulty is extraeasy/easy/average/hard/extreme/insane/impossible/tadiera, duration in minutes.",
 			"    !eggtimer <time> - I will send you a message after <time> minutes.",
 			"    !ignore <hard/soft> - Make Timmy ignore you. Soft lets you keep using commands. Hard is EVERYTHING.",
@@ -146,6 +130,7 @@ class UserCommandListener extends ListenerAdapter {
 			event.getUser().send().message(str);
 		}
 
+		War.helpSection(event);
 		Tim.story.helpSection(event);
 		Tim.challenge.helpSection(event);
 		Tim.amusement.helpSection(event);

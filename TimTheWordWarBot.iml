@@ -20,5 +20,6 @@
     <orderEntry type="library" name="commons-configuration:commons-configuration:Release" level="project" />
     <orderEntry type="library" name="org.apache.commons:commons-lang3:Release" level="project" />
     <orderEntry type="library" name="com.google.guava:guava:19.0" level="project" />
+    <orderEntry type="library" name="org.flywaydb:flyway-core" level="project" />
   </component>
 </module>

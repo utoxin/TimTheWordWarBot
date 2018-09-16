@@ -12,7 +12,7 @@ import org.pircbotx.Colors;
 import twitter4j.*;
 import twitter4j.auth.AccessToken;
 
-class TwitterIntegration extends StatusAdapter {
+public class TwitterIntegration extends StatusAdapter {
 	private Twitter twitter;
 	private AccessToken token;
 	TwitterStream publicStream;
@@ -23,8 +23,8 @@ class TwitterIntegration extends StatusAdapter {
 	private boolean reconnectPending = false;
 	private boolean needFilterUpdate = false;
 	private long lastConnect;
-	private HashMap<String, Long> accountCache = new HashMap<>(32);
-	private HashMap<Long, HashSet<String>> accountsToChannels = new HashMap<>(32);
+	private HashMap<String, Long> accountCache = new HashMap<>();
+	private HashMap<Long, HashSet<String>> accountsToChannels = new HashMap<>();
 	private IDs friendIDs;
 	
 	private boolean connected = false;
@@ -80,8 +80,8 @@ class TwitterIntegration extends StatusAdapter {
 				message = "@" + tempUser.getScreenName() + " " + message;
 			}
 			
-			if (message.length() > 129) {
-				message = message.substring(0, 126) + "...";
+			if (message.length() > (280-11)) {
+				message = message.substring(0, (280-13)) + "...";
 			}
 
 			StatusUpdate status = new StatusUpdate(message + " #FearTimmy");
@@ -252,7 +252,7 @@ class TwitterIntegration extends StatusAdapter {
 			for (String channelName : channels) {
 				ChannelInfo channel = Tim.db.channel_data.get(channelName);
 
-				if (channel.muzzled) {
+				if (channel.isMuzzled()) {
 					continue;
 				}
 
@@ -285,8 +285,8 @@ class TwitterIntegration extends StatusAdapter {
 							message2 = "@" + status.getUser().getScreenName() + " " + Tim.markov.generate_markov();
 						}
 
-						if (message2.length() > 118) {
-							message2 = message2.substring(0, 115) + "...";
+						if (message2.length() > (280-22)) {
+							message2 = message2.substring(0, (280-25)) + "...";
 						}
 
 						StatusUpdate reply = new StatusUpdate(message2 + " #NaNoWriMo #FearTimmy");

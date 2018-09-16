@@ -1,23 +1,5 @@
 package Tim;
 
-/*
- * Copyright (C) 2015 mwalker
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
-
 import java.util.Date;
 import java.util.regex.Pattern;
 
@@ -61,7 +43,6 @@ class AdminCommandListener extends ListenerAdapter {
 
 				switch (command) {
 					case "channelgroup":
-						//noinspection ResultOfMethodCallIgnored
 						channelGroups.parseAdminCommand(command, args, event);
 						break;
 					case "setmuzzleflag":
@@ -74,7 +55,7 @@ class AdminCommandListener extends ListenerAdapter {
 								}
 
 								ChannelInfo ci = Tim.db.channel_data.get(target);
-								ci.setMuzzleFlag(flag, false);
+								ci.setMuzzleFlag(flag);
 
 								event.respond("Channel muzzle flag updated for " + target);
 							} else {
@@ -121,7 +102,7 @@ class AdminCommandListener extends ListenerAdapter {
 
 							if (Tim.db.channel_data.containsKey(target)) {
 								ChannelInfo ci = Tim.db.channel_data.get(target);
-								ci.setMuzzleFlag(true, false, expires);
+								ci.setMuzzleFlag(true, expires);
 								event.respond("Channel muzzled for specified time.");
 							} else {
 								event.respond("I don't know about " + target);

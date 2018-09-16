@@ -468,7 +468,7 @@ public class DBAccess {
 
 	public void create_war(WordWar war) {
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
-			PreparedStatement s = con.prepareStatement("INSERT INTO `new_wars` (`year`, `uuid`, `channel`, `starter`, `name`, `base_duration`, `base_break`, `total_chains`, `current_chain`, `start_epoch`, `end_epoch`, `randomness`, `deleted`, `completed`, `created`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement s = con.prepareStatement("INSERT INTO `new_wars` (`year`, `uuid`, `channel`, `starter`, `name`, `base_duration`, `base_break`, `total_chains`, `current_chain`, `start_epoch`, `end_epoch`, `randomness`, `war_state`, `created`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())", Statement.RETURN_GENERATED_KEYS);
 
 			s.setShort(1, war.year);
 			s.setString(2, war.uuid.toString());
@@ -482,8 +482,7 @@ public class DBAccess {
 			s.setLong(10, war.startEpoch);
 			s.setLong(11, war.endEpoch);
 			s.setBoolean(12, war.randomness);
-			s.setBoolean(13, war.deleted);
-			s.setBoolean(14, war.completed);
+			s.setString(13, war.warState.name());
 
 			s.executeUpdate();
 
@@ -497,15 +496,14 @@ public class DBAccess {
 		}
 	}
 
-	public void update_war(WordWar war) {
+	public void updateWar(WordWar war) {
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
-			PreparedStatement s = con.prepareStatement("UPDATE `new_wars` SET `current_chain` = ?, `start_epoch` = ?, `end_epoch` = ?, `deleted` = ?, `completed` = ? WHERE `uuid` = ?");
+			PreparedStatement s = con.prepareStatement("UPDATE `new_wars` SET `current_chain` = ?, `start_epoch` = ?, `end_epoch` = ?, `war_state` = ? WHERE `uuid` = ?");
 
 			s.setByte(1, war.currentChain);
 			s.setLong(2, war.startEpoch);
 			s.setLong(3, war.endEpoch);
-			s.setBoolean(4, war.deleted);
-			s.setBoolean(5, war.completed);
+			s.setString(4, war.warState.name());
 
 			s.executeUpdate();
 		} catch (SQLException ex) {
@@ -513,12 +511,12 @@ public class DBAccess {
 		}
 	}
 
-	ConcurrentHashMap<String, WordWar> loadWars() {
-		ConcurrentHashMap<String, WordWar> wars = new ConcurrentHashMap<>(32);
+	HashSet<WordWar> loadWars() {
+		HashSet<WordWar> wars = new HashSet<>();
 		
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			Statement s = con.createStatement();
-			ResultSet rs = s.executeQuery("SELECT * FROM `new_wars` WHERE deleted = 0 AND completed = 0");
+			ResultSet rs = s.executeQuery("SELECT * FROM `new_wars` WHERE war_state NOT IN ('DELETED', 'FINISHED')");
 
 			while (rs.next()) {
 				if (channel_data.get(rs.getString("channel")) != null) {
@@ -536,11 +534,10 @@ public class DBAccess {
 						rs.getLong("start_epoch"),
 						rs.getLong("end_epoch"),
 						rs.getBoolean("randomness"),
-						rs.getBoolean("deleted"),
-						rs.getBoolean("completed")
+						WordWar.State.valueOf(rs.getString("war_state"))
 					);
 
-					wars.put(war.getInternalName(), war);
+					wars.add(war);
 				}
 			}
 		} catch (SQLException ex) {
