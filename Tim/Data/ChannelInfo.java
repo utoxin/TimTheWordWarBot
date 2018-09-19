@@ -3,7 +3,6 @@ package Tim.Data;
 import Tim.Tim;
 import org.pircbotx.User;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ChannelInfo {
@@ -21,7 +20,6 @@ public class ChannelInfo {
 	public int activeVelociraptors;
 	public int deadVelociraptors;
 	public int killedVelociraptors;
-	public Date lastSighting = new Date();
 
 	// Twitter related data
 	public long twitterTimer;
@@ -31,7 +29,7 @@ public class ChannelInfo {
 
 	private boolean muzzled = false;
 	public boolean auto_muzzle_wars = true;
-	public long muzzledUntil = 0;
+	private long muzzledUntil = 0;
 
 	// Current Odds
 	public int fox_odds = 75;
@@ -44,7 +42,6 @@ public class ChannelInfo {
 	public int answer_odds = 65;
 	public int eightball_odds = 100;
 	public int soon_odds = 100;
-	public int velociraptor_odds = 50;
 	public int groot_odds = 100;
 
 	// Max Odds
@@ -58,9 +55,9 @@ public class ChannelInfo {
 	public final int max_answer_odds = 65;
 	public final int max_eightball_odds = 100;
 	public final int max_soon_odds = 100;
-	public final int max_velociraptor_odds = 50;
 	public final int max_groot_odds = 100;
 
+	public int raptorStrengthBoost = 0;
 
 	public HashMap<String, User> userList = new HashMap<>();
 
@@ -172,71 +169,48 @@ public class ChannelInfo {
 			|| chatter_enabled.get("search") || chatter_enabled.get("herd") || chatter_enabled.get("banish");
 	}
 
-	public void recordVelociraptorSighting() {
-		recordVelociraptorSighting(1);
+	public void recordSighting() {
+		recordSighting(1);
 	}
 
-	public void recordVelociraptorSighting(int increment) {
+	public void recordSighting(int increment) {
 		velociraptorSightings += increment;
 		activeVelociraptors += increment;
-		lastSighting.setTime(System.currentTimeMillis());
 
 		Tim.db.saveChannelSettings(this);
 	}
 
-	public void recordSwarmKills(int left, int kills) {
-		activeVelociraptors -= left;
+	public void recordNewRaptors(int newRaptors) {
+		activeVelociraptors += newRaptors;
+
+		Tim.db.saveChannelSettings(this);
+	}
+
+	public void recordLeavingRaptors(int leavingRaptors) {
+		activeVelociraptors -= leavingRaptors;
+
+		if (activeVelociraptors < 0) {
+			activeVelociraptors = 0;
+		}
+
+		Tim.db.saveChannelSettings(this);
+	}
+
+	public void recordKills(int kills) {
 		killedVelociraptors += kills;
 
-		if (activeVelociraptors < 0) {
-			activeVelociraptors = 0;
-		}
-
 		Tim.db.saveChannelSettings(this);
 	}
 
-	public void recordSwarmDeaths(int deaths) {
+	public void recordDeaths(int deaths) {
 		activeVelociraptors -= deaths;
-
-		if (deaths > 0) {
-			deadVelociraptors += deaths;
-		}
+		deadVelociraptors += deaths;
 
 		if (activeVelociraptors < 0) {
 			activeVelociraptors = 0;
 		}
 
 		Tim.db.saveChannelSettings(this);
-	}
-
-	public String getLastSighting() {
-		if (velociraptorSightings == 0) {
-			return "Never";
-		}
-
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(lastSighting);
-
-		SimpleDateFormat sdf = new SimpleDateFormat("MMM d");
-
-		return sdf.format(lastSighting) + getDayOfMonthSuffix(cal.get(Calendar.DAY_OF_MONTH));
-	}
-
-	private String getDayOfMonthSuffix(int n) {
-		if (n >= 11 && n <= 13) {
-			return "th";
-		}
-
-		switch (n % 10) {
-			case 1:
-				return "st";
-			case 2:
-				return "nd";
-			case 3:
-				return "rd";
-			default:
-				return "th";
-		}
 	}
 
 	public void setReactiveChatter(float chatterLevel, float nameMultiplier) {

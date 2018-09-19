@@ -7,9 +7,7 @@ import snaq.db.ConnectionPool;
 import snaq.db.Select1Validator;
 
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Matthew Walker
@@ -179,16 +177,6 @@ public class DBAccess {
 		}
 	}
 
-	public void deleteWar(UUID uuid) {
-		try (Connection con = Tim.db.pool.getConnection(timeout)) {
-			PreparedStatement s = con.prepareStatement("UPDATE `new_wars` SET `deleted` = 1 WHERE `uuid` = ?");
-			s.setString(1, uuid.toString());
-			s.executeUpdate();
-		} catch (SQLException ex) {
-			Tim.printStackTrace(ex);
-		}
-	}
-
 	void deleteIgnore(String username) {
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			PreparedStatement s = con.prepareStatement("DELETE FROM `ignores` WHERE `name` = ?;");
@@ -247,11 +235,6 @@ public class DBAccess {
 					ci.activeVelociraptors = rs.getInt("active_velociraptors");
 					ci.deadVelociraptors = rs.getInt("dead_velociraptors");
 					ci.killedVelociraptors = rs.getInt("killed_velociraptors");
-
-					if (rs.getDate("last_sighting_date") != null) {
-						long time = rs.getDate("last_sighting_date").getTime();
-						ci.lastSighting = new java.util.Date(time);
-					}
 
 					s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_chatter_settings` WHERE `channel` = ?");
 					s2.setString(1, rs.getString("channel"));
@@ -375,10 +358,8 @@ public class DBAccess {
 
 	public void saveChannelSettings(ChannelInfo channel) {
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
 			PreparedStatement s = con.prepareStatement("UPDATE `channels` SET reactive_chatter_level = ?, chatter_name_multiplier = ?, random_chatter_level = ?, tweet_bucket_max = ?, "
-				+ "tweet_bucket_charge_rate = ?, auto_muzzle_wars = ?, velociraptor_sightings = ?, active_velociraptors = ?, dead_velociraptors = ?, killed_velociraptors = ?, last_sighting_date = ? WHERE channel = ?;");
+				+ "tweet_bucket_charge_rate = ?, auto_muzzle_wars = ?, velociraptor_sightings = ?, active_velociraptors = ?, dead_velociraptors = ?, killed_velociraptors = ? WHERE channel = ?;");
 			s.setFloat(1, channel.reactiveChatterLevel);
 			s.setFloat(2, channel.chatterNameMultiplier);
 			s.setFloat(3, channel.randomChatterLevel);
@@ -389,12 +370,7 @@ public class DBAccess {
 			s.setInt(8, channel.activeVelociraptors);
 			s.setInt(9, channel.deadVelociraptors);
 			s.setInt(10, channel.killedVelociraptors);
-			if (channel.lastSighting != null) {
-				s.setString(11, sdf.format(channel.lastSighting));
-			} else {
-				s.setString(11, "1999-01-01");
-			}
-			s.setString(12, channel.channel);
+			s.setString(11, channel.channel);
 			s.executeUpdate();
 
 			s = con.prepareStatement("DELETE FROM `channel_chatter_settings` WHERE `channel` = ?;");
@@ -504,8 +480,48 @@ public class DBAccess {
 			s.setLong(2, war.startEpoch);
 			s.setLong(3, war.endEpoch);
 			s.setString(4, war.warState.name());
+			s.setString(5, war.uuid.toString());
 
 			s.executeUpdate();
+		} catch (SQLException ex) {
+			Tim.printStackTrace(ex);
+		}
+	}
+
+	private HashSet<String> loadWarMembers(WordWar war) {
+		HashSet<String> warMembers = new HashSet<>();
+
+		try (Connection con = this.pool.getConnection(timeout)) {
+			PreparedStatement loadStatement = con.prepareStatement("SELECT * FROM new_war_members WHERE war_uuid = ?");
+
+			loadStatement.setString(1, war.uuid.toString());
+
+			ResultSet rs = loadStatement.executeQuery();
+
+			while (rs.next()) {
+				warMembers.add(rs.getString("nick"));
+			}
+		} catch (SQLException ex) {
+			Tim.printStackTrace(ex);
+		}
+
+		return warMembers;
+	}
+
+	public void saveWarMembers(WordWar war) {
+		try (Connection con = this.pool.getConnection(timeout)) {
+			PreparedStatement deleteStatement = con.prepareStatement("DELETE FROM new_war_members WHERE war_uuid = ?");
+			PreparedStatement insertStatement = con.prepareStatement("INSERT INTO new_war_members SET war_uuid = ?, nick = ?");
+
+			deleteStatement.setString(1, war.uuid.toString());
+
+			deleteStatement.execute();
+
+			for (String nick : war.warMembers) {
+				insertStatement.setString(1, war.uuid.toString());
+				insertStatement.setString(2, nick);
+				insertStatement.execute();
+			}
 		} catch (SQLException ex) {
 			Tim.printStackTrace(ex);
 		}
@@ -516,7 +532,7 @@ public class DBAccess {
 		
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			Statement s = con.createStatement();
-			ResultSet rs = s.executeQuery("SELECT * FROM `new_wars` WHERE war_state NOT IN ('DELETED', 'FINISHED')");
+			ResultSet rs = s.executeQuery("SELECT * FROM `new_wars` WHERE war_state NOT IN ('CANCELLED', 'FINISHED')");
 
 			while (rs.next()) {
 				if (channel_data.get(rs.getString("channel")) != null) {
@@ -537,6 +553,8 @@ public class DBAccess {
 						WordWar.State.valueOf(rs.getString("war_state"))
 					);
 
+					war.warMembers = this.loadWarMembers(war);
+
 					wars.add(war);
 				}
 			}
@@ -545,6 +563,43 @@ public class DBAccess {
 		}
 
 		return wars;
+	}
+
+	public WordWar loadWar(String compositeId) {
+		WordWar returnWar = null;
+
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
+			PreparedStatement s = con.prepareStatement("SELECT * FROM `new_wars` WHERE CONCAT(`year`, '-', `war_id`) = ?");
+
+			s.setString(1, compositeId);
+
+			ResultSet rs = s.executeQuery();
+
+			while (rs.next()) {
+				returnWar = new WordWar(
+					rs.getShort("year"),
+					rs.getShort("war_id"),
+					UUID.fromString(rs.getString("uuid")),
+					rs.getString("channel"),
+					rs.getString("starter"),
+					rs.getString("name"),
+					rs.getInt("base_duration"),
+					rs.getInt("base_break"),
+					rs.getByte("total_chains"),
+					rs.getByte("current_chain"),
+					rs.getLong("start_epoch"),
+					rs.getLong("end_epoch"),
+					rs.getBoolean("randomness"),
+					WordWar.State.valueOf(rs.getString("war_state"))
+				);
+
+				returnWar.warMembers = this.loadWarMembers(returnWar);
+			}
+		} catch (SQLException ex) {
+			Tim.printStackTrace(ex);
+		}
+
+		return returnWar;
 	}
 
 	private void loadInteractionSettings() {

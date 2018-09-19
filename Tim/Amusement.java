@@ -260,7 +260,7 @@ class Amusement implements ICommandHandler {
 
 			case "raptorstats":
 				if (cdata.commands_enabled.get("velociraptor")) {
-					commandData.getMessageEvent().respond(String.format("There have been %d velociraptor sightings in this channel, and %d are still here. The last one was on %s.", cdata.velociraptorSightings, cdata.activeVelociraptors, cdata.getLastSighting()));
+					commandData.getMessageEvent().respond(String.format("There have been %d velociraptor sightings in this channel, and %d are still here.", cdata.velociraptorSightings, cdata.activeVelociraptors));
 					commandData.getMessageEvent().respond(String.format("%d velociraptors in this channel have been killed by other swarms.", cdata.deadVelociraptors));
 					commandData.getMessageEvent().respond(String.format("Swarms from this channel have killed %d other velociraptors.", cdata.killedVelociraptors));
 				} else {

@@ -54,7 +54,6 @@ class DeIdler {
 
 	private void _tick() {
 		Calendar cal = Calendar.getInstance();
-		Date date = new Date();
 
 		boolean isNovember = (Calendar.NOVEMBER == cal.get(Calendar.MONTH));
 		boolean aheadOfPace = (((cal.get(Calendar.DAY_OF_MONTH) + 1) * (50000 / 30)) < Tim.story.wordcount());
@@ -80,8 +79,13 @@ class DeIdler {
 			}
 		}
 
-		for (ChannelInfo cdata : Tim.db.channel_data.values()) {
+		Collection<ChannelInfo> channels = Tim.db.channel_data.values();
+		for (ChannelInfo cdata : channels) {
 			cdata = Tim.db.channel_data.get(cdata.channel);
+
+			if (cal.get(Calendar.MINUTE) % 10 == 0 && cdata.raptorStrengthBoost > 0) {
+				cdata.raptorStrengthBoost--;
+			}
 
 			// Maybe cure the stale channel mode warnings?
 			if (cdata.channel != null) {

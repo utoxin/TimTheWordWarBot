@@ -309,9 +309,6 @@ class ReactionListener extends ListenerAdapter {
 			if (cdata.soon_odds < cdata.max_soon_odds) {
 				cdata.soon_odds++;
 			}
-			if (cdata.velociraptor_odds < cdata.max_velociraptor_odds) {
-				cdata.velociraptor_odds++;
-			}
 			if (cdata.groot_odds < cdata.max_groot_odds) {
 				cdata.groot_odds++;
 			}

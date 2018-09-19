@@ -21,7 +21,7 @@ class UserCommandListener extends ListenerAdapter {
 		new Summon(),
 		new Defenestrate(),
 		new Fridge(),
-		new Raptor(),
+		Tim.raptors,
 		new War()
 	};
 

@@ -241,9 +241,11 @@ public class WordWar {
 
 	public void addMember(String nick) {
 		warMembers.add(nick);
+		Tim.db.saveWarMembers(this);
 	}
 
 	public void removeMember(String nick) {
 		warMembers.remove(nick);
+		Tim.db.saveWarMembers(this);
 	}
 }

@@ -2,9 +2,11 @@ package Tim;
 
 import java.nio.charset.Charset;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import Tim.Commands.Amusement.Raptor;
 import Tim.Data.ChannelStorage;
 import Tim.Commands.Writing.Challenge;
 import Tim.Utility.UserDirectory;
@@ -23,16 +25,18 @@ public class Tim {
 	public static Random rand;
 	public static UserDirectory userDirectory;
 
-	static        Amusement           amusement;
-	static        Challenge           challenge;
-	static        MarkovChains        markov;
-	static        MarkovProcessor     markovProcessor;
-	static        ChainStory          story;
-	public static WarTicker           warticker;
-	static        DeIdler             deidler;
-	public static TwitterIntegration  twitterStream;
-	static        VelociraptorHandler raptors;
-	static        ChannelStorage      channelStorage;
+	static        Amusement          amusement;
+	static        Challenge          challenge;
+	static        MarkovChains       markov;
+	static        MarkovProcessor    markovProcessor;
+	static        ChainStory         story;
+	public static WarTicker          warticker;
+	static        DeIdler            deidler;
+	public static TwitterIntegration twitterStream;
+	public static Raptor             raptors;
+	static        ChannelStorage     channelStorage;
+
+	public static Semaphore connectSemaphore;
 
 	private static Tim instance;
 	private static Thread markovThread;
@@ -48,7 +52,7 @@ public class Tim {
 		markov = new MarkovChains();
 		markovProcessor = new MarkovProcessor();
 		amusement = new Amusement();
-		raptors = new VelociraptorHandler();
+		raptors = new Raptor();
 		channelStorage = new ChannelStorage();
 		userDirectory = new UserDirectory();
 
@@ -62,6 +66,7 @@ public class Tim {
 		backgroundListenerManager.addListener(new ReactionListener(), false);
 		backgroundListenerManager.addListener(new AdminCommandListener(), false);
 		backgroundListenerManager.addListener(new ServerListener(), false);
+		backgroundListenerManager.addListener(new ConnectListener(), false);
 		
 		Builder configBuilder = new Configuration.Builder()
 			.setName(db.getSetting("nickname"))
@@ -78,6 +83,7 @@ public class Tim {
 
 		// Join our channels
 		db.channel_data.forEach((key, value) -> configBuilder.addAutoJoinChannel(value.channel));
+		connectSemaphore = new Semaphore(1 - db.channel_data.size());
 
 		bot = new PircBotX(configBuilder.buildConfiguration());
 
