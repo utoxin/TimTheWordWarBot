@@ -6,11 +6,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import Tim.Commands.ICommandHandler;
+import Tim.Data.ChannelInfo;
 import Tim.Data.CommandData;
 import Tim.Data.UserData;
 import Tim.Data.WordWar;
 import Tim.Tim;
-import Tim.Data.ChannelInfo;
 import Tim.Utility.Permissions;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.hooks.types.GenericUserEvent;
@@ -31,12 +31,10 @@ public class War implements ICommandHandler {
 
 	public static void helpSection(GenericUserEvent event) {
 		String[] strs = {
-			"Word War Commands:",
-			"    These commands deal with the creation and interaction with word wars (aka sprints).",
+			"Word War Commands:", "    These commands deal with the creation and interaction with word wars (aka sprints).",
 			"    For more details on each command, use it without any args.", "    !war start - Creates a new war.",
 			"    !war cancel - Cancels an existing war.", "    !war join - Signs up for notifications about a war.",
-			"    !war leave - Cancels the notifications about a war.",
-			"    !war report - Report your wordcount for a war.",
+			"    !war leave - Cancels the notifications about a war.", "    !war report - Report your wordcount for a war.",
 			"    !war list [all] - List wars in current channel or globally.",
 			};
 
@@ -121,7 +119,7 @@ public class War implements ICommandHandler {
 								Pattern startDelayPattern = Pattern.compile("^start:([0-9.]+)$");
 
 								// Options for chain wars
-								Pattern chainPattern      = Pattern.compile("^chain:([0-9.]+)$");
+								Pattern chainPattern      = Pattern.compile("^chain(?:s?):([0-9.]+)$");
 								Pattern breakPattern      = Pattern.compile("^break:([0-9.]+)$");
 								Pattern randomnessPattern = Pattern.compile("^random:([01])$");
 
@@ -135,9 +133,9 @@ public class War implements ICommandHandler {
 												to_start = (int) (Double.parseDouble(m.group(1)) * 60);
 											} catch (NumberFormatException ex) {
 												Tim.printStackTrace(ex);
-												Tim.logErrorString(String.format(
-													"Start Delay Match -- Input: ''%s'' Found String: ''%s''",
-													commandData.argString, m.group(1)));
+												Tim.logErrorString(
+													String.format("Start Delay Match -- Input: ''%s'' Found String: ''%s''", commandData.argString,
+																  m.group(1)));
 											}
 											continue;
 										}
@@ -149,8 +147,7 @@ public class War implements ICommandHandler {
 											} catch (NumberFormatException ex) {
 												Tim.printStackTrace(ex);
 												Tim.logErrorString(
-													String.format("Chain Match -- Input: ''%s'' Found String: ''%s''",
-																  commandData.argString, m.group(1)));
+													String.format("Chain Match -- Input: ''%s'' Found String: ''%s''", commandData.argString, m.group(1)));
 											}
 											continue;
 										}
@@ -162,8 +159,7 @@ public class War implements ICommandHandler {
 											} catch (NumberFormatException ex) {
 												Tim.printStackTrace(ex);
 												Tim.logErrorString(
-													String.format("Break Match -- Input: ''%s'' Found String: ''%s''",
-																  commandData.argString, m.group(1)));
+													String.format("Break Match -- Input: ''%s'' Found String: ''%s''", commandData.argString, m.group(1)));
 											}
 											continue;
 										}
@@ -176,9 +172,9 @@ public class War implements ICommandHandler {
 												}
 											} catch (NumberFormatException ex) {
 												Tim.printStackTrace(ex);
-												Tim.logErrorString(String.format(
-													"Randomness Match -- Input: ''%s'' Found String: ''%s''",
-													commandData.argString, m.group(1)));
+												Tim.logErrorString(
+													String.format("Randomness Match -- Input: ''%s'' Found String: ''%s''", commandData.argString,
+																  m.group(1)));
 											}
 											continue;
 										}
@@ -200,10 +196,8 @@ public class War implements ICommandHandler {
 
 								if (warName.toString()
 										   .matches("^\\d+$")) {
-									commandData.event.respond(String.format(
-										"War names must be more than a number. It's possible you meant to specify the "
-										+ "start delay. Try: !war start %s start:%s",
-										args[1], warName.toString()));
+									commandData.event.respond(String.format("War names must be more than a number. It's possible you meant to specify the "
+																			+ "start delay. Try: !war start %s start:%s", args[1], warName.toString()));
 									return true;
 								}
 
@@ -215,33 +209,30 @@ public class War implements ICommandHandler {
 
 								if (total_chains <= 1) {
 									war = new WordWar(cdata, commandData.getMessageEvent()
-																		.getUser(), warName.toString(), time,
-													  currentEpoch + to_start);
+																		.getUser(), warName.toString(), time, currentEpoch + to_start);
 								} else {
 									war = new WordWar(cdata, commandData.getMessageEvent()
-																		.getUser(), warName.toString(), time,
-													  currentEpoch + to_start, total_chains, delay, do_randomness);
+																		.getUser(), warName.toString(), time, currentEpoch + to_start, total_chains, delay,
+													  do_randomness);
 								}
 
 								Tim.warticker.wars.add(war);
 
 								if (to_start > 0) {
 									commandData.event.respond(
-										String.format("Your word war, %s, will start in %f minutes. The ID is: %d-%d.",
-													  war.getSimpleName(), to_start / 60.0, war.year, war.warId));
+										String.format("Your word war, %s, will start in %.1f minutes. The ID is: %d-%d.", war.getSimpleName(), to_start / 60.0,
+													  war.year, war.warId));
 								}
 							} else {
 								commandData.event.respond("Usage: !war start <duration in min> [<options>] [<name>]");
-								commandData.event.respond("Options, all wars: start:<minutes>");
-								commandData.event.respond(
-									"Options, chain wars: chains:<chain count>, random:1, break:<minutes>");
+								commandData.event.respond("Options for all wars: start:<minutes>");
+								commandData.event.respond("Options for chain wars: chains:<chain count>, random:1, break:<minutes>");
 							}
 							break;
 
 						case "cancel":
 							if (commandData.args.length > 1) {
-								String name = StringUtils.join(
-									Arrays.copyOfRange(commandData.args, 1, commandData.args.length), " ");
+								String name = StringUtils.join(Arrays.copyOfRange(commandData.args, 1, commandData.args.length), " ");
 								String channel = commandData.getChannelEvent()
 															.getChannel()
 															.getName();
@@ -294,8 +285,7 @@ public class War implements ICommandHandler {
 						case "report":
 							if (commandData.args.length < 3) {
 								commandData.event.respond("Usage: !war report <war id> <wordcount>");
-								commandData.event.respond(
-									"Note: Wordcount should be words written during the war, not total count.");
+								commandData.event.respond("Note: Wordcount should be words written during the war, not total count.");
 							} else {
 								WordWar  war      = Tim.db.loadWar(args[1]);
 								UserData userData = Tim.userDirectory.findUserData(commandData.issuer);
@@ -306,17 +296,14 @@ public class War implements ICommandHandler {
 								int wordCount;
 
 								if (userData == null || !userData.raptorAdopted) {
-									commandData.event.respond(
-										"I'm sorry, you must have adopted a raptor to record your stats... (!raptor "
-										+ "command)");
+									commandData.event.respond("I'm sorry, you must have adopted a raptor to record your stats... (!raptor command)");
 								} else if (war == null) {
 									commandData.event.respond("That war couldn't be found...");
 								} else {
 									try {
 										wordCount = (int) Double.parseDouble(commandData.args[2]);
 									} catch (NumberFormatException e) {
-										commandData.event.respond(
-											"I could not understand the wordcount. Was it numeric?");
+										commandData.event.respond("I could not understand the wordcount. Was it numeric?");
 										return true;
 									}
 
@@ -334,9 +321,9 @@ public class War implements ICommandHandler {
 
 									cdata.raptorStrengthBoost += Math.min(10, war.baseDuration / 600);
 
-									commandData.event.respond(String.format(
-										"%s pulls out their %s notebook and makes a note of that wordcount.",
-										userData.raptorName, userData.raptorFavoriteColor));
+									commandData.event.respond(
+										String.format("%s pulls out their %s notebook and makes a note of that wordcount.", userData.raptorName,
+													  userData.raptorFavoriteColor));
 
 									if (!cdata.isMuzzled()) {
 										Tim.raptors.warReport(userData, war, wordCount);
@@ -374,9 +361,8 @@ public class War implements ICommandHandler {
 									if (all || war.getChannel()
 												  .equalsIgnoreCase(commandData.event.getChannel()
 																					 .getName())) {
-										commandData.event.respond(
-											all ? war.getDescriptionWithChannel(maxIdLength, maxDurationLength)
-												: war.getDescription(maxIdLength, maxDurationLength));
+										commandData.event.respond(all ? war.getDescriptionWithChannel(maxIdLength, maxDurationLength)
+																	  : war.getDescription(maxIdLength, maxDurationLength));
 										responded = true;
 									}
 								}

@@ -1,8 +1,8 @@
 package Tim.Data;
 
-import org.pircbotx.snapshot.ChannelSnapshot;
-
 import java.util.HashMap;
+
+import org.pircbotx.snapshot.ChannelSnapshot;
 
 public class ChannelStorage {
 	public HashMap<String, ChannelSnapshot> channelList = new HashMap<>();

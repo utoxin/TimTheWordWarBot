@@ -5,12 +5,12 @@ import org.pircbotx.hooks.types.GenericMessageEvent;
 import org.pircbotx.hooks.types.GenericUserEvent;
 
 public class CommandData<T extends GenericChannelEvent & GenericUserEvent & GenericMessageEvent> {
-	public CommandType type = CommandType.UNKNOWN;
-	public String issuer = "";
-	public String command = "";
-	public String[] args = {};
-	public String argString = "";
-	public T event;
+	public CommandType type      = CommandType.UNKNOWN;
+	public String      issuer    = "";
+	public String      command   = "";
+	public String[]    args      = {};
+	public String      argString = "";
+	public T           event;
 
 	public void setEvent(T event) {
 		this.event = event;
@@ -28,11 +28,11 @@ public class CommandData<T extends GenericChannelEvent & GenericUserEvent & Gene
 		return event;
 	}
 
-	public enum CommandType {
-		TIMMY_USER, TIMMY_ADMIN, SKYNET_USER, SKYNET_ADMIN, UNKNOWN
-	}
-
 	public String toString() {
 		return String.format("Command: %s, Issuer: %s, argString: %s.", command, issuer, argString);
+	}
+
+	public enum CommandType {
+		TIMMY_USER, TIMMY_ADMIN, SKYNET_USER, SKYNET_ADMIN, UNKNOWN
 	}
 }

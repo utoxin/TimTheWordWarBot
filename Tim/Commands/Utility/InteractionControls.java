@@ -1,23 +1,25 @@
 package Tim.Commands.Utility;
 
-import Tim.Commands.ICommandHandler;
-import Tim.Data.CommandData;
-import Tim.Tim;
-import Tim.Data.ChannelInfo;
-import org.pircbotx.hooks.types.GenericMessageEvent;
-import org.pircbotx.hooks.types.GenericUserEvent;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import Tim.Commands.ICommandHandler;
+import Tim.Data.ChannelInfo;
+import Tim.Data.CommandData;
+import Tim.Tim;
+import org.pircbotx.hooks.types.GenericMessageEvent;
+import org.pircbotx.hooks.types.GenericUserEvent;
+
 public class InteractionControls implements ICommandHandler {
 	private HashSet<String> interactions = new HashSet<>();
 
 	public InteractionControls() {
-		interactions.addAll(ChannelInfo.getChatterDefaults().keySet());
-		interactions.addAll(ChannelInfo.getCommandDefaults().keySet());
+		interactions.addAll(ChannelInfo.getChatterDefaults()
+									   .keySet());
+		interactions.addAll(ChannelInfo.getCommandDefaults()
+									   .keySet());
 		interactions.add("hugs");
 		interactions.remove("bored");
 		interactions.remove("chainstory");
@@ -36,17 +38,14 @@ public class InteractionControls implements ICommandHandler {
 		String[] strs = {
 			"Interaction Control Command:",
 			"    This command allows you to control the ways Timmy interacts with you, in case you don't enjoy certain of his behaviors.",
-			"    !interactionflag - Command for viewing and controlling the interactions.",};
+			"    !interactionflag - Command for viewing and controlling the interactions.",
+			};
 
 		for (String str : strs) {
-			event.getUser().send().message(str);
+			event.getUser()
+				 .send()
+				 .message(str);
 		}
-	}
-
-	private ArrayList<String> sortedInteractions() {
-		ArrayList<String> sorted = new ArrayList<>(interactions);
-		Collections.sort(sorted);
-		return sorted;
 	}
 
 	public static boolean interactWithUser(String username, String interaction) {
@@ -78,9 +77,12 @@ public class InteractionControls implements ICommandHandler {
 
 							commandData.event.respond("Sending status of interaction settings via private message.");
 
-							data.keySet().forEach(
-								(setting) -> commandData.getUserEvent().getUser().send().message(setting + ": " + data.get(setting).toString())
-							);
+							data.keySet()
+								.forEach((setting) -> commandData.getUserEvent()
+																 .getUser()
+																 .send()
+																 .message(setting + ": " + data.get(setting)
+																							   .toString()));
 						} else {
 							commandData.event.respond("No settings stored for that user.");
 						}
@@ -135,6 +137,13 @@ public class InteractionControls implements ICommandHandler {
 	}
 
 	private boolean checkVerified(GenericMessageEvent event) {
-		return event.getUser() != null && event.getUser().isVerified();
+		return event.getUser() != null && event.getUser()
+											   .isVerified();
+	}
+
+	private ArrayList<String> sortedInteractions() {
+		ArrayList<String> sorted = new ArrayList<>(interactions);
+		Collections.sort(sorted);
+		return sorted;
 	}
 }

@@ -3,7 +3,7 @@ package Tim;
 import java.util.concurrent.TimeUnit;
 
 import org.pircbotx.hooks.ListenerAdapter;
-import org.pircbotx.hooks.events.*;
+import org.pircbotx.hooks.events.ConnectEvent;
 
 class ConnectListener extends ListenerAdapter {
 	@Override
@@ -13,7 +13,9 @@ class ConnectListener extends ListenerAdapter {
 			String[] post_identify_lines = post_identify.split("\n");
 
 			for (String line : post_identify_lines) {
-				if (!line.equals("")) event.respond(line);
+				if (!line.equals("")) {
+					event.respond(line);
+				}
 			}
 		}
 
@@ -28,7 +30,8 @@ class ConnectListener extends ListenerAdapter {
 		Tim.warticker = WarTicker.getInstance();
 		Tim.deidler = DeIdler.getInstance();
 
-		if (!Tim.db.getSetting("twitter_access_key").equals("")) {
+		if (!Tim.db.getSetting("twitter_access_key")
+				   .equals("")) {
 			Tim.twitterStream = new TwitterIntegration();
 			Tim.twitterStream.startStream();
 		}

@@ -7,8 +7,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import Tim.Commands.Amusement.Raptor;
-import Tim.Data.ChannelStorage;
 import Tim.Commands.Writing.Challenge;
+import Tim.Data.ChannelStorage;
 import Tim.Utility.UserDirectory;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.pircbotx.Configuration;
@@ -17,33 +17,25 @@ import org.pircbotx.PircBotX;
 import org.pircbotx.hooks.managers.BackgroundListenerManager;
 
 public class Tim {
+	public static  PircBotX           bot;
+	public static  DBAccess           db     = DBAccess.getInstance();
+	public static  Random             rand;
+	public static  UserDirectory      userDirectory;
+	public static  WarTicker          warticker;
+	public static  TwitterIntegration twitterStream;
+	public static  Raptor             raptors;
+	public static  Semaphore          connectSemaphore;
 	// Has to go first, because it's needed for DBAccess below
-	static AppConfig config = AppConfig.getInstance();
-
-	public static PircBotX bot;
-	public static DBAccess db = DBAccess.getInstance();
-	public static Random rand;
-	public static UserDirectory userDirectory;
-
-	static        Amusement          amusement;
-	static        Challenge          challenge;
-	static        MarkovChains       markov;
-	static        MarkovProcessor    markovProcessor;
-	static        ChainStory         story;
-	public static WarTicker          warticker;
-	static        DeIdler            deidler;
-	public static TwitterIntegration twitterStream;
-	public static Raptor             raptors;
-	static        ChannelStorage     channelStorage;
-
-	public static Semaphore connectSemaphore;
-
-	private static Tim instance;
-	private static Thread markovThread;
-
-	public static void main(String[] args) {
-		instance = new Tim();
-	}
+	static         AppConfig          config = AppConfig.getInstance();
+	static         Amusement          amusement;
+	static         Challenge          challenge;
+	static         MarkovChains       markov;
+	static         MarkovProcessor    markovProcessor;
+	static         ChainStory         story;
+	static         DeIdler            deidler;
+	static         ChannelStorage     channelStorage;
+	private static Tim                instance;
+	private static Thread             markovThread;
 
 	public Tim() {
 		rand = new Random();
@@ -67,17 +59,16 @@ public class Tim {
 		backgroundListenerManager.addListener(new AdminCommandListener(), false);
 		backgroundListenerManager.addListener(new ServerListener(), false);
 		backgroundListenerManager.addListener(new ConnectListener(), false);
-		
-		Builder configBuilder = new Configuration.Builder()
-			.setName(db.getSetting("nickname"))
-			.setLogin("WarMech")
-			.setNickservPassword(db.getSetting("password"))
-			.addServer(db.getSetting("server"))
-			.setServerPassword(db.getSetting("server_password"))
-			.setEncoding(Charset.forName("UTF-8"))
-			.setMessageDelay(Long.parseLong(db.getSetting("max_rate")))
-			.setAutoNickChange(true)
-			.setListenerManager(backgroundListenerManager);
+
+		Builder configBuilder = new Configuration.Builder().setName(db.getSetting("nickname"))
+														   .setLogin("WarMech")
+														   .setNickservPassword(db.getSetting("password"))
+														   .addServer(db.getSetting("server"))
+														   .setServerPassword(db.getSetting("server_password"))
+														   .setEncoding(Charset.forName("UTF-8"))
+														   .setMessageDelay(Long.parseLong(db.getSetting("max_rate")))
+														   .setAutoNickChange(true)
+														   .setListenerManager(backgroundListenerManager);
 
 		db.refreshDbLists();
 
@@ -87,16 +78,18 @@ public class Tim {
 
 		bot = new PircBotX(configBuilder.buildConfiguration());
 
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			if (Tim.bot.isConnected()) {
-				try {
-					Tim.shutdown();
-					Thread.sleep(1000);
-				} catch (InterruptedException ex) {
-					Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			}
-		}));
+		Runtime.getRuntime()
+			   .addShutdownHook(new Thread(() -> {
+				   if (Tim.bot.isConnected()) {
+					   try {
+						   Tim.shutdown();
+						   Thread.sleep(1000);
+					   } catch (InterruptedException ex) {
+						   Logger.getLogger(Tim.class.getName())
+								 .log(Level.SEVERE, null, ex);
+					   }
+				   }
+			   }));
 
 		try {
 			markovThread = new Thread(markovProcessor);
@@ -104,31 +97,39 @@ public class Tim {
 
 			bot.startBot();
 		} catch (Exception ex) {
-			Logger.getLogger(Tim.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(Tim.class.getName())
+				  .log(Level.SEVERE, null, ex);
 		}
-	}
-	
-	public static void printStackTrace(Throwable exception) {
-		String stackTrace = ExceptionUtils.getStackTrace(exception);
-		String[] stackTraceLines = stackTrace.split("\n");
-		for(String line : stackTraceLines) {
-			Tim.bot.send().message("#commandcenter", line);
-		}
-	}
-
-	public static void logErrorString(String error) {
-		Tim.bot.send().message("#commandcenter", error);
 	}
 
 	static void shutdown() {
 		if (Tim.bot.isConnected()) {
 			markovThread.interrupt();
 			Tim.bot.stopBotReconnect();
-			Tim.bot.sendIRC().quitServer("HELP! Utoxin just murdered me! (Again!!!)");
+			Tim.bot.sendIRC()
+				   .quitServer("HELP! Utoxin just murdered me! (Again!!!)");
 			Tim.warticker.warTicker.cancel();
 			Tim.deidler.idleTicker.cancel();
 			Tim.twitterStream.publicStream.shutdown();
 		}
+	}
+
+	public static void main(String[] args) {
+		instance = new Tim();
+	}
+
+	public static void printStackTrace(Throwable exception) {
+		String   stackTrace      = ExceptionUtils.getStackTrace(exception);
+		String[] stackTraceLines = stackTrace.split("\n");
+		for (String line : stackTraceLines) {
+			Tim.bot.send()
+				   .message("#commandcenter", line);
+		}
+	}
+
+	public static void logErrorString(String error) {
+		Tim.bot.send()
+			   .message("#commandcenter", error);
 	}
 
 	/**

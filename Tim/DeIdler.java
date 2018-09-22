@@ -1,12 +1,11 @@
 package Tim;
 
+import java.util.*;
+
 import Tim.Data.ChannelInfo;
 import org.pircbotx.Channel;
 
-import java.util.*;
-
 /**
- *
  * @author Matthew Walker
  */
 class DeIdler {
@@ -20,10 +19,6 @@ class DeIdler {
 		ticker.scheduleAtFixedRate(this.idleTicker, 0, 60000);
 	}
 
-	private static class SingletonHelper {
-		private static final DeIdler instance = new DeIdler();
-	}
-
 	/**
 	 * Singleton access method.
 	 *
@@ -33,29 +28,10 @@ class DeIdler {
 		return SingletonHelper.instance;
 	}
 
-	class IdleClockThread extends TimerTask {
-		private final DeIdler parent;
-
-		IdleClockThread(DeIdler parent) {
-			this.parent = parent;
-		}
-
-		@Override
-		public void run() {
-			try {
-				this.parent._tick();
-			} catch (Throwable t) {
-				System.out.println("&&& THROWABLE CAUGHT in DelayCommand.run:");
-				t.printStackTrace(System.out);
-				System.out.flush();
-			}
-		}
-	}
-
 	private void _tick() {
 		Calendar cal = Calendar.getInstance();
 
-		boolean isNovember = (Calendar.NOVEMBER == cal.get(Calendar.MONTH));
+		boolean isNovember  = (Calendar.NOVEMBER == cal.get(Calendar.MONTH));
 		boolean aheadOfPace = (((cal.get(Calendar.DAY_OF_MONTH) + 1) * (50000 / 30)) < Tim.story.wordcount());
 
 		if (isNovember && ((!aheadOfPace && Tim.rand.nextInt(100) < 8) || (aheadOfPace && Tim.rand.nextInt(100) < 4))) {
@@ -70,7 +46,14 @@ class DeIdler {
 			}
 
 			Tim.story.storeLine(new_text, "Timmy");
-			Tim.db.channel_data.values().stream().filter((cdata) -> (Tim.rand.nextInt(100) < 15 && cdata.chatter_enabled.get("chainstory") && !cdata.isMuzzled() && cdata.randomChatterLevel >= 0)).forEach((cdata) -> Tim.bot.sendIRC().action(cdata.channel, "opens up his novel file, considers for a minute, and then rapidly types in several words. (Help Timmy out by using the Chain Story commands. See !help for information.)"));
+			Tim.db.channel_data.values()
+							   .stream()
+							   .filter((cdata) -> (Tim.rand.nextInt(100) < 15 && cdata.chatter_enabled.get("chainstory") && !cdata.isMuzzled()
+												   && cdata.randomChatterLevel >= 0))
+							   .forEach((cdata) -> Tim.bot.sendIRC()
+														  .action(cdata.channel,
+																  "opens up his novel file, considers for a minute, and then rapidly types in several words. "
+																  + "(Help Timmy out by using the Chain Story commands. See !help for information.)"));
 		}
 
 		if (Tim.rand.nextInt(100) < 1) {
@@ -89,7 +72,8 @@ class DeIdler {
 
 			// Maybe cure the stale channel mode warnings?
 			if (cdata.channel != null) {
-				Tim.channelStorage.channelList.get(cdata.channel).getMode();
+				Tim.channelStorage.channelList.get(cdata.channel)
+											  .getMode();
 			}
 
 			cdata.clearTimedMuzzle();
@@ -104,7 +88,7 @@ class DeIdler {
 				if (cdata.chatter_enabled.get("markov")) {
 					actions.add("markov");
 				}
-				
+
 				if (cdata.amusement_chatter_available()) {
 					actions.add("amusement");
 				}
@@ -116,7 +100,7 @@ class DeIdler {
 				if (cdata.chatter_enabled.get("velociraptor")) {
 					actions.add("velociraptors");
 				}
-				
+
 				if (actions.isEmpty()) {
 					continue;
 				}
@@ -134,9 +118,31 @@ class DeIdler {
 						break;
 					case "bored":
 						Channel sendChannel = Tim.channelStorage.channelList.get(cdata.channel);
-						sendChannel.send().message("I'm bored.");
+						sendChannel.send()
+								   .message("I'm bored.");
 						break;
 				}
+			}
+		}
+	}
+
+	private static class SingletonHelper {
+		private static final DeIdler instance = new DeIdler();
+	}
+
+	class IdleClockThread extends TimerTask {
+		private final DeIdler parent;
+
+		IdleClockThread(DeIdler parent) {
+			this.parent = parent;
+		}
+
+		@Override
+		public void run() {
+			try {
+				this.parent._tick();
+			} catch (Throwable t) {
+				Tim.printStackTrace(t);
 			}
 		}
 	}

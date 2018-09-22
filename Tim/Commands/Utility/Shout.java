@@ -1,14 +1,14 @@
 package Tim.Commands.Utility;
 
-import Tim.Data.ChannelInfo;
-import Tim.Commands.IAdminCommand;
-import Tim.Tim;
-import org.apache.commons.lang3.StringUtils;
-import org.pircbotx.hooks.events.MessageEvent;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+
+import Tim.Commands.IAdminCommand;
+import Tim.Data.ChannelInfo;
+import Tim.Tim;
+import org.apache.commons.lang3.StringUtils;
+import org.pircbotx.hooks.events.MessageEvent;
 
 public final class Shout implements IAdminCommand {
 	@Override
@@ -27,7 +27,8 @@ public final class Shout implements IAdminCommand {
 				return true;
 			}
 
-			destination = args[0].substring(1).toLowerCase();
+			destination = args[0].substring(1)
+								 .toLowerCase();
 			argList = argList.subList(1, argList.size());
 		}
 
@@ -44,7 +45,9 @@ public final class Shout implements IAdminCommand {
 
 		for (ChannelInfo cdata : destinations) {
 			if (event.getUser() != null) {
-				Tim.bot.sendIRC().message(cdata.channel, event.getUser().getNick() + " shouts @" + destination + ": " + StringUtils.join(argList, " "));
+				Tim.bot.sendIRC()
+					   .message(cdata.channel, event.getUser()
+													.getNick() + " shouts @" + destination + ": " + StringUtils.join(argList, " "));
 			}
 		}
 

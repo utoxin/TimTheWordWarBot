@@ -2,13 +2,13 @@
   <library name="org.apache.commons:commons-lang3:Release" type="repository">
     <properties maven-id="org.apache.commons:commons-lang3:RELEASE" />
     <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.8/commons-lang3-3.8.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.8/commons-lang3-3.8-javadoc.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.8/commons-lang3-3.8-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/commons/commons-lang3/3.8.1/commons-lang3-3.8.1-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

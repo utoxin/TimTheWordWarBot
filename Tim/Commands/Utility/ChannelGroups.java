@@ -1,21 +1,13 @@
 package Tim.Commands.Utility;
 
-import Tim.Commands.IAdminCommand;
-import Tim.Tim;
-import Tim.Data.ChannelInfo;
-import org.apache.commons.lang3.StringUtils;
-import org.pircbotx.hooks.events.MessageEvent;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Command Syntax:
- *     $channelgroups list
- *     $channelgroups list <group>
- *     $channelgroups add <group> <channel>
- *     $channelgroups remove <group> <channel>
- *     $channelgroups destroy <group>
- */
+import Tim.Commands.IAdminCommand;
+import Tim.Data.ChannelInfo;
+import Tim.Tim;
+import org.apache.commons.lang3.StringUtils;
+import org.pircbotx.hooks.events.MessageEvent;
 
 public final class ChannelGroups implements IAdminCommand {
 	@Override
@@ -30,7 +22,9 @@ public final class ChannelGroups implements IAdminCommand {
 			if (Tim.db.channel_groups.containsKey(args[1].toLowerCase())) {
 				Set<ChannelInfo> channels = Tim.db.channel_groups.get(args[1].toLowerCase());
 				if (channels.size() > 0) {
-					event.respond("Channels in group: " + StringUtils.join(channels.stream().map(c -> c.channel).collect(Collectors.toList()), ", "));
+					event.respond("Channels in group: " + StringUtils.join(channels.stream()
+																				   .map(c -> c.channel)
+																				   .collect(Collectors.toList()), ", "));
 				} else {
 					event.respond("No channels in group.");
 				}
@@ -38,7 +32,7 @@ public final class ChannelGroups implements IAdminCommand {
 				event.respond("Unknown channel group.");
 			}
 		} else if (args != null && args.length == 3 && args[0].equalsIgnoreCase("add")) {
-			String group = args[1].toLowerCase();
+			String group       = args[1].toLowerCase();
 			String channelName = args[2].toLowerCase();
 
 			if (Tim.db.channel_data.containsKey(channelName)) {
@@ -48,7 +42,7 @@ public final class ChannelGroups implements IAdminCommand {
 				event.respond("Channel not found.");
 			}
 		} else if (args != null && args.length == 3 && args[0].equalsIgnoreCase("remove")) {
-			String group = args[1].toLowerCase();
+			String group       = args[1].toLowerCase();
 			String channelName = args[2].toLowerCase();
 
 			if (Tim.db.channel_groups.containsKey(group)) {
@@ -65,7 +59,8 @@ public final class ChannelGroups implements IAdminCommand {
 			String group = args[1].toLowerCase();
 
 			if (Tim.db.channel_groups.containsKey(group)) {
-				Tim.db.channel_groups.get(group).forEach(channel -> Tim.db.removeFromChannelGroup(group, channel));
+				Tim.db.channel_groups.get(group)
+									 .forEach(channel -> Tim.db.removeFromChannelGroup(group, channel));
 				Tim.db.channel_groups.remove(group);
 				event.respond("Channel group destroyed.");
 			} else {

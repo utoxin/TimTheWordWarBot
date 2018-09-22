@@ -1,13 +1,15 @@
 package Tim;
 
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import Tim.Data.WordWar;
 
 public class WarTicker {
-	WarClockThread warTicker;
 	public HashSet<WordWar> wars;
+	WarClockThread warTicker;
 
 	private WarTicker() {
 		Timer ticker;
@@ -19,10 +21,6 @@ public class WarTicker {
 		ticker.scheduleAtFixedRate(this.warTicker, 0, 1000);
 	}
 
-	private static class SingletonHelper {
-		private static final WarTicker instance = new WarTicker();
-	}
-
 	/**
 	 * Singleton access method.
 	 *
@@ -30,25 +28,6 @@ public class WarTicker {
 	 */
 	public static WarTicker getInstance() {
 		return SingletonHelper.instance;
-	}
-
-	class WarClockThread extends TimerTask {
-		private final WarTicker parent;
-
-		WarClockThread(WarTicker parent) {
-			this.parent = parent;
-		}
-
-		@Override
-		public void run() {
-			try {
-				this.parent._tick();
-			} catch (Throwable t) {
-				System.out.println("&&& THROWABLE CAUGHT in DelayCommand.run:");
-				t.printStackTrace(System.out);
-				System.out.flush();
-			}
-		}
 	}
 
 	private void _tick() {
@@ -148,41 +127,17 @@ public class WarTicker {
 
 		if (timeToStart < 60) {
 			Tim.bot.sendIRC()
-				   .message(war.getChannel(),
-							war.getSimpleName() + ": Starting in " + timeToStart + (timeToStart == 1 ? " second"
-																									 : " seconds")
-							+ ".");
+				   .message(war.getChannel(), war.getSimpleName() + ": Starting in " + timeToStart + (timeToStart == 1 ? " second" : " seconds") + ".");
 		} else {
 			int minutes = (int) timeToStart / 60;
 			if (minutes * 60 == timeToStart) {
 				Tim.bot.sendIRC()
-					   .message(war.getChannel(),
-								war.getName(false, true) + ": Starting in " + minutes + (minutes == 1 ? " minute"
-																									  : " minutes")
-								+ ".");
+					   .message(war.getChannel(), war.getName(false, true) + ": Starting in " + minutes + (minutes == 1 ? " minute" : " minutes") + ".");
 			} else {
 				Tim.bot.sendIRC()
 					   .message(war.getChannel(),
-								war.getName(false, true) + ": Starting in " + new DecimalFormat("###.#").format(
-									timeToStart / 60.0) + " minutes.");
+								war.getName(false, true) + ": Starting in " + new DecimalFormat("###.#").format(timeToStart / 60.0) + " minutes.");
 			}
-		}
-	}
-
-	private void warEndCount(WordWar war) {
-		long timeToEnd = war.endEpoch - (System.currentTimeMillis() / 1000);
-
-		if (timeToEnd < 60) {
-			Tim.bot.sendIRC()
-				   .message(war.getChannel(),
-							war.getSimpleName() + ": " + timeToEnd + (timeToEnd == 1 ? " second" : " seconds")
-							+ " remaining!");
-		} else {
-			int remaining = (int) timeToEnd / 60;
-			Tim.bot.sendIRC()
-				   .message(war.getChannel(),
-							war.getSimpleName() + ": " + remaining + (remaining == 1 ? " minute" : " minutes")
-							+ " remaining.");
 		}
 	}
 
@@ -200,6 +155,19 @@ public class WarTicker {
 			   .message(war.getChannel(), war.getSimpleName() + ": Starting now!" + appendString);
 		this.notifyWarMembers(war, war.getSimpleName() + " starts now!" + appendString);
 		war.beginWar();
+	}
+
+	private void warEndCount(WordWar war) {
+		long timeToEnd = war.endEpoch - (System.currentTimeMillis() / 1000);
+
+		if (timeToEnd < 60) {
+			Tim.bot.sendIRC()
+				   .message(war.getChannel(), war.getSimpleName() + ": " + timeToEnd + (timeToEnd == 1 ? " second" : " seconds") + " remaining!");
+		} else {
+			int remaining = (int) timeToEnd / 60;
+			Tim.bot.sendIRC()
+				   .message(war.getChannel(), war.getSimpleName() + ": " + remaining + (remaining == 1 ? " minute" : " minutes") + " remaining.");
+		}
 	}
 
 	private void endWar(WordWar war) {
@@ -223,10 +191,8 @@ public class WarTicker {
 			war.currentChain++;
 
 			if (war.randomness) {
-				war.startEpoch = war.endEpoch + (long) ((war.baseBreak) + (war.baseBreak * ((Tim.rand.nextInt(20) - 10)
-																							/ 100.0)));
-				war.endEpoch = war.startEpoch + (long) (war.baseDuration + (war.baseDuration * (
-					(Tim.rand.nextInt(20) - 10) / 100.0)));
+				war.startEpoch = war.endEpoch + (long) ((war.baseBreak) + (war.baseBreak * ((Tim.rand.nextInt(20) - 10) / 100.0)));
+				war.endEpoch = war.startEpoch + (long) (war.baseDuration + (war.baseDuration * ((Tim.rand.nextInt(20) - 10) / 100.0)));
 			} else {
 				war.startEpoch = war.endEpoch + war.baseBreak;
 				war.endEpoch = war.startEpoch + war.baseDuration;
@@ -241,6 +207,27 @@ public class WarTicker {
 		for (String nick : war.warMembers) {
 			Tim.bot.sendIRC()
 				   .message(nick, notice);
+		}
+	}
+
+	private static class SingletonHelper {
+		private static final WarTicker instance = new WarTicker();
+	}
+
+	class WarClockThread extends TimerTask {
+		private final WarTicker parent;
+
+		WarClockThread(WarTicker parent) {
+			this.parent = parent;
+		}
+
+		@Override
+		public void run() {
+			try {
+				this.parent._tick();
+			} catch (Throwable ex) {
+				Tim.printStackTrace(ex);
+			}
 		}
 	}
 }

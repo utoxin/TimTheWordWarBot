@@ -1,41 +1,29 @@
 package Tim.Data;
 
-import Tim.Tim;
-import org.pircbotx.User;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.UUID;
 
+import Tim.Tim;
+import org.pircbotx.User;
+
 public class WordWar {
-	public enum State {
-		PENDING, ACTIVE, CANCELLED, FINISHED
-	}
-
-	public short year;
-	public short warId;
-	public UUID uuid;
-
-	public String channel;
-	public String starter;
-	public String name;
-
-	public int baseDuration;
-	public int baseBreak;
-
-	public byte totalChains;
-	public byte currentChain;
-
-	public long startEpoch;
-	public long endEpoch;
-
-	public boolean randomness;
-
-	public State warState;
-
-	public ChannelInfo cdata;
-
+	public short           year;
+	public short           warId;
+	public UUID            uuid;
+	public String          channel;
+	public String          starter;
+	public String          name;
+	public int             baseDuration;
+	public int             baseBreak;
+	public byte            totalChains;
+	public byte            currentChain;
+	public long            startEpoch;
+	public long            endEpoch;
+	public boolean         randomness;
+	public State           warState;
+	public ChannelInfo     cdata;
 	public HashSet<String> warMembers = new HashSet<>();
 
 	public WordWar(ChannelInfo cdata, User startingUser, String name, int baseDuration, long startEpoch) {
@@ -87,9 +75,8 @@ public class WordWar {
 		Tim.db.create_war(this);
 	}
 
-	public WordWar(short year, short warId, UUID uuid, String channel, String starter, String name, int baseDuration,
-				   int baseBreak, byte totalChains, byte currentChain, long startEpoch, long endEpoch,
-				   boolean randomness, State warState) {
+	public WordWar(short year, short warId, UUID uuid, String channel, String starter, String name, int baseDuration, int baseBreak, byte totalChains,
+				   byte currentChain, long startEpoch, long endEpoch, boolean randomness, State warState) {
 		this.uuid = uuid;
 		this.year = year;
 		this.warId = warId;
@@ -119,6 +106,10 @@ public class WordWar {
 		this.updateDb();
 	}
 
+	private void updateDb() {
+		Tim.db.updateWar(this);
+	}
+
 	public void cancelWar() {
 		this.warState = State.CANCELLED;
 		this.updateDb();
@@ -138,12 +129,16 @@ public class WordWar {
 		return this.endEpoch - this.startEpoch;
 	}
 
-	private void updateDb() {
-		Tim.db.updateWar(this);
-	}
-
 	public String getChannel() {
 		return this.channel;
+	}
+
+	public String getSimpleName() {
+		return getName(false, false);
+	}
+
+	public String getName(boolean includeId, boolean includeDuration) {
+		return getName(includeId, includeDuration, 1, 1);
 	}
 
 	public String getName(boolean includeId, boolean includeDuration, int idFieldWidth, int durationFieldWidth) {
@@ -151,11 +146,11 @@ public class WordWar {
 
 		if (includeId) {
 			String db_id = String.format("%d-%d", this.year, this.warId);
-			nameParts.add(String.format("[ID %"+idFieldWidth+"s]", db_id));
+			nameParts.add(String.format("[ID %" + idFieldWidth + "s]", db_id));
 		}
 
 		if (includeDuration) {
-			nameParts.add(String.format("[%"+durationFieldWidth+"s]", getDurationText(this.endEpoch - this.startEpoch)));
+			nameParts.add(String.format("[%" + durationFieldWidth + "s]", getDurationText(this.endEpoch - this.startEpoch)));
 		}
 
 		nameParts.add(name);
@@ -167,21 +162,9 @@ public class WordWar {
 		return String.join(" ", nameParts);
 	}
 
-	public String getName(boolean includeId, boolean includeDuration) {
-		return getName(includeId, includeDuration, 1, 1);
-	}
-
-	public String getSimpleName() {
-		return getName(false, false);
-	}
-
-	public String getInternalName() {
-		return name.toLowerCase();
-	}
-
 	public String getDurationText(long duration) {
-		String text = "";
-		long hours = 0, minutes = 0, seconds, tmp;
+		String text  = "";
+		long   hours = 0, minutes = 0, seconds, tmp;
 
 		tmp = duration;
 
@@ -210,6 +193,10 @@ public class WordWar {
 		}
 
 		return text.trim();
+	}
+
+	public String getInternalName() {
+		return name.toLowerCase();
 	}
 
 	public String getStarter() {
@@ -247,5 +234,9 @@ public class WordWar {
 	public void removeMember(String nick) {
 		warMembers.remove(nick);
 		Tim.db.saveWarMembers(this);
+	}
+
+	public enum State {
+		PENDING, ACTIVE, CANCELLED, FINISHED
 	}
 }

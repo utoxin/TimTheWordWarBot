@@ -1,35 +1,18 @@
 package Tim;
 
-/*
- * Copyright (C) 2015 mwalker
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- */
-
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 
 public class AppConfig extends XMLConfiguration {
 
 	// Need this to make warnings shut up more.
-	private static final long serialVersionUID = -4534296896412602302L;
+	private static final long      serialVersionUID = -4534296896412602302L;
 	private static final AppConfig instance;
-	private static final String configFile = "BotConfig.xml";
+	private static final String    configFile       = "BotConfig.xml";
 
 	// Singleton initialiser
 	static {
@@ -55,20 +38,12 @@ public class AppConfig extends XMLConfiguration {
 			setFileName(fileName);
 			load();
 		} catch (ConfigurationException ex) {
-			Logger.getLogger(AppConfig.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(AppConfig.class.getName())
+				  .log(Level.SEVERE, null, ex);
 		}
 	}
 
-	/**
-	 * Singleton access method.
-	 *
-	 * @return Singleton
-	 */
-	public static AppConfig getInstance() {
-		return instance;
-	}
-
-	public void main(String args[]) {
+	public void main(String[] args) {
 		AppConfig config = AppConfig.getInstance();
 		System.out.println(config.getString("database.user-name"));
 		System.out.println(config.getString("database.password"));
@@ -96,5 +71,14 @@ public class AppConfig extends XMLConfiguration {
 				System.out.println(config.getProperty("batch-job.job.name"));
 			}
 		}
+	}
+
+	/**
+	 * Singleton access method.
+	 *
+	 * @return Singleton
+	 */
+	public static AppConfig getInstance() {
+		return instance;
 	}
 }
