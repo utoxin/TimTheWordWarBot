@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import com.mysql.cj.jdbc.exceptions.MysqlDataTruncation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -400,6 +401,7 @@ class MarkovProcessor implements Runnable {
 			insert.setString(2, text);
 
 			insert.executeUpdate();
+		} catch (MysqlDataTruncation ignored) {
 		} catch (SQLException ex) {
 			Tim.printStackTrace(ex);
 		}

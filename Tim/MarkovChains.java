@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
+import com.mysql.cj.jdbc.exceptions.MysqlDataTruncation;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Colors;
 import org.pircbotx.hooks.events.MessageEvent;
@@ -176,6 +177,10 @@ class MarkovChains {
 				nextSentenceStmt.executeUpdate();
 				String nextSentence = nextSentenceStmt.getString(2);
 
+				if (nextSentence == null) {
+					break;
+				}
+
 				if (seedWord > 0) {
 					nextSentence = Tim.markovProcessor.getMarkovWordById(seedWord) + " " + nextSentence;
 				}
@@ -222,6 +227,7 @@ class MarkovChains {
 					break;
 				}
 			}
+		} catch (MysqlDataTruncation ignored) {
 		} catch (SQLException ex) {
 			Tim.printStackTrace(ex);
 		}

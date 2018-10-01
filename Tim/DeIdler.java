@@ -71,9 +71,11 @@ class DeIdler {
 			}
 
 			// Maybe cure the stale channel mode warnings?
-			if (cdata.channel != null) {
+			if (cdata.channel != null && Tim.channelStorage.channelList.get(cdata.channel) != null) {
 				Tim.channelStorage.channelList.get(cdata.channel)
 											  .getMode();
+			} else {
+				Tim.logErrorString(String.format("Failed to load cdata for channel %s", cdata.channel));
 			}
 
 			cdata.clearTimedMuzzle();

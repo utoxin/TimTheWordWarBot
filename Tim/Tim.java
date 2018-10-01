@@ -17,16 +17,17 @@ import org.pircbotx.PircBotX;
 import org.pircbotx.hooks.managers.BackgroundListenerManager;
 
 public class Tim {
+	// Has to go first, because it's needed for DBAccess below
+	static         AppConfig          config = AppConfig.getInstance();
+
+	public static  DBAccess           db = DBAccess.getInstance();
 	public static  PircBotX           bot;
-	public static  DBAccess           db     = DBAccess.getInstance();
 	public static  Random             rand;
 	public static  UserDirectory      userDirectory;
 	public static  WarTicker          warticker;
 	public static  TwitterIntegration twitterStream;
 	public static  Raptor             raptors;
-	public static  Semaphore          connectSemaphore;
-	// Has to go first, because it's needed for DBAccess below
-	static         AppConfig          config = AppConfig.getInstance();
+	static         Semaphore          connectSemaphore;
 	static         Amusement          amusement;
 	static         Challenge          challenge;
 	static         MarkovChains       markov;

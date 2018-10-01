@@ -160,8 +160,14 @@ public class Raptor implements ICommandHandler {
 		if (Tim.rand.nextInt(100) <= 33) {
 			int magicNumber = Tim.rand.nextInt(100);
 
-			// 10-45% odds of attack or colonize, remainder odds to hatching
-			int thresholdNumber = 10 + (int) (35.0 * (Math.max(0.0, 100.0 - cdata.activeVelociraptors) / 100.0));
+			// 5-45% odds of attack or colonize, remainder odds to hatching
+			int thresholdNumber = 5 + (int) (37.5 * (Math.min(100.0, cdata.activeVelociraptors) / 100.0));
+
+			// In extreme cases, further reduce hatching odds by 2% per 100 raptors over 100.
+			if (cdata.activeVelociraptors > 100) {
+				int overThreshold = Math.max(900, cdata.activeVelociraptors - 100);
+				thresholdNumber += overThreshold / 100;
+			}
 
 			if (magicNumber < thresholdNumber) {
 				this.attackChannel(cdata);
@@ -174,7 +180,13 @@ public class Raptor implements ICommandHandler {
 	}
 
 	private void attackChannel(ChannelInfo attackingChannel) {
-		int attackCount = Tim.rand.nextInt(attackingChannel.activeVelociraptors / 4);
+		int maxAttack = attackingChannel.activeVelociraptors / 4;
+
+		if (maxAttack <= 0) {
+			return;
+		}
+
+		int attackCount = Tim.rand.nextInt(maxAttack);
 
 		if (attackCount > 0) {
 			ChannelInfo defendingChannel = this.selectHighPopulationRaptorChannel(attackingChannel);
@@ -192,9 +204,9 @@ public class Raptor implements ICommandHandler {
 					int attackRoll  = (int) Math.round(Tim.rand.nextFloat() * 100 * ((1 + attackerBonus) / 100.0));
 					int defenseRoll = (int) Math.round(Tim.rand.nextFloat() * 100 * ((1 + defenderBonus) / 100.0));
 
-					if (attackRoll > defenseRoll) {
+					if (attackRoll > (defenseRoll + 15)) {
 						defenderDeaths++;
-					} else if (attackRoll < defenseRoll) {
+					} else if (defenseRoll > (attackRoll + 15)) {
 						attackerDeaths++;
 					} else {
 						if (Tim.rand.nextBoolean()) {
@@ -208,6 +220,8 @@ public class Raptor implements ICommandHandler {
 				}
 
 				attackingChannel.recordKills(defenderDeaths);
+				attackingChannel.recordDeaths(attackerDeaths);
+
 				defendingChannel.recordDeaths(defenderDeaths);
 				defendingChannel.recordKills(attackerDeaths);
 
@@ -221,7 +235,13 @@ public class Raptor implements ICommandHandler {
 	}
 
 	private void colonizeChannel(ChannelInfo cdata) {
-		int colonyCount = Tim.rand.nextInt(cdata.activeVelociraptors / 4);
+		int maxColony = cdata.activeVelociraptors / 4;
+
+		if (maxColony <= 0) {
+			return;
+		}
+
+		int colonyCount = Tim.rand.nextInt(maxColony);
 
 		if (colonyCount > 0) {
 			ChannelInfo colonizeChannel = this.selectLowPopulationRaptorChannel(cdata);

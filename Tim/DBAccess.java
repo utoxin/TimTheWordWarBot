@@ -186,7 +186,7 @@ public class DBAccess {
 			s.setString(1, channel.channel);
 			s.executeUpdate();
 
-			s = con.prepareStatement("INSERT INTO `channel_chatter_settings` SET `channel` = ?, `setting` = ?, `value` = ?;");
+			s = con.prepareStatement("REPLACE INTO `channel_chatter_settings` SET `channel` = ?, `setting` = ?, `value` = ?;");
 			s.setString(1, channel.channel);
 
 			for (Map.Entry<String, Boolean> setting : channel.chatter_enabled.entrySet()) {
@@ -195,7 +195,7 @@ public class DBAccess {
 				s.executeUpdate();
 			}
 
-			s = con.prepareStatement("INSERT INTO `channel_command_settings` SET `channel` = ?, `setting` = ?, `value` = ?;");
+			s = con.prepareStatement("REPLACE INTO `channel_command_settings` SET `channel` = ?, `setting` = ?, `value` = ?;");
 			s.setString(1, channel.channel);
 
 			for (Map.Entry<String, Boolean> setting : channel.commands_enabled.entrySet()) {
@@ -204,7 +204,7 @@ public class DBAccess {
 				s.executeUpdate();
 			}
 
-			s = con.prepareStatement("INSERT INTO `channel_twitter_feeds` SET `channel` = ?, `account` = ?;");
+			s = con.prepareStatement("REPLACE INTO `channel_twitter_feeds` SET `channel` = ?, `account` = ?;");
 			s.setString(1, channel.channel);
 
 			for (String account : channel.twitter_accounts) {

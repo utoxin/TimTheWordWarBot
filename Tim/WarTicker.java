@@ -38,7 +38,9 @@ public class WarTicker {
 		if (this.wars != null && this.wars.size() > 0) {
 			long currentEpoch = System.currentTimeMillis() / 1000;
 
-			for (WordWar war : this.wars) {
+			HashSet<WordWar> loopWars = (HashSet<WordWar>) this.wars.clone();
+
+			for (WordWar war : loopWars) {
 				if (war.startEpoch >= currentEpoch) {
 					long timeDifference = war.startEpoch - currentEpoch;
 
