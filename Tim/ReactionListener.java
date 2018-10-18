@@ -66,9 +66,9 @@ class ReactionListener extends ListenerAdapter {
 					cdata.fox_odds--;
 				}
 			} else if (message.toLowerCase()
-							  .contains("groot") && cdata.chatter_enabled.get("silly_reactions") && InteractionControls.interactWithUser(event.getUser()
+							  .contains("groot") && cdata.chatter_enabled.get("groot") && InteractionControls.interactWithUser(event.getUser()
 																																			  .getNick(),
-																																		 "silly_reactions")) {
+																																		 "groot")) {
 				if (Tim.rand.nextInt(100) < cdata.groot_odds) {
 					event.respond("mutters, \"I am groot.\"");
 					cdata.groot_odds--;
@@ -206,9 +206,9 @@ class ReactionListener extends ListenerAdapter {
 						cdata.fox_odds--;
 					}
 				} else if (message.toLowerCase()
-								  .contains("groot") && cdata.chatter_enabled.get("silly_reactions") && InteractionControls.interactWithUser(event.getUser()
+								  .contains("groot") && cdata.chatter_enabled.get("groot") && InteractionControls.interactWithUser(event.getUser()
 																																				  .getNick(),
-																																			 "silly_reactions")) {
+																																			 "groot")) {
 					if (Tim.rand.nextInt(100) < cdata.groot_odds) {
 						event.respond("I am groot!");
 						cdata.groot_odds--;

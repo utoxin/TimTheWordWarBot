@@ -116,7 +116,7 @@ public class War implements ICommandHandler {
 								delay = time / 2;
 
 								// Options for all wars
-								Pattern startDelayPattern = Pattern.compile("^start:([0-9.]+)$");
+								Pattern startDelayPattern = Pattern.compile("^(?:start|delay):([0-9.]+)$");
 
 								// Options for chain wars
 								Pattern chainPattern      = Pattern.compile("^chain(?:s?):([0-9.]+)$");
@@ -197,7 +197,7 @@ public class War implements ICommandHandler {
 								if (warName.toString()
 										   .matches("^\\d+$")) {
 									commandData.event.respond(String.format("War names must be more than a number. It's possible you meant to specify the "
-																			+ "start delay. Try: !war start %s start:%s", args[1], warName.toString()));
+																			+ "start delay. Try: !war start %s delay:%s", args[1], warName.toString()));
 									return true;
 								}
 
@@ -225,7 +225,7 @@ public class War implements ICommandHandler {
 								}
 							} else {
 								commandData.event.respond("Usage: !war start <duration in min> [<options>] [<name>]");
-								commandData.event.respond("Options for all wars: start:<minutes>");
+								commandData.event.respond("Options for all wars: delay:<minutes>");
 								commandData.event.respond("Options for chain wars: chains:<chain count>, random:1, break:<minutes>");
 							}
 							break;
@@ -283,15 +283,24 @@ public class War implements ICommandHandler {
 							break;
 
 						case "report":
-							if (commandData.args.length < 3) {
-								commandData.event.respond("Usage: !war report <war id> <wordcount>");
-								commandData.event.respond("Note: Wordcount should be words written during the war, not total count.");
+							if (commandData.args.length < 2) {
+								commandData.event.respond("Usage: !war report <wordcount> [<war id>]");
+								commandData.event.respond("Note: Wordcount should be words written during the war, not total count. The war id is optional. The last completed war will be selected by default.");
 							} else {
-								WordWar  war      = Tim.db.loadWar(args[1]);
 								UserData userData = Tim.userDirectory.findUserData(commandData.issuer);
 								ChannelInfo cdata = Tim.db.channel_data.get(commandData.event.getChannel()
 																							 .getName()
 																							 .toLowerCase());
+
+								WordWar war;
+								if (commandData.args.length == 3) {
+									war = Tim.db.loadWar(args[2]);
+								} else if (!cdata.lastWarId.equals("")) {
+									war = Tim.db.loadWar(cdata.lastWarId);
+								} else {
+									commandData.event.respond("I don't know which war finished last. Try providing the war ID.");
+									return true;
+								}
 
 								int wordCount;
 
@@ -299,23 +308,27 @@ public class War implements ICommandHandler {
 									commandData.event.respond("I'm sorry, you must have adopted a raptor to record your stats... (!raptor command)");
 								} else if (war == null) {
 									commandData.event.respond("That war couldn't be found...");
+								} else if ( war.warState == WordWar.State.CANCELLED) {
+									commandData.event.respond("That war was cancelled. Sorry.");
+								} else if ((war.totalChains == 1 && war.warState != WordWar.State.FINISHED) || (war.totalChains > 1 && war.currentChain == 1)) {
+									commandData.event.respond("Can't record an entry for a war that isn't complete. Sorry.");
 								} else {
 									try {
-										wordCount = (int) Double.parseDouble(commandData.args[2]);
+										wordCount = (int) Double.parseDouble(commandData.args[1]);
 									} catch (NumberFormatException e) {
 										commandData.event.respond("I could not understand the wordcount. Was it numeric?");
 										return true;
 									}
 
-									if (userData.recordedWars.containsKey(war.uuid)) {
-										userData.totalSprintWordcount -= userData.recordedWars.get(war.uuid);
+									if (userData.recordedWars.containsKey(war.getWarChainId())) {
+										userData.totalSprintWordcount -= userData.recordedWars.get(war.getWarChainId());
 									} else {
 										userData.totalSprints++;
 										userData.totalSprintDuration += war.duration() / 60;
 									}
 
 									userData.totalSprintWordcount += wordCount;
-									userData.recordedWars.put(war.uuid, wordCount);
+									userData.recordedWars.put(war.getWarChainId(), wordCount);
 
 									userData.save();
 

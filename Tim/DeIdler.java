@@ -35,15 +35,9 @@ class DeIdler {
 		boolean aheadOfPace = (((cal.get(Calendar.DAY_OF_MONTH) + 1) * (50000 / 30)) < Tim.story.wordcount());
 
 		if (isNovember && ((!aheadOfPace && Tim.rand.nextInt(100) < 8) || (aheadOfPace && Tim.rand.nextInt(100) < 4))) {
-			String name = Tim.story.getRandomName();
 			String new_text;
-			if (Tim.rand.nextInt(100) < 75) {
-				new_text = name + " " + Tim.markov.generate_markov("emote", Tim.rand.nextInt(350) + 150, 0) + ".";
-			} else if (Tim.rand.nextBoolean()) {
-				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(250) + 50, 0) + ",\" " + name + " muttered quietly.";
-			} else {
-				new_text = "\"" + Tim.markov.generate_markov("say", Tim.rand.nextInt(250) + 50, 0) + ",\" " + name + " said.";
-			}
+			int seedWord = Tim.markov.getSeedWord(Tim.story.getLastLines(), "novel", 0);
+			new_text = Tim.markov.generate_markov("novel", Tim.rand.nextInt(350) + 150, seedWord);
 
 			Tim.story.storeLine(new_text, "Timmy");
 			Tim.db.channel_data.values()

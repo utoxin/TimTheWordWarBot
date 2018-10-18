@@ -18,7 +18,7 @@ public class UserData {
 
 	// Non-synced reference data
 	public HashSet<String>        nicks        = new HashSet<>();
-	public HashMap<UUID, Integer> recordedWars = new HashMap<>();
+	public HashMap<String, Integer> recordedWars = new HashMap<>();
 
 	// DB synced data
 	public UUID    id;

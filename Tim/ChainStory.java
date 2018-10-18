@@ -149,6 +149,34 @@ class ChainStory implements ICommandHandler {
 		}
 	}
 
+	public String getLastLines() {
+		Connection        con;
+		ResultSet         rs;
+		PreparedStatement s;
+		StringBuilder response = new StringBuilder();
+
+		try {
+			con = Tim.db.pool.getConnection(timeout);
+
+			s = con.prepareStatement("SELECT * FROM `story` ORDER BY id DESC LIMIT 3");
+			s.executeQuery();
+
+			rs = s.getResultSet();
+			rs.setFetchDirection(ResultSet.FETCH_REVERSE);
+			rs.last();
+			do {
+				response.append(rs.getString("string"))
+						.append(" ");
+			} while (rs.previous());
+
+			con.close();
+		} catch (SQLException ex) {
+			Tim.printStackTrace(ex);
+		}
+
+		return response.toString();
+	}
+
 	private void info(GenericMessageEvent event) {
 		if (event.getUser() == null) {
 			return;

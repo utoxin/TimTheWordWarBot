@@ -51,7 +51,12 @@ class MarkovProcessor implements Runnable {
 				type = rs.getString("type");
 				text = rs.getString("text");
 
-				process_markov(text, type);
+				if (type.equals("emote") || type.equals("say")) {
+					process_markov(text, type);
+				} else if (type.equals("novel")) {
+					process_markov(text, "say");
+					process_markov4(text, type);
+				}
 
 				deleteQuery.setInt(1, id);
 				deleteQuery.execute();
@@ -73,7 +78,7 @@ class MarkovProcessor implements Runnable {
 	private void process_markov(String message, String type) {
 		HashMap<String, String> knownReplacements = new HashMap<>();
 
-		String[] words = message.split(" ");
+		String[] words = message.split("[ \\t]+", 0);
 
 		for (int i = -1; i <= words.length; i++) {
 			String word1, word2, word3;
@@ -163,9 +168,9 @@ class MarkovProcessor implements Runnable {
 				word3 = result[1];
 			}
 
-			word1 = word1.substring(0, Math.min(word1.length(), 49));
-			word2 = word2.substring(0, Math.min(word2.length(), 49));
-			word3 = word3.substring(0, Math.min(word3.length(), 49));
+			word1 = word1.substring(0, Math.min(word1.length(), 50));
+			word2 = word2.substring(0, Math.min(word2.length(), 50));
+			word3 = word3.substring(0, Math.min(word3.length(), 50));
 
 			if (offset1 >= 0 && offset1 < words.length) {
 				words[offset1] = word1;
@@ -180,6 +185,166 @@ class MarkovProcessor implements Runnable {
 			}
 
 			storeTriad(word1, word2, word3, type);
+		}
+	}
+
+
+	/**
+	 * Process a message to populate the Markov data tables
+	 *
+	 * Takes a message and a type and builds Markov chain data out of the message, skipping bad words and other things we don't want to track such as email
+	 * addresses and URLs.
+	 *
+	 * @param message What is the message to parse
+	 * @param type    What type of message was it (say or emote)
+	 */
+	private void process_markov4(String message, String type) {
+		HashMap<String, String> knownReplacements = new HashMap<>();
+
+		String[] words = message.split("[ \\t]+", 0);
+
+		for (int i = -1; i <= words.length + 1; i++) {
+			String word1, word2, word3, word4;
+			String rep1, rep2, rep3, rep4;
+
+			int offset1 = i - 2;
+			int offset2 = i - 1;
+			int offset4 = i + 1;
+
+			if (offset1 < 0) {
+				word1 = "";
+			} else if (offset1 >= words.length) {
+				word1 = "";
+			} else {
+				word1 = words[offset1];
+			}
+
+			if (offset2 < 0) {
+				word2 = "";
+			} else if (offset2 >= words.length) {
+				word2 = "";
+			} else {
+				word2 = words[offset2];
+			}
+
+			if (i < 0) {
+				word3 = "";
+			} else if (i >= words.length) {
+				word3 = "";
+			} else {
+				word3 = words[i];
+			}
+
+			if (offset4 < 0) {
+				word4 = "";
+			} else if (offset4 >= words.length) {
+				word4 = "";
+			} else {
+				word4 = words[offset4];
+			}
+
+			rep1 = replaceBadWord(word1);
+			if (!Objects.equals(rep1, word1)) {
+				if (knownReplacements.containsKey(word1)) {
+					word1 = knownReplacements.get(word1);
+				} else {
+					knownReplacements.put(word1, rep1);
+					word1 = rep1;
+				}
+			}
+
+			rep2 = replaceBadWord(word2);
+			if (!Objects.equals(rep2, word2)) {
+				if (knownReplacements.containsKey(word2)) {
+					word1 = knownReplacements.get(word2);
+				} else {
+					knownReplacements.put(word2, rep2);
+					word2 = rep2;
+				}
+			}
+
+			rep3 = replaceBadWord(word3);
+			if (!Objects.equals(rep3, word3)) {
+				if (knownReplacements.containsKey(word3)) {
+					word3 = knownReplacements.get(word3);
+				} else {
+					knownReplacements.put(word3, rep3);
+					word3 = rep3;
+				}
+			}
+
+			rep4 = replaceBadWord(word4);
+			if (!Objects.equals(rep4, word4)) {
+				if (knownReplacements.containsKey(word4)) {
+					word3 = knownReplacements.get(word4);
+				} else {
+					knownReplacements.put(word4, rep4);
+					word4 = rep4;
+				}
+			}
+
+			String[] result;
+			result = replaceBadPair(word1, word2);
+			if (!Objects.equals(result[0] + " " + result[1], word1 + " " + word2)) {
+				if (knownReplacements.containsKey(word1 + " " + word2)) {
+					result = knownReplacements.get(word1 + " " + word2)
+											  .split(" ");
+				} else {
+					knownReplacements.put(word1 + " " + word2, result[0] + " " + result[1]);
+				}
+
+				word1 = result[0];
+				word2 = result[1];
+			}
+
+			result = replaceBadPair(word2, word3);
+			if (!Objects.equals(result[0] + " " + result[1], word2 + " " + word3)) {
+				if (knownReplacements.containsKey(word2 + " " + word3)) {
+					result = knownReplacements.get(word2 + " " + word3)
+											  .split(" ");
+				} else {
+					knownReplacements.put(word2 + " " + word3, result[0] + " " + result[1]);
+				}
+
+				word2 = result[0];
+				word3 = result[1];
+			}
+
+			result = replaceBadPair(word3, word4);
+			if (!Objects.equals(result[0] + " " + result[1], word3 + " " + word4)) {
+				if (knownReplacements.containsKey(word3 + " " + word4)) {
+					result = knownReplacements.get(word3 + " " + word4)
+											  .split(" ");
+				} else {
+					knownReplacements.put(word3 + " " + word4, result[0] + " " + result[1]);
+				}
+
+				word3 = result[0];
+				word4 = result[1];
+			}
+
+			word1 = word1.substring(0, Math.min(word1.length(), 50));
+			word2 = word2.substring(0, Math.min(word2.length(), 50));
+			word3 = word3.substring(0, Math.min(word3.length(), 50));
+			word4 = word4.substring(0, Math.min(word4.length(), 50));
+
+			if (offset1 >= 0 && offset1 < words.length) {
+				words[offset1] = word1;
+			}
+
+			if (offset2 >= 0 && offset2 < words.length) {
+				words[offset2] = word2;
+			}
+
+			if (i >= 0 && i < words.length) {
+				words[i] = word3;
+			}
+
+			if (offset4 >= 0 && offset4 < words.length) {
+				words[offset4] = word4;
+			}
+
+			storeQuad(word1, word2, word3, word4, type);
 		}
 	}
 
@@ -283,9 +448,40 @@ class MarkovProcessor implements Runnable {
 		}
 	}
 
+	private void storeQuad(String word1, String word2, String word3, String word4, String type) {
+		int first  = getMarkovWordId(word1);
+		int second = getMarkovWordId(word2);
+		int third  = getMarkovWordId(word3);
+		int fourth = getMarkovWordId(word4);
+
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
+			PreparedStatement addQuad;
+
+			if ("novel".equals(type)) {
+				addQuad = con.prepareStatement(
+					"INSERT INTO markov4_novel_data (first_id, second_id, third_id, fourth_id, count) VALUES (?, ?, ?, ?, 1) ON DUPLICATE KEY UPDATE count = count + 1");
+			} else {
+				return;
+			}
+
+			addQuad.setInt(1, first);
+			addQuad.setInt(2, second);
+			addQuad.setInt(3, third);
+			addQuad.setInt(4, fourth);
+
+			addQuad.executeUpdate();
+		} catch (SQLException ex) {
+			Tim.printStackTrace(ex);
+		}
+	}
+
 	int getMarkovWordId(String word) {
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			PreparedStatement checkword, addword;
+
+			if (word.length() > 50) {
+				word = word.substring(0, 50);
+			}
 
 			checkword = con.prepareStatement("SELECT id FROM markov_words WHERE word = ?");
 			addword = con.prepareStatement("INSERT INTO markov_words SET word = ?", Statement.RETURN_GENERATED_KEYS);

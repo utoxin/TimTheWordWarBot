@@ -55,6 +55,7 @@ public class ChannelInfo {
 	public       HashMap<String, User>    userList              = new HashMap<>();
 	private      boolean                  muzzled               = false;
 	private      long                     muzzledUntil          = 0;
+	public String lastWarId = "";
 
 	public ChannelInfo(String channel) {
 		this.channel = channel;
@@ -149,6 +150,7 @@ public class ChannelInfo {
 		chatter_defaults.put("sing", Boolean.TRUE);
 		chatter_defaults.put("summon", Boolean.TRUE);
 		chatter_defaults.put("velociraptor", Boolean.TRUE);
+		chatter_defaults.put("groot", Boolean.TRUE);
 
 		return chatter_defaults;
 	}

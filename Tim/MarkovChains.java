@@ -76,18 +76,31 @@ class MarkovChains {
 	void randomAction(String channel, String type, String message) {
 		try {
 			Thread.sleep(Tim.rand.nextInt(1000) + 500);
+			String output;
 			switch (type) {
 				case "say":
+					output = generate_markov(type, message);
+					if (output.length() > 400) {
+						output = output.substring(0, 400) + "...";
+					}
 					Tim.bot.sendIRC()
-						   .message(channel, generate_markov(type, message));
+						   .message(channel, output);
 					break;
 				case "mutter":
+					output = generate_markov("say", message);
+					if (output.length() > 350) {
+						output = output.substring(0, 350) + "...";
+					}
 					Tim.bot.sendIRC()
-						   .action(channel, "mutters under his breath, \"" + generate_markov("say", message) + "\"");
+						   .action(channel, "mutters under his breath, \"" + output + "\"");
 					break;
 				default:
+					output = generate_markov(type, message);
+					if (output.length() > 400) {
+						output = output.substring(0, 400) + "...";
+					}
 					Tim.bot.sendIRC()
-						   .action(channel, generate_markov(type, message));
+						   .action(channel, generate_markov(type, output));
 					break;
 			}
 		} catch (InterruptedException ex) {
@@ -105,7 +118,7 @@ class MarkovChains {
 		return generate_markov(type, Tim.rand.nextInt(25) + 10, seedWord);
 	}
 
-	private int getSeedWord(String message, String type, int lastSeed) {
+	int getSeedWord(String message, String type, int lastSeed) {
 		String[]         words   = message.split(" ");
 		HashSet<Integer> wordIds = new HashSet<>();
 
@@ -122,15 +135,30 @@ class MarkovChains {
 
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			PreparedStatement s;
-			if (type.equals("say")) {
-				s = con.prepareStatement(
-					"SELECT * FROM (SELECT second_id FROM markov3_say_data msd WHERE msd.first_id = 1 AND msd.third_id != 1 AND msd.second_id IN (" + ids +
-					") "
-					+ "GROUP BY msd.second_id ORDER BY sum(msd.count) ASC LIMIT ?) derived ORDER BY RAND() LIMIT 1");
-			} else {
-				s = con.prepareStatement(
-					"SELECT * FROM (SELECT second_id FROM markov3_emote_data msd WHERE msd.first_id = 1 AND msd.third_id != 1 AND msd.second_id IN (" + ids
-					+ ") " + "GROUP BY msd.second_id ORDER BY sum(msd.count) ASC LIMIT ?) derived ORDER BY RAND() LIMIT 1");
+			switch (type) {
+				case "say":
+					s = con.prepareStatement(
+						"SELECT * FROM (SELECT second_id FROM markov3_say_data msd WHERE msd.first_id = 1 AND msd.second_id != 1 AND msd.third_id != 1 AND "
+						+ "(msd.second_id IN ("
+						+ ids + ") OR msd.third_id IN (" + ids
+						+ ")) GROUP BY msd.second_id ORDER BY sum(msd.count) ASC LIMIT ?) derived ORDER BY RAND() LIMIT 1");
+					break;
+				case "emote":
+					s = con.prepareStatement(
+						"SELECT * FROM (SELECT second_id FROM markov3_emote_data msd WHERE msd.first_id = 1 AND msd.second_id != 1 AND msd.third_id != 1 AND "
+						+ "(msd.second_id IN ("
+						+ ids + ") OR msd.third_id IN (" + ids
+						+ ")) GROUP BY msd.second_id ORDER BY sum(msd.count) ASC LIMIT ?) derived ORDER BY RAND() LIMIT 1");
+					break;
+				case "novel":
+					s = con.prepareStatement(
+						"SELECT * FROM (SELECT second_id FROM markov3_novel_data msd WHERE msd.first_id = 1 AND msd.second_id != 1 AND msd.third_id != 1 AND "
+						+ "msd.fourth_id != 1 "
+						+ "AND (msd.second_id IN (" + ids + ") OR msd.third_id IN (" + ids + ") OR msd.fourth_id IN (" + ids
+						+ ")) GROUP BY msd.second_id ORDER BY sum(msd.count) ASC LIMIT ?) derived ORDER BY RAND() LIMIT 1");
+					break;
+				default:
+					return 0;
 			}
 
 			int innerLimit = 2;
@@ -164,8 +192,12 @@ class MarkovChains {
 
 			if ("emote".equals(type)) {
 				nextSentenceStmt = con.prepareCall("CALL generateMarkovEmote(?, ?)");
-			} else {
+			} else if ("say".equals(type)) {
 				nextSentenceStmt = con.prepareCall("CALL generateMarkovSay(?, ?)");
+			} else if ("novel".equals(type)) {
+				nextSentenceStmt = con.prepareCall("CALL generateMarkovNover(?, ?)");
+			} else {
+				return "";
 			}
 
 			nextSentenceStmt.registerOutParameter(2, java.sql.Types.LONGVARCHAR);
@@ -185,7 +217,7 @@ class MarkovChains {
 					nextSentence = Tim.markovProcessor.getMarkovWordById(seedWord) + " " + nextSentence;
 				}
 
-				if (nextSentence.split(" ").length >= 5) {
+				if (nextSentence.split("[ \\t]+", 0).length >= 5) {
 					seedWord = getSeedWord(nextSentence, type, seedWord);
 				} else {
 					seedWord = 0;

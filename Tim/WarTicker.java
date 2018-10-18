@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import Tim.Data.ChannelInfo;
 import Tim.Data.WordWar;
 
 public class WarTicker {
@@ -185,6 +186,9 @@ public class WarTicker {
 		Tim.bot.sendIRC()
 			   .message(war.getChannel(), war.getSimpleName() + ": Ending now!" + appendString);
 		this.notifyWarMembers(war, war.getSimpleName() + " is over!" + appendString);
+
+		ChannelInfo cdata = Tim.db.channel_data.get(war.getChannel().toLowerCase());
+		cdata.lastWarId = war.getId();
 
 		if (war.currentChain >= war.totalChains) {
 			war.endWar();

@@ -675,7 +675,7 @@ class Amusement implements ICommandHandler {
 
 	private void getItem(Channel channel, String target, String[] args) {
 		StringBuilder item = new StringBuilder();
-		if (args != null) {
+		if (args != null && args.length > 0) {
 			if (Tim.rand.nextInt(100) < 65) {
 				item = new StringBuilder(args[0]);
 				for (int i = 1; i < args.length; ++i) {

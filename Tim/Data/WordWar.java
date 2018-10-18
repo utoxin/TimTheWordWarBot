@@ -236,6 +236,19 @@ public class WordWar {
 		Tim.db.saveWarMembers(this);
 	}
 
+	public String getId() {
+		return String.format("%d-%d", this.year, this.warId);
+	}
+
+	public String getWarChainId() {
+		byte chain = this.currentChain;
+		if (this.warState != State.FINISHED) {
+			chain--;
+		}
+
+		return String.format("%s-%d", this.getId(), chain);
+	}
+
 	public enum State {
 		PENDING, ACTIVE, CANCELLED, FINISHED
 	}

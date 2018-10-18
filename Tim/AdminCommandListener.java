@@ -216,7 +216,7 @@ class AdminCommandListener extends ListenerAdapter {
 							event.respond("Usage: $chatterflag list <#channel> OR $chatterflag set <#channel> <type> <0/1>");
 							event.respond(
 								"Valid Chatter Types: all, bored, catch, chainstory, challenge, dance, defenestrate, eightball, foof, fridge, get, greetings, "
-								+ "helpful_reactions, markov, search, sing, silly_reactions, summon, velociraptor");
+								+ "groot, helpful_reactions, markov, search, sing, silly_reactions, summon, velociraptor");
 						}
 						break;
 					case "commandflag":
