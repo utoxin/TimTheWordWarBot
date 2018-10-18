@@ -1,10 +1,5 @@
 package Tim.Commands.Writing;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import Tim.Commands.ICommandHandler;
 import Tim.Data.ChannelInfo;
 import Tim.Data.CommandData;
@@ -14,6 +9,11 @@ import Tim.Tim;
 import Tim.Utility.Permissions;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.hooks.types.GenericUserEvent;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class War implements ICommandHandler {
 	private HashSet<String> handledCommands = new HashSet<>();
@@ -31,17 +31,21 @@ public class War implements ICommandHandler {
 
 	public static void helpSection(GenericUserEvent event) {
 		String[] strs = {
-			"Word War Commands:", "    These commands deal with the creation and interaction with word wars (aka sprints).",
-			"    For more details on each command, use it without any args.", "    !war start - Creates a new war.",
-			"    !war cancel - Cancels an existing war.", "    !war join - Signs up for notifications about a war.",
-			"    !war leave - Cancels the notifications about a war.", "    !war report - Report your wordcount for a war.",
+			"Word War Commands:",
+			"    These commands deal with the creation and interaction with word wars (aka sprints).",
+			"    For more details on each command, use it without any args.",
+			"    !war start - Creates a new war.",
+			"    !war cancel - Cancels an existing war.",
+			"    !war join [<war id>] - Signs up for notifications about a war. Defaults to most recently created.",
+			"    !war leave [<war id>] - Cancels the notifications about a war. Defaults to most recently created.",
+			"    !war report - Report your wordcount for a war.",
 			"    !war list [all] - List wars in current channel or globally.",
-			};
+		};
 
 		for (String str : strs) {
 			event.getUser()
-				 .send()
-				 .message(str);
+				.send()
+				.message(str);
 		}
 	}
 
@@ -77,8 +81,12 @@ public class War implements ICommandHandler {
 				return true;
 
 			case "war":
+				WordWar war;
+				ChannelInfo cdata;
+
 				HashSet<String> subcommands = new HashSet<>();
 				subcommands.add("start");
+				subcommands.add("end");
 				subcommands.add("cancel");
 				subcommands.add("join");
 				subcommands.add("report");
@@ -93,10 +101,10 @@ public class War implements ICommandHandler {
 					switch (subcommand) {
 						case "start":
 							if (commandData.args.length >= 2) {
-								int     time;
-								int     to_start      = 60;
-								byte    total_chains  = 1;
-								int     delay;
+								int time;
+								int to_start = 60;
+								byte total_chains = 1;
+								int delay;
 								boolean do_randomness = false;
 
 								StringBuilder warName = new StringBuilder();
@@ -116,12 +124,12 @@ public class War implements ICommandHandler {
 								delay = time / 2;
 
 								// Options for all wars
-								Pattern startDelayPattern = Pattern.compile("^(?:start|delay):([0-9.]+)$");
+								Pattern startDelayPattern = Pattern.compile("^(?:start|delay):\\s*([0-9.]+)$");
 
 								// Options for chain wars
-								Pattern chainPattern      = Pattern.compile("^chain(?:s?):([0-9.]+)$");
-								Pattern breakPattern      = Pattern.compile("^break:([0-9.]+)$");
-								Pattern randomnessPattern = Pattern.compile("^random:([01])$");
+								Pattern chainPattern = Pattern.compile("^chain(?:s?):\\s*([0-9.]+)$");
+								Pattern breakPattern = Pattern.compile("^break:\\s*([0-9.]+)$");
+								Pattern randomnessPattern = Pattern.compile("^random:\\s*([01])$");
 
 								Matcher m;
 
@@ -135,7 +143,7 @@ public class War implements ICommandHandler {
 												Tim.printStackTrace(ex);
 												Tim.logErrorString(
 													String.format("Start Delay Match -- Input: ''%s'' Found String: ''%s''", commandData.argString,
-																  m.group(1)));
+														m.group(1)));
 											}
 											continue;
 										}
@@ -174,54 +182,54 @@ public class War implements ICommandHandler {
 												Tim.printStackTrace(ex);
 												Tim.logErrorString(
 													String.format("Randomness Match -- Input: ''%s'' Found String: ''%s''", commandData.argString,
-																  m.group(1)));
+														m.group(1)));
 											}
 											continue;
 										}
 
 										if (warName.toString()
-												   .equals("")) {
+											.equals("")) {
 											warName = new StringBuilder(commandData.args[i]);
 										} else {
 											warName.append(" ")
-												   .append(commandData.args[i]);
+												.append(commandData.args[i]);
 										}
 									}
 								}
 
 								if (warName.toString()
-										   .equals("")) {
+									.equals("")) {
 									warName = new StringBuilder(commandData.issuer + "'s War");
 								}
 
 								if (warName.toString()
-										   .matches("^\\d+$")) {
+									.matches("^\\d+$")) {
 									commandData.event.respond(String.format("War names must be more than a number. It's possible you meant to specify the "
-																			+ "start delay. Try: !war start %s delay:%s", args[1], warName.toString()));
+										+ "start delay. Try: !war start %s delay:%s", args[1], warName.toString()));
 									return true;
 								}
 
 								long currentEpoch = System.currentTimeMillis() / 1000;
-								ChannelInfo cdata = Tim.db.channel_data.get(commandData.event.getChannel()
-																							 .getName()
-																							 .toLowerCase());
-								WordWar war;
+								cdata = Tim.db.channel_data.get(commandData.event.getChannel()
+									.getName()
+									.toLowerCase());
 
 								if (total_chains <= 1) {
 									war = new WordWar(cdata, commandData.getMessageEvent()
-																		.getUser(), warName.toString(), time, currentEpoch + to_start);
+										.getUser(), warName.toString(), time, currentEpoch + to_start);
 								} else {
 									war = new WordWar(cdata, commandData.getMessageEvent()
-																		.getUser(), warName.toString(), time, currentEpoch + to_start, total_chains, delay,
-													  do_randomness);
+										.getUser(), warName.toString(), time, currentEpoch + to_start, total_chains, delay,
+										do_randomness);
 								}
 
 								Tim.warticker.wars.add(war);
+								cdata.newestWarId = war.getId();
 
 								if (to_start > 0) {
 									commandData.event.respond(
 										String.format("Your word war, %s, will start in %.1f minutes. The ID is: %d-%d.", war.getSimpleName(), to_start / 60.0,
-													  war.year, war.warId));
+											war.year, war.warId));
 								}
 							} else {
 								commandData.event.respond("Usage: !war start <duration in min> [<options>] [<name>]");
@@ -231,14 +239,15 @@ public class War implements ICommandHandler {
 							break;
 
 						case "cancel":
+						case "end":
 							if (commandData.args.length > 1) {
 								String name = StringUtils.join(Arrays.copyOfRange(commandData.args, 1, commandData.args.length), " ");
 								String channel = commandData.getChannelEvent()
-															.getChannel()
-															.getName();
+									.getChannel()
+									.getName();
 
 								WordWar warByName = this.findWarByName(name, channel);
-								WordWar warById   = this.findWarById(name);
+								WordWar warById = this.findWarById(name);
 
 								if (warByName != null) {
 									this.removeWar(commandData, warByName);
@@ -253,32 +262,56 @@ public class War implements ICommandHandler {
 							break;
 
 						case "join":
-							if (commandData.args.length == 1) {
-								commandData.event.respond("Usage: !war join <war id>");
-							} else {
-								WordWar war = this.findWarById(args[1]);
+							cdata = Tim.db.channel_data.get(commandData.event.getChannel()
+								.getName()
+								.toLowerCase());
 
-								if (war == null) {
-									commandData.event.respond("That war id was not found.");
+							if (commandData.args.length == 1) {
+								if (!cdata.newestWarId.equals("")) {
+									war = this.findWarById(cdata.newestWarId);
 								} else {
+									commandData.event.respond("Hmmm. I don't seem to have a record of an upcoming war. Try providing a war id?");
+									commandData.event.respond("Usage: !war join [<war id>]");
+									return true;
+								}
+							} else {
+								war = this.findWarById(args[1]);
+							}
+
+							if (war == null) {
+								commandData.event.respond("That war id was not found.");
+							} else {
+								if (war.warState == WordWar.State.PENDING || war.warState == WordWar.State.ACTIVE) {
 									war.addMember(commandData.issuer);
 									commandData.event.respond("You have joined the war.");
+								} else {
+									commandData.event.respond("That war is over or cancelled... Sorry!");
 								}
 							}
 							break;
 
 						case "leave":
-							if (commandData.args.length == 1) {
-								commandData.event.respond("Usage: !war leave <war id>");
-							} else {
-								WordWar war = this.findWarById(args[1]);
+							cdata = Tim.db.channel_data.get(commandData.event.getChannel()
+								.getName()
+								.toLowerCase());
 
-								if (war == null) {
-									commandData.event.respond("That war id was not found.");
+							if (commandData.args.length == 1) {
+								if (!cdata.newestWarId.equals("")) {
+									war = this.findWarById(cdata.newestWarId);
 								} else {
-									war.removeMember(commandData.issuer);
-									commandData.event.respond("You have left the war.");
+									commandData.event.respond("Hmmm. I don't seem to have a record of an upcoming war. Try providing a war id?");
+									commandData.event.respond("Usage: !war leave [<war id>]");
+									return true;
 								}
+							} else {
+								war = this.findWarById(args[1]);
+							}
+
+							if (war == null) {
+								commandData.event.respond("That war id was not found.");
+							} else {
+								war.removeMember(commandData.issuer);
+								commandData.event.respond("You have left the war.");
 							}
 							break;
 
@@ -288,11 +321,10 @@ public class War implements ICommandHandler {
 								commandData.event.respond("Note: Wordcount should be words written during the war, not total count. The war id is optional. The last completed war will be selected by default.");
 							} else {
 								UserData userData = Tim.userDirectory.findUserData(commandData.issuer);
-								ChannelInfo cdata = Tim.db.channel_data.get(commandData.event.getChannel()
-																							 .getName()
-																							 .toLowerCase());
+								cdata = Tim.db.channel_data.get(commandData.event.getChannel()
+									.getName()
+									.toLowerCase());
 
-								WordWar war;
 								if (commandData.args.length == 3) {
 									war = Tim.db.loadWar(args[2]);
 								} else if (!cdata.lastWarId.equals("")) {
@@ -308,7 +340,7 @@ public class War implements ICommandHandler {
 									commandData.event.respond("I'm sorry, you must have adopted a raptor to record your stats... (!raptor command)");
 								} else if (war == null) {
 									commandData.event.respond("That war couldn't be found...");
-								} else if ( war.warState == WordWar.State.CANCELLED) {
+								} else if (war.warState == WordWar.State.CANCELLED) {
 									commandData.event.respond("That war was cancelled. Sorry.");
 								} else if ((war.totalChains == 1 && war.warState != WordWar.State.FINISHED) || (war.totalChains > 1 && war.currentChain == 1)) {
 									commandData.event.respond("Can't record an entry for a war that isn't complete. Sorry.");
@@ -336,7 +368,7 @@ public class War implements ICommandHandler {
 
 									commandData.event.respond(
 										String.format("%s pulls out their %s notebook and makes a note of that wordcount.", userData.raptorName,
-													  userData.raptorFavoriteColor));
+											userData.raptorFavoriteColor));
 
 									if (!cdata.isMuzzled()) {
 										Tim.raptors.warReport(userData, war, wordCount);
@@ -354,28 +386,28 @@ public class War implements ICommandHandler {
 							}
 
 							if (Tim.warticker.wars != null && Tim.warticker.wars.size() > 0) {
-								int maxIdLength       = 1;
+								int maxIdLength = 1;
 								int maxDurationLength = 1;
 
-								for (WordWar war : Tim.warticker.wars) {
-									String warId = String.format("%d-%d", war.year, war.warId);
+								for (WordWar loopWar : Tim.warticker.wars) {
+									String warId = String.format("%d-%d", loopWar.year, loopWar.warId);
 									if (warId.length() > maxIdLength) {
 										maxIdLength = warId.length();
 									}
 
-									if (war.getDurationText(war.duration())
-										   .length() > maxDurationLength) {
-										maxDurationLength = war.getDurationText(war.duration())
-															   .length();
+									if (loopWar.getDurationText(loopWar.duration())
+										.length() > maxDurationLength) {
+										maxDurationLength = loopWar.getDurationText(loopWar.duration())
+											.length();
 									}
 								}
 
-								for (WordWar war : Tim.warticker.wars) {
-									if (all || war.getChannel()
-												  .equalsIgnoreCase(commandData.event.getChannel()
-																					 .getName())) {
-										commandData.event.respond(all ? war.getDescriptionWithChannel(maxIdLength, maxDurationLength)
-																	  : war.getDescription(maxIdLength, maxDurationLength));
+								for (WordWar loopWar : Tim.warticker.wars) {
+									if (all || loopWar.getChannel()
+										.equalsIgnoreCase(commandData.event.getChannel()
+											.getName())) {
+										commandData.event.respond(all ? loopWar.getDescriptionWithChannel(maxIdLength, maxDurationLength)
+											: loopWar.getDescription(maxIdLength, maxDurationLength));
 										responded = true;
 									}
 								}
@@ -402,14 +434,13 @@ public class War implements ICommandHandler {
 	 *
 	 * @param name    The name of the war to find
 	 * @param channel Which channel the war must be in
-	 *
 	 * @return The identified war, or null if no unique result found
 	 */
 	private WordWar findWarByName(String name, String channel) {
 		WordWar returnWar = null;
 		for (WordWar war : Tim.warticker.wars) {
 			if (war.getInternalName()
-				   .equalsIgnoreCase(name) && war.channel.equalsIgnoreCase(channel)) {
+				.equalsIgnoreCase(name) && war.channel.equalsIgnoreCase(channel)) {
 				if (returnWar != null) {
 					return null;
 				} else {
@@ -423,7 +454,6 @@ public class War implements ICommandHandler {
 
 	/**
 	 * @param id The id of the war to search for
-	 *
 	 * @return The war if found
 	 */
 	private WordWar findWarById(String id) {

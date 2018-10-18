@@ -56,6 +56,7 @@ public class ChannelInfo {
 	private      boolean                  muzzled               = false;
 	private      long                     muzzledUntil          = 0;
 	public String lastWarId = "";
+	public String newestWarId = "";
 
 	public ChannelInfo(String channel) {
 		this.channel = channel;

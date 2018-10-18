@@ -70,6 +70,7 @@ class DeIdler {
 											  .getMode();
 			} else {
 				Tim.logErrorString(String.format("Failed to load cdata for channel %s", cdata.channel));
+				continue;
 			}
 
 			cdata.clearTimedMuzzle();

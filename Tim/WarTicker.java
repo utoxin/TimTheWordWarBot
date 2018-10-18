@@ -1,12 +1,12 @@
 package Tim;
 
+import Tim.Data.ChannelInfo;
+import Tim.Data.WordWar;
+
 import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import Tim.Data.ChannelInfo;
-import Tim.Data.WordWar;
 
 public class WarTicker {
 	public HashSet<WordWar> wars;
@@ -130,23 +130,23 @@ public class WarTicker {
 
 		if (timeToStart < 60) {
 			Tim.bot.sendIRC()
-				   .message(war.getChannel(), war.getSimpleName() + ": Starting in " + timeToStart + (timeToStart == 1 ? " second" : " seconds") + ".");
+				.message(war.getChannel(), war.getSimpleName() + ": Starting in " + timeToStart + (timeToStart == 1 ? " second" : " seconds") + ".");
 		} else {
 			int minutes = (int) timeToStart / 60;
 			if (minutes * 60 == timeToStart) {
 				Tim.bot.sendIRC()
-					   .message(war.getChannel(), war.getName(false, true) + ": Starting in " + minutes + (minutes == 1 ? " minute" : " minutes") + ".");
+					.message(war.getChannel(), war.getName(false, true) + ": Starting in " + minutes + (minutes == 1 ? " minute" : " minutes") + ".");
 			} else {
 				Tim.bot.sendIRC()
-					   .message(war.getChannel(),
-								war.getName(false, true) + ": Starting in " + new DecimalFormat("###.#").format(timeToStart / 60.0) + " minutes.");
+					.message(war.getChannel(),
+						war.getName(false, true) + ": Starting in " + new DecimalFormat("###.#").format(timeToStart / 60.0) + " minutes.");
 			}
 		}
 	}
 
 	private void beginWar(WordWar war) {
-		long   currentEpoch = System.currentTimeMillis() / 1000;
-		long   lateStart    = currentEpoch - war.startEpoch;
+		long currentEpoch = System.currentTimeMillis() / 1000;
+		long lateStart = currentEpoch - war.startEpoch;
 		String appendString = "";
 
 		if (lateStart >= 5) {
@@ -155,8 +155,8 @@ public class WarTicker {
 		}
 
 		Tim.bot.sendIRC()
-			   .message(war.getChannel(), war.getSimpleName() + ": Starting now!" + appendString);
-		this.notifyWarMembers(war, war.getSimpleName() + " starts now!" + appendString);
+			.message(war.getChannel(), war.getSimpleName() + ": Starting now!" + appendString);
+		this.notifyWarMembers(war, war.getName(true, true) + " starts now!" + appendString);
 		war.beginWar();
 	}
 
@@ -165,17 +165,17 @@ public class WarTicker {
 
 		if (timeToEnd < 60) {
 			Tim.bot.sendIRC()
-				   .message(war.getChannel(), war.getSimpleName() + ": " + timeToEnd + (timeToEnd == 1 ? " second" : " seconds") + " remaining!");
+				.message(war.getChannel(), war.getSimpleName() + ": " + timeToEnd + (timeToEnd == 1 ? " second" : " seconds") + " remaining!");
 		} else {
 			int remaining = (int) timeToEnd / 60;
 			Tim.bot.sendIRC()
-				   .message(war.getChannel(), war.getSimpleName() + ": " + remaining + (remaining == 1 ? " minute" : " minutes") + " remaining.");
+				.message(war.getChannel(), war.getSimpleName() + ": " + remaining + (remaining == 1 ? " minute" : " minutes") + " remaining.");
 		}
 	}
 
 	private void endWar(WordWar war) {
 		long currentEpoch = System.currentTimeMillis() / 1000;
-		long lateEnd      = currentEpoch - war.endEpoch;
+		long lateEnd = currentEpoch - war.endEpoch;
 
 		String appendString = "";
 		if (lateEnd >= 5) {
@@ -184,8 +184,8 @@ public class WarTicker {
 		}
 
 		Tim.bot.sendIRC()
-			   .message(war.getChannel(), war.getSimpleName() + ": Ending now!" + appendString);
-		this.notifyWarMembers(war, war.getSimpleName() + " is over!" + appendString);
+			.message(war.getChannel(), war.getName(true, false) + ": Ending now!" + appendString);
+		this.notifyWarMembers(war, war.getName(true, true) + " is over!" + appendString);
 
 		ChannelInfo cdata = Tim.db.channel_data.get(war.getChannel().toLowerCase());
 		cdata.lastWarId = war.getId();
@@ -193,6 +193,10 @@ public class WarTicker {
 		if (war.currentChain >= war.totalChains) {
 			war.endWar();
 			this.wars.remove(war);
+
+			if (cdata.newestWarId.equals(war.getId())) {
+				cdata.newestWarId = "";
+			}
 		} else {
 			war.currentChain++;
 
@@ -206,13 +210,14 @@ public class WarTicker {
 
 			war.chainWarBreak();
 			warStartCount(war);
+			cdata.newestWarId = war.getId();
 		}
 	}
 
 	private void notifyWarMembers(WordWar war, String notice) {
 		for (String nick : war.warMembers) {
 			Tim.bot.sendIRC()
-				   .message(nick, notice);
+				.message(nick, notice);
 		}
 	}
 
