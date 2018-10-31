@@ -69,6 +69,10 @@ public class Raptor implements ICommandHandler {
 							userData.raptorFavoriteColor = null;
 							userData.raptorBunniesStolen = 0;
 							userData.lastBunnyRaid = null;
+							userData.totalSprintDuration = 0;
+							userData.totalSprints = 0;
+							userData.totalSprintWordcount = 0;
+							userData.recordedWars = null;
 							userData.save();
 						}
 						break;
@@ -95,7 +99,11 @@ public class Raptor implements ICommandHandler {
 						values.put("wordCount", formatter.format(userData.totalSprintWordcount));
 						values.put("sprintCount", formatter.format(userData.totalSprints));
 						values.put("sprintMinutes", formatter.format(userData.totalSprintDuration));
-						values.put("wpm", formatter.format(userData.totalSprintWordcount / userData.totalSprintDuration));
+						if (userData.totalSprintDuration > 0) {
+							values.put("wpm", formatter.format(userData.totalSprintWordcount / userData.totalSprintDuration));
+						} else {
+							values.put("wpm", formatter.format(0));
+						}
 						values.put("plotBunnyCount", formatter.format(userData.raptorBunniesStolen));
 
 						StrSubstitutor sub = new StrSubstitutor(values, "%(", ")");
@@ -117,6 +125,10 @@ public class Raptor implements ICommandHandler {
 		return false;
 	}
 
+	private int channelRaptorCap(ChannelInfo cdata) {
+		return 100 + cdata.raptorStrengthBoost;
+	}
+
 	public void sighting(Event event) {
 		String[] actionResponses = {
 			"jots down a note in a red notebook labeled 'Velociraptor Sighting Log'.",
@@ -124,6 +136,14 @@ public class Raptor implements ICommandHandler {
 
 		String[] messageResponses = {
 			"Velociraptor sighted! Incident has been logged.",
+			};
+
+		String[] actionResponsesOld = {
+			"starts to record the new sighting, but then recognizes that raptor from his notes.",
+			};
+
+		String[] messageResponsesOld = {
+			"Velociraptor sight... wait. That's not a new raptor. You need to be more careful about reporting sightings.",
 			};
 
 		Channel channel = null;
@@ -142,14 +162,21 @@ public class Raptor implements ICommandHandler {
 
 		ChannelInfo cdata = Tim.db.channel_data.get(channel.getName()
 														   .toLowerCase());
+		int raptorCap = this.channelRaptorCap(cdata);
 
-		if (Tim.rand.nextInt(100) < Math.max(10, 100 - cdata.activeVelociraptors)) {
+		if (Tim.rand.nextInt(raptorCap) < Math.max(10, raptorCap - cdata.activeVelociraptors)) {
 			cdata.recordSighting();
 
 			if (action) {
 				event.respond(actionResponses[Tim.rand.nextInt(actionResponses.length)]);
 			} else {
 				event.respond(messageResponses[Tim.rand.nextInt(messageResponses.length)]);
+			}
+		} else if (Tim.rand.nextInt(100) < 25) {
+			if (action) {
+				event.respond(actionResponsesOld[Tim.rand.nextInt(actionResponsesOld.length)]);
+			} else {
+				event.respond(messageResponsesOld[Tim.rand.nextInt(messageResponsesOld.length)]);
 			}
 		}
 	}
@@ -159,13 +186,14 @@ public class Raptor implements ICommandHandler {
 
 		if (Tim.rand.nextInt(100) <= 33) {
 			int magicNumber = Tim.rand.nextInt(100);
+			int raptorCap = this.channelRaptorCap(cdata);
 
 			// 5-45% odds of attack or colonize, remainder odds to hatching
-			int thresholdNumber = 5 + (int) (37.5 * (Math.min(100.0, cdata.activeVelociraptors) / 100.0));
+			int thresholdNumber = 5 + (int) (37.5 * (Math.min(raptorCap, cdata.activeVelociraptors) / (float) raptorCap));
 
-			// In extreme cases, further reduce hatching odds by 2% per 100 raptors over 100.
-			if (cdata.activeVelociraptors > 100) {
-				int overThreshold = Math.max(900, cdata.activeVelociraptors - 100);
+			// In extreme cases, further reduce hatching odds by 2% per 100 raptors over the cap.
+			if (cdata.activeVelociraptors > raptorCap) {
+				int overThreshold = Math.max(900, cdata.activeVelociraptors - raptorCap);
 				thresholdNumber += overThreshold / 100;
 			}
 

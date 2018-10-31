@@ -9,6 +9,8 @@ import org.pircbotx.Channel;
 import snaq.db.ConnectionPool;
 import snaq.db.Select1Validator;
 
+import static com.mysql.cj.MysqlType.INT_UNSIGNED;
+
 /**
  * @author Matthew Walker
  */
@@ -160,7 +162,7 @@ public class DBAccess {
 			PreparedStatement s = con.prepareStatement(
 				"UPDATE `channels` SET reactive_chatter_level = ?, chatter_name_multiplier = ?, random_chatter_level = ?, tweet_bucket_max = ?, "
 				+ "tweet_bucket_charge_rate = ?, auto_muzzle_wars = ?, velociraptor_sightings = ?, active_velociraptors = ?, dead_velociraptors = ?, "
-				+ "killed_velociraptors = ? WHERE channel = ?;");
+				+ "killed_velociraptors = ?, muzzle_expiration = ? WHERE channel = ?;");
 			s.setFloat(1, channel.reactiveChatterLevel);
 			s.setFloat(2, channel.chatterNameMultiplier);
 			s.setFloat(3, channel.randomChatterLevel);
@@ -171,7 +173,12 @@ public class DBAccess {
 			s.setInt(8, channel.activeVelociraptors);
 			s.setInt(9, channel.deadVelociraptors);
 			s.setInt(10, channel.killedVelociraptors);
-			s.setString(11, channel.channel);
+			if (channel.muzzled) {
+				s.setLong(11, channel.muzzledUntil);
+			} else {
+				s.setNull(11, JDBCType.INTEGER.getVendorTypeNumber());
+			}
+			s.setString(12, channel.channel);
 			s.executeUpdate();
 
 			s = con.prepareStatement("DELETE FROM `channel_chatter_settings` WHERE `channel` = ?;");
@@ -287,6 +294,14 @@ public class DBAccess {
 					ci.activeVelociraptors = rs.getInt("active_velociraptors");
 					ci.deadVelociraptors = rs.getInt("dead_velociraptors");
 					ci.killedVelociraptors = rs.getInt("killed_velociraptors");
+
+					long muzzledUntil = rs.getLong("muzzle_expiration");
+					if (rs.wasNull()) {
+						ci.muzzled = false;
+					} else {
+						ci.muzzled = true;
+						ci.muzzledUntil = muzzledUntil;
+					}
 
 					s2 = con.prepareStatement("SELECT `setting`, `value` FROM `channel_chatter_settings` WHERE `channel` = ?");
 					s2.setString(1, rs.getString("channel"));

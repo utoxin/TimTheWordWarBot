@@ -34,7 +34,6 @@ import Tim.Data.CommandData;
 import Tim.Utility.TagReplacer;
 import org.apache.commons.lang3.StringUtils;
 import org.pircbotx.Channel;
-import org.pircbotx.Colors;
 import org.pircbotx.User;
 import org.pircbotx.hooks.events.MessageEvent;
 import org.pircbotx.hooks.types.GenericMessageEvent;
@@ -159,12 +158,14 @@ class Amusement implements ICommandHandler {
 
 			case "expound":
 				if (cdata.commands_enabled.get("expound")) {
-					int    which = Tim.rand.nextInt(3);
+					int    which = Tim.rand.nextInt(100);
 					String type  = "say";
-					if (which == 1 || (which == 2 && !commandData.argString.equals(""))) {
+					if (which < 5 || (which < 10 && !commandData.argString.equals(""))) {
 						type = "mutter";
-					} else if (which == 2) {
+					} else if (which < 20) {
 						type = "emote";
+					} else if (which < 40) {
+						type = "novel";
 					}
 
 					Tim.markov.randomAction(commandData.getChannelEvent()
@@ -925,189 +926,6 @@ class Amusement implements ICommandHandler {
 			con = Tim.db.pool.getConnection(timeout);
 
 			PreparedStatement s = con.prepareStatement("INSERT INTO `items` (`item`, `approved`) VALUES (?, FALSE)");
-			s.setString(1, item);
-			s.executeUpdate();
-
-			con.close();
-		} catch (SQLException ex) {
-			Tim.printStackTrace(ex);
-		}
-	}
-
-	/**
-	 * Parses admin-level commands passed from the main class. Returns true if the message was handled, false if it was not.
-	 *
-	 * @param event Event to process
-	 *
-	 * @return True if message was handled, false otherwise
-	 */
-	boolean parseAdminCommand(MessageEvent event) {
-		String   message = Colors.removeFormattingAndColors(event.getMessage());
-		String   command;
-		String   argsString;
-		String[] args    = null;
-
-		int space = message.indexOf(" ");
-		if (space > 0) {
-			command = message.substring(1, space)
-							 .toLowerCase();
-			argsString = message.substring(space + 1);
-			args = argsString.split(" ", 1);
-		} else {
-			command = message.toLowerCase()
-							 .substring(1);
-		}
-		switch (command) {
-			case "listitems": {
-				int pages    = (Tim.db.items.size() + 9) / 10;
-				int wantPage = 0;
-				if (args != null && args.length > 0) {
-					try {
-						wantPage = Integer.parseInt(args[0]) - 1;
-					} catch (NumberFormatException ex) {
-						event.respond("Page number was not numeric.");
-						return true;
-					}
-				}
-
-				if (wantPage > pages) {
-					wantPage = pages;
-				}
-
-				int list_idx = wantPage * 10;
-				event.respond(String.format("Showing page %d of %d (%d items total)", wantPage + 1, pages, Tim.db.items.size()));
-				for (int i = 0; i < 10 && list_idx < Tim.db.items.size(); ++i, list_idx = wantPage * 10 + i) {
-					event.respond(String.format("%d: %s", list_idx, Tim.db.items.get(list_idx)));
-				}
-				return true;
-			}
-			case "listpending": {
-				int pages    = (this.pendingItems.size() + 9) / 10;
-				int wantPage = 0;
-				if (args != null && args.length > 0) {
-					try {
-						wantPage = Integer.parseInt(args[0]) - 1;
-					} catch (NumberFormatException ex) {
-						event.respond("Page number was not numeric.");
-						return true;
-					}
-				}
-
-				if (wantPage > pages) {
-					wantPage = pages;
-				}
-
-				int list_idx = wantPage * 10;
-				event.respond(String.format("Showing page %d of %d (%d items total)", wantPage + 1, pages, this.pendingItems.size()));
-				for (int i = 0; i < 10 && list_idx < this.pendingItems.size(); ++i, list_idx = wantPage * 10 + i) {
-					event.respond(String.format("%d: %s", list_idx, this.pendingItems.get(list_idx)));
-				}
-				return true;
-			}
-			case "approveitem":
-				if (args != null && args.length > 0) {
-					int           idx;
-					StringBuilder item;
-					try {
-						idx = Integer.parseInt(args[0]);
-						item = new StringBuilder(this.pendingItems.get(idx));
-					} catch (NumberFormatException ex) {
-						// Must be a string
-						item = new StringBuilder(args[0]);
-						for (int i = 1; i < args.length; ++i) {
-							item.append(" ")
-								.append(args[i]);
-						}
-						idx = this.pendingItems.indexOf(item.toString());
-					}
-					if (idx >= 0) {
-						this.setItemApproved(item.toString(), true);
-						this.pendingItems.remove(idx);
-						Tim.db.items.add(item.toString());
-						event.respond(String.format("Item %s approved.", args[0]));
-					} else {
-						event.respond(String.format("Item %s is not pending approval.", args[0]));
-					}
-				}
-				return true;
-			case "disapproveitem":
-				if (args != null && args.length > 0) {
-					int           idx;
-					StringBuilder item;
-					try {
-						idx = Integer.parseInt(args[0]);
-						item = new StringBuilder(Tim.db.items.get(idx));
-					} catch (NumberFormatException ex) {
-						// Must be a string
-						item = new StringBuilder(args[0]);
-						for (int i = 1; i < args.length; ++i) {
-							item.append(" ")
-								.append(args[i]);
-						}
-						idx = Tim.db.items.indexOf(item.toString());
-					}
-					if (idx >= 0) {
-						this.setItemApproved(item.toString(), false);
-						this.pendingItems.add(item.toString());
-						Tim.db.items.remove(idx);
-						event.respond(String.format("Item %s disapproved.", args[0]));
-					} else {
-						event.respond(String.format("Item %s is not in approved list.", args[0]));
-					}
-				}
-				return true;
-			case "deleteitem":
-				if (args != null && args.length > 0) {
-					int           idx;
-					StringBuilder item;
-					try {
-						idx = Integer.parseInt(args[0]);
-						item = new StringBuilder(this.pendingItems.get(idx));
-					} catch (NumberFormatException ex) {
-						// Must be a string
-						item = new StringBuilder(args[0]);
-						for (int i = 1; i < args.length; ++i) {
-							item.append(" ")
-								.append(args[i]);
-						}
-						idx = this.pendingItems.indexOf(item.toString());
-					}
-					if (idx >= 0) {
-						this.removeItem(item.toString());
-						this.pendingItems.remove(item.toString());
-						event.respond(String.format("Item %s has been deleted from pending list.", args[0]));
-					} else {
-						event.respond(String.format("Item %s is not pending approval.", args[0]));
-					}
-				}
-				return true;
-		}
-
-		return false;
-	}
-
-	private void setItemApproved(String item, Boolean approved) {
-		Connection con;
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("UPDATE `items` SET `approved` = ? WHERE `item` = ?");
-			s.setBoolean(1, approved);
-			s.setString(2, item);
-			s.executeUpdate();
-
-			con.close();
-		} catch (SQLException ex) {
-			Tim.printStackTrace(ex);
-		}
-	}
-
-	private void removeItem(String item) {
-		Connection con;
-		try {
-			con = Tim.db.pool.getConnection(timeout);
-
-			PreparedStatement s = con.prepareStatement("DELETE FROM `items` WHERE `item` = ?");
 			s.setString(1, item);
 			s.executeUpdate();
 

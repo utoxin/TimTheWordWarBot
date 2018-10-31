@@ -454,7 +454,7 @@ class AdminCommandListener extends ListenerAdapter {
 						}
 						break;
 					default:
-						if (!(Tim.amusement.parseAdminCommand(event) || Tim.markov.parseAdminCommand(event))) {
+						if (!(Tim.markov.parseAdminCommand(event))) {
 							event.respond("$" + command + " is not a valid admin command - try $help");
 						}
 						break;
@@ -501,14 +501,13 @@ class AdminCommandListener extends ListenerAdapter {
 													 .getNick() + ". (Check for a new window or tab with the help text.)");
 
 		String[] helplines = {
-			"Core Admin Commands:", "    $listitems [ <page #> ]   - lists all currently approved !get/!getfor items",
-			"    $listpending [ <page #> ] - lists all unapproved !get/!getfor items",
-			"    $approveitem <item #>     - removes item from pending list and marks as approved for !get/!getfor",
-			"    $disapproveitem <item #>  - removes item from approved list and marks as pending for !get/!getfor",
-			"    $deleteitem <item #>      - permanently removes an item from the pending list for !get/!getfor",
-			"    $ignore <username>        - Places user on the bot's ignore list", "    $unignore <username>      - Removes user from bot's ignore list",
-			"    $listignores              - Prints the list of ignored users", "    $part                     - Leaves channel message was sent from",
-			"Channel Setting Commands:", "    $muzzle <time in minutes>        - Turns on the muzzle flag temporarily",
+			"Core Admin Commands:",
+			"    $ignore <username>        - Places user on the bot's ignore list",
+			"    $unignore <username>      - Removes user from bot's ignore list",
+			"    $listignores              - Prints the list of ignored users",
+			"    $part                     - Leaves channel message was sent from",
+			"Channel Setting Commands:",
+			"    $muzzle <time in minutes>        - Turns on the muzzle flag temporarily",
 			"    $setmuzzleflag <#channel> <0/1>  - Sets the channel's current muzzle state",
 			"    $automuzzlewars <#channel> <0/1> - Whether to auto-muzzle the channel during wars.",
 			"    $chatterlevel                    - Set the chatter level for Timmy.",

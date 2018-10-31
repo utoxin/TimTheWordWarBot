@@ -107,14 +107,14 @@ public class TwitterIntegration extends StatusAdapter {
 												   .getScreenName() + " " + Tim.db.eightBalls.get(r);
 						} else {
 							message2 = "@" + status.getUser()
-												   .getScreenName() + " " + Tim.markov.generate_markov();
+												   .getScreenName() + " " + Tim.markov.generateTwitterMarkov();
 						}
 
-						if (message2.length() > (280 - 22)) {
-							message2 = message2.substring(0, (280 - 25)) + "...";
+						if (message2.length() > 280) {
+							message2 = message2.substring(0, 277) + "...";
 						}
 
-						StatusUpdate reply = new StatusUpdate(message2 + " #NaNoWriMo #FearTimmy");
+						StatusUpdate reply = new StatusUpdate(message2);
 
 						reply.setInReplyToStatusId(status.getId());
 						twitter.updateStatus(reply);
@@ -181,11 +181,11 @@ public class TwitterIntegration extends StatusAdapter {
 				message = "@" + tempUser.getScreenName() + " " + message;
 			}
 
-			if (message.length() > (280 - 11)) {
-				message = message.substring(0, (280 - 13)) + "...";
+			if (message.length() > 280) {
+				message = message.substring(0, 277) + "...";
 			}
 
-			StatusUpdate status = new StatusUpdate(message + " #FearTimmy");
+			StatusUpdate status = new StatusUpdate(message);
 			twitter.updateStatus(status);
 		} catch (TwitterException ex) {
 			Tim.printStackTrace(ex);

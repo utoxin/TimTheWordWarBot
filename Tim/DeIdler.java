@@ -37,7 +37,7 @@ class DeIdler {
 		if (isNovember && ((!aheadOfPace && Tim.rand.nextInt(100) < 8) || (aheadOfPace && Tim.rand.nextInt(100) < 4))) {
 			String new_text;
 			int seedWord = Tim.markov.getSeedWord(Tim.story.getLastLines(), "novel", 0);
-			new_text = Tim.markov.generate_markov("novel", Tim.rand.nextInt(350) + 150, seedWord);
+			new_text = Tim.markov.generate_markov("novel", seedWord);
 
 			Tim.story.storeLine(new_text, "Timmy");
 			Tim.db.channel_data.values()
@@ -52,7 +52,7 @@ class DeIdler {
 
 		if (Tim.rand.nextInt(100) < 1) {
 			if (Tim.twitterStream != null) {
-				Tim.twitterStream.sendDeidleTweet(Tim.markov.generate_markov());
+				Tim.twitterStream.sendDeidleTweet(Tim.markov.generateTwitterMarkov());
 			}
 		}
 

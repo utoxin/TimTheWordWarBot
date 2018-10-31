@@ -22,6 +22,7 @@ public class War implements ICommandHandler {
 		handledCommands.add("war");
 		handledCommands.add("listall");
 		handledCommands.add("startwar");
+		handledCommands.add("starwar");
 		handledCommands.add("endwar");
 		handledCommands.add("chainwar");
 		handledCommands.add("listwars");
@@ -62,6 +63,10 @@ public class War implements ICommandHandler {
 				commandData.event.respond("The syntax for war-related commands has changed. Try !war cancel.");
 				return true;
 
+			case "starwar":
+				commandData.event.respond("A long time ago, in a novel far far away...");
+				return true;
+
 			case "startwar":
 			case "chainwar":
 				commandData.event.respond("The syntax for war-related commands has changed. Try !war start.");
@@ -86,6 +91,7 @@ public class War implements ICommandHandler {
 
 				HashSet<String> subcommands = new HashSet<>();
 				subcommands.add("start");
+				subcommands.add("create");
 				subcommands.add("end");
 				subcommands.add("cancel");
 				subcommands.add("join");
@@ -100,6 +106,7 @@ public class War implements ICommandHandler {
 
 					switch (subcommand) {
 						case "start":
+						case "create":
 							if (commandData.args.length >= 2) {
 								int time;
 								int to_start = 60;
@@ -124,12 +131,12 @@ public class War implements ICommandHandler {
 								delay = time / 2;
 
 								// Options for all wars
-								Pattern startDelayPattern = Pattern.compile("^(?:start|delay):\\s*([0-9.]+)$");
+								Pattern startDelayPattern = Pattern.compile("^(?:start|delay):([0-9.]*)$");
 
 								// Options for chain wars
-								Pattern chainPattern = Pattern.compile("^chain(?:s?):\\s*([0-9.]+)$");
-								Pattern breakPattern = Pattern.compile("^break:\\s*([0-9.]+)$");
-								Pattern randomnessPattern = Pattern.compile("^random:\\s*([01])$");
+								Pattern chainPattern = Pattern.compile("^chain(?:s?):([0-9.]*)$");
+								Pattern breakPattern = Pattern.compile("^break:([0-9.]*)$");
+								Pattern randomnessPattern = Pattern.compile("^random:([01]*)$");
 
 								Matcher m;
 
@@ -138,12 +145,19 @@ public class War implements ICommandHandler {
 										m = startDelayPattern.matcher(commandData.args[i]);
 										if (m.find()) {
 											try {
-												to_start = (int) (Double.parseDouble(m.group(1)) * 60);
+												if (m.group(1).equals("") && i < (commandData.args.length - 1)) {
+													i++;
+													to_start = (int) (Double.parseDouble(commandData.args[i]) * 60);
+												} else {
+													to_start = (int) (Double.parseDouble(m.group(1)) * 60);
+												}
 											} catch (NumberFormatException ex) {
+												commandData.event.respond("I didn't understand the start delay. Was it numeric?");
 												Tim.printStackTrace(ex);
 												Tim.logErrorString(
 													String.format("Start Delay Match -- Input: ''%s'' Found String: ''%s''", commandData.argString,
 														m.group(1)));
+												return true;
 											}
 											continue;
 										}
@@ -151,11 +165,18 @@ public class War implements ICommandHandler {
 										m = chainPattern.matcher(commandData.args[i]);
 										if (m.find()) {
 											try {
-												total_chains = (byte) Double.parseDouble(m.group(1));
+												if (m.group(1).equals("") && i < (commandData.args.length - 1)) {
+													i++;
+													total_chains = (byte) Double.parseDouble(commandData.args[i]);
+												} else {
+													total_chains = (byte) Double.parseDouble(m.group(1));
+												}
 											} catch (NumberFormatException ex) {
+												commandData.event.respond("I didn't understand the chain count. Was it numeric?");
 												Tim.printStackTrace(ex);
 												Tim.logErrorString(
 													String.format("Chain Match -- Input: ''%s'' Found String: ''%s''", commandData.argString, m.group(1)));
+												return true;
 											}
 											continue;
 										}
@@ -163,11 +184,18 @@ public class War implements ICommandHandler {
 										m = breakPattern.matcher(commandData.args[i]);
 										if (m.find()) {
 											try {
-												delay = (int) (Double.parseDouble(m.group(1)) * 60);
+												if (m.group(1).equals("") && i < (commandData.args.length - 1)) {
+													i++;
+													delay = (int) (Double.parseDouble(commandData.args[i]) * 60);
+												} else {
+													delay = (int) (Double.parseDouble(m.group(1)) * 60);
+												}
 											} catch (NumberFormatException ex) {
+												commandData.event.respond("I didn't understand the chain count. Was it numeric?");
 												Tim.printStackTrace(ex);
 												Tim.logErrorString(
 													String.format("Break Match -- Input: ''%s'' Found String: ''%s''", commandData.argString, m.group(1)));
+												return true;
 											}
 											continue;
 										}
@@ -175,14 +203,23 @@ public class War implements ICommandHandler {
 										m = randomnessPattern.matcher(commandData.args[i]);
 										if (m.find()) {
 											try {
-												if (Integer.parseInt(m.group(1)) == 1) {
-													do_randomness = true;
+												if (m.group(1).equals("") && i < (commandData.args.length - 1)) {
+													i++;
+													if (Integer.parseInt(commandData.args[i]) == 1) {
+														do_randomness = true;
+													}
+												} else {
+													if (Integer.parseInt(m.group(1)) == 1) {
+														do_randomness = true;
+													}
 												}
 											} catch (NumberFormatException ex) {
+												commandData.event.respond("I didn't understand the randomness flag. Was it numeric?");
 												Tim.printStackTrace(ex);
 												Tim.logErrorString(
 													String.format("Randomness Match -- Input: ''%s'' Found String: ''%s''", commandData.argString,
 														m.group(1)));
+												return true;
 											}
 											continue;
 										}
@@ -235,6 +272,7 @@ public class War implements ICommandHandler {
 								commandData.event.respond("Usage: !war start <duration in min> [<options>] [<name>]");
 								commandData.event.respond("Options for all wars: delay:<minutes>");
 								commandData.event.respond("Options for chain wars: chains:<chain count>, random:1, break:<minutes>");
+								commandData.event.respond("Example: !war start 10 delay:5 Let's Write!");
 							}
 							break;
 

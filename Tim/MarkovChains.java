@@ -74,37 +74,33 @@ class MarkovChains {
 	}
 
 	void randomAction(String channel, String type, String message) {
-		try {
-			Thread.sleep(Tim.rand.nextInt(1000) + 500);
-			String output;
-			switch (type) {
-				case "say":
-					output = generate_markov(type, message);
-					if (output.length() > 400) {
-						output = output.substring(0, 400) + "...";
-					}
-					Tim.bot.sendIRC()
-						   .message(channel, output);
-					break;
-				case "mutter":
-					output = generate_markov("say", message);
-					if (output.length() > 350) {
-						output = output.substring(0, 350) + "...";
-					}
-					Tim.bot.sendIRC()
-						   .action(channel, "mutters under his breath, \"" + output + "\"");
-					break;
-				default:
-					output = generate_markov(type, message);
-					if (output.length() > 400) {
-						output = output.substring(0, 400) + "...";
-					}
-					Tim.bot.sendIRC()
-						   .action(channel, generate_markov(type, output));
-					break;
-			}
-		} catch (InterruptedException ex) {
-			Tim.printStackTrace(ex);
+		String output;
+		switch (type) {
+			case "say":
+			case "novel":
+				output = generate_markov(type, message);
+				if (output.length() > 400) {
+					output = output.substring(0, 400) + "...";
+				}
+				Tim.bot.sendIRC()
+					   .message(channel, output);
+				break;
+			case "mutter":
+				output = generate_markov("say", message);
+				if (output.length() > 350) {
+					output = output.substring(0, 350) + "...";
+				}
+				Tim.bot.sendIRC()
+					   .action(channel, "mutters under his breath, \"" + output + "\"");
+				break;
+			default:
+				output = generate_markov(type, message);
+				if (output.length() > 400) {
+					output = output.substring(0, 400) + "...";
+				}
+				Tim.bot.sendIRC()
+					   .action(channel, generate_markov(type, output));
+				break;
 		}
 	}
 
@@ -115,7 +111,7 @@ class MarkovChains {
 			seedWord = getSeedWord(message, type, 0);
 		}
 
-		return generate_markov(type, Tim.rand.nextInt(25) + 10, seedWord);
+		return generate_markov(type, seedWord);
 	}
 
 	int getSeedWord(String message, String type, int lastSeed) {
@@ -152,7 +148,7 @@ class MarkovChains {
 					break;
 				case "novel":
 					s = con.prepareStatement(
-						"SELECT * FROM (SELECT second_id FROM markov3_novel_data msd WHERE msd.first_id = 1 AND msd.second_id != 1 AND msd.third_id != 1 AND "
+						"SELECT * FROM (SELECT second_id FROM markov4_novel_data msd WHERE msd.first_id = 1 AND msd.second_id != 1 AND msd.third_id != 1 AND "
 						+ "msd.fourth_id != 1 "
 						+ "AND (msd.second_id IN (" + ids + ") OR msd.third_id IN (" + ids + ") OR msd.fourth_id IN (" + ids
 						+ ")) GROUP BY msd.second_id ORDER BY sum(msd.count) ASC LIMIT ?) derived ORDER BY RAND() LIMIT 1");
@@ -185,17 +181,19 @@ class MarkovChains {
 		return 0;
 	}
 
-	String generate_markov(String type, int maxLength, int seedWord) {
+	String generate_markov(String type, int seedWord) {
 		String sentence = "";
 		try (Connection con = Tim.db.pool.getConnection(timeout)) {
 			CallableStatement nextSentenceStmt;
+			int minLength = 1;
 
 			if ("emote".equals(type)) {
 				nextSentenceStmt = con.prepareCall("CALL generateMarkovEmote(?, ?)");
 			} else if ("say".equals(type)) {
 				nextSentenceStmt = con.prepareCall("CALL generateMarkovSay(?, ?)");
 			} else if ("novel".equals(type)) {
-				nextSentenceStmt = con.prepareCall("CALL generateMarkovNover(?, ?)");
+				minLength = 150;
+				nextSentenceStmt = con.prepareCall("CALL generateMarkovNovel(?, ?)");
 			} else {
 				return "";
 			}
@@ -204,36 +202,23 @@ class MarkovChains {
 
 			int curWords = 0;
 
-			while (curWords < maxLength) {
+			while (curWords < minLength) {
 				nextSentenceStmt.setInt(1, seedWord);
 				nextSentenceStmt.executeUpdate();
 				String nextSentence = nextSentenceStmt.getString(2);
 
 				if (nextSentence == null) {
-					break;
+					seedWord = 0;
+					continue;
 				}
 
-				if (seedWord > 0) {
-					nextSentence = Tim.markovProcessor.getMarkovWordById(seedWord) + " " + nextSentence;
-				}
-
-				if (nextSentence.split("[ \\t]+", 0).length >= 5) {
+				if (nextSentence.split("\\s+", 0).length >= 5) {
 					seedWord = getSeedWord(nextSentence, type, seedWord);
 				} else {
 					seedWord = 0;
 				}
 
-				if ("emote".equals(type)) {
-					if (curWords > 0) {
-						if (Tim.rand.nextInt(100) > 75) {
-							nextSentence = Tim.bot.getNick() + " " + nextSentence;
-						} else if (Tim.rand.nextInt(100) > 50) {
-							nextSentence = "He " + nextSentence;
-						} else {
-							nextSentence = "It " + nextSentence;
-						}
-					}
-				} else {
+				if (!"emote".equals(type)) {
 					nextSentence = StringUtils.capitalize(nextSentence);
 				}
 
@@ -247,7 +232,7 @@ class MarkovChains {
 						ending = sentenceEndings[Tim.rand.nextInt(sentenceEndings.length)];
 					}
 
-					nextSentence = nextSentence.replaceFirst("[.?!:;/\"'-]*$", ending);
+					nextSentence = nextSentence.replaceFirst("[.,?!:;/\"'-]*$", ending);
 				}
 
 				curWords += nextSentence.trim()
@@ -255,7 +240,7 @@ class MarkovChains {
 				sentence += nextSentence;
 
 				// Odds of ending early = Percentage of Max divided by 4
-				if (Tim.rand.nextInt(100) < ((1 - ((maxLength - curWords) / maxLength)) * 25)) {
+				if (Tim.rand.nextInt(100) < ((1 - ((minLength - curWords) / minLength)) * 25)) {
 					break;
 				}
 			}
@@ -267,7 +252,17 @@ class MarkovChains {
 		return sentence;
 	}
 
-	String generate_markov() {
-		return generate_markov("say", Tim.rand.nextInt(25) + 10, 0);
+	String generateTwitterMarkov() {
+		String type  = "say";
+		if (Tim.rand.nextInt(100) < 20) {
+			type = "novel";
+		}
+
+		String message = generate_markov(type, 0);
+		if (message.length() > 200) {
+			message = message.substring(0, 200) + "...";
+		}
+
+		return message;
 	}
 }

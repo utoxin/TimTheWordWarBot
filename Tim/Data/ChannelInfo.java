@@ -53,8 +53,8 @@ public class ChannelInfo {
 	public       int                      groot_odds            = 100;
 	public       int                      raptorStrengthBoost   = 0;
 	public       HashMap<String, User>    userList              = new HashMap<>();
-	private      boolean                  muzzled               = false;
-	private      long                     muzzledUntil          = 0;
+	public       boolean                  muzzled               = false;
+	public       long                     muzzledUntil          = 0;
 	public String lastWarId = "";
 	public String newestWarId = "";
 
@@ -288,6 +288,7 @@ public class ChannelInfo {
 	public void setMuzzleFlag(boolean muzzled, long expires) {
 		this.muzzled = muzzled;
 		this.muzzledUntil = expires;
+		Tim.db.saveChannelSettings(this);
 	}
 
 	public boolean isMuzzled() {
@@ -304,7 +305,7 @@ public class ChannelInfo {
 	}
 
 	public void clearTimedMuzzle() {
-		if (this.muzzledUntil > 0 && this.muzzledUntil < (System.currentTimeMillis() / 1000)) {
+		if (this.muzzled && this.muzzledUntil > 0 && this.muzzledUntil < (System.currentTimeMillis() / 1000)) {
 			this.muzzled = false;
 			this.muzzledUntil = 0;
 		}
