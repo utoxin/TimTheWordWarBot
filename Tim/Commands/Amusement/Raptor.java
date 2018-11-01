@@ -16,6 +16,7 @@ import org.pircbotx.Channel;
 import org.pircbotx.hooks.Event;
 import org.pircbotx.hooks.events.ActionEvent;
 import org.pircbotx.hooks.events.MessageEvent;
+import org.pircbotx.hooks.types.GenericUserEvent;
 
 public class Raptor implements ICommandHandler {
 	private HashSet<String> handledCommands = new HashSet<>();
@@ -72,7 +73,7 @@ public class Raptor implements ICommandHandler {
 							userData.totalSprintDuration = 0;
 							userData.totalSprints = 0;
 							userData.totalSprintWordcount = 0;
-							userData.recordedWars = null;
+							userData.recordedWars.clear();
 							userData.save();
 						}
 						break;
@@ -611,6 +612,23 @@ public class Raptor implements ICommandHandler {
 		} else {
 			Collections.shuffle(candidates);
 			return candidates.get(0);
+		}
+	}
+
+	public static void helpSection(GenericUserEvent event) {
+		String[] strs = {
+			"Raptor Commands:",
+			"    !raptor adopt <name> - Adopts a new raptor, and names it.",
+			"    !raptor rename <name> - Renames your raptor.",
+			"    !raptor release - Releases your raptor back into the wild (resets your stats).",
+			"    !raptor details - See the stats your raptor has kept track of.",
+			"    To record your sprint stats, use !war report <wordcount> after a war."
+			};
+
+		for (String str : strs) {
+			event.getUser()
+				 .send()
+				 .message(str);
 		}
 	}
 }

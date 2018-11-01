@@ -295,7 +295,7 @@ public class ChannelInfo {
 		boolean automuzzle = false;
 
 		for (WordWar war : Tim.warticker.wars) {
-			if (war.channel.equalsIgnoreCase(this.channel) && this.auto_muzzle_wars) {
+			if (this.auto_muzzle_wars && war.warState == WordWar.State.ACTIVE && war.channel.equalsIgnoreCase(this.channel)) {
 				automuzzle = true;
 				break;
 			}

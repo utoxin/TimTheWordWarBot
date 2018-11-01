@@ -1,9 +1,6 @@
 package Tim;
 
-import Tim.Commands.Amusement.Defenestrate;
-import Tim.Commands.Amusement.Dice;
-import Tim.Commands.Amusement.Fridge;
-import Tim.Commands.Amusement.Summon;
+import Tim.Commands.Amusement.*;
 import Tim.Commands.ICommandHandler;
 import Tim.Commands.Utility.InteractionControls;
 import Tim.Commands.Writing.War;
@@ -147,6 +144,7 @@ class UserCommandListener extends ListenerAdapter {
 		Tim.amusement.helpSection(event);
 		InteractionControls.helpSection(event);
 		Dice.helpSection(event);
+		Raptor.helpSection(event);
 
 		String[] post = {
 			"I... I think there might be other tricks I know... You'll have to find them!",

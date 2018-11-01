@@ -162,7 +162,7 @@ public class DBAccess {
 			PreparedStatement s = con.prepareStatement(
 				"UPDATE `channels` SET reactive_chatter_level = ?, chatter_name_multiplier = ?, random_chatter_level = ?, tweet_bucket_max = ?, "
 				+ "tweet_bucket_charge_rate = ?, auto_muzzle_wars = ?, velociraptor_sightings = ?, active_velociraptors = ?, dead_velociraptors = ?, "
-				+ "killed_velociraptors = ?, muzzle_expiration = ? WHERE channel = ?;");
+				+ "killed_velociraptors = ?, muzzle_expiration = ?, raptor_strength_boost = ? WHERE channel = ?;");
 			s.setFloat(1, channel.reactiveChatterLevel);
 			s.setFloat(2, channel.chatterNameMultiplier);
 			s.setFloat(3, channel.randomChatterLevel);
@@ -178,7 +178,8 @@ public class DBAccess {
 			} else {
 				s.setNull(11, JDBCType.INTEGER.getVendorTypeNumber());
 			}
-			s.setString(12, channel.channel);
+			s.setInt(12, channel.raptorStrengthBoost);
+			s.setString(13, channel.channel);
 			s.executeUpdate();
 
 			s = con.prepareStatement("DELETE FROM `channel_chatter_settings` WHERE `channel` = ?;");
@@ -294,6 +295,7 @@ public class DBAccess {
 					ci.activeVelociraptors = rs.getInt("active_velociraptors");
 					ci.deadVelociraptors = rs.getInt("dead_velociraptors");
 					ci.killedVelociraptors = rs.getInt("killed_velociraptors");
+					ci.raptorStrengthBoost = rs.getInt("raptor_strength_boost");
 
 					long muzzledUntil = rs.getLong("muzzle_expiration");
 					if (rs.wasNull()) {
