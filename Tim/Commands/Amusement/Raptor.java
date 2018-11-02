@@ -93,26 +93,30 @@ public class Raptor implements ICommandHandler {
 						break;
 
 					case "details":
-						DecimalFormat formatter = new DecimalFormat("#,###");
-
-						Map<String, String> values = new HashMap<>();
-						values.put("raptorName", userData.raptorName);
-						values.put("wordCount", formatter.format(userData.totalSprintWordcount));
-						values.put("sprintCount", formatter.format(userData.totalSprints));
-						values.put("sprintMinutes", formatter.format(userData.totalSprintDuration));
-						if (userData.totalSprintDuration > 0) {
-							values.put("wpm", formatter.format(userData.totalSprintWordcount / userData.totalSprintDuration));
+						if (!userData.raptorAdopted) {
+							commandData.event.respond("You haven't adopted a raptor, so they can't very well give you any details.");
 						} else {
-							values.put("wpm", formatter.format(0));
+							DecimalFormat formatter = new DecimalFormat("#,###");
+
+							Map<String, String> values = new HashMap<>();
+							values.put("raptorName", userData.raptorName);
+							values.put("wordCount", formatter.format(userData.totalSprintWordcount));
+							values.put("sprintCount", formatter.format(userData.totalSprints));
+							values.put("sprintMinutes", formatter.format(userData.totalSprintDuration));
+							if (userData.totalSprintDuration > 0) {
+								values.put("wpm", formatter.format(userData.totalSprintWordcount / userData.totalSprintDuration));
+							} else {
+								values.put("wpm", formatter.format(0));
+							}
+							values.put("plotBunnyCount", formatter.format(userData.raptorBunniesStolen));
+
+							StrSubstitutor sub = new StrSubstitutor(values, "%(", ")");
+
+							commandData.event.respond(sub.replace(
+								"%(raptorName) goes through their records. According to those records, you have written %(wordCount) words in %(sprintCount) "
+								+ "sprints, totalling %(sprintMinutes) minutes of writing. That's an average of %(wpm) words per minute. In their efforts to "
+								+ "help you, %(raptorName) has stolen %(plotBunnyCount) plot bunnies from other channels."));
 						}
-						values.put("plotBunnyCount", formatter.format(userData.raptorBunniesStolen));
-
-						StrSubstitutor sub = new StrSubstitutor(values, "%(", ")");
-
-						commandData.event.respond(sub.replace(
-							"%(raptorName) goes through their records. According to those records, you have written %(wordCount) words in %(sprintCount) "
-							+ "sprints, totalling %(sprintMinutes) minutes of writing. That's an average of %(wpm) words per minute. In their efforts to help "
-							+ "you, %(raptorName) has stolen %(plotBunnyCount) plot bunnies from other channels."));
 						break;
 
 					default:
@@ -187,7 +191,7 @@ public class Raptor implements ICommandHandler {
 
 		if (Tim.rand.nextInt(100) <= 33) {
 			int magicNumber = Tim.rand.nextInt(100);
-			int raptorCap = this.channelRaptorCap(cdata);
+			int raptorCap   = this.channelRaptorCap(cdata);
 
 			// 5-45% odds of attack or colonize, remainder odds to hatching
 			int thresholdNumber = 5 + (int) (37.5 * (Math.min(raptorCap, cdata.activeVelociraptors) / (float) raptorCap));
@@ -617,13 +621,10 @@ public class Raptor implements ICommandHandler {
 
 	public static void helpSection(GenericUserEvent event) {
 		String[] strs = {
-			"Raptor Commands:",
-			"    !raptor adopt <name> - Adopts a new raptor, and names it.",
-			"    !raptor rename <name> - Renames your raptor.",
+			"Raptor Commands:", "    !raptor adopt <name> - Adopts a new raptor, and names it.", "    !raptor rename <name> - Renames your raptor.",
 			"    !raptor release - Releases your raptor back into the wild (resets your stats).",
-			"    !raptor details - See the stats your raptor has kept track of.",
-			"    To record your sprint stats, use !war report <wordcount> after a war."
-			};
+			"    !raptor details - See the stats your raptor has kept track of.", "    To record your sprint stats, use !war report <wordcount> after a war."
+		};
 
 		for (String str : strs) {
 			event.getUser()

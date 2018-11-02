@@ -317,6 +317,9 @@ class Amusement implements ICommandHandler {
 							   .respond(String.format("%d velociraptors in this channel have been killed by other swarms.", cdata.deadVelociraptors));
 					commandData.getMessageEvent()
 							   .respond(String.format("Swarms from this channel have killed %d other velociraptors.", cdata.killedVelociraptors));
+					if (cdata.raptorStrengthBoost > 0) {
+						commandData.getMessageEvent().respond(String.format("It looks like the training you've been doing has helped organize the local raptors. The area can now support %d of them.", 100 + cdata.raptorStrengthBoost));
+					}
 				} else {
 					commandData.getMessageEvent()
 							   .respond("I'm sorry. I don't do that here.");

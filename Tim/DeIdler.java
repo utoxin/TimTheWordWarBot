@@ -60,8 +60,9 @@ class DeIdler {
 		for (ChannelInfo cdata : channels) {
 			cdata = Tim.db.channel_data.get(cdata.channel);
 
-			if (cal.get(Calendar.MINUTE) % 10 == 0 && cdata.raptorStrengthBoost > 0) {
+			if (cal.get(Calendar.MINUTE) % 30 == 0 && cdata.raptorStrengthBoost > 0) {
 				cdata.raptorStrengthBoost--;
+				Tim.db.saveChannelSettings(cdata);
 			}
 
 			// Maybe cure the stale channel mode warnings?
