@@ -34,7 +34,7 @@ class DeIdler {
 		boolean isNovember  = (Calendar.NOVEMBER == cal.get(Calendar.MONTH));
 		boolean aheadOfPace = (((cal.get(Calendar.DAY_OF_MONTH) + 1) * (50000 / 30)) < Tim.story.wordcount());
 
-		if (isNovember && ((!aheadOfPace && Tim.rand.nextInt(100) < 8) || (aheadOfPace && Tim.rand.nextInt(100) < 4))) {
+		if (isNovember && ((!aheadOfPace && Tim.rand.nextInt(1000) < 35) || (aheadOfPace && Tim.rand.nextInt(1000) < 15))) {
 			String new_text;
 			int seedWord = Tim.markov.getSeedWord(Tim.story.getLastLines(), "novel", 0);
 			new_text = Tim.markov.generate_markov("novel", seedWord);
@@ -50,7 +50,7 @@ class DeIdler {
 																  + "(Help Timmy out by using the Chain Story commands. See !help for information.)"));
 		}
 
-		if (Tim.rand.nextInt(100) < 1) {
+		if (Tim.rand.nextInt(1000) < 5) {
 			if (Tim.twitterStream != null) {
 				Tim.twitterStream.sendDeidleTweet(Tim.markov.generateTwitterMarkov());
 			}
