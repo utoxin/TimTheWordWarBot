@@ -191,7 +191,7 @@ public class War implements ICommandHandler {
 													delay = (int) (Double.parseDouble(m.group(1)) * 60);
 												}
 											} catch (NumberFormatException ex) {
-												commandData.event.respond("I didn't understand the chain count. Was it numeric?");
+												commandData.event.respond("I didn't understand the break duration. Was it numeric?");
 												Tim.printStackTrace(ex);
 												Tim.logErrorString(
 													String.format("Break Match -- Input: ''%s'' Found String: ''%s''", commandData.argString, m.group(1)));
