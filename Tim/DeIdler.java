@@ -32,9 +32,13 @@ class DeIdler {
 		Calendar cal = Calendar.getInstance();
 
 		boolean isNovember  = (Calendar.NOVEMBER == cal.get(Calendar.MONTH));
-		boolean aheadOfPace = (((cal.get(Calendar.DAY_OF_MONTH) + 1) * (50000 / 30)) < Tim.story.wordcount());
 
-		if (isNovember && ((!aheadOfPace && Tim.rand.nextInt(1000) < 35) || (aheadOfPace && Tim.rand.nextInt(1000) < 15))) {
+		// This logic makes Timmy less likely to write the more ahead of pace he is.
+		// This should keep him ahead of pace, without making him race ludicrously far ahead of the goal.
+		double relativePace = Math.max(0.5, Tim.story.wordcount() / ((cal.get(Calendar.DAY_OF_MONTH) + 1) * (50000 / 30.0)));
+		double oddsOfWriting = (1 / (relativePace * relativePace)) * 2.5;
+
+		if (isNovember && (Tim.rand.nextFloat() * 100) < oddsOfWriting) {
 			String new_text;
 			int seedWord = Tim.markov.getSeedWord(Tim.story.getLastLines(), "novel", 0);
 			new_text = Tim.markov.generate_markov("novel", seedWord);
