@@ -212,6 +212,13 @@ class MarkovChains {
 					continue;
 				}
 
+				if (seedWord != 0) {
+					String firstWord = Tim.markovProcessor.getMarkovWordById(seedWord);
+					if (firstWord != null) {
+						nextSentence = firstWord + " " + nextSentence;
+					}
+				}
+
 				if (nextSentence.split("\\s+", 0).length >= 5) {
 					seedWord = getSeedWord(nextSentence, type, seedWord);
 				} else {

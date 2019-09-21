@@ -506,6 +506,26 @@ class MarkovProcessor implements Runnable {
 		return 0;
 	}
 
+	String getWordById(int id) {
+		try (Connection con = Tim.db.pool.getConnection(timeout)) {
+			PreparedStatement getword;
+
+			getword = con.prepareStatement("SELECT word FROM markov_words WHERE id = ?");
+
+			getword.setInt(1, id);
+			ResultSet getRes = getword.executeQuery();
+			if (getRes.next()) {
+				return getRes.getString("word");
+			} else {
+				return null;
+			}
+		} catch (SQLException ex) {
+			Tim.printStackTrace(ex);
+		}
+
+		return null;
+	}
+
 	void refreshDbLists() {
 		getAlternatewords();
 		getAlternatepairs();
