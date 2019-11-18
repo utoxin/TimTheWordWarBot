@@ -43,4 +43,14 @@ class Timmy(irc.client_aio.AioSimpleIRCClient):
                 ircname=self._realname,
                 **self.__connect_params
             )
-            except irc.client.Ser
+        except irc.client_aio.ServerNotConnectedError:
+            pass
+
+
+if __name__ == "__main__":
+    import configparser
+
+    config = configparser.ConfigParser()
+    config['DEFAULT'] = {
+        'ServerAliveInterval': '45'
+    }
