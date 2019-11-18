@@ -51,6 +51,13 @@ if __name__ == "__main__":
     import configparser
 
     config = configparser.ConfigParser()
-    config['DEFAULT'] = {
-        'ServerAliveInterval': '45'
-    }
+    config.read('botconfig.ini')
+
+    if len(config.sections()) == 0:
+        print("No config data found.")
+        exit(1)
+
+    print("Config data found.")
+
+    bot = Timmy({config.get("IRC", "host")}, "TinyTim", "TinyTim")
+    bot.start()
