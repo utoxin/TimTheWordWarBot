@@ -1,12 +1,17 @@
 import mysql.connector
 from mysql.connector import Error
 from mysql.connector import pooling
+from timmy.utility.singleton import SingletonMixin
 
 
-class ConnectionPool:
-    def __init__(self, host, database, user, password):
+class ConnectionPool(SingletonMixin):
+    def __init__(self):
+        self.__pool = None
+        pass
+
+    def setup(self, host, database, user, password):
         try:
-            self.pool = mysql.connector.pooling.MySQLConnectionPool(
+            self.__pool = mysql.connector.pooling.MySQLConnectionPool(
                 pool_name="timmy_pool",
                 pool_size=10,
                 pool_reset_session=True,
@@ -19,7 +24,7 @@ class ConnectionPool:
             print("Error while connecting to database using connection pool: ", e)
 
     def get_connection(self):
-        connection = self.pool.get_connection()
+        connection = self.__pool.get_connection()
 
         if connection.is_connected():
             return connection

@@ -10,20 +10,7 @@ from irc import client, modes
 from timmy import db
 
 
-log = logging.getLogger("irc.client")
-log.setLevel(logging.DEBUG)
-
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-
-log.addHandler(handler)
-
-
 class TimmyBot(irc.client_aio.AioSimpleIRCClient):
-    db = None
-
     handled_callbacks = [
         "disconnect",
         "join",
@@ -39,7 +26,11 @@ class TimmyBot(irc.client_aio.AioSimpleIRCClient):
     def __init__(self, host, database, user, password):
         super(TimmyBot, self).__init__()
 
-        TimmyBot.db = db.ConnectionPool(host, database, user, password)
+        for i in self.handled_callbacks:
+            self.connection.add_global_handler(i, getattr(self, "_on_" + i), -20)
+
+        pool = db.ConnectionPool.instance()
+        pool.setup(host, database, user, password)
 
         settings = db.Settings()
 
@@ -53,9 +44,6 @@ class TimmyBot(irc.client_aio.AioSimpleIRCClient):
 
         self.servers = more_itertools.peekable(itertools.cycle(specs))
         self.recon = ExponentialBackoff()
-
-        for i in self.handled_callbacks:
-            self.connection.add_global_handler(i, getattr(self, "_on_" + i), -20)
 
     def start(self):
         self._connect()
@@ -168,13 +156,37 @@ class TimmyBot(irc.client_aio.AioSimpleIRCClient):
 if __name__ == "__main__":
     import configparser
 
+    # Set up logging
+    log = logging.getLogger("irc.client")
+    log.setLevel(logging.DEBUG)
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+
+    log.addHandler(handler)
+
+    # Load config
     config = configparser.ConfigParser()
     config.read('botconfig.ini')
 
+    # No config data found. Save out a template file, and exit.
     if len(config.sections()) == 0:
-        print("No config data found.")
+        print("No config data found. Template file created as botconfig.ini. Edit file and restart.")
+
+        config.add_section("DB")
+        config.set("DB", "host", "localhost")
+        config.set("DB", "database", "timmy")
+        config.set("DB", "user", "timmy")
+        config.set("DB", "password", "password")
+
+        with open('botconfig.ini', 'wb') as configfile:
+            config.write(configfile)
+
         exit(1)
 
+    # Load up our bot, and fire things up
     bot = TimmyBot(
         config.get("DB", "host"),
         config.get("DB", "database"),

@@ -1,9 +1,9 @@
-from ..timmy_bot import TimmyBot
+from timmy import db
 
 
 class Settings:
     def __init__(self):
-        self.db = TimmyBot.db
+        self.db = db.ConnectionPool.instance()
 
     def get_setting(self, name):
         conn = self.db.get_connection()
