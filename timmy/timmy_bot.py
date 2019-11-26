@@ -7,6 +7,7 @@ import more_itertools
 from irc.bot import ExponentialBackoff, ServerSpec, Channel
 from irc.dict import IRCDict
 from irc import client, modes
+from timmy import db
 
 
 log = logging.getLogger("irc.client")
@@ -23,38 +24,37 @@ log.addHandler(handler)
 class TimmyBot(irc.client_aio.AioSimpleIRCClient):
     db = None
 
+    handled_callbacks = [
+        "disconnect",
+        "join",
+        "kick",
+        "namreply",
+        "nick",
+        "part",
+        "quit",
+        "privmsg",
+        "welcome"
+    ]
+
     def __init__(self, host, database, user, password):
         super(TimmyBot, self).__init__()
 
-        from timmy.db.connection_pool import ConnectionPool
-        TimmyBot.db = ConnectionPool(host, database, user, password)
+        TimmyBot.db = db.ConnectionPool(host, database, user, password)
 
-        from timmy.db.settings import Settings
-        settings = Settings()
+        settings = db.Settings()
 
         self._nickname = settings.get_setting("nickname")
+        self._realname = settings.get_setting("realname")
 
         self.channels = IRCDict()
 
-        specs = map(ServerSpec.ensure, server_list)
+        server = ServerSpec(settings.get_setting("host"))
+        specs = map(ServerSpec.ensure, [server])
 
         self.servers = more_itertools.peekable(itertools.cycle(specs))
         self.recon = ExponentialBackoff()
 
-        self._nickname = nickname
-        self._realname = realname
-
-        for i in [
-            "disconnect",
-            "join",
-            "kick",
-            "namreply",
-            "nick",
-            "part",
-            "quit",
-            "privmsg",
-            "welcome"
-        ]:
+        for i in self.handled_callbacks:
             self.connection.add_global_handler(i, getattr(self, "_on_" + i), -20)
 
     def start(self):
