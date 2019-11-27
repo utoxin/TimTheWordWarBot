@@ -7,7 +7,7 @@ import more_itertools
 from irc.bot import ExponentialBackoff, ServerSpec, Channel
 from irc.dict import IRCDict
 from irc import client, modes
-from timmy import db
+from timmy import data
 
 
 class TimmyBot(irc.client_aio.AioSimpleIRCClient):
@@ -18,8 +18,8 @@ class TimmyBot(irc.client_aio.AioSimpleIRCClient):
         "namreply",
         "nick",
         "part",
-        "quit",
         "privmsg",
+        "quit",
         "welcome"
     ]
 
@@ -29,10 +29,10 @@ class TimmyBot(irc.client_aio.AioSimpleIRCClient):
         for i in self.handled_callbacks:
             self.connection.add_global_handler(i, getattr(self, "_on_" + i), -20)
 
-        pool = db.ConnectionPool.instance()
+        pool = data.ConnectionPool.instance()
         pool.setup(host, database, user, password)
 
-        settings = db.Settings()
+        settings = data.Settings()
 
         self._nickname = settings.get_setting("nickname")
         self._realname = settings.get_setting("realname")
