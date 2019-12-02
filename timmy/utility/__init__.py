@@ -1,1 +1,2 @@
 from .singleton import SingletonMixin
+

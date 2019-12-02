@@ -7,32 +7,37 @@ import more_itertools
 from irc.bot import ExponentialBackoff, ServerSpec, Channel
 from irc.dict import IRCDict
 from irc import client, modes
-from timmy import data
+from timmy import db_access, event_handlers, utility
 
 
-class TimmyBot(irc.client_aio.AioSimpleIRCClient):
-    handled_callbacks = [
-        "disconnect",
-        "join",
-        "kick",
-        "namreply",
-        "nick",
-        "part",
-        "privmsg",
-        "quit",
-        "welcome"
-    ]
-
+class TimmyBot(irc.client_aio.AioSimpleIRCClient, utility.SingletonMixin):
     def __init__(self, host, database, user, password):
         super(TimmyBot, self).__init__()
 
-        for i in self.handled_callbacks:
+        self.handled_callbacks = {
+            "action": [],
+            "disconnect": [],
+            "invite": [],
+            "join": [],
+            "kick": [],
+            "namreply": [],
+            "nick": [],
+            "part": [],
+            "privmsg": [],
+            "pubmsg": [],
+            "quit": [],
+            "welcome": [],
+        }
+
+        event_handlers.init_event_handlers()
+
+        for i in self.handled_callbacks.keys():
             self.connection.add_global_handler(i, getattr(self, "_on_" + i), -20)
 
-        pool = data.ConnectionPool.instance()
+        pool = db_access.ConnectionPool.instance()
         pool.setup(host, database, user, password)
 
-        settings = data.Settings()
+        settings = db_access.Settings()
 
         self._nickname = settings.get_setting("nickname")
         self._realname = settings.get_setting("realname")
@@ -66,12 +71,18 @@ class TimmyBot(irc.client_aio.AioSimpleIRCClient):
         self.channels = IRCDict()
         self.recon.run(self)
 
+        for obj in self.handled_callbacks["disconnect"]:
+            obj.on_disconnect(connection, event)
+
     def _on_join(self, connection, event):
         ch = event.target
         nick = event.source.nick
         if nick == connection.get_nickname():
             self.channels[ch] = Channel()
         self.channels[ch].add_user(nick)
+
+        for obj in self.handled_callbacks["join"]:
+            obj.on_join(connection, event)
 
     def _on_kick(self, connection, event):
         nick = event.arguments[0]
@@ -81,6 +92,9 @@ class TimmyBot(irc.client_aio.AioSimpleIRCClient):
             del self.channels[channel]
         else:
             self.channels[channel].remove_user(nick)
+
+        for obj in self.handled_callbacks["kick"]:
+            obj.on_kick(connection, event)
 
     def _on_mode(self, connection, event):
         t = event.target
@@ -93,6 +107,9 @@ class TimmyBot(irc.client_aio.AioSimpleIRCClient):
         for sign, mode, argument in modes:
             f = {"+": ch.set_mode, "-": ch.clear_mode}[sign]
             f(mode, argument)
+
+        for obj in self.handled_callbacks["mode"]:
+            obj.on_mode(connection, event)
 
     def _on_namreply(self, connection, event):
         """
@@ -122,12 +139,18 @@ class TimmyBot(irc.client_aio.AioSimpleIRCClient):
 
             self.channels[channel].add_user(nick)
 
+        for obj in self.handled_callbacks["namreply"]:
+            obj.on_namreply(connection, event)
+
     def _on_nick(self, connection, event):
         before = event.source.nick
         after = event.target
         for ch in self.channels.values():
             if ch.has_user(before):
                 ch.change_nick(before, after)
+
+        for obj in self.handled_callbacks["nick"]:
+            obj.on_nick(connection, event)
 
     def _on_part(self, connection, event):
         nick = event.source.nick
@@ -138,19 +161,37 @@ class TimmyBot(irc.client_aio.AioSimpleIRCClient):
         else:
             self.channels[channel].remove_user(nick)
 
+        for obj in self.handled_callbacks["part"]:
+            obj.on_part(connection, event)
+
     def _on_quit(self, connection, event):
         nick = event.source.nick
         for ch in self.channels.values():
             if ch.has_user(nick):
                 ch.remove_user(nick)
 
+        for obj in self.handled_callbacks["quit"]:
+            obj.on_quit(connection, event)
+
     def _on_privmsg(self, connection, event):
-        log.log(logging.DEBUG, "Handling privmsg")
-        if event.arguments[0] == "foobar":
-            connection.join("#feartimmy")
+        for obj in self.handled_callbacks["privmsg"]:
+            obj.on_privmsg(connection, event)
 
     def _on_welcome(self, connection, event):
-        connection.join("#feartimmy")
+        for obj in self.handled_callbacks["welcome"]:
+            obj.on_welcome(connection, event)
+
+    def _on_pubmsg(self, connection, event):
+        for obj in self.handled_callbacks["pubmsg"]:
+            obj.on_pubmsg(connection, event)
+
+    def _on_action(self, connection, event):
+        for obj in self.handled_callbacks["action"]:
+            obj.on_action(connection, event)
+
+    def _on_invite(self, connection, event):
+        for obj in self.handled_callbacks["invite"]:
+            obj.on_invite(connection, event)
 
 
 if __name__ == "__main__":
@@ -171,9 +212,9 @@ if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read('botconfig.ini')
 
-    # No config data found. Save out a template file, and exit.
+    # No config db_access found. Save out a template file, and exit.
     if len(config.sections()) == 0:
-        print("No config data found. Template file created as botconfig.ini. Edit file and restart.")
+        print("No config db_access found. Template file created as botconfig.ini. Edit file and restart.")
 
         config.add_section("DB")
         config.set("DB", "host", "localhost")

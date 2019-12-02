@@ -1,9 +1,9 @@
-from timmy import data
+from timmy import db_access
 
 
 class Settings:
     def __init__(self):
-        self.db = data.ConnectionPool.instance()
+        self.db = db_access.ConnectionPool.instance()
 
     def get_setting(self, name):
         conn = self.db.get_connection()
