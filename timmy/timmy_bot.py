@@ -12,43 +12,46 @@ from timmy import db_access, event_handlers, utility
 
 class TimmyBot(irc.client_aio.AioSimpleIRCClient, utility.SingletonMixin):
     def __init__(self, host, database, user, password):
-        super(TimmyBot, self).__init__()
+        with TimmyBot.__singleton_lock:
+            TimmyBot._singleton_instance = self
 
-        self.handled_callbacks = {
-            "action": [],
-            "disconnect": [],
-            "invite": [],
-            "join": [],
-            "kick": [],
-            "namreply": [],
-            "nick": [],
-            "part": [],
-            "privmsg": [],
-            "pubmsg": [],
-            "quit": [],
-            "welcome": [],
-        }
+            super(TimmyBot, self).__init__()
 
-        event_handlers.init_event_handlers()
+            self.handled_callbacks = {
+                "action": [],
+                "disconnect": [],
+                "invite": [],
+                "join": [],
+                "kick": [],
+                "namreply": [],
+                "nick": [],
+                "part": [],
+                "privmsg": [],
+                "pubmsg": [],
+                "quit": [],
+                "welcome": [],
+            }
 
-        for i in self.handled_callbacks.keys():
-            self.connection.add_global_handler(i, getattr(self, "_on_" + i), -20)
+            event_handlers.init_event_handlers()
 
-        pool = db_access.ConnectionPool.instance()
-        pool.setup(host, database, user, password)
+            for i in self.handled_callbacks.keys():
+                self.connection.add_global_handler(i, getattr(self, "_on_" + i), -20)
 
-        settings = db_access.Settings()
+            pool = db_access.ConnectionPool.instance()
+            pool.setup(host, database, user, password)
 
-        self._nickname = settings.get_setting("nickname")
-        self._realname = settings.get_setting("realname")
+            settings = db_access.Settings()
 
-        self.channels = IRCDict()
+            self._nickname = settings.get_setting("nickname")
+            self._realname = settings.get_setting("realname")
 
-        server = ServerSpec(settings.get_setting("host"))
-        specs = map(ServerSpec.ensure, [server])
+            self.channels = IRCDict()
 
-        self.servers = more_itertools.peekable(itertools.cycle(specs))
-        self.recon = ExponentialBackoff()
+            server = ServerSpec(settings.get_setting("host"))
+            specs = map(ServerSpec.ensure, [server])
+
+            self.servers = more_itertools.peekable(itertools.cycle(specs))
+            self.recon = ExponentialBackoff()
 
     def start(self):
         self._connect()
