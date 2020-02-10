@@ -1,10 +1,9 @@
 import mysql.connector
 from mysql.connector import Error
 from mysql.connector import pooling
-from timmy.utility.singleton import SingletonMixin
 
 
-class ConnectionPool(SingletonMixin):
+class ConnectionPool:
     def __init__(self):
         self.__pool = None
         pass
