@@ -1,3 +1,5 @@
+import time
+
 class ChannelData:
     max_odds = {
         'answer':        65,
@@ -86,13 +88,13 @@ class ChannelData:
         self.channel = channel
 
         self.last_speaker = ""
-        self.last_speaker_time = 0
+        self.last_speaker_time = 0.0
 
         self.last_war_id = ""
         self.newest_war_id = ""
 
         self.muzzled = False
-        self.muzzled_until = 0
+        self.muzzled_until = 0.0
         self.auto_muzzle = True
 
         self.chatter_enabled = ChannelData.chatter_defaults
@@ -118,3 +120,12 @@ class ChannelData:
                       'search', 'herd', 'banish'}
 
         return any([self.chatter_settings[x] for x in amusements])
+
+    def is_muzzled(self):
+        # TODO: Update this after wars are implemented
+        return False
+
+    def clear_timed_muzzle(self):
+        if self.muzzled and (self.muzzled_until < time.time()):
+            self.muzzled = False
+            self.muzzled_until = 0.0
