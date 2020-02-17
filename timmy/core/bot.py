@@ -6,6 +6,7 @@ from irc.bot import ExponentialBackoff, ServerSpec, Channel
 from irc.dict import IRCDict
 from irc import client, modes
 from timmy import db_access, event_handlers
+from timmy.data.channel_data import ChannelData
 
 
 class Bot(irc.client_aio.AioSimpleIRCClient):
@@ -81,7 +82,7 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
         ch = event.target
         nick = event.source.nick
         if nick == connection.get_nickname():
-            self.channels[ch] = Channel()
+            self.channels[ch] = ChannelData(ch)
         self.channels[ch].add_user(nick)
 
         for obj in self.handled_callbacks["join"]:

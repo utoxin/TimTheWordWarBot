@@ -2,7 +2,6 @@ import logging
 import sys
 from timmy.core import bot_instance
 
-
 if __name__ == "__main__":
     import configparser
 
@@ -37,10 +36,10 @@ if __name__ == "__main__":
         exit(1)
 
     bot_instance.setup(
-        config.get("DB", "host"),
-        config.get("DB", "database"),
-        config.get("DB", "user"),
-        config.get("DB", "password")
+            config.get("DB", "host"),
+            config.get("DB", "database"),
+            config.get("DB", "user"),
+            config.get("DB", "password")
     )
 
     bot_instance.start()

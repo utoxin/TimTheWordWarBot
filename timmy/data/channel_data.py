@@ -1,12 +1,15 @@
 import time
 
-class ChannelData:
+from irc.bot import Channel
+
+
+class ChannelData(Channel):
     max_odds = {
-        'answer':        65,
+        'answer':       65,
         'aypwip':       100,
-        'cheeseburger':  50,
+        'cheeseburger': 50,
         'eightball':    100,
-        'fox':           75,
+        'fox':          75,
         'groot':        100,
         'hug':          100,
         'lights':       100,
@@ -16,75 +19,77 @@ class ChannelData:
     }
 
     chatter_settings_defaults = {
-        'reactive_level': 2.5,
-        'random_level': 1,
+        'reactive_level':  2.5,
+        'random_level':    1,
         'name_multiplier': 1.5
     }
 
     raptor_data_defaults = {
         'sightings': 0,
-        'active': 0,
-        'dead': 0,
-        'killed': 0,
-        'strength': 0
+        'active':    0,
+        'dead':      0,
+        'killed':    0,
+        'strength':  0
     }
 
     twitter_settings_defaults = {
-        'time': 0,
-        'bucket': 5.0,
-        'bucket_max': 10.0,
+        'time':               0,
+        'bucket':             5.0,
+        'bucket_max':         10.0,
         'bucket_charge_rate': 0.05,
     }
 
     chatter_defaults = {
-        'banish': True,
-        'bored': False,
-        'catch': True,
-        'chainstory': True,
-        'challenge': True,
-        'dance': True,
-        'defenestrate': True,
-        'eightball': True,
-        'foof': True,
-        'fridge': True,
-        'get': True,
-        'greetings': True,
-        'groot': True,
+        'banish':            True,
+        'bored':             False,
+        'catch':             True,
+        'chainstory':        True,
+        'challenge':         True,
+        'dance':             True,
+        'defenestrate':      True,
+        'eightball':         True,
+        'foof':              True,
+        'fridge':            True,
+        'get':               True,
+        'greetings':         True,
+        'groot':             True,
         'helpful_reactions': True,
-        'herd': True,
-        'markov': True,
-        'silly_reactions': True,
-        'sing': True,
-        'summon': True,
-        'velociraptor': True,
+        'herd':              True,
+        'markov':            True,
+        'silly_reactions':   True,
+        'sing':              True,
+        'summon':            True,
+        'velociraptor':      True,
     }
 
     command_defaults = {
-        'attack': True,
-        'banish': True,
-        'catch': True,
-        'chainstory': True,
-        'challenge': True,
-        'commandment': True,
+        'attack':       True,
+        'banish':       True,
+        'catch':        True,
+        'chainstory':   True,
+        'challenge':    True,
+        'commandment':  True,
         'defenestrate': True,
-        'dance': True,
-        'dice': True,
-        'eightball': True,
-        'expound': True,
-        'foof': True,
-        'fridge': True,
-        'get': True,
-        'herd': True,
-        'lick': False,
-        'ping': True,
-        'search': True,
-        'sing': True,
-        'summon': True,
+        'dance':        True,
+        'dice':         True,
+        'eightball':    True,
+        'expound':      True,
+        'foof':         True,
+        'fridge':       True,
+        'get':          True,
+        'herd':         True,
+        'lick':         False,
+        'ping':         True,
+        'search':       True,
+        'sing':         True,
+        'summon':       True,
         'velociraptor': True,
-        'woot': True
+        'woot':         True
     }
 
     def __init__(self, channel):
+        super().__init__()
+
         self.channel = channel
 
         self.last_speaker = ""
