@@ -9,8 +9,8 @@ class AuthHandler:
 
     def on_welcome(self, connection, event):
         if self.auth_on_welcome:
-            self.handle_auth(connection, event)
+            self.handle_auth(connection)
 
-    def handle_auth(self, connection, event):
+    def handle_auth(self, connection):
         if self.auth_type == 'nickserv':
             connection.privmsg('nickserv', 'IDENTIFY ' + self.auth_data)

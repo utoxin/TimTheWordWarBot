@@ -46,7 +46,7 @@ class WordWar:
 
     def basic_setup(self, channel_data, starter, name, base_duration, start_epoch):
         self.uuid = uuid.uuid4()
-        self.channel = channel_data.channel
+        self.channel = channel_data.name
         self.starter = starter
         self.name = name
         self.base_duration = base_duration
@@ -64,7 +64,7 @@ class WordWar:
     def chain_setup(self, channel_data, starter, name, base_duration, start_epoch, total_chains, base_break,
                     randomness):
         self.uuid = uuid.uuid4()
-        self.channel = channel_data.channel
+        self.channel = channel_data.name
         self.starter = starter
         self.name = name
         self.base_duration = base_duration

@@ -1,3 +1,2 @@
-mysql-connector-python
 irc ~= 17.1
 mysql-connector ~= 2.2.9

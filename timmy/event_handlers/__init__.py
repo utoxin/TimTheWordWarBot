@@ -1,4 +1,5 @@
 from .auth_handler import AuthHandler
+from .postauth_handler import PostAuthHandler
 from .server_handler import ServerHandler
 
 
@@ -11,3 +12,6 @@ def init_event_handlers():
 
     auth_handler_instance = AuthHandler()
     bot_instance.handled_callbacks["welcome"].append(auth_handler_instance)
+
+    postauth_handler_instance = PostAuthHandler()
+    bot_instance.handled_callbacks["umode"].append(postauth_handler_instance)

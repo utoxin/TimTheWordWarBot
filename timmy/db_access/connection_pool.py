@@ -16,7 +16,8 @@ class ConnectionPool:
                     host=host,
                     database=database,
                     user=user,
-                    password=password
+                    password=password,
+                    autocommit=True
             )
         except Error as e:
             print("Error while connecting to database using connection pool: ", e)
