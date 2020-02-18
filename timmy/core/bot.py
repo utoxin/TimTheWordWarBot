@@ -2,7 +2,7 @@ import itertools
 
 import irc.client_aio
 import more_itertools
-from irc.bot import ExponentialBackoff, ServerSpec, Channel
+from irc.bot import ExponentialBackoff, ServerSpec
 from irc.dict import IRCDict
 from irc import client, modes
 from timmy import db_access, event_handlers
@@ -14,19 +14,19 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
         super().__init__()
 
         self.handled_callbacks = {
-            "action": [],
+            "action":     [],
             "disconnect": [],
-            "invite": [],
-            "join": [],
-            "kick": [],
-            "namreply": [],
-            "nick": [],
-            "part": [],
-            "privmsg": [],
-            "pubmsg": [],
-            "quit": [],
-            "umode": [],
-            "welcome": [],
+            "invite":     [],
+            "join":       [],
+            "kick":       [],
+            "namreply":   [],
+            "nick":       [],
+            "part":       [],
+            "privmsg":    [],
+            "pubmsg":     [],
+            "quit":       [],
+            "umode":      [],
+            "welcome":    [],
         }
 
         self.channels = IRCDict()
@@ -63,29 +63,32 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
         server = self.servers.peek()
         try:
             self.connect(
-                server.host,
-                server.port,
-                self._nickname,
-                server.password,
-                ircname=self._realname
+                    server.host,
+                    server.port,
+                    self._nickname,
+                    server.password,
+                    ircname=self._realname
             )
         except irc.client_aio.ServerNotConnectedError:
             pass
 
     def _on_action(self, connection, event):
         for obj in self.handled_callbacks["action"]:
-            obj.on_action(connection, event)
+            if obj.on_action(connection, event):
+                break
 
     def _on_disconnect(self, connection, event):
         self.channels = IRCDict()
         self.recon.run(self)
 
         for obj in self.handled_callbacks["disconnect"]:
-            obj.on_disconnect(connection, event)
+            if obj.on_disconnect(connection, event):
+                break
 
     def _on_invite(self, connection, event):
         for obj in self.handled_callbacks["invite"]:
-            obj.on_invite(connection, event)
+            if obj.on_invite(connection, event):
+                break
 
     def _on_join(self, connection, event):
         ch = event.target
@@ -98,7 +101,8 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
         self.channels[ch].add_user(nick)
 
         for obj in self.handled_callbacks["join"]:
-            obj.on_join(connection, event)
+            if obj.on_join(connection, event):
+                break
 
     def _on_kick(self, connection, event):
         nick = event.arguments[0]
@@ -111,7 +115,8 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             self.channels[channel].remove_user(nick)
 
         for obj in self.handled_callbacks["kick"]:
-            obj.on_kick(connection, event)
+            if obj.on_kick(connection, event):
+                break
 
     def _on_mode(self, connection, event):
         t = event.target
@@ -126,7 +131,8 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             f(mode, argument)
 
         for obj in self.handled_callbacks["mode"]:
-            obj.on_mode(connection, event)
+            if obj.on_mode(connection, event):
+                break
 
     def _on_namreply(self, connection, event):
         """
@@ -157,7 +163,8 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             self.channels[channel].add_user(nick)
 
         for obj in self.handled_callbacks["namreply"]:
-            obj.on_namreply(connection, event)
+            if obj.on_namreply(connection, event):
+                break
 
     def _on_nick(self, connection, event):
         before = event.source.nick
@@ -167,7 +174,8 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
                 ch.change_nick(before, after)
 
         for obj in self.handled_callbacks["nick"]:
-            obj.on_nick(connection, event)
+            if obj.on_nick(connection, event):
+                break
 
     def _on_part(self, connection, event):
         nick = event.source.nick
@@ -179,15 +187,18 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             self.channels[channel].remove_user(nick)
 
         for obj in self.handled_callbacks["part"]:
-            obj.on_part(connection, event)
+            if obj.on_part(connection, event):
+                break
 
     def _on_privmsg(self, connection, event):
         for obj in self.handled_callbacks["privmsg"]:
-            obj.on_privmsg(connection, event)
+            if obj.on_privmsg(connection, event):
+                break
 
     def _on_pubmsg(self, connection, event):
         for obj in self.handled_callbacks["pubmsg"]:
-            obj.on_pubmsg(connection, event)
+            if obj.on_pubmsg(connection, event):
+                break
 
     def _on_quit(self, connection, event):
         nick = event.source.nick
@@ -196,12 +207,15 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
                 ch.remove_user(nick)
 
         for obj in self.handled_callbacks["quit"]:
-            obj.on_quit(connection, event)
+            if obj.on_quit(connection, event):
+                break
 
     def _on_umode(self, connection, event):
         for obj in self.handled_callbacks["umode"]:
-            obj.on_umode(connection, event)
+            if obj.on_umode(connection, event):
+                break
 
     def _on_welcome(self, connection, event):
         for obj in self.handled_callbacks["welcome"]:
-            obj.on_welcome(connection, event)
+            if obj.on_welcome(connection, event):
+                break

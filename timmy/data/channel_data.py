@@ -25,7 +25,7 @@ class ChannelData(Channel):
         'reactive_level':  2.5,
         'random_level':    1,
         'name_multiplier': 1.5,
-        'types': IRCDict({
+        'types':           IRCDict({
             'banish':            True,
             'bored':             False,
             'catch':             True,

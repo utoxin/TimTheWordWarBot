@@ -1,7 +1,6 @@
 import logging
 import sys
 
-from timmy import db_access
 from timmy.core import bot_instance
 
 if __name__ == "__main__":

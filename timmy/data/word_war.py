@@ -4,8 +4,9 @@ from datetime import datetime
 
 import string
 
+from timmy import db_access
+from timmy.data.channel_data import ChannelData
 from timmy.data.war_state import WarState
-from timmy.db_access import word_war_db
 
 
 class WordWar:
@@ -26,6 +27,7 @@ class WordWar:
         self.state = None
         self.channel_data = None
         self.war_members = None
+        self.db_access = db_access.word_war_db
 
     def _prep_db_object(self):
         return {
@@ -44,9 +46,9 @@ class WordWar:
             'war_state':     self.state
         }
 
-    def basic_setup(self, channel_data, starter, name, base_duration, start_epoch):
+    def basic_setup(self, channel: ChannelData, starter, name, base_duration, start_epoch):
         self.uuid = uuid.uuid4()
-        self.channel = channel_data.name
+        self.channel = channel.name
         self.starter = starter
         self.name = name
         self.base_duration = base_duration
@@ -56,15 +58,15 @@ class WordWar:
         self.current_chain = 1
         self.randomness = False
         self.state = WarState.PENDING
-        self.channel_data = channel_data
+        self.channel_data = channel
         self.year = datetime.today().year
 
-        word_war_db.create_war(self._prep_db_object())
+        self.db_access.create_war(self._prep_db_object())
 
-    def chain_setup(self, channel_data, starter, name, base_duration, start_epoch, total_chains, base_break,
-                    randomness):
+    def advanced_setup(self, channel: ChannelData, starter, name, base_duration, start_epoch, total_chains, base_break,
+                       randomness):
         self.uuid = uuid.uuid4()
-        self.channel = channel_data.name
+        self.channel = channel.name
         self.starter = starter
         self.name = name
         self.base_duration = base_duration
@@ -75,10 +77,10 @@ class WordWar:
         self.current_chain = 1
         self.randomness = randomness
         self.state = WarState.PENDING
-        self.channel_data = channel_data
+        self.channel_data = channel
         self.year = datetime.today().year
 
-        word_war_db.create_war(self._prep_db_object())
+        self.db_access.create_war(self._prep_db_object())
 
     def load_from_db(self, year, war_id, uuid_string, channel, starter, name, base_duration, base_break, total_chains,
                      current_chain, start_epoch, end_epoch, randomness, state):
@@ -114,8 +116,7 @@ class WordWar:
         self.update_db()
 
     def update_db(self):
-        word_war_db.update_war(self._prep_db_object())
-        pass
+        self.db_access.update_war(self._prep_db_object())
 
     def duration(self):
         return self.end_epoch - self.start_epoch
