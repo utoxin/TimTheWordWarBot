@@ -1,7 +1,7 @@
 from .auth_handler import AuthHandler
 from .postauth_handler import PostAuthHandler
 from .server_handler import ServerHandler
-from .user_command_listener import UserCommandListener
+from .command_handler import CommandHandler
 
 
 def init_event_handlers():
@@ -17,5 +17,6 @@ def init_event_handlers():
     postauth_handler_instance = PostAuthHandler()
     bot_instance.handled_callbacks["umode"].append(postauth_handler_instance)
 
-    user_command_handler_instance = UserCommandListener()
-    bot_instance.handled_callbacks["pubmsg"].append(user_command_handler_instance)
+    command_handler_instance = CommandHandler()
+    bot_instance.handled_callbacks["pubmsg"].append(command_handler_instance)
+    bot_instance.handled_callbacks["privmsg"].append(command_handler_instance)
