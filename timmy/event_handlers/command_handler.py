@@ -8,14 +8,17 @@ from timmy.data.command_type import CommandType
 
 class CommandHandler:
     def __init__(self):
-        self.timmy_user_command_regex = re.compile('^!(?!skynet)(\\S+)\\s?(.*?)$', re.IGNORECASE)
-        self.timmy_admin_command_regex = re.compile('^\\$(?!skynet)(\\S+)\\s?(.*?)$', re.IGNORECASE)
+        self.timmy_user_command_regex = re.compile('^(!)(?!skynet)(\\S+)\\s?(.*?)$', re.IGNORECASE)
+        self.timmy_admin_command_regex = re.compile('^(\\$)(?!skynet)(\\S+)\\s?(.*?)$', re.IGNORECASE)
 
-        self.skynet_user_command_regex = re.compile('^!skynet (\\S+)\\s?(.*?)$', re.IGNORECASE)
-        self.skynet_admin_command_regex = re.compile('^\\$skynet (\\S+)\\s?(.*?)$', re.IGNORECASE)
+        self.skynet_user_command_regex = re.compile('^(!skynet )(\\S+)\\s?(.*?)$', re.IGNORECASE)
+        self.skynet_admin_command_regex = re.compile('^(\\$skynet )(\\S+)\\s?(.*?)$', re.IGNORECASE)
 
         self.user_command_processors = IRCDict()
         self.admin_command_processors = IRCDict()
+
+    def on_privmsg(self, connection, event):
+        self.on_pubmsg(connection, event)
 
     def on_pubmsg(self, connection, event):
         command_data = self._parse_event(event)
@@ -70,10 +73,17 @@ class CommandHandler:
 
     @staticmethod
     def _setup_command_data(command_data, event, results):
-        command_data.command = results[0]
-        command_data.argstring = results[1]
-        command_data.args = results[1].split()
+        command_data.prefix = results[0]
+        command_data.command = results[1]
+        command_data.argstring = results[2]
+        command_data.args = results[2].split()
         command_data.issuer = event.source.nick
 
     def _unknown_command(self, connection, event, command_data):
+        if event.type == "privmsg":
+            channel = event.source.nick
+        else:
+            channel = event.target
+
+        connection.privmsg(channel, command_data.prefix + command_data.command + " was not part of my training.")
         pass

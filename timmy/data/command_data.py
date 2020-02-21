@@ -8,6 +8,7 @@ class CommandData:
         self.command = ""
         self.args = []
         self.argstring = ""
+        self.prefix = ""
 
     def __str__(self):
-        return "Command: %s, Issuer: %s, Args: %s".format(self.command, self.issuer, self.argstring)
+        return "Command: %s, Issuer: %s, Args: %s".format(self.prefix + self.command, self.issuer, self.argstring)
