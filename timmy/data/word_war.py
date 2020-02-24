@@ -5,7 +5,6 @@ from datetime import datetime
 import string
 
 from timmy import db_access
-from timmy.data.channel_data import ChannelData
 from timmy.data.war_state import WarState
 
 
@@ -25,30 +24,12 @@ class WordWar:
         self.end_epoch = 0.0
         self.randomness = False
         self.state = None
-        self.channel_data = None
-        self.war_members = None
+        self.war_members = set()
         self.db_access = db_access.word_war_db
 
-    def _prep_db_object(self):
-        return {
-            'year':          self.year,
-            'uuid':          str(self.uuid),
-            'channel':       self.channel,
-            'starter':       self.starter,
-            'name':          self.name,
-            'base_duration': self.base_duration,
-            'base_break':    self.base_break,
-            'total_chains':  self.total_chains,
-            'current_chain': self.current_chain,
-            'start_epoch':   self.start_epoch,
-            'end_epoch':     self.end_epoch,
-            'randomness':    self.randomness,
-            'war_state':     self.state
-        }
-
-    def basic_setup(self, channel: ChannelData, starter, name, base_duration, start_epoch):
+    def basic_setup(self, channel, starter, name, base_duration, start_epoch):
         self.uuid = uuid.uuid4()
-        self.channel = channel.name
+        self.channel = channel
         self.starter = starter
         self.name = name
         self.base_duration = base_duration
@@ -58,15 +39,13 @@ class WordWar:
         self.current_chain = 1
         self.randomness = False
         self.state = WarState.PENDING
-        self.channel_data = channel
         self.year = datetime.today().year
 
-        self.db_access.create_war(self._prep_db_object())
+        self.db_access.create_war(self)
 
-    def advanced_setup(self, channel: ChannelData, starter, name, base_duration, start_epoch, total_chains, base_break,
-                       randomness):
+    def advanced_setup(self, channel, starter, name, base_duration, start_epoch, total_chains, base_break, randomness):
         self.uuid = uuid.uuid4()
-        self.channel = channel.name
+        self.channel = channel
         self.starter = starter
         self.name = name
         self.base_duration = base_duration
@@ -77,27 +56,33 @@ class WordWar:
         self.current_chain = 1
         self.randomness = randomness
         self.state = WarState.PENDING
-        self.channel_data = channel
         self.year = datetime.today().year
 
-        self.db_access.create_war(self._prep_db_object())
+        self.db_access.create_war(self)
 
-    def load_from_db(self, year, war_id, uuid_string, channel, starter, name, base_duration, base_break, total_chains,
-                     current_chain, start_epoch, end_epoch, randomness, state):
-        self.uuid = uuid.UUID(uuid_string)
-        self.year = year
-        self.war_id = war_id
-        self.channel = channel
-        self.starter = starter
-        self.name = name
-        self.base_duration = base_duration
-        self.base_break = base_break
-        self.total_chains = total_chains
-        self.current_chain = current_chain
-        self.start_epoch = start_epoch
-        self.end_epoch = end_epoch
-        self.randomness = randomness
-        self.state = state
+    def load_from_db(self, row):
+        self.uuid = uuid.UUID(row['uuid'])
+        self.year = int(row['year'])
+        self.war_id = int(row['war_id'])
+        self.channel = row['channel']
+        self.starter = row['starter']
+        self.name = row['name']
+        self.base_duration = int(row['base_duration'])
+        self.base_break = int(row['base_break'])
+        self.total_chains = int(row['total_chains'])
+        self.current_chain = int(row['current_chain'])
+        self.start_epoch = int(row['start_epoch'])
+        self.end_epoch = int(row['end_epoch'])
+        self.randomness = bool(row['randomness'])
+        self.state = WarState[row['war_state']]
+
+    def data_export(self):
+        data = vars(self)
+        data['uuid'] = str(data['uuid'])
+        data['state'] = data['state'].name
+        del data['war_members']
+        del data['db_access']
+        return data
 
     def end_war(self):
         self.state = WarState.FINISHED
@@ -116,7 +101,7 @@ class WordWar:
         self.update_db()
 
     def update_db(self):
-        self.db_access.update_war(self._prep_db_object())
+        self.db_access.update_war(self)
 
     def duration(self):
         return self.end_epoch - self.start_epoch

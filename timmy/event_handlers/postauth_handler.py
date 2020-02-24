@@ -1,4 +1,4 @@
-from timmy import db_access
+from timmy import db_access, core
 
 
 class PostAuthHandler:
@@ -12,3 +12,5 @@ class PostAuthHandler:
 
             for channel in channels:
                 connection.join(channel)
+
+            core.init_war_ticker()

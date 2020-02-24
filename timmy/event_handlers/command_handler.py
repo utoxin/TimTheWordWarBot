@@ -8,14 +8,20 @@ from timmy.data.command_type import CommandType
 
 class CommandHandler:
     def __init__(self):
-        self.timmy_user_command_regex = re.compile('^(!)(?!skynet)(\\S+)\\s?(.*?)$', re.IGNORECASE)
-        self.timmy_admin_command_regex = re.compile('^(\\$)(?!skynet)(\\S+)\\s?(.*?)$', re.IGNORECASE)
-
-        self.skynet_user_command_regex = re.compile('^(!skynet )(\\S+)\\s?(.*?)$', re.IGNORECASE)
-        self.skynet_admin_command_regex = re.compile('^(\\$skynet )(\\S+)\\s?(.*?)$', re.IGNORECASE)
+        self.matchers = {
+            CommandType.TIMMY_USER:   re.compile('^(!)(?!skynet)(\\S+)\\s?(.*?)$', re.IGNORECASE),
+            CommandType.TIMMY_ADMIN:  re.compile('^(\\$)(?!skynet)(\\S+)\\s?(.*?)$', re.IGNORECASE),
+            CommandType.SKYNET_USER:  re.compile('^(!skynet )(\\S+)\\s?(.*?)$', re.IGNORECASE),
+            CommandType.SKYNET_ADMIN: re.compile('^(\\$skynet )(\\S+)\\s?(.*?)$', re.IGNORECASE)
+        }
 
         self.user_command_processors = IRCDict()
         self.admin_command_processors = IRCDict()
+
+    @staticmethod
+    def init_command_processors():
+        from timmy import command_processors
+        command_processors.register_processors()
 
     def on_privmsg(self, connection, event):
         self.on_pubmsg(connection, event)
@@ -29,45 +35,24 @@ class CommandHandler:
             return True
 
         if command_data.type == CommandType.TIMMY_USER and command_data.command in self.user_command_processors:
-            self.user_command_processors[command_data.command].process(command_data)
+            self.user_command_processors[command_data.command].process(connection, event, command_data)
         elif command_data.type == CommandType.TIMMY_ADMIN and command_data.command in self.admin_command_processors:
-            
-            self.admin_command_processors[command_data.command].process(command_data)
+            self.admin_command_processors[command_data.command].process(connection, event, command_data)
         else:
-            self._unknown_command(connection, event, command_data)
+            self._unknown_command(connection, command_data)
 
         return True
 
     def _parse_event(self, event):
         command_data = CommandData()
 
-        timmy_user_match = self.timmy_user_command_regex.match(event.arguments[0])
-        if timmy_user_match:
-            results = timmy_user_match.groups()
-            self._setup_command_data(command_data, event, results)
-            command_data.type = CommandType.TIMMY_USER
-            return command_data
-
-        timmy_admin_match = self.timmy_admin_command_regex.match(event.arguments[0])
-        if timmy_admin_match:
-            results = timmy_admin_match.groups()
-            self._setup_command_data(command_data, event, results)
-            command_data.type = CommandType.TIMMY_ADMIN
-            return command_data
-
-        skynet_user_match = self.skynet_user_command_regex.match(event.arguments[0])
-        if skynet_user_match:
-            results = skynet_user_match.groups()
-            self._setup_command_data(command_data, event, results)
-            command_data.type = CommandType.SKYNET_USER
-            return command_data
-
-        skynet_admin_match = self.skynet_admin_command_regex.match(event.arguments[0])
-        if skynet_admin_match:
-            results = skynet_admin_match.groups()
-            self._setup_command_data(command_data, event, results)
-            command_data.type = CommandType.SKYNET_ADMIN
-            return command_data
+        for command_type, matcher in self.matchers.items():
+            match = matcher.match(event.arguments[0])
+            if match:
+                results = match.groups()
+                self._setup_command_data(command_data, event, results)
+                command_data.type = command_type
+                return command_data
 
         return None
 
@@ -75,15 +60,17 @@ class CommandHandler:
     def _setup_command_data(command_data, event, results):
         command_data.prefix = results[0]
         command_data.command = results[1]
-        command_data.argstring = results[2]
         command_data.args = results[2].split()
+        command_data.arg_count = len(command_data.args)
+        command_data.arg_string = results[2]
         command_data.issuer = event.source.nick
 
-    def _unknown_command(self, connection, event, command_data):
         if event.type == "privmsg":
-            channel = event.source.nick
+            command_data.channel = event.source.nick
         else:
-            channel = event.target
+            command_data.channel = event.target
 
-        connection.privmsg(channel, command_data.prefix + command_data.command + " was not part of my training.")
-        pass
+    @staticmethod
+    def _unknown_command(connection, command_data):
+        connection.privmsg(command_data.channel,
+                           command_data.prefix + command_data.command + " was not part of my training.")

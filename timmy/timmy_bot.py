@@ -1,21 +1,9 @@
-import logging
-import sys
-
-from timmy.core import bot_instance
+from timmy.core import bot_instance, logging
 
 if __name__ == "__main__":
     import configparser
 
-    # Set up logging
-    log = logging.getLogger("irc.client")
-    log.setLevel(logging.DEBUG)
-
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-
-    log.addHandler(handler)
+    logging.setup_console_logger()
 
     # Load config
     config = configparser.ConfigParser()

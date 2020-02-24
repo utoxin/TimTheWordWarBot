@@ -5,10 +5,12 @@ class CommandData:
     def __init__(self):
         self.type = CommandType.UNKNOWN
         self.issuer = ""
+        self.channel = ""
         self.command = ""
         self.args = []
-        self.argstring = ""
+        self.arg_count = 0
+        self.arg_string = ""
         self.prefix = ""
 
     def __str__(self):
-        return "Command: %s, Issuer: %s, Args: %s".format(self.prefix + self.command, self.issuer, self.argstring)
+        return "Command: %s, Issuer: %s, Args: %s".format(self.prefix + self.command, self.issuer, self.arg_string)

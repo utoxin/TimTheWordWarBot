@@ -1,32 +1,78 @@
 from timmy import db_access
+from timmy.data.word_war import WordWar
 
 
 class WordWarDb:
     def __init__(self):
+        self.db = None
+
+    def init(self):
         self.db = db_access.connection_pool
 
-    def create_war(self, war):
+    def create_war(self, war: WordWar):
         create_query = "INSERT INTO `new_wars` (`year`, `uuid`, `channel`, `starter`, `name`, `base_duration`, " \
                        "`base_break`, `total_chains`, `current_chain`, `start_epoch`, `end_epoch`, `randomness`, " \
                        "`war_state`, `created`) VALUES (%(year)s, %(uuid)s, %(channel)s, %(starter)s, %(name)s, " \
                        "%(base_duration)s, %(base_break)s, %(total_chains)s, %(current_chain)s, %(start_epoch)s, " \
-                       "%(end_epoch)s, %(randomness)s, %(war_state)s, NOW())"
+                       "%(end_epoch)s, %(randomness)s, %(state)s, NOW())"
 
         conn = self.db.get_connection()
         cur = conn.cursor()
-        cur.execute(create_query, war)
+        cur.execute(create_query, war.data_export())
         war_id = cur.lastrowid
         cur.close()
         conn.close()
 
         return war_id
 
-    def update_war(self, war):
+    def update_war(self, war: WordWar):
         update_query = "UPDATE `new_wars` SET `current_chain` = %(current_chain)s, `start_epoch` = %(start_epoch)s, " \
-                       "end_epoch = %(end_epoch)s, `war_state` = %(war_state)s WHERE `uuid` = %(uuid)s"
+                       "end_epoch = %(end_epoch)s, `war_state` = %(state)s WHERE `uuid` = %(uuid)s"
 
         conn = self.db.get_connection()
         cur = conn.cursor()
-        cur.execute(update_query, war)
+        cur.execute(update_query, war.data_export())
         cur.close()
         conn.close()
+
+    def save_war_members(self, war: WordWar):
+        delete_statement = "DELETE FROM `new_war_members` WHERE `war_uuid` = %(uuid)s"
+        insert_statement = "INSERT INTO `new_war_members` SET `war_uuid` = %(uuid)s, `nick` = %(nick)s"
+
+        connection = self.db.get_connection()
+        cursor = connection.cursor()
+
+        cursor.execute(delete_statement, {'uuid': str(war.uuid)})
+
+        for nick in war.war_members:
+            cursor.execute(insert_statement, {'uuid': str(war.uuid), 'nick': nick})
+
+    def load_war_members(self, war: WordWar):
+        select_statement = "SELECT * FROM `new_war_members` WHERE `war_uuid` = %(uuid)s"
+
+        connection = self.db.get_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        war_members = set()
+
+        cursor.execute(select_statement, {'uuid': str(war.uuid)})
+        for row in cursor:
+            war_members.add(row['nick'])
+
+        return war_members
+
+    def load_wars(self):
+        select_all_statement = "SELECT * FROM `new_wars` WHERE `war_state` NOT IN ('CANCELLED', 'FINISHED')"
+
+        wars = []
+
+        connection = self.db.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(select_all_statement)
+        for row in cursor:
+            war = WordWar()
+            war.load_from_db(row)
+            war.war_members = self.load_war_members(war)
+            wars.append(war)
+
+        return wars

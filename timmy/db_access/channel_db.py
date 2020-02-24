@@ -6,6 +6,9 @@ from timmy.data.channel_data import ChannelData
 
 class ChannelDb:
     def __init__(self):
+        self.db = None
+
+    def init(self):
         self.db = db_access.connection_pool
 
     def get_channel_list(self):

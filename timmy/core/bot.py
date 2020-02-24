@@ -39,6 +39,8 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
         for i in self.handled_callbacks.keys():
             self.connection.add_global_handler(i, getattr(self, "_on_" + i), -20)
 
+        db_access.init_db_access()
+
         pool = db_access.connection_pool
         pool.setup(host, database, user, password)
 

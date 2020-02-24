@@ -7,3 +7,14 @@ connection_pool = ConnectionPool()
 settings = Settings()
 word_war_db = WordWarDb()
 channel_db = ChannelDb()
+
+
+def init_db_access():
+    global settings
+    settings.init()
+
+    global word_war_db
+    word_war_db.init()
+
+    global channel_db
+    channel_db.init()
