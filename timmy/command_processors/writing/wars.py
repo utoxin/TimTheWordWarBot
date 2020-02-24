@@ -184,8 +184,8 @@ class Wars(BaseCommand):
 
             if re.match("^\\d+$", war_name):
                 self.respond_to_user(connection, event, "War names must be more than a number. It's possible you "
-                                                        "meant to specify the start delay. Try: !war start %s "
-                                                        "delay:%s".format(command_data.args[1], war_name))
+                                                        "meant to specify the start delay. Try: !war start {} "
+                                                        "delay:{}".format(command_data.args[1], war_name))
                 return
 
             current_epoch = time.time()
@@ -205,7 +205,7 @@ class Wars(BaseCommand):
 
             if to_start > 0:
                 self.respond_to_user(connection, event,
-                                     "Your word war, %s, will start in %.1f minutes. The ID is %d-%d.".format(
+                                     "Your word war, {}, will start in {:.1f} minutes. The ID is {:d}-{:d}.".format(
                                              war.get_name(), to_start / 60, war.year, war.war_id))
         else:
             self.respond_to_user(connection, event, "Usage: !war start <duration in minutes> [<options>] [<name>]")
@@ -226,7 +226,7 @@ class Wars(BaseCommand):
             elif war_by_id:
                 self._remove_war(connection, event, command_data, war_by_id)
             else:
-                self.respond_to_user(connection, event, "I don't know of a war with the name or ID '%s'.".format(name))
+                self.respond_to_user(connection, event, "I don't know of a war with the name or ID '{}'.".format(name))
         else:
             self.respond_to_user(connection, event, "Syntax: !war cancel <name or id>")
 
@@ -266,7 +266,7 @@ class Wars(BaseCommand):
             max_duration_length = 1
 
             for war in core.war_ticker_instance.wars:
-                war_id = "%d-%d".format(war.year, war.war_id)
+                war_id = "{:d}-{:d}".format(war.year, war.war_id)
                 if len(war_id) > max_id_length:
                     max_id_length = len(war_id)
 
@@ -302,7 +302,7 @@ class Wars(BaseCommand):
             else:
                 self.respond_to_user(connection, event,
                                      "Hmmm. I don't seem to have a record of an upcoming war. Try providing a war ID?")
-                self.respond_to_user(connection, event, "Usage: !war %s [<war id>]".format(command_data.args[0]))
+                self.respond_to_user(connection, event, "Usage: !war {} [<war id>]".format(command_data.args[0]))
         else:
             war = self._find_war_by_id(command_data.args[1])
 
@@ -314,7 +314,7 @@ class Wars(BaseCommand):
     @staticmethod
     def _find_war_by_id(search_id):
         for war in core.war_ticker_instance.wars:
-            war_id = "%d-%d".format(war.year, war.war_id)
+            war_id = "{:d}-{:d}".format(war.year, war.war_id)
             if war_id == search_id:
                 return war
 
@@ -337,6 +337,6 @@ class Wars(BaseCommand):
         if command_data.issuer.lower() == war.starter.lower():
             core.war_ticker_instance.wars.remove(war)
             war.cancel_war()
-            self.respond_to_user(connection, event, "%s has been ended.".format(war.get_name()))
+            self.respond_to_user(connection, event, "{} has been ended.".format(war.get_name()))
         else:
             self.respond_to_user(connection, event, "Only the starter of a war can end it early.")

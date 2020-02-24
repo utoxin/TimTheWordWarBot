@@ -24,10 +24,10 @@ class WarTicker:
         current_epoch = time.time()
         late_start = current_epoch - war.start_epoch
 
-        message = "%s: Starting now!".format(war.get_name())
+        message = "{}: Starting now!".format(war.get_name())
 
         if late_start >= 5:
-            message += " (%d seconds late. Sorry!)".format(late_start)
+            message += " ({:d} seconds late. Sorry!)".format(late_start)
 
         core.bot_instance.connection.privmsg(war.channel, message)
 
@@ -39,10 +39,10 @@ class WarTicker:
         current_epoch = time.time()
         late_end = current_epoch - war.end_epoch
 
-        message = "%s: Ending now!".format(war.get_name())
+        message = "{}: Ending now!".format(war.get_name())
 
         if late_end >= 5:
-            message += " (%d seconds late. Sorry!)".format(late_end)
+            message += " ({:d} seconds late. Sorry!)".format(late_end)
 
         core.bot_instance.connection.privmsg(war.channel, message)
 
@@ -80,15 +80,15 @@ class WarTicker:
         time_to_start = int(war.start_epoch - time.time())
 
         if time_to_start < 60:
-            message = "%s: Starting in %d %s.".format(
-                    [war.get_name(), time_to_start, "seconds" if time_to_start > 1 else "second"])
+            message = "{}: Starting in {:d} {}.".format(
+                    war.get_name(), time_to_start, "seconds" if time_to_start > 1 else "second")
         else:
-            minutes = time_to_start / 60
+            minutes = time_to_start // 60
             if time_to_start % 60 == 0:
-                message = "%s: Starting in %d %s.".format(
-                        [war.get_name(include_duration=True), minutes, "minutes" if minutes > 1 else "minute"])
+                message = "{}: Starting in {:d} {}.".format(
+                        war.get_name(include_duration=True), minutes, "minutes" if minutes > 1 else "minute")
             else:
-                message = "%s: Starting in %.1f minutes.".format([war.get_name(include_duration=True), minutes])
+                message = "%s: Starting in %.1f minutes.".format(war.get_name(include_duration=True), minutes)
 
         core.bot_instance.connection.privmsg(war.channel, message)
 
@@ -97,12 +97,12 @@ class WarTicker:
         time_to_end = int(war.end_epoch - time.time())
 
         if time_to_end < 60:
-            message = "%s: %d %s remaining!".format(
-                    [war.get_name(), time_to_end, "seconds" if time_to_end > 1 else "second"])
+            message = "{}: {:d} {} remaining!".format(
+                    war.get_name(), time_to_end, "seconds" if time_to_end > 1 else "second")
         else:
-            minutes = time_to_end / 60
-            message = "%s: %d %s remaining.".format(
-                    [war.get_name(), minutes, "minutes" if minutes > 1 else "minute"])
+            minutes = time_to_end // 60
+            message = "{}: {:d} {} remaining.".format(
+                    war.get_name(), minutes, "minutes" if minutes > 1 else "minute")
 
         core.bot_instance.connection.privmsg(war.channel, message)
 
