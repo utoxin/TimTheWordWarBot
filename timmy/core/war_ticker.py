@@ -22,7 +22,7 @@ class WarTicker:
 
     def begin_war(self, war: WordWar):
         current_epoch = time.time()
-        late_start = current_epoch - war.start_epoch
+        late_start = int(current_epoch - war.start_epoch)
 
         message = "{}: Starting now!".format(war.get_name())
 
@@ -37,7 +37,7 @@ class WarTicker:
 
     def end_war(self, war: WordWar):
         current_epoch = time.time()
-        late_end = current_epoch - war.end_epoch
+        late_end = int(current_epoch - war.end_epoch)
 
         message = "{}: Ending now!".format(war.get_name())
 
@@ -83,12 +83,12 @@ class WarTicker:
             message = "{}: Starting in {:d} {}.".format(
                     war.get_name(), time_to_start, "seconds" if time_to_start > 1 else "second")
         else:
-            minutes = time_to_start // 60
+            minutes = time_to_start / 60
             if time_to_start % 60 == 0:
                 message = "{}: Starting in {:d} {}.".format(
-                        war.get_name(include_duration=True), minutes, "minutes" if minutes > 1 else "minute")
+                        war.get_name(include_duration=True), int(minutes), "minutes" if minutes > 1 else "minute")
             else:
-                message = "%s: Starting in %.1f minutes.".format(war.get_name(include_duration=True), minutes)
+                message = "{}: Starting in {:.1f} minutes.".format(war.get_name(include_duration=True), minutes)
 
         core.bot_instance.connection.privmsg(war.channel, message)
 
@@ -139,7 +139,7 @@ def war_update_loop():
                 if war.state == WarState.PENDING:
                     core.war_ticker_instance.begin_war(war)
                 else:
-                    time_difference = war.end_epoch - current_epoch
+                    time_difference = int(war.end_epoch - current_epoch)
 
                     if time_difference in [600, 300, 60, 5, 4, 3, 2, 1]:
                         core.war_ticker_instance.war_end_count(war)

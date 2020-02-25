@@ -19,11 +19,9 @@ class WordWarDb:
         conn = self.db.get_connection()
         cur = conn.cursor()
         cur.execute(create_query, war.data_export())
-        war_id = cur.lastrowid
+        war.war_id = cur.lastrowid
         cur.close()
         conn.close()
-
-        return war_id
 
     def update_war(self, war: WordWar):
         update_query = "UPDATE `new_wars` SET `current_chain` = %(current_chain)s, `start_epoch` = %(start_epoch)s, " \

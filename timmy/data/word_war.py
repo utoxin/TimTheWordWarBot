@@ -2,8 +2,6 @@ import time
 import uuid
 from datetime import datetime
 
-import string
-
 from timmy import db_access
 from timmy.data.war_state import WarState
 
@@ -77,11 +75,21 @@ class WordWar:
         self.state = WarState[row['war_state']]
 
     def data_export(self):
-        data = vars(self)
-        data['uuid'] = str(data['uuid'])
-        data['state'] = data['state'].name
-        del data['war_members']
-        del data['db_access']
+        data = {'uuid':          str(self.uuid),
+                'year':          self.year,
+                'war_id':        self.war_id,
+                'channel':       self.channel,
+                'starter':       self.starter,
+                'name':          self.name,
+                'base_duration': self.base_duration,
+                'base_break':    self.base_break,
+                'total_chains':  self.total_chains,
+                'current_chain': self.current_chain,
+                'start_epoch':   self.start_epoch,
+                'end_epoch':     self.end_epoch,
+                'randomness':    self.randomness,
+                'state':         self.state.name}
+
         return data
 
     def end_war(self):
@@ -107,21 +115,19 @@ class WordWar:
         return self.end_epoch - self.start_epoch
 
     def get_name(self, include_id=False, include_duration=False, id_field_width=1, duration_field_width=1):
-        formatter = string.Formatter()
         name_parts = []
 
         if include_id:
             db_id = self.get_id()
-            name_parts.append(formatter.format("[ID %" + str(id_field_width) + "s]", db_id))
+            name_parts.append("[ID {0:<{1:d}}]".format(db_id, id_field_width))
 
         if include_duration:
-            name_parts.append(formatter.format("[%" + str(duration_field_width) + "s]",
-                                               self.get_duration_text(self.duration())))
+            name_parts.append("[{0:<{1:d}}]".format(self.get_duration_text(self.duration()), duration_field_width))
 
         name_parts.append(self.name)
 
         if self.total_chains > 1:
-            name_parts.append(formatter.format("(%d/%d)", self.current_chain, self.total_chains))
+            name_parts.append("({:d}/{:d})".format(self.current_chain, self.total_chains))
 
         return " ".join(name_parts)
 
@@ -150,7 +156,7 @@ class WordWar:
             text += str(minutes) + "M "
 
         if seconds > 0:
-            text += str(seconds) + "S"
+            text += str(int(seconds)) + "S"
 
         return text.strip()
 
@@ -175,13 +181,11 @@ class WordWar:
         return self.get_description(id_field_width, duration_field_width) + " :: " + self.channel
 
     def get_id(self):
-        formatter = string.Formatter()
-        return formatter.format("%d-%d", self.year, self.war_id)
+        return "{:d}-{:d}".format(self.year, self.war_id)
 
     def get_chain_id(self):
-        formatter = string.Formatter()
         chain = self.current_chain
         if self.state == WarState.FINISHED:
             chain -= 1
 
-        return formatter.format("%s-%d", self.get_id(), chain)
+        return "{}-{:d}".format(self.get_id(), chain)
