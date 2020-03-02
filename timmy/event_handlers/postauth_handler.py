@@ -1,4 +1,5 @@
 from timmy import db_access, core
+from timmy.db_access import user_directory
 
 
 class PostAuthHandler:
@@ -14,3 +15,4 @@ class PostAuthHandler:
                 connection.join(channel)
 
             core.init_war_ticker()
+            user_directory.do_initial_db_load()

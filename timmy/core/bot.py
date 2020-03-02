@@ -14,19 +14,20 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
         super().__init__()
 
         self.handled_callbacks = {
-            "action":     [],
-            "disconnect": [],
-            "invite":     [],
-            "join":       [],
-            "kick":       [],
-            "namreply":   [],
-            "nick":       [],
-            "part":       [],
-            "privmsg":    [],
-            "pubmsg":     [],
-            "quit":       [],
-            "umode":      [],
-            "welcome":    [],
+            "action":       [],
+            "disconnect":   [],
+            "invite":       [],
+            "join":         [],
+            "kick":         [],
+            "namreply":     [],
+            "nick":         [],
+            "part":         [],
+            "privmsg":      [],
+            "pubmsg":       [],
+            "quit":         [],
+            "umode":        [],
+            "welcome":      [],
+            "whoisaccount": [],
         }
 
         self.channels = IRCDict()
@@ -220,4 +221,9 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
     def _on_welcome(self, connection, event):
         for obj in self.handled_callbacks["welcome"]:
             if obj.on_welcome(connection, event):
+                break
+
+    def _on_whoisaccount(self, connection, event):
+        for obj in self.handled_callbacks["whoisaccount"]:
+            if obj.on_whoisaccount(connection, event):
                 break

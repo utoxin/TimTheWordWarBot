@@ -4,6 +4,7 @@ from timmy.event_handlers import CommandHandler
 class BaseCommand:
     user_commands = {}
     admin_commands = {}
+    sub_commands = {}
 
     @staticmethod
     def respond_to_user(connection, event, message):
@@ -18,3 +19,11 @@ class BaseCommand:
 
         for command in self.admin_commands:
             command_handler.admin_command_processors[command] = self
+
+    def handle_subcommand(self, connection, event, command_data):
+        if command_data.arg_count < 1 or command_data.args[0] not in self.sub_commands:
+            self.respond_to_user(connection, event, "Valid subcommands: " + ", ".join(self.sub_commands))
+            return
+
+        subcommand_handler = getattr(self, '_' + command_data.args[0] + '_handler')
+        subcommand_handler(connection, event, command_data)

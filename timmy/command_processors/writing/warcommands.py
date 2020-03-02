@@ -3,13 +3,13 @@ import time
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
-from timmy.core import bot_instance, war_ticker
+from timmy.core import bot_instance
 from timmy.data.command_data import CommandData
 from timmy.data.war_state import WarState
 from timmy.data.word_war import WordWar
 
 
-class Wars(BaseCommand):
+class WarCommands(BaseCommand):
     user_commands = {"war", "endwar", "starwar", "startwar", "chainwar", "listall", "listwars", "joinwar", "leavewar"}
     sub_commands = {"start", "cancel", "join", "leave", "report", "list"}
 
@@ -63,12 +63,7 @@ class Wars(BaseCommand):
             if command_data.args[0] == 'end':
                 command_data.args[0] = 'cancel'
 
-        if command_data.arg_count < 1 or command_data.args[0] not in self.sub_commands:
-            self.respond_to_user(connection, event, "Valid subcommands: " + ", ".join(self.sub_commands))
-            return
-
-        subcommand_handler = getattr(self, '_' + command_data.args[0] + '_handler')
-        subcommand_handler(connection, event, command_data)
+        self.handle_subcommand(connection, event, command_data)
 
     def _start_handler(self, connection, event, command_data: CommandData):
         if command_data.arg_count >= 2:

@@ -5,7 +5,7 @@ from irc.dict import IRCDict
 from timmy.command_processors.base_command import BaseCommand
 
 
-class Timer(BaseCommand):
+class TimerCommand(BaseCommand):
     user_commands = {'eggtimer', 'timer'}
 
     def __init__(self):

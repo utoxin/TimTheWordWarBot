@@ -3,7 +3,7 @@ import threading
 
 class ServerHandler:
     def on_invite(self, connection, event):
-        x = threading.Thread(target=self._on_invite, args=(connection, event))
+        x = threading.Thread(target=self._on_invite, args=(connection, event), name="ServerHandler-on_invite")
         x.start()
 
     @staticmethod
@@ -11,7 +11,7 @@ class ServerHandler:
         connection.join(event.arguments[0])
 
     def on_join(self, connection, event):
-        x = threading.Thread(target=self._on_join, args=(connection, event))
+        x = threading.Thread(target=self._on_join, args=(connection, event), name="ServerHandler-on_join")
         x.start()
 
     @staticmethod
