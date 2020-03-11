@@ -49,7 +49,7 @@ class WhoisHandler:
 
     @staticmethod
     def on_whoisaccount(connection, event):
-        nick = event.target
+        nick = event.arguments[0]
 
         if event.arguments[2] == 'is logged in as':
             authed_as = event.arguments[1]

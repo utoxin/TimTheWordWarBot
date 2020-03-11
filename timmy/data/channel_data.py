@@ -146,3 +146,36 @@ class ChannelData(Channel):
         if self.muzzled and self.muzzled_until is not None and (self.muzzled_until < time.time()):
             self.muzzled = False
             self.muzzled_until = 0.0
+
+    def record_sighting(self, new_raptors=1):
+        self.raptor_data['sightings'] += new_raptors
+        self.raptor_data['active'] += new_raptors
+
+        self.save_data()
+
+    def record_new_raptors(self, new_raptors):
+        self.raptor_data['active'] += new_raptors
+
+        self.save_data()
+
+    def record_leaving_raptors(self, leaving_raptors):
+        self.raptor_data['active'] -= leaving_raptors
+
+        if self.raptor_data['active'] < 0:
+            self.raptor_data['active'] = 0
+
+        self.save_data()
+
+    def record_kills(self, kills):
+        self.raptor_data['killed'] += kills
+
+        self.save_data()
+
+    def record_deaths(self, deaths):
+        self.raptor_data['active'] -= deaths
+        self.raptor_data['dead'] += deaths
+
+        if self.raptor_data['active'] < 0:
+            self.raptor_data['active'] = 0
+
+        self.save_data()

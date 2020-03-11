@@ -9,14 +9,13 @@ from timmy.data.userdata import UserData
 
 class UserDirectory:
     def __init__(self):
+        self.user_data_loaded = False
+
         self.auth_directory = IRCDict()
         self.nick_directory = IRCDict()
         self.temp_directory = IRCDict()
 
-    def init(self):
-        self.do_initial_db_load()
-
-    def do_initial_db_load(self):
+    def _do_initial_db_load(self):
         select_statement = "SELECT * FROM `users`"
 
         connection = db_access.connection_pool.get_connection()
@@ -40,7 +39,12 @@ class UserDirectory:
             self.auth_directory[user.authed_user] = user
             self.nick_directory[user.authed_user] = user
 
+        self.user_data_loaded = True
+
     def find_user_data(self, nick, include_temp_data=False):
+        if not self.user_data_loaded:
+            self._do_initial_db_load()
+
         if nick in self.auth_directory:
             return self.auth_directory[nick]
 
