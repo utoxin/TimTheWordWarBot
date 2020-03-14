@@ -1,3 +1,4 @@
 irc ~= 17.1
 mysql-connector ~= 2.2.9
-timeloop
+timeloop ~= 1.0.2
+pychance ~= 0.1.1
