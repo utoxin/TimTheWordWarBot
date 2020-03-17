@@ -3,10 +3,11 @@ import time
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
-from timmy.core import bot_instance
+from timmy.core import bot_instance, raptor_ticker
 from timmy.data.command_data import CommandData
 from timmy.data.war_state import WarState
 from timmy.data.word_war import WordWar
+from timmy.db_access import user_directory, word_war_db
 
 
 class WarCommands(BaseCommand):
@@ -242,8 +243,56 @@ class WarCommands(BaseCommand):
                                                     "count. The war id is optional. The last completed war will be "
                                                     "selected by default.")
         else:
-            # TODO: Implement once the user directory is built
-            self.respond_to_user(connection, event, "NOT YET IMPLEMENTED")
+            user_data = user_directory.find_user_data(command_data.issuer)
+            channel_data = bot_instance.channels[command_data.channel]
+
+            if len(command_data.args) == 3:
+                war = word_war_db.load_war_by_id(command_data.args[2])
+            elif channel_data.last_war_id != "":
+                war = word_war_db.load_war_by_id(channel_data.last_war_id)
+            else:
+                self.respond_to_user(connection, event, "I don't know which war finished last. Try providing the War "
+                                                        "ID")
+                return
+
+            if user_data is None or not user_data.raptor_adopted:
+                self.respond_to_user(connection, event, "I'm sorry, you must be a registered user and have an adopted "
+                                                        "raptor to record your stats... (!raptor command)")
+            elif war is None:
+                self.respond_to_user(connection, event, "That war couldn't be found...")
+            elif war.war_state is WarState.CANCELLED:
+                self.respond_to_user(connection, event, "That war was cancelled. Sorry!")
+            elif (war.total_chains == 1 and war.war_state is not WarState.FINISHED) or (war.total_chains > 1 and
+                                                                                        war.current_chain == 1):
+                self.respond_to_user(connection, event, "Can't record an entry for a war that isn't complete. Sorry!")
+            else:
+                try:
+                    wordcount = int(float(command_data.args[1]))
+                except TypeError:
+                    self.respond_to_user(connection, event,
+                                         "I didn't understand the wordcount. Was it numeric?")
+                    # TODO: Exception Logging
+                    return
+
+                if war.get_chain_id() in user_data.recorded_wars:
+                    user_data.total_sprint_wordcount -= user_data.recorded_wars[war.get_chain_id()]
+                else:
+                    user_data.total_sprints += 1
+                    user_data.total_sprint_duration += war.duration / 60
+
+                user_data.total_sprint_wordcount += wordcount
+                user_data.recorded_wars[war.get_chain_id()] = wordcount
+
+                user_data.save()
+
+                channel_data.raptor['strength'] += min(10, war.base_duration / 600)
+
+                self.respond_to_user(connection, event, "{} pulls out their {} notebook and makes a note of that "
+                                                        "wordcount.".format(user_data.raptor_name,
+                                                                            user_data.raptor_favorite_color))
+
+                if not channel_data.is_muzzled():
+                    raptor_ticker.handle_war_report(user_data, war, wordcount)
 
     def _leave_handler(self, connection, event, command_data: CommandData):
         war = self._find_join_leave_war(connection, event, command_data)

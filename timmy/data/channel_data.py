@@ -4,6 +4,8 @@ from irc.bot import Channel
 from irc.dict import IRCDict
 
 from timmy import db_access
+from timmy.core import war_ticker_instance
+from timmy.data.war_state import WarState
 
 
 class ChannelData(Channel):
@@ -139,8 +141,14 @@ class ChannelData(Channel):
         return any([self.chatter_settings['types'][x] for x in amusements])
 
     def is_muzzled(self):
-        # TODO: Update this after wars are implemented
-        return self.muzzled
+        auto_muzzle = False
+
+        for war in war_ticker_instance.wars:
+            if self.auto_muzzle and war.war_state is WarState.ACTIVE and self.name.lower() == war.channel.lower():
+                auto_muzzle = True
+                break
+
+        return self.muzzled or auto_muzzle
 
     def clear_timed_muzzle(self):
         if self.muzzled and self.muzzled_until is not None and (self.muzzled_until < time.time()):

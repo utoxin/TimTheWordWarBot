@@ -7,6 +7,7 @@ from irc.dict import IRCDict
 from irc import client, modes
 from timmy import db_access, event_handlers
 from timmy.data.channel_data import ChannelData
+from timmy.utilities import irc_logger
 
 
 class Bot(irc.client_aio.AioSimpleIRCClient):
@@ -55,6 +56,9 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
 
         self.servers = more_itertools.peekable(itertools.cycle(specs))
         self.recon = ExponentialBackoff()
+
+        irc_logger.set_enabled(settings.get_setting("do_irc_logging") == '1')
+        irc_logger.set_channel(settings.get_setting("irc_logging_channel"))
 
         event_handlers.init_event_handlers()
 

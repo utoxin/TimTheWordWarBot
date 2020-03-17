@@ -1,6 +1,7 @@
 from timmy import db_access
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
+from timmy.utilities import text_generator
 
 
 class RaptorCommands(BaseCommand):
@@ -39,7 +40,7 @@ class RaptorCommands(BaseCommand):
 
         user_data.raptor_adopted = True
         user_data.raptor_name = " ".join(command_data.args[1:])
-        # TODO: Set raptor's favorite color using lists
+        user_data.raptor_favorite_color = text_generator.get_string("[color]")
 
         user_data.save()
 

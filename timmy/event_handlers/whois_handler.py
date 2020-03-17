@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from timmy import core
 from timmy.data.userdata import UserData
 from timmy.db_access import user_directory
+from timmy.utilities import irc_logger
 
 
 class WhoisHandler:
@@ -53,13 +54,20 @@ class WhoisHandler:
 
         if event.arguments[2] == 'is logged in as':
             authed_as = event.arguments[1]
-            # TODO: IRC logging :: Received whois response Nick: nick. Registered as: authed as
+            irc_logger.log_message("Received whois response. Nick: {} :: Registered As: {}".format(
+                    nick,
+                    authed_as
+            ))
 
             auth_data = user_directory.auth_directory.get(authed_as)
             nick_data = user_directory.nick_directory.get(nick)
             if auth_data is not None:
                 if nick_data is None:
-                    # TODO: IRC Logging :: Adding nick to existing user
+                    irc_logger.log_message("Adding {} to existing user {}".format(
+                            nick,
+                            auth_data.uuid
+                    ))
+
                     user_directory.nick_directory[nick] = auth_data
                     auth_data.nicks.add(nick)
                     auth_data.save()
@@ -67,12 +75,17 @@ class WhoisHandler:
                 temp_data = user_directory.temp_directory.get(nick)
 
                 if temp_data is not None:
-                    # TODO: IRC Logging :: Moving nick to permanent user ID
+                    irc_logger.log_message("Moving {} to permanent user {}".format(
+                            nick,
+                            temp_data.uuid
+                    ))
+
                     temp_data.registration_data_retrieved = True
                     temp_data.authed_user = authed_as
                     temp_data.nicks.add(nick)
                 else:
-                    # TODO: IRC Logging :: Added nick to data for entirely new user. How did this happen?
+                    irc_logger.log_message("Adding {} as entirely new user. How did this happen?".format(nick))
+
                     temp_data = UserData()
                     temp_data.uuid = uuid.uuid4()
                     temp_data.authed_user = authed_as
@@ -87,8 +100,8 @@ class WhoisHandler:
 
                 if nick in user_directory.temp_directory:
                     del user_directory.temp_directory[nick]
-
-        # TODO: Else Branch IRC logging :: Received whois response Nick: nick not registered.
+        else:
+            irc_logger.log_message("Received whois response. Nick: {} :: Not Registered".format(nick))
 
     @staticmethod
     def _handle_nick_event(nick):
@@ -101,7 +114,7 @@ class WhoisHandler:
             user_data.last_whois_check = datetime.now()
 
             user_directory.temp_directory[nick] = user_data
-            # TODO: Add IRC Logging :: Sending initial whois request for NICK
+            irc_logger.log_message("Sending initial whois request for {}".format(nick))
             user_directory.send_whois(nick)
 
         else:
@@ -113,7 +126,7 @@ class WhoisHandler:
 
                 if time_difference > timedelta(minutes=10):
                     user_data.last_whois_check = datetime.now()
-                    # TODO: Add IRC Logging :: Sending another whois request for NICK
+                    irc_logger.log_message("Sending another whois request for {}".format(nick))
                     user_directory.send_whois(nick)
 
         user_directory.cleanup_temp_list()

@@ -1,5 +1,7 @@
 import threading
 
+from timmy.utilities import text_generator
+
 
 class ServerHandler:
     def on_invite(self, connection, event):
@@ -20,4 +22,6 @@ class ServerHandler:
         nick = event.source.nick
 
         if nick != connection.get_nickname():
-            connection.privmsg(ch, "Hi, " + nick)
+            text_generator.set_target(nick)
+            greeting = text_generator.get_string('[greeting]')
+            connection.privmsg(ch, greeting)

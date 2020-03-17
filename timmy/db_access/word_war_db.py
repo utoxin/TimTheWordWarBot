@@ -74,3 +74,18 @@ class WordWarDb:
             wars.append(war)
 
         return wars
+
+    def load_war_by_id(self, war_id):
+        select_statement = "SELECT * FROM `new_wars` WHERE CONCAT(`year`, '-', `war_id`) = %(war_id)s"
+
+        connection = self.db.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(select_statement, {'war_id': war_id})
+
+        war = None
+
+        for row in cursor:
+            war = WordWar()
+            war.load_from_db(row)
+
+        return war
