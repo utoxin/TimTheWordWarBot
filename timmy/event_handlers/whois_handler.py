@@ -59,6 +59,12 @@ class WhoisHandler:
                     authed_as
             ))
 
+            if core.user_perms.is_ignored(authed_as, 'soft'):
+                core.user_perms.soft_ignores['nick'] = True
+
+            if core.user_perms.is_ignored(authed_as, 'hard'):
+                core.user_perms.hard_ignores['nick'] = True
+
             auth_data = user_directory.auth_directory.get(authed_as)
             nick_data = user_directory.nick_directory.get(nick)
             if auth_data is not None:

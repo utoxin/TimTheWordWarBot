@@ -2,6 +2,7 @@ import re
 
 from irc.dict import IRCDict
 
+from timmy import core
 from timmy.data.command_data import CommandData
 from timmy.data.command_type import CommandType
 
@@ -24,9 +25,12 @@ class CommandHandler:
         command_processors.register_processors()
 
     def on_privmsg(self, connection, event):
-        self.on_pubmsg(connection, event)
+        return self.on_pubmsg(connection, event)
 
     def on_pubmsg(self, connection, event):
+        if core.user_perms.is_ignored(event.source.nick, 'hard'):
+            return True
+
         command_data = self._parse_event(event)
         if command_data is None:
             return False

@@ -2,7 +2,7 @@ import time
 import uuid
 from datetime import datetime
 
-from timmy import db_access
+from timmy import core, db_access
 from timmy.data.war_state import WarState
 
 

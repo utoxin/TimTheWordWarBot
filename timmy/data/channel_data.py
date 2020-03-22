@@ -4,7 +4,7 @@ from irc.bot import Channel
 from irc.dict import IRCDict
 
 from timmy import db_access
-from timmy.core import war_ticker_instance
+from timmy import core
 from timmy.data.war_state import WarState
 
 
@@ -143,7 +143,7 @@ class ChannelData(Channel):
     def is_muzzled(self):
         auto_muzzle = False
 
-        for war in war_ticker_instance.wars:
+        for war in core.war_ticker_instance.wars:
             if self.auto_muzzle and war.war_state is WarState.ACTIVE and self.name.lower() == war.channel.lower():
                 auto_muzzle = True
                 break

@@ -10,7 +10,7 @@ class WordWarDb:
         self.db = db_access.connection_pool
 
     def create_war(self, war: WordWar):
-        create_query = "INSERT INTO `new_wars` (`year`, `uuid`, `channel`, `starter`, `name`, `base_duration`, " \
+        create_query = "INSERT INTO `wars` (`year`, `uuid`, `channel`, `starter`, `name`, `base_duration`, " \
                        "`base_break`, `total_chains`, `current_chain`, `start_epoch`, `end_epoch`, `randomness`, " \
                        "`war_state`, `created`) VALUES (%(year)s, %(uuid)s, %(channel)s, %(starter)s, %(name)s, " \
                        "%(base_duration)s, %(base_break)s, %(total_chains)s, %(current_chain)s, %(start_epoch)s, " \
@@ -24,7 +24,7 @@ class WordWarDb:
         conn.close()
 
     def update_war(self, war: WordWar):
-        update_query = "UPDATE `new_wars` SET `current_chain` = %(current_chain)s, `start_epoch` = %(start_epoch)s, " \
+        update_query = "UPDATE `wars` SET `current_chain` = %(current_chain)s, `start_epoch` = %(start_epoch)s, " \
                        "end_epoch = %(end_epoch)s, `war_state` = %(state)s WHERE `uuid` = %(uuid)s"
 
         conn = self.db.get_connection()
@@ -34,8 +34,8 @@ class WordWarDb:
         conn.close()
 
     def save_war_members(self, war: WordWar):
-        delete_statement = "DELETE FROM `new_war_members` WHERE `war_uuid` = %(uuid)s"
-        insert_statement = "INSERT INTO `new_war_members` SET `war_uuid` = %(uuid)s, `nick` = %(nick)s"
+        delete_statement = "DELETE FROM `war_members` WHERE `war_uuid` = %(uuid)s"
+        insert_statement = "INSERT INTO `war_members` SET `war_uuid` = %(uuid)s, `nick` = %(nick)s"
 
         connection = self.db.get_connection()
         cursor = connection.cursor()
@@ -46,7 +46,7 @@ class WordWarDb:
             cursor.execute(insert_statement, {'uuid': str(war.uuid), 'nick': nick})
 
     def load_war_members(self, war: WordWar):
-        select_statement = "SELECT * FROM `new_war_members` WHERE `war_uuid` = %(uuid)s"
+        select_statement = "SELECT * FROM `war_members` WHERE `war_uuid` = %(uuid)s"
 
         connection = self.db.get_connection()
         cursor = connection.cursor(dictionary=True)
@@ -60,7 +60,7 @@ class WordWarDb:
         return war_members
 
     def load_wars(self):
-        select_all_statement = "SELECT * FROM `new_wars` WHERE `war_state` NOT IN ('CANCELLED', 'FINISHED')"
+        select_all_statement = "SELECT * FROM `wars` WHERE `war_state` NOT IN ('CANCELLED', 'FINISHED')"
 
         wars = []
 
@@ -76,7 +76,7 @@ class WordWarDb:
         return wars
 
     def load_war_by_id(self, war_id):
-        select_statement = "SELECT * FROM `new_wars` WHERE CONCAT(`year`, '-', `war_id`) = %(war_id)s"
+        select_statement = "SELECT * FROM `wars` WHERE CONCAT(`year`, '-', `war_id`) = %(war_id)s"
 
         connection = self.db.get_connection()
         cursor = connection.cursor(dictionary=True)

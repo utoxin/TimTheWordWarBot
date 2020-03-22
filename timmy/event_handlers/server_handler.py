@@ -1,5 +1,9 @@
+import random
+import re
 import threading
 
+from timmy import core
+from timmy.data.channel_data import ChannelData
 from timmy.utilities import text_generator
 
 
@@ -18,10 +22,43 @@ class ServerHandler:
 
     @staticmethod
     def _on_join(connection, event):
-        ch = event.target
+        channel: ChannelData = core.bot_instance.channels[event.target]
         nick = event.source.nick
 
-        if nick != connection.get_nickname():
-            text_generator.set_target(nick)
-            greeting = text_generator.get_string('[greeting]')
-            connection.privmsg(ch, greeting)
+        if nick == connection.get_nickname():
+            return
+
+        if core.user_perms.is_ignored(nick, 'any'):
+            return
+
+        if channel.chatter_settings['types']['silly_reactions']:
+            connection.privmsg(channel.name, text_generator.get_string('[greeting]', {'target': nick}))
+
+            if random.randrange(100) < 15:
+                if random.getrandbits(1) == 1:
+                    connection.privmsg(channel.name, text_generator.get_string('[extra_greeting]'))
+                else:
+                    velociraptor_count = channel.raptor_data['active']
+                    plural = "" if velociraptor_count == 1 else "s"
+
+                    connection.privmsg(channel.name, "This channel has a population of {:n} velociraptor{}!",
+                                       velociraptor_count, plural)
+
+        if channel.chatter_settings['types']['helpful_reactions']:
+            channel_wars = [w for w in core.war_ticker_instance.wars if w.channel.lower() == channel.name.lower()]
+            war_count = len(channel_wars)
+
+            if war_count > 0:
+                plural = "" if war_count < 2 else "s"
+                are = "is" if war_count < 2 else "are"
+
+                connection.privmsg(channel.name, "There {} {:n} war{} currently running in this channel:".format(
+                        are, war_count, plural
+                ))
+
+                for war in channel_wars:
+                    connection.privmsg(channel.name, war.get_description())
+
+            if re.search('^(mib_(\\d+))|^(guest(\\d+))', nick, re.IGNORECASE):
+                connection.privmsg(channel.name, "{}: To change your name, type the following, putting the name you "
+                                                 "want instead of NewNameHere: /nick NewNameHere".format(nick))

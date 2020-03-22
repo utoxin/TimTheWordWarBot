@@ -12,17 +12,39 @@ class TextGenerator:
         if len(self.pychance.tables) < 1:
             self._load_tables()
 
-    def set_target(self, target_string):
+    def _setup_temp_tables(self, input_data: dict):
         self._ensure_init()
-        if 'target' not in self.pychance.tables:
-            table = SimpleTable('target')
-            self.pychance.add_table('target', table)
 
-        self.pychance.tables['target'].table_values = [target_string]
+        for key, value in input_data.items():
+            table_name = 'TEMP' + key
 
-    def get_string(self, input_string):
+            if table_name not in self.pychance.tables:
+                table = SimpleTable(table_name)
+                self.pychance.add_table(table_name, table)
+
+            self.pychance.tables[table_name].table_values = [value]
+
+    def _cleanup_temp_tables(self, input_data: dict):
         self._ensure_init()
-        return self.pychance.parser.parse(input_string)
+
+        for key, value in input_data.items():
+            table_name = 'TEMP' + key
+
+            if table_name in self.pychance.tables:
+                del self.pychance.tables[table_name]
+
+    def get_string(self, input_string, input_data: dict = None):
+        self._ensure_init()
+
+        if input_data is not None:
+            self._setup_temp_tables(input_data)
+
+        result = self.pychance.parser.parse(input_string)
+
+        if input_data is not None:
+            self._cleanup_temp_tables(input_data)
+
+        return result
 
     def _load_tables(self):
         self.__load_simple_tables()
