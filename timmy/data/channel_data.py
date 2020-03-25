@@ -187,3 +187,9 @@ class ChannelData(Channel):
             self.raptor_data['active'] = 0
 
         self.save_data()
+
+    def send_message(self, message):
+        core.bot_instance.connection.privmsg(self.name, message)
+
+    def send_action(self, message):
+        core.bot_instance.connection.action(self.name, message)
