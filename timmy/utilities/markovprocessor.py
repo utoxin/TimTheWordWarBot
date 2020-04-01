@@ -132,10 +132,84 @@ class MarkovProcessor:
         return word1
 
     def _store_triad(self, word1, word2, word3, message_type):
-        pass
+        first = self.get_markov_word_id(word1)
+        second = self.get_markov_word_id(word2)
+        third = self.get_markov_word_id(word3)
+
+        conn = self.db.get_connection()
+
+        if message_type != 'emote':
+            message_type = 'say'
+
+        add_triad_expression = "INSERT INTO `markov3_{}_data` (`first_id`, `second_id`, `third_id`, `count`) VALUES " \
+                               "(%(first)s, %(second)s, %(third)s, 1) ON DUPLICATE KEY UPDATE " \
+                               "count = count + 1".format(message_type)
+
+        cursor = conn.cursor()
+        cursor.execute(add_triad_expression, {
+            'first': first,
+            'second': second,
+            'third': third
+        })
 
     def _store_quad(self, word1, word2, word3, word4, message_type):
-        pass
+        first = self.get_markov_word_id(word1)
+        second = self.get_markov_word_id(word2)
+        third = self.get_markov_word_id(word3)
+        fourth = self.get_markov_word_id(word4)
+
+        conn = self.db.get_connection()
+
+        if message_type == 'novel':
+            return
+
+        add_quad_expression = "INSERT INTO `markov4_{}_data` (`first_id`, `second_id`, `third_id`, `fourth_id`, " \
+                              "`count`) VALUES (%(first)s, %(second)s, %(third)s, %(fourth)s, 1) ON DUPLICATE KEY " \
+                              "UPDATE count = count + 1".format(message_type)
+
+        cursor = conn.cursor()
+        cursor.execute(add_quad_expression, {
+            'first': first,
+            'second': second,
+            'third': third,
+            'fourth': fourth
+        })
+
+    def get_markov_word_id(self, word: str):
+        conn = self.db.get_connection()
+
+        word = word[:50]
+
+        checkword_statement = "SELECT id FROM markov_words WHERE word = %(word)s"
+        addword_statement = "INSERT INTO markov_words SET word = %(word)s"
+
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(checkword_statement, {'word': word})
+
+        result = cursor.fetchone()
+
+        if result is not None:
+            return result['id']
+        else:
+            cursor.execute(addword_statement, {'word': word})
+
+            return cursor.lastrowid
+
+    def get_markov_word_by_id(self, id: int):
+        conn = self.db.get_connection()
+
+        select_statement = "SELECT word FROM markov_words WHERE id = %(id)s"
+
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(select_statement, {'id': id})
+
+        result = cursor.fetchone()
+
+        if result is not None:
+            return result['word']
+        else:
+            return None
+
 
     def _load_bad_words(self):
         conn = self.db.get_connection()
