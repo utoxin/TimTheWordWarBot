@@ -42,3 +42,5 @@ class UserData:
             'raptor_bunnies_stolen':  self.raptor_bunnies_stolen,
             'last_bunny_raid':        self.last_bunny_raid
         })
+
+        connection.close()

@@ -13,4 +13,4 @@ class PostAuthHandler:
             for channel in channels:
                 connection.join(channel)
 
-            core.init_war_ticker()
+            core.init_core_tickers()

@@ -102,7 +102,7 @@ class ChannelData(Channel):
         self.last_war_id = ""
         self.newest_war_id = ""
 
-        self.muzzled = False
+        self._muzzled = False
         self.muzzled_until = None
         self.auto_muzzle = True
 
@@ -135,24 +135,28 @@ class ChannelData(Channel):
         self.raptor_data = ChannelData.raptor_data_defaults
 
     def amusement_chatter_available(self):
-        amusements = {'get', 'eightball', 'fridge', 'defenestrate', 'sing', 'foof', 'dance', 'summon', 'catch',
-                      'search', 'herd', 'banish'}
+        amusements = ['get', 'eightball', 'fridge', 'defenestrate', 'sing', 'foof', 'dance', 'summon', 'catch',
+                      'search', 'herd', 'banish']
 
-        return any([self.chatter_settings['types'][x] for x in amusements])
+        for amusement in amusements:
+            if self.chatter_settings['types'][amusement]:
+                return True
+
+        return False
 
     def is_muzzled(self):
         auto_muzzle = False
 
-        for war in core.war_ticker_instance.wars:
+        for war in core.war_ticker.wars:
             if self.auto_muzzle and war.war_state is WarState.ACTIVE and self.name.lower() == war.channel.lower():
                 auto_muzzle = True
                 break
 
-        return self.muzzled or auto_muzzle
+        return self._muzzled or auto_muzzle
 
     def clear_timed_muzzle(self):
-        if self.muzzled and self.muzzled_until is not None and (self.muzzled_until < time.time()):
-            self.muzzled = False
+        if self._muzzled and self.muzzled_until is not None and (self.muzzled_until < time.time()):
+            self._muzzled = False
             self.muzzled_until = 0.0
 
     def record_sighting(self, new_raptors=1):

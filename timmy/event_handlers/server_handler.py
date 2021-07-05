@@ -45,7 +45,7 @@ class ServerHandler:
                                        velociraptor_count, plural)
 
         if channel.chatter_settings['types']['helpful_reactions']:
-            channel_wars = [w for w in core.war_ticker_instance.wars if w.channel.lower() == channel.name.lower()]
+            channel_wars = [w for w in core.war_ticker.wars if w.channel.lower() == channel.name.lower()]
             war_count = len(channel_wars)
 
             if war_count > 0:

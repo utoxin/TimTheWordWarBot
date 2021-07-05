@@ -114,7 +114,7 @@ class WarTicker:
 
 @war_timer.job(interval=timedelta(seconds=1))
 def war_update_loop():
-    wars = core.war_ticker_instance.wars
+    wars = core.war_ticker.wars
     if wars is None or len(wars) <= 0:
         return
 
@@ -125,31 +125,31 @@ def war_update_loop():
             time_difference = int(war.start_epoch - current_epoch)
 
             if time_difference in [600, 300, 60, 30, 5, 4, 3, 2, 1]:
-                core.war_ticker_instance.war_start_count(war)
+                core.war_ticker.war_start_count(war)
             elif time_difference == 0:
-                core.war_ticker_instance.begin_war(war)
+                core.war_ticker.begin_war(war)
             elif time_difference >= 3600:
                 if time_difference % 3600 == 0:
-                    core.war_ticker_instance.war_start_count(war)
+                    core.war_ticker.war_start_count(war)
             elif time_difference >= 1800:
                 if time_difference % 1800 == 0:
-                    core.war_ticker_instance.war_start_count(war)
+                    core.war_ticker.war_start_count(war)
         else:
             if war.end_epoch >= current_epoch:
                 if war.state == WarState.PENDING:
-                    core.war_ticker_instance.begin_war(war)
+                    core.war_ticker.begin_war(war)
                 else:
                     time_difference = int(war.end_epoch - current_epoch)
 
                     if time_difference in [600, 300, 60, 5, 4, 3, 2, 1]:
-                        core.war_ticker_instance.war_end_count(war)
+                        core.war_ticker.war_end_count(war)
                     elif time_difference == 0:
-                        core.war_ticker_instance.end_war(war)
+                        core.war_ticker.end_war(war)
                     elif time_difference >= 3600:
                         if time_difference % 3600 == 0:
-                            core.war_ticker_instance.war_end_count(war)
+                            core.war_ticker.war_end_count(war)
                     elif time_difference >= 1800:
                         if time_difference % 1800 == 0:
-                            core.war_ticker_instance.war_end_count(war)
+                            core.war_ticker.war_end_count(war)
             else:
-                core.war_ticker_instance.end_war(war)
+                core.war_ticker.end_war(war)

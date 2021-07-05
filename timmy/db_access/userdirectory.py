@@ -41,6 +41,8 @@ class UserDirectory:
 
         self.user_data_loaded = True
 
+        connection.close()
+
     def find_user_data(self, nick, include_temp_data=False):
         if not self.user_data_loaded:
             self._do_initial_db_load()

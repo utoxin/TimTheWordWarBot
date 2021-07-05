@@ -1,4 +1,5 @@
 import itertools
+import re
 
 import irc.client_aio
 import more_itertools
@@ -80,6 +81,7 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             pass
 
     def _on_action(self, connection, event):
+        event = self._cleanup_color(event)
         for obj in self.handled_callbacks["action"]:
             if obj.on_action(connection, event):
                 break
@@ -198,11 +200,13 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
                 break
 
     def _on_privmsg(self, connection, event):
+        event = self._cleanup_color(event)
         for obj in self.handled_callbacks["privmsg"]:
             if obj.on_privmsg(connection, event):
                 break
 
     def _on_pubmsg(self, connection, event):
+        event = self._cleanup_color(event)
         for obj in self.handled_callbacks["pubmsg"]:
             if obj.on_pubmsg(connection, event):
                 break
@@ -231,3 +235,9 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
         for obj in self.handled_callbacks["whoisaccount"]:
             if obj.on_whoisaccount(connection, event):
                 break
+
+    @staticmethod
+    def _cleanup_color(event):
+        event.arguments[0] = re.sub(r'[\x02\x1F\x0F\x16]|\x03(\d\d?(,\d\d?)?)?', '', event.arguments[0])
+
+        return event

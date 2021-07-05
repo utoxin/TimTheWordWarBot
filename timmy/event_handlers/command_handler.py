@@ -71,6 +71,7 @@ class CommandHandler:
 
         if event.type == "privmsg":
             command_data.channel = event.source.nick
+            command_data.in_pm = True
         else:
             command_data.channel = event.target
 

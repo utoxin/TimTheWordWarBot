@@ -3,7 +3,6 @@ import time
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
-from timmy.core import bot_instance, raptor_ticker
 from timmy.data.command_data import CommandData
 from timmy.data.war_state import WarState
 from timmy.data.word_war import WordWar
@@ -194,10 +193,10 @@ class WarCommands(BaseCommand):
                 war.advanced_setup(command_data.channel, event.source.nick, war_name, duration,
                                    current_epoch + to_start, total_chains, delay, do_randomness)
 
-            core.war_ticker_instance.wars.append(war)
+            core.war_ticker.wars.append(war)
 
-            if command_data.channel in bot_instance.channels:
-                bot_instance.channels[command_data.channel].newest_war_id = war.get_id()
+            if command_data.channel in core.bot_instance.channels:
+                core.bot_instance.channels[command_data.channel].newest_war_id = war.get_id()
 
             if to_start > 0:
                 self.respond_to_user(connection, event,
@@ -244,7 +243,7 @@ class WarCommands(BaseCommand):
                                                     "selected by default.")
         else:
             user_data = user_directory.find_user_data(command_data.issuer)
-            channel_data = bot_instance.channels[command_data.channel]
+            channel_data = core.bot_instance.channels[command_data.channel]
 
             if len(command_data.args) == 3:
                 war = word_war_db.load_war_by_id(command_data.args[2])
@@ -292,7 +291,7 @@ class WarCommands(BaseCommand):
                                                                             user_data.raptor_favorite_color))
 
                 if not channel_data.is_muzzled():
-                    raptor_ticker.handle_war_report(user_data, war, wordcount)
+                    core.raptor_ticker.handle_war_report(user_data, war, wordcount)
 
     def _leave_handler(self, connection, event, command_data: CommandData):
         war = self._find_join_leave_war(connection, event, command_data)
@@ -305,11 +304,11 @@ class WarCommands(BaseCommand):
         all_wars = command_data.arg_count > 1 and command_data.args[1].lower() == "all"
         responded = False
 
-        if len(core.war_ticker_instance.wars) > 0:
+        if len(core.war_ticker.wars) > 0:
             max_id_length = 1
             max_duration_length = 1
 
-            for war in core.war_ticker_instance.wars:
+            for war in core.war_ticker.wars:
                 war_id = "{:d}-{:d}".format(war.year, war.war_id)
                 if len(war_id) > max_id_length:
                     max_id_length = len(war_id)
@@ -318,7 +317,7 @@ class WarCommands(BaseCommand):
                 if len(war_duration) > max_duration_length:
                     max_duration_length = len(war_duration)
 
-            for war in core.war_ticker_instance.wars:
+            for war in core.war_ticker.wars:
                 if all_wars or war.channel.lower() == command_data.channel.lower():
                     if all:
                         output = war.get_description_with_channel(max_id_length, max_duration_length)
@@ -336,7 +335,7 @@ class WarCommands(BaseCommand):
             self.respond_to_user(connection, event, "Sorry. This currently only works in regular channels.")
             return None
         else:
-            channel_data = bot_instance.channels[command_data.channel]
+            channel_data = core.bot_instance.channels[command_data.channel]
 
         war = None
 
@@ -357,7 +356,7 @@ class WarCommands(BaseCommand):
 
     @staticmethod
     def _find_war_by_id(search_id):
-        for war in core.war_ticker_instance.wars:
+        for war in core.war_ticker.wars:
             war_id = "{:d}-{:d}".format(war.year, war.war_id)
             if war_id == search_id:
                 return war
@@ -368,7 +367,7 @@ class WarCommands(BaseCommand):
     def _find_war_by_name(search_name, channel):
         return_war = None
 
-        for war in core.war_ticker_instance.wars:
+        for war in core.war_ticker.wars:
             if war.get_internal_name().lower() == search_name.lower() and war.channel.lower() == channel.lower():
                 if return_war is None:
                     return_war = war
@@ -379,7 +378,7 @@ class WarCommands(BaseCommand):
 
     def _remove_war(self, connection, event, command_data: CommandData, war: WordWar):
         if command_data.issuer.lower() == war.starter.lower():
-            core.war_ticker_instance.wars.remove(war)
+            core.war_ticker.wars.remove(war)
             war.cancel_war()
             self.respond_to_user(connection, event, "{} has been ended.".format(war.get_name()))
         else:

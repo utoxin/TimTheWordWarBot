@@ -45,6 +45,8 @@ class WordWarDb:
         for nick in war.war_members:
             cursor.execute(insert_statement, {'uuid': str(war.uuid), 'nick': nick})
 
+        connection.close()
+
     def load_war_members(self, war: WordWar):
         select_statement = "SELECT * FROM `war_members` WHERE `war_uuid` = %(uuid)s"
 
@@ -56,6 +58,8 @@ class WordWarDb:
         cursor.execute(select_statement, {'uuid': str(war.uuid)})
         for row in cursor:
             war_members.add(row['nick'])
+
+        connection.close()
 
         return war_members
 
@@ -73,6 +77,8 @@ class WordWarDb:
             war.war_members = self.load_war_members(war)
             wars.append(war)
 
+        connection.close()
+
         return wars
 
     def load_war_by_id(self, war_id):
@@ -87,5 +93,7 @@ class WordWarDb:
         for row in cursor:
             war = WordWar()
             war.load_from_db(row)
+
+        connection.close()
 
         return war

@@ -61,3 +61,5 @@ class TextGenerator:
                 self.pychance.add_table(row['table_name'], table)
             else:
                 self.pychance.tables[row['table_name']].add_value(row['table_entry'])
+
+        db.close()

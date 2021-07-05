@@ -24,6 +24,8 @@ class ChannelDb:
         for channel in cursor:
             channels.append(channel[0])
 
+        connection.close()
+
         return channels
 
     def join_channel(self, channel: ChannelData):
@@ -73,7 +75,7 @@ class ChannelDb:
             'active_velociraptors':     channel.raptor_data['active'],
             'dead_velociraptors':       channel.raptor_data['dead'],
             'killed_velociraptors':     channel.raptor_data['killed'],
-            'muzzle_expiration':        int(channel.muzzled_until) if channel.muzzled else None,
+            'muzzle_expiration':        int(channel.muzzled_until) if channel._muzzled else None,
             'raptor_strength_boost':    channel.raptor_data['strength'],
             'channel':                  channel.name
         })
@@ -113,6 +115,8 @@ class ChannelDb:
                 'account': str(account)
             })
 
+        connection.close()
+
     def load_channel_data(self, channel: ChannelData):
         select_channel_statement = "SELECT * FROM `channels` WHERE `channel` = %(channel)s"
         select_chatter_statement = "SELECT `setting`, `value` FROM `channel_chatter_settings` WHERE `channel` = " \
@@ -143,7 +147,7 @@ class ChannelDb:
             channel.auto_muzzle = row['auto_muzzle_wars'] == 1
             channel.muzzled_until = row['muzzle_expiration']
             if channel.muzzled_until is not None and channel.muzzled_until > time.time():
-                channel.muzzled = True
+                channel._muzzled = True
 
         select_cursor.execute(select_chatter_statement, {'channel': channel.name})
         for row in select_cursor:
@@ -156,5 +160,7 @@ class ChannelDb:
         select_cursor.execute(select_twitter_statement, {'channel': channel.name})
         for row in select_cursor:
             channel.twitter_accounts.append(row['account'])
+
+        connection.close()
 
         self.save_channel_settings(channel)

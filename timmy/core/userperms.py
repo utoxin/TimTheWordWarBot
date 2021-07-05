@@ -26,6 +26,8 @@ class UserPerms:
 
         self.admin_data_loaded = True
 
+        connection.close()
+
     def _load_ignore_data(self):
         select_statement = "SELECT `name`, `type` FROM `ignores`"
 
@@ -43,6 +45,8 @@ class UserPerms:
                 self.hard_ignores[row['name']] = True
 
         self.ignore_data_loaded = True
+
+        connection.close()
 
     def is_admin(self, nick, channel):
         if nick in core.bot_instance.channels[channel].opers():

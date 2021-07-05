@@ -25,14 +25,19 @@ class RaptorTicker:
         if random.randrange(raptor_cap) < max(10, raptor_cap - channel_data.raptor_data['active']):
             channel_data.record_sighting()
             if action:
-                core.bot_instance.connection.action(text_generator.get_string("[raptor_sighting_action_response]"))
+                core.bot_instance.connection.action(channel_data.name,
+                                                    text_generator.get_string("[raptor_sighting_action_response]"))
             else:
-                core.bot_instance.connection.action(text_generator.get_string("[raptor_sighting_message_response]"))
+                core.bot_instance.connection.privmsg(channel_data.name,
+                                                     text_generator.get_string("[raptor_sighting_message_response]"))
         elif random.randrange(100) < 25:
             if action:
-                core.bot_instance.connection.action(text_generator.get_string("[raptor_sighting_old_action_response]"))
+                core.bot_instance.connection.action(channel_data.name,
+                                                    text_generator.get_string("[raptor_sighting_old_action_response]"))
             else:
-                core.bot_instance.connection.action(text_generator.get_string("[raptor_sighting_old_message_response]"))
+                core.bot_instance.connection.privmsg(channel_data.name,
+                                                     text_generator.get_string("[raptor_sighting_old_message_response]")
+                                                     )
 
     def swarm(self, channel_data: ChannelData):
         if random.randrange(100) <= 33:
