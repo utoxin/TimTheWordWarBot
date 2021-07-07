@@ -3,5 +3,5 @@
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="ES6" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Remote Python 3.5.2 Vagrant VM at G:\User Data\Utoxin\Documents\GitHub\TimTheWordWarBot (/usr/bin/python3)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Remote Python 3.8.10 Docker (timmeh:latest)" project-jdk-type="Python SDK" />
 </project>
