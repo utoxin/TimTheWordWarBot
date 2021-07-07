@@ -1,0 +1,45 @@
+version: '3'
+services:
+
+  database:
+    build:
+      dockerfile: Dockerfile
+      context: ./database
+    image: mariadb:latest
+    ports:
+      - "3306"
+    networks:
+      - internal
+    volumes:
+      - db-data:/var/lib/mysql/
+
+  irc:
+    build:
+      dockerfile: Dockerfile
+      context: ./irc
+      args:
+        VER: 5.0.7
+    image: ircd/unrealircd:latest
+    volumes:
+      - ".:/ircd"
+    ports:
+      - "6667"
+    networks:
+      - internal
+
+  bot:
+    build:
+      dockerfile: Dockerfile
+      context: ./bot
+    image: python:slim
+    networks:
+      - internal
+    depends_on:
+      - database
+      - irc
+
+networks:
+  internal:
+
+volumes:
+  db-data:
