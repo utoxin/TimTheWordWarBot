@@ -17,11 +17,7 @@ services:
     build:
       dockerfile: Dockerfile
       context: ./irc
-      args:
-        VER: 5.0.7
-    image: ircd/unrealircd:latest
-    volumes:
-      - ".:/ircd"
+    image: inspircd/inspircd-docker:latest
     ports:
       - "6667"
     networks:
