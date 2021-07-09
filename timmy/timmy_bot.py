@@ -7,7 +7,7 @@ if __name__ == "__main__":
 
     # Load config
     config = configparser.ConfigParser()
-    config.read('botconfig.ini')
+    config.read('../botconfig.ini')
 
     # No config db_access found. Save out a template file, and exit.
     if len(config.sections()) == 0:
@@ -19,7 +19,7 @@ if __name__ == "__main__":
         config.set("DB", "user", "timmy")
         config.set("DB", "password", "password")
 
-        with open('botconfig.ini', 'wb') as configfile:
+        with open('../botconfig.ini', 'w') as configfile:
             config.write(configfile)
 
         exit(1)

@@ -2,6 +2,8 @@ version: '3'
 services:
 
   database:
+    environment:
+      - MARIADB_ROOT_PASSWORD=password
     build:
       dockerfile: Dockerfile
       context: ./database
@@ -26,8 +28,9 @@ services:
   bot:
     build:
       dockerfile: Dockerfile
-      context: ./bot
+      context: ../.
     image: python:slim
+    entrypoint: /bin/bash
     networks:
       - internal
     depends_on:
