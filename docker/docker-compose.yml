@@ -28,11 +28,14 @@ services:
   bot:
     build:
       dockerfile: Dockerfile
-      context: ../.
     image: python:slim
     entrypoint: /bin/bash
     networks:
       - internal
+    volumes:
+      - type: bind
+        source: ../.
+        target: /app/source
     depends_on:
       - database
       - irc

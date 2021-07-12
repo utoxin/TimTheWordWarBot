@@ -1,8 +1,8 @@
-from timmy.core.bot import Bot
-from timmy.core.idleticker import IdleTicker
-from timmy.core.raptorticker import RaptorTicker
-from timmy.core.userperms import UserPerms
-from timmy.core.warticker import WarTicker
+from .bot import Bot
+from .idleticker import IdleTicker
+from .raptorticker import RaptorTicker
+from .userperms import UserPerms
+from .warticker import WarTicker
 
 bot_instance = Bot()
 war_ticker = WarTicker()
