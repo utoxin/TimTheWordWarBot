@@ -14,7 +14,7 @@ if __name__ == "__main__":
         print("No config db_access found. Template file created as botconfig.ini. Edit file and restart.")
 
         config.add_section("DB")
-        config.set("DB", "host", "localhost")
+        config.set("DB", "host", "database")
         config.set("DB", "database", "timmy")
         config.set("DB", "user", "timmy")
         config.set("DB", "password", "password")

@@ -1,37 +1,34 @@
-version: '3'
+version: '3.5'
+
+networks:
+  internal:
+    driver: bridge
+    name: timmy-internal
+    ipam:
+      config:
+        - subnet: 172.28.42.0/24
+  public:
+    driver: bridge
+    name: timmy-public
+    ipam:
+      config:
+        - subnet: 172.28.69.0/24
+
+volumes:
+  db-data:
+    name: timmy-db-data
+
 services:
-
-  database:
-    environment:
-      - MARIADB_ROOT_PASSWORD=password
-    build:
-      dockerfile: Dockerfile
-      context: ./database
-    image: mariadb:latest
-    ports:
-      - "3306"
-    networks:
-      - internal
-    volumes:
-      - db-data:/var/lib/mysql/
-
-  irc:
-    build:
-      dockerfile: Dockerfile
-      context: ./irc
-    image: inspircd/inspircd-docker:latest
-    ports:
-      - "6667"
-    networks:
-      - internal
-
   bot:
+    container_name: timmy-bot
     build:
+      context: ./bot
       dockerfile: Dockerfile
     image: python:slim
-    entrypoint: /bin/bash
+    entrypoint: ["/bin/bash", "/app/source/docker/bot/startup.sh"]
     networks:
       - internal
+      - public
     volumes:
       - type: bind
         source: ../.
@@ -40,8 +37,35 @@ services:
       - database
       - irc
 
-networks:
-  internal:
+  database:
+    container_name: timmy-db
+    environment:
+      - MARIADB_ROOT_PASSWORD=password
+    build:
+      dockerfile: Dockerfile
+      context: ./database
+    image: mariadb:latest
+    ports:
+      - "3336:3306"
+    networks:
+      - internal
+    volumes:
+      - db-data:/var/lib/mysql/
+      - type: bind
+        source: ./database/conf.d
+        target: /etc/mysql/conf.d
+      - type: bind
+        source: ./database/initdb.d
+        target: /docker-entrypoint-initdb.d
 
-volumes:
-  db-data:
+  irc:
+    container_name: timmy-irc
+    build:
+      dockerfile: Dockerfile
+      context: ./irc
+    image: inspircd/inspircd-docker:latest
+    ports:
+      - "6667"
+    networks:
+      - internal
+      - public
