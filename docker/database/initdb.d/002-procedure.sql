@@ -1,3 +1,5 @@
+USE `timmy`;
+
 DROP PROCEDURE IF EXISTS `generateMarkovSay`;
 DROP PROCEDURE IF EXISTS `generateMarkovEmote`;
 

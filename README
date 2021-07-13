@@ -17,7 +17,7 @@ Markov Chain chatter code.
 If you wish to run your own instance of Timmy, there's a few things you'll need
 to do. The most difficult part will be setting up your own Twitter Account and
 API connection for him to use. You will also need a database, which you can
-pre-fill with the schema.sql file from this repository.
+pre-fill with the 001-schema.sql file from this repository.
 
 Finally, you'll need to rename the example config file and fill in the DB
 connection values. If you have any questions, you're welcome to ask, and I'll

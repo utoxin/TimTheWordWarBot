@@ -1,3 +1,6 @@
+CREATE DATABASE IF NOT EXISTS `timmy`;
+USE `timmy`;
+
 CREATE TABLE IF NOT EXISTS `admins` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,

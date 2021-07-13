@@ -41,9 +41,6 @@ services:
     container_name: timmy-db
     environment:
       - MARIADB_ROOT_PASSWORD=password
-    build:
-      dockerfile: Dockerfile
-      context: ./database
     image: mariadb:latest
     ports:
       - "3336:3306"
@@ -60,12 +57,9 @@ services:
 
   irc:
     container_name: timmy-irc
-    build:
-      dockerfile: Dockerfile
-      context: ./irc
     image: inspircd/inspircd-docker:latest
     ports:
-      - "6667"
+      - "6667:6667"
     networks:
       - internal
       - public
