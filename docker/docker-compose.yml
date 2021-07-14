@@ -17,6 +17,8 @@ networks:
 volumes:
   db-data:
     name: timmy-db-data
+  anope-data:
+    name: timmy-anope-data
 
 services:
   bot:
@@ -35,7 +37,7 @@ services:
         target: /app/source
     depends_on:
       - database
-      - irc
+      - anope
 
   database:
     container_name: timmy-db
@@ -60,6 +62,24 @@ services:
     image: inspircd/inspircd-docker:latest
     ports:
       - "6667:6667"
+      - "6697:6697"
     networks:
       - internal
       - public
+    environment:
+      - INSP_SERVICES_IPADDR=timmy-anope
+      - INSP_SERVICES_PASSWORD=password
+
+  anope:
+    container_name: timmy-anope
+    image: anope/anope:latest
+    networks:
+      - internal
+    environment:
+      - ANOPE_UPLINK_IP=timmy-irc
+      - ANOPE_UPLINK_PASSWORD=password
+      - ANOPE_SERVICES_NAME=services.example.com
+    volumes:
+      - anope-data:/data
+    depends_on:
+      - irc

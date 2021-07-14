@@ -3,5 +3,5 @@
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="ES6" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Remote Python 3.9.6 Docker Compose (bot at [/Users/mwalker/Kydance-Projects/TimTheWordWarBot/docker/docker-compose.yml])" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9 (TimTheWordWarBot)" project-jdk-type="Python SDK" />
 </project>

@@ -38,21 +38,21 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
         self.servers = None
         self.recon = None
 
-    def setup(self, host, database, user, password):
+    def setup(self, host, database, user, password, port):
         for i in self.handled_callbacks.keys():
             self.connection.add_global_handler(i, getattr(self, "_on_" + i), -20)
 
         db_access.init_db_access()
 
         pool = db_access.connection_pool
-        pool.setup(host, database, user, password)
+        pool.setup(host, database, user, password, port)
 
         settings = db_access.settings
 
         self._nickname = settings.get_setting("nickname")
         self._realname = settings.get_setting("realname")
 
-        server = ServerSpec(settings.get_setting("host"))
+        server = ServerSpec(settings.get_setting("server"))
         specs = map(ServerSpec.ensure, [server])
 
         self.servers = more_itertools.peekable(itertools.cycle(specs))

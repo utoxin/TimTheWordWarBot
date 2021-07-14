@@ -7,7 +7,7 @@ class ConnectionPool:
     def __init__(self):
         self.__pool = None
 
-    def setup(self, host, database, user, password):
+    def setup(self, host, database, user, password, port=3306):
         try:
             self.__pool = mysql.connector.pooling.MySQLConnectionPool(
                     pool_name="timmy_pool",
@@ -17,7 +17,8 @@ class ConnectionPool:
                     database=database,
                     user=user,
                     password=password,
-                    autocommit=True
+                    autocommit=True,
+                    port=port
             )
         except Error as e:
             print("Error while connecting to database using connection pool: ", e)

@@ -3,16 +3,12 @@ import sys
 
 
 def setup_console_logger():
-    # Set up logging
-    log = logging.getLogger("irc.client")
-    log.setLevel(logging.DEBUG)
-
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
 
-    log.addHandler(handler)
+    logging.basicConfig(level=logging.DEBUG, handlers=[handler])
 
 
 def get_exception_logger():

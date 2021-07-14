@@ -976,17 +976,6 @@ INSERT INTO `greetings` (`id`, `string`) VALUES
 (51, 'Kaltxì, %s.'),
 (52, 'Hung-ee-lung-lung-oh, %s.');
 
-INSERT INTO `settings` (`id`, `key`, `value`) VALUES
-(1, 'server', 'localhost'),
-(2, 'nickname', 'Timmy'),
-(6, 'backup_nickname', 'Warmech'),
-(12, 'post_identify', 'OPER Timmy PASSWORD'),
-(13, 'password', 'PASSWORD'),
-(14, 'twitter_consumer_key', ''),
-(15, 'twitter_consumer_secret', ''),
-(16, 'twitter_access_key', ''),
-(17, 'twitter_access_secret', '');
-
 INSERT INTO `songs` (`id`, `name`) VALUES
 (1, 'Foxy Doubts'),
 (3, 'No Such Things As Accusations'),
@@ -1053,3 +1042,18 @@ ALTER TABLE `markov3_emote_data`
   ADD CONSTRAINT `markov3_emote_data_ibfk_2` FOREIGN KEY (`second_id`) REFERENCES `markov_words` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `markov3_emote_data_ibfk_3` FOREIGN KEY (`third_id`) REFERENCES `markov_words` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
+INSERT INTO `settings` (`key`, `value`) VALUES
+('server', 'timmy-irc'),
+('nickname', 'Timmy'),
+('realname', 'Tim, The Enchanter'),
+('backup_nickname', 'Warmech'),
+('post_identify', 'OPER Timmy PASSWORD'),
+('do_irc_logging', '1'),
+('irc_logging_channel', '#timmy_debug'),
+('auth_on_welcome', '1'),
+('auth_type', 'nickserv'),
+('auth_data', 'password'),
+('twitter_consumer_key', ''),
+('twitter_consumer_secret', ''),
+('twitter_access_key', ''),
+('twitter_access_secret', '');
