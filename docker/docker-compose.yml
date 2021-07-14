@@ -24,16 +24,15 @@ services:
   bot:
     container_name: timmy-bot
     build:
-      context: ./bot
+      context: ../
       dockerfile: Dockerfile
     image: python:slim
-    entrypoint: ["/bin/bash", "/app/source/docker/bot/startup.sh"]
     networks:
       - internal
       - public
     volumes:
       - type: bind
-        source: ../.
+        source: ../
         target: /app/source
     depends_on:
       - database
