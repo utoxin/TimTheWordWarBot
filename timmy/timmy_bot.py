@@ -1,4 +1,7 @@
 from timmy.core import logging, bot_instance
+from yoyo import read_migrations, get_backend
+import os
+import sys
 
 if __name__ == "__main__":
     import configparser
@@ -27,6 +30,13 @@ if __name__ == "__main__":
 
         with open('botconfig.ini', 'w') as configfile:
             config.write(configfile)
+
+    yoyo_backend = get_backend('mysql://' + config.get("DB", "user") + ':' + config.get("DB", "password") + '@'
+                               + config.get("DB", "host") + "/" + config.get("DB", "database"))
+    yoyo_migrations = read_migrations(os.path.dirname(os.path.realpath(sys.argv[0])) + '/migrations')
+
+    with yoyo_backend.lock():
+        yoyo_backend.apply_migrations(yoyo_backend.to_apply(yoyo_migrations))
 
     bot_instance.setup(
             config.get("DB", "host"),
