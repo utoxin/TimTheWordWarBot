@@ -2,7 +2,10 @@
 -- file: 0002-migrations/add-missing-settings.sql
 --
 
-INSERT INTO
+CREATE UNIQUE INDEX `settings_key_uindex`
+	ON `settings` (`key`);
+
+REPLACE INTO
     settings (`key`, `value`)
     VALUES
            ('nickname', 'Timmy'),

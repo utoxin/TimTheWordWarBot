@@ -26,6 +26,7 @@ class UserDirectory:
             user = UserData()
             user.uuid = uuid.UUID(row['id'])
             user.authed_user = row['authed_user']
+            user.global_admin = bool(row['global_admin'])
             user.total_sprint_wordcount = row['total_sprint_wordcount']
             user.total_sprints = row['total_sprints']
             user.total_sprint_duration = row['total_sprint_duration']

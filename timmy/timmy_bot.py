@@ -32,7 +32,7 @@ if __name__ == "__main__":
             config.write(configfile)
 
     yoyo_backend = get_backend('mysql://' + config.get("DB", "user") + ':' + config.get("DB", "password") + '@'
-                               + config.get("DB", "host") + "/" + config.get("DB", "database"))
+                               + config.get("DB", "host") + ":" + config.get("DB", "port") + "/" + config.get("DB", "database"))
     yoyo_migrations = read_migrations(os.path.dirname(os.path.realpath(sys.argv[0])) + '/migrations')
 
     with yoyo_backend.lock():

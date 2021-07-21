@@ -1,4 +1,5 @@
 from .amusement.raptorcommands import RaptorCommands
+from .utility.admincommands import AdminCommands
 from .utility.interactioncontrols import InteractionControls
 from .utility.timercommand import TimerCommand
 from timmy import event_handlers
@@ -16,5 +17,8 @@ def register_processors():
 
     raptors = RaptorCommands()
     raptors.register_commands(event_handlers.command_handler_instance)
+
+    admins = AdminCommands()
+    admins.register_commands(event_handlers.command_handler_instance)
 
     interaction_controls.register_commands(event_handlers.command_handler_instance)

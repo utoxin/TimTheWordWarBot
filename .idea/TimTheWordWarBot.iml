@@ -4,6 +4,8 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.idea/venv" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/dictionaries" />
+      <excludeFolder url="file://$MODULE_DIR$/Timmy.egg-info" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (TimTheWordWarBot)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

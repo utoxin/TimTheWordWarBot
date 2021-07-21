@@ -5,6 +5,7 @@ from irc.dict import IRCDict
 from timmy import core
 from timmy.data.command_data import CommandData
 from timmy.data.command_type import CommandType
+from timmy.db_access import user_directory
 
 
 class CommandHandler:
@@ -68,6 +69,7 @@ class CommandHandler:
         command_data.arg_count = len(command_data.args)
         command_data.arg_string = results[2]
         command_data.issuer = event.source.nick
+        command_data.issuer_data = user_directory.find_user_data(nick=event.source.nick)
 
         if event.type == "privmsg":
             command_data.channel = event.source.nick
