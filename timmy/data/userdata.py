@@ -25,8 +25,8 @@ class UserData:
         update_statement = "REPLACE INTO `users` (`id`, `authed_user`, `global_admin`, `total_sprint_wordcount`, " \
                            "`total_sprints`, `total_sprint_duration`, `raptor_adopted`, `raptor_name`, " \
                            "`raptor_favorite_color`, `raptor_bunnies_stolen`, `last_bunny_raid`) VALUES " \
-                           "(%(uuid)s, %(authed_user)s, %(total_sprint_wordcount)s, %(total_sprints)s, " \
-                           "%(total_sprint_duration)s, %(raptor_adopted)s, %(raptor_name)s, " \
+                           "(%(uuid)s, %(authed_user)s, %(global_admin)s, %(total_sprint_wordcount)s, " \
+                           "%(total_sprints)s, %(total_sprint_duration)s, %(raptor_adopted)s, %(raptor_name)s, " \
                            "%(raptor_favorite_color)s, %(raptor_bunnies_stolen)s, %(last_bunny_raid)s)"
 
         connection = db_access.connection_pool.get_connection()
