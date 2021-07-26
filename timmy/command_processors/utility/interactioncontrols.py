@@ -1,5 +1,4 @@
 from irc.dict import IRCDict
-from irc.strings import IRCFoldedCase
 
 from timmy import db_access, core
 from timmy.command_processors.base_command import BaseCommand
