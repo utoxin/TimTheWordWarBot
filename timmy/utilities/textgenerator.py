@@ -16,10 +16,15 @@ class TextGenerator:
         self._ensure_init()
 
         for key, value in input_data.items():
-            table_name = 'TEMP' + key
+            table_name = key
+
+            if table_name in self.pychance.tables:
+                if self.pychance.tables[table_name].temp is None or self.pychance.tables[table_name].temp is False:
+                    continue
 
             if table_name not in self.pychance.tables:
                 table = SimpleTable(table_name)
+                table.temp = True
                 self.pychance.add_table(table_name, table)
 
             self.pychance.tables[table_name].table_values = [value]
@@ -28,9 +33,10 @@ class TextGenerator:
         self._ensure_init()
 
         for key, value in input_data.items():
-            table_name = 'TEMP' + key
+            table_name = key
 
-            if table_name in self.pychance.tables:
+            if table_name in self.pychance.tables and self.pychance.tables[table_name].temp is not None \
+                    and self.pychance.tables[table_name].temp is True:
                 del self.pychance.tables[table_name]
 
     def get_string(self, input_string, input_data: dict = None):
