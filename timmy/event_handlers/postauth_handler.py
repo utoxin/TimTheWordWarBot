@@ -1,4 +1,4 @@
-from timmy import db_access, core
+from timmy import db_access, core, utilities
 
 
 class PostAuthHandler:
@@ -14,3 +14,4 @@ class PostAuthHandler:
                 connection.join(channel)
 
             core.init_core_tickers()
+            utilities.init_utility_tickers()

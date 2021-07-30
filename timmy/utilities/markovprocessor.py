@@ -91,8 +91,9 @@ class MarkovProcessor:
             word[1] = self.__set_word(word[0], full_message)
             word[1] = self.__replace_word(known_replacements, word[1])
 
-        for j, k in zip(range(len(words)), range(len(words))[1:]):
-            words[j][1], words[k][1] = self.__replace_pair(known_replacements, words[j][1], words[k][1])
+        if len(full_message) > 1:
+            for j, k in zip(range(len(words)), range(len(words))[1:]):
+                words[j][1], words[k][1] = self.__replace_pair(known_replacements, words[j][1], words[k][1])
 
         for word in words:
             word[1] = word[1][:50]

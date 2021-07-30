@@ -3,11 +3,10 @@ import time
 
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
-from timmy import core
 
 
 class AdminCommands(BaseCommand):
-    admin_commands = {'shutdown'}
+    admin_commands = {'shutdown', 'ignore', 'unignore', 'listignores', 'channelgroup'}
 
     def process(self, connection, event, command_data: CommandData):
         if command_data.command == 'shutdown':

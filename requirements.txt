@@ -1,6 +1,6 @@
 irc ~= 18.0.0
 mysql-connector ~= 2.2.9
 timeloop ~= 1.0.2
-pychance ~= 0.1.8
+pychance ~= 0.1.9
 yoyo-migrations ~= 7.3.2
 PyMySQL ~= 1.0.2
