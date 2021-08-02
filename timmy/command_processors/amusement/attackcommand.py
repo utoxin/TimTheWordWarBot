@@ -1,14 +1,17 @@
+import random
+
 from timmy import core, db_access
-from timmy.command_processors import interaction_controls
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.channel_data import ChannelData
 from timmy.data.command_data import CommandData
+from timmy.utilities import text_generator
 
 
 class AttackCommand(BaseCommand):
     user_commands = {'attack'}
 
     def process(self, connection, event, command_data: CommandData):
+        from timmy.command_processors import interaction_controls
         user_data = db_access.user_directory.find_user_data(command_data.issuer)
 
         if command_data.in_pm:
@@ -37,4 +40,17 @@ class AttackCommand(BaseCommand):
         return
 
     def attack_command(self, connection, event, command_data: CommandData, target):
-        item =
+        damage_number = random.betavariate(3, 3) * 10000
+
+        if damage_number > 9000:
+            damage = 'over 9000'
+        else:
+            damage = f"{damage_number:,.2f}"
+
+        attack_message = text_generator.get_string("[attack_message]", {
+            'source': command_data.issuer,
+            'target': target,
+            'damage': damage
+        })
+
+        self.send_action(connection, event, attack_message)

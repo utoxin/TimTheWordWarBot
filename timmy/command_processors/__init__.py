@@ -1,3 +1,4 @@
+from .amusement.attackcommand import AttackCommand
 from .amusement.raptorcommands import RaptorCommands
 from .utility.admincommands import AdminCommands
 from .utility.interactioncontrols import InteractionControls
@@ -20,5 +21,8 @@ def register_processors():
 
     admins = AdminCommands()
     admins.register_commands(event_handlers.command_handler_instance)
+
+    attack = AttackCommand()
+    attack.register_commands(event_handlers.command_handler_instance)
 
     interaction_controls.register_commands(event_handlers.command_handler_instance)

@@ -1,7 +1,10 @@
 from timmy.data.command_type import CommandType
+from timmy.data.userdata import UserData
 
 
 class CommandData:
+    issuer_data: UserData
+
     def __init__(self):
         self.type = CommandType.UNKNOWN
         self.issuer = ""
@@ -12,7 +15,6 @@ class CommandData:
         self.arg_string = ""
         self.prefix = ""
         self.in_pm = False
-        self.issuer_data = None
 
     def __str__(self):
         return "Command: %s, Issuer: %s, Args: %s".format(self.prefix + self.command, self.issuer, self.arg_string)

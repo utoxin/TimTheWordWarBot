@@ -13,6 +13,20 @@ class BaseCommand:
         else:
             connection.privmsg(event.target, event.source.nick + ": " + message)
 
+    @staticmethod
+    def send_message(connection, event, message):
+        if event.type == "privmsg":
+            connection.privmsg(event.source.nick, message)
+        else:
+            connection.privmsg(event.target, message)
+
+    @staticmethod
+    def send_action(connection, event, message):
+        if event.type == "privmsg":
+            connection.action(event.source.nick, message)
+        else:
+            connection.action(event.target, message)
+
     def register_commands(self, command_handler: CommandHandler):
         for command in self.user_commands:
             command_handler.user_command_processors[command] = self
