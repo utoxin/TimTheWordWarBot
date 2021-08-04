@@ -158,16 +158,30 @@ class ChannelData(Channel):
         if self._muzzled and self.muzzled_until is not None and (self.muzzled_until < time.time()):
             self._muzzled = False
             self.muzzled_until = 0.0
+            self.save_data()
+
+    def set_muzzle_flag(self, muzzled: bool, timeout=None):
+        self._muzzled = muzzled
+        self.muzzled_until = timeout
+        self.save_data()
+
+    def set_automuzzle(self, flag: bool):
+        self.auto_muzzle = flag
+        self.save_data()
+
+    def set_chatterflags(self, reactive: float, name: float, random: float):
+        self.chatter_settings['reactive_level'] = reactive
+        self.chatter_settings['name_multiplier'] = name
+        self.chatter_settings['random_level'] = random
+        self.save_data()
 
     def record_sighting(self, new_raptors=1):
         self.raptor_data['sightings'] += new_raptors
         self.raptor_data['active'] += new_raptors
-
         self.save_data()
 
     def record_new_raptors(self, new_raptors):
         self.raptor_data['active'] += new_raptors
-
         self.save_data()
 
     def record_leaving_raptors(self, leaving_raptors):
@@ -180,7 +194,6 @@ class ChannelData(Channel):
 
     def record_kills(self, kills):
         self.raptor_data['killed'] += kills
-
         self.save_data()
 
     def record_deaths(self, deaths):

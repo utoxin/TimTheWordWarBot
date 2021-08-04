@@ -57,7 +57,7 @@ class UserPerms:
 
         user_data = db_access.user_directory.find_user_data(nick)
 
-        return user_data.global_admin or nick in self.admins or channel in self.admins
+        return user_data.global_admin or nick in self.admins  # or channel in self.admins
 
     @staticmethod
     def is_registered(nick):

@@ -1,6 +1,7 @@
 from .amusement.attackcommand import AttackCommand
 from .amusement.raptorcommands import RaptorCommands
 from .utility.admincommands import AdminCommands
+from .utility.channelcommands import ChannelCommands
 from .utility.interactioncontrols import InteractionControls
 from .utility.timercommand import TimerCommand
 from timmy import event_handlers
@@ -24,5 +25,8 @@ def register_processors():
 
     attack = AttackCommand()
     attack.register_commands(event_handlers.command_handler_instance)
+
+    channels = ChannelCommands()
+    channels.register_commands(event_handlers.command_handler_instance)
 
     interaction_controls.register_commands(event_handlers.command_handler_instance)
