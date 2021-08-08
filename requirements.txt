@@ -1,6 +1,6 @@
 irc ~= 18.0.0
 mysql-connector ~= 2.2.9
-timeloop ~= 1.0.2
+timeloop @ https://github.com/utoxin/timeloop/archive/refs/tags/v1.0.6.tar.gz
 pychance ~= 0.1.10
 yoyo-migrations ~= 7.3.2
 PyMySQL ~= 1.0.2

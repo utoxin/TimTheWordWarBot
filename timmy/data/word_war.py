@@ -1,12 +1,30 @@
 import time
 import uuid
 from datetime import datetime
+from typing import Optional, Any
 
 from timmy import db_access
 from timmy.data.war_state import WarState
 
 
 class WordWar:
+    year: int
+    war_id: int
+    uuid: Optional[object]
+    channel: str
+    starter: str
+    name: str
+    base_duration: float
+    base_break: float
+    total_chains: int
+    current_chain: int
+    start_epoch: float
+    end_epoch: float
+    randomness: bool
+    start: Optional[WarState]
+    war_members: set
+    db_access: object
+
     def __init__(self):
         self.year = 0
         self.war_id = 0
@@ -119,15 +137,16 @@ class WordWar:
 
         if include_id:
             db_id = self.get_id()
-            name_parts.append("[ID {0:<{1:d}}]".format(db_id, id_field_width))
+            name_parts.append(f"[ID {db_id:<{id_field_width:d}}]")
 
         if include_duration:
-            name_parts.append("[{0:<{1:d}}]".format(self.get_duration_text(self.duration()), duration_field_width))
+            duration = self.get_duration_text(self.duration())
+            name_parts.append(f"[{duration:<{duration_field_width:d}}]")
 
         name_parts.append(self.name)
 
         if self.total_chains > 1:
-            name_parts.append("({:d}/{:d})".format(self.current_chain, self.total_chains))
+            name_parts.append(f"({self.current_chain:d}/{self.total_chains:d})")
 
         return " ".join(name_parts)
 
@@ -150,13 +169,13 @@ class WordWar:
         seconds = tmp
 
         if hours > 0:
-            text += str(hours) + "H "
+            text += f"{hours:,.0f}H "
 
         if minutes > 0 or (seconds > 0 and hours > 0):
-            text += str(minutes) + "M "
+            text += f"{minutes:.0f}M "
 
         if seconds > 0:
-            text += str(int(seconds)) + "S"
+            text += f"{seconds:.0f}S"
 
         return text.strip()
 
@@ -181,11 +200,11 @@ class WordWar:
         return self.get_description(id_field_width, duration_field_width) + " :: " + self.channel
 
     def get_id(self):
-        return "{:d}-{:d}".format(self.year, self.war_id)
+        return f"{self.year:d}-{self.war_id:d}"
 
     def get_chain_id(self):
         chain = self.current_chain
         if self.state == WarState.FINISHED:
             chain -= 1
 
-        return "{}-{:d}".format(self.get_id(), chain)
+        return f"{self.get_id()}-{chain:d}"

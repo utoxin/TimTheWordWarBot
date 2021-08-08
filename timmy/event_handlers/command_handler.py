@@ -67,18 +67,18 @@ class CommandHandler:
     @staticmethod
     def _setup_command_data(command_data, event, results):
         command_data.prefix = results[0]
-        command_data.command = results[1]
+        command_data.command = results[1].lower()
         command_data.args = results[2].split()
         command_data.arg_count = len(command_data.args)
         command_data.arg_string = results[2]
-        command_data.issuer = event.source.nick
+        command_data.issuer = event.source.nick.lower()
         command_data.issuer_data = user_directory.find_user_data(nick=event.source.nick)
 
         if event.type == "privmsg":
-            command_data.channel = event.source.nick
+            command_data.channel = event.source.nick.lower()
             command_data.in_pm = True
         else:
-            command_data.channel = event.target
+            command_data.channel = event.target.lower()
 
     @staticmethod
     def _unknown_command(connection, command_data):

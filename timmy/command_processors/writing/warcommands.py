@@ -319,7 +319,7 @@ class WarCommands(BaseCommand):
 
             for war in core.war_ticker.wars:
                 if all_wars or war.channel.lower() == command_data.channel.lower():
-                    if all:
+                    if all_wars:
                         output = war.get_description_with_channel(max_id_length, max_duration_length)
                     else:
                         output = war.get_description(max_id_length, max_duration_length)

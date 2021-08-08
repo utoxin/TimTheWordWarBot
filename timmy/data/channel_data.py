@@ -9,6 +9,7 @@ from timmy.data.war_state import WarState
 
 
 class ChannelData(Channel):
+    current_odds: IRCDict
     max_odds = IRCDict({
         'answer':       65,
         'aypwip':       100,
@@ -23,6 +24,7 @@ class ChannelData(Channel):
         'tissue':       100,
     })
 
+    chatter_settings: IRCDict
     chatter_settings_defaults = IRCDict({
         'reactive_level':  2.5,
         'random_level':    1,
@@ -51,6 +53,7 @@ class ChannelData(Channel):
         })
     })
 
+    raptor_data: IRCDict
     raptor_data_defaults = IRCDict({
         'sightings': 0,
         'active':    0,
@@ -59,6 +62,7 @@ class ChannelData(Channel):
         'strength':  0
     })
 
+    twitter_settings: IRCDict
     twitter_settings_defaults = IRCDict({
         'time':               0,
         'bucket':             5.0,
@@ -66,6 +70,7 @@ class ChannelData(Channel):
         'bucket_charge_rate': 0.05,
     })
 
+    command_settings: IRCDict
     command_defaults = IRCDict({
         'attack':       True,
         'banish':       True,
@@ -148,7 +153,7 @@ class ChannelData(Channel):
         auto_muzzle = False
 
         for war in core.war_ticker.wars:
-            if self.auto_muzzle and war.war_state is WarState.ACTIVE and self.name.lower() == war.channel.lower():
+            if self.auto_muzzle and war.state is WarState.ACTIVE and self.name.lower() == war.channel.lower():
                 auto_muzzle = True
                 break
 

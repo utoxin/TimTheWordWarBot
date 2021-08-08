@@ -5,7 +5,7 @@ from timeloop import Timeloop
 
 from timmy import core
 from timmy.data.channel_data import ChannelData
-from timmy.utilities import markov_generator
+from timmy.utilities import markov_generator, irc_logger
 
 idle_timer = Timeloop()
 
@@ -69,4 +69,5 @@ class IdleTicker:
 
 @idle_timer.job(interval=timedelta(seconds=60))
 def deidle_timer_loop():
+    irc_logger.log_message("Idle Tick")
     core.idle_ticker.tick()
