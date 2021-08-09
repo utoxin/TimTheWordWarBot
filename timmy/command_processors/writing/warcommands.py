@@ -88,7 +88,7 @@ class WarCommands(BaseCommand):
             start_delay_pattern = re.compile("^(?:start|delay):([0-9.]*)$", re.IGNORECASE)
 
             # Options for chainwars
-            chain_pattern = re.compile("^chain(?:s?):([0-9.]*)$", re.IGNORECASE)
+            chain_pattern = re.compile("^chains?:([0-9.]*)$", re.IGNORECASE)
             break_pattern = re.compile("^break:([0-9.]*)$", re.IGNORECASE)
             randomness_pattern = re.compile("^random:([01]*)$", re.IGNORECASE)
 
@@ -98,16 +98,21 @@ class WarCommands(BaseCommand):
                     match = start_delay_pattern.match(command_data.args[i])
                     if match:
                         results = match.groups()
+                        input_string = ""
                         try:
                             if results[0] == "" and i < (command_data.arg_count - 1):
                                 i += 1
-                                to_start = int(float(command_data.args[i]) * 60)
+                                input_string = command_data.args[i]
                             else:
-                                to_start = int(float(results[0]) * 60)
+                                input_string = results[0]
+
+                            to_start = int(float(input_string))
                         except TypeError:
                             self.respond_to_user(connection, event,
                                                  "I didn't understand the start delay. Was it numeric?")
-                            # TODO: Exception Logging
+                            from timmy.utilities import irc_logger
+                            irc_logger.log_message(f"Word War Exception: Start delay parse error. Input was: "
+                                                   f"{input_string}")
                             return
 
                         i += 1
@@ -116,16 +121,21 @@ class WarCommands(BaseCommand):
                     match = chain_pattern.match(command_data.args[i])
                     if match:
                         results = match.groups()
+                        input_string = ""
                         try:
                             if results[0] == "" and i < (command_data.arg_count - 1):
                                 i += 1
-                                total_chains = int(command_data.args[i])
+                                input_string = command_data.args[i]
                             else:
-                                total_chains = int(results[0])
+                                input_string = results[0]
+
+                            total_chains = int(input_string)
                         except TypeError:
                             self.respond_to_user(connection, event,
                                                  "I didn't understand the chain count. Was it numeric?")
-                            # TODO: Exception Logging
+                            from timmy.utilities import irc_logger
+                            irc_logger.log_message(f"Word War Exception: Chain count parse error. Input was: "
+                                                   f"{input_string}")
                             return
 
                         i += 1
@@ -134,16 +144,21 @@ class WarCommands(BaseCommand):
                     match = break_pattern.match(command_data.args[i])
                     if match:
                         results = match.groups()
+                        input_string = ""
                         try:
                             if results[0] == "" and i < (command_data.arg_count - 1):
                                 i += 1
-                                delay = int(float(command_data.args[i]) * 60)
+                                input_string = command_data.args[i]
                             else:
-                                delay = int(float(results[0]) * 60)
+                                input_string = results[0]
+
+                            delay = int(float(input_string) * 60)
                         except TypeError:
                             self.respond_to_user(connection, event,
                                                  "I didn't understand the break duration. Was it numeric?")
-                            # TODO: Exception Logging
+                            from timmy.utilities import irc_logger
+                            irc_logger.log_message(f"Word War Exception: Break duration parse error. Input was: "
+                                                   f"{input_string}")
                             return
 
                         i += 1
@@ -152,16 +167,23 @@ class WarCommands(BaseCommand):
                     match = randomness_pattern.match(command_data.args[i])
                     if match:
                         results = match.groups()
+                        input_string = ""
                         try:
                             if results[0] == "" and i < (command_data.arg_count - 1):
                                 i += 1
-                                do_randomness = int(command_data.args[i]) == 1
+                                input_string = command_data.args[i]
                             else:
-                                do_randomness = int(results[0]) == 1
+                                input_string = results[0]
+
+                            do_randomness = int(input_string) == 1
+
                         except TypeError:
                             self.respond_to_user(connection, event,
                                                  "I didn't understand the randomness flag. Was it numeric?")
-                            # TODO: Exception Logging
+
+                            from timmy.utilities import irc_logger
+                            irc_logger.log_message(f"Word War Exception: Random flag parse error. Input was: "
+                                                   f"{input_string}")
                             return
 
                         i += 1
@@ -270,7 +292,9 @@ class WarCommands(BaseCommand):
                 except TypeError:
                     self.respond_to_user(connection, event,
                                          "I didn't understand the wordcount. Was it numeric?")
-                    # TODO: Exception Logging
+                    from timmy.utilities import irc_logger
+                    irc_logger.log_message(f"Word War Exception: Wordcount parse error. Input was: "
+                                           f"{command_data.args[1]}")
                     return
 
                 if war.get_chain_id() in user_data.recorded_wars:

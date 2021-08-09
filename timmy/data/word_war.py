@@ -43,7 +43,7 @@ class WordWar:
         self.war_members = set()
         self.db_access = db_access.word_war_db
 
-    def basic_setup(self, channel, starter, name, base_duration, start_epoch):
+    def basic_setup(self, channel: str, starter: str, name: str, base_duration: float, start_epoch: float):
         self.uuid = uuid.uuid4()
         self.channel = channel
         self.starter = starter
@@ -59,7 +59,8 @@ class WordWar:
 
         self.db_access.create_war(self)
 
-    def advanced_setup(self, channel, starter, name, base_duration, start_epoch, total_chains, base_break, randomness):
+    def advanced_setup(self, channel: str, starter: str, name: str, base_duration: float, start_epoch: float,
+                       total_chains: int, base_break: float, randomness: bool):
         self.uuid = uuid.uuid4()
         self.channel = channel
         self.starter = starter
@@ -76,7 +77,7 @@ class WordWar:
 
         self.db_access.create_war(self)
 
-    def load_from_db(self, row):
+    def load_from_db(self, row: dict):
         self.uuid = uuid.UUID(row['uuid'])
         self.year = int(row['year'])
         self.war_id = int(row['war_id'])
@@ -151,7 +152,7 @@ class WordWar:
         return " ".join(name_parts)
 
     @staticmethod
-    def get_duration_text(duration):
+    def get_duration_text(duration: float):
         text = ""
         hours = 0
         minutes = 0
@@ -208,3 +209,6 @@ class WordWar:
             chain -= 1
 
         return f"{self.get_id()}-{chain:d}"
+
+    def add_member(self, member: str):
+        self.war_members

@@ -26,9 +26,8 @@ class IdleTicker:
 
         channel: ChannelData
         for channel in core.bot_instance.channels.values():
-            # TODO: Possibly adjust odds here, so higher strength decays a little faster
             if today.minute % 30 == 0 and channel.raptor_data['strength'] > 0:
-                channel.raptor_data['strength'] -= 1
+                channel.raptor_data['strength'] -= round(channel.raptor_data['strength'] * 0.01)
                 channel.save_data()
 
             channel.clear_timed_muzzle()
@@ -69,5 +68,4 @@ class IdleTicker:
 
 @idle_timer.job(interval=timedelta(seconds=60))
 def deidle_timer_loop():
-    irc_logger.log_message("Idle Tick")
     core.idle_ticker.tick()

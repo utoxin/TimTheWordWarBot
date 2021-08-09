@@ -33,6 +33,8 @@ class WordWarDb:
         cur.close()
         conn.close()
 
+        self.save_war_members(war)
+
     def save_war_members(self, war: WordWar):
         delete_statement = "DELETE FROM `war_members` WHERE `war_uuid` = %(uuid)s"
         insert_statement = "INSERT INTO `war_members` SET `war_uuid` = %(uuid)s, `nick` = %(nick)s"
