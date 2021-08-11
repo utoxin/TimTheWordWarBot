@@ -1,5 +1,6 @@
 import uuid
 from datetime import timedelta, datetime
+from typing import Optional
 
 from irc.dict import IRCDict
 
@@ -44,7 +45,7 @@ class UserDirectory:
 
         connection.close()
 
-    def find_user_data(self, nick, include_temp_data=False):
+    def find_user_data(self, nick, include_temp_data=False) -> Optional[UserData]:
         if not self.user_data_loaded:
             self._do_initial_db_load()
 

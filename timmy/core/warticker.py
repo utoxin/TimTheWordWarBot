@@ -1,10 +1,12 @@
 import random
 import time
 from datetime import timedelta
+from typing import Set
 
 from timeloop import Timeloop
 
 from timmy import core
+from timmy.data.channel_data import ChannelData
 from timmy.data.war_state import WarState
 from timmy.data.word_war import WordWar
 from timmy.db_access import word_war_db
@@ -14,11 +16,23 @@ war_timer = Timeloop()
 
 class WarTicker:
     def __init__(self):
-        self.wars = set()
+        self.loaded_wars: Set[WordWar] = set()
+        self.active_wars: Set[WordWar] = set()
 
     def load_wars(self):
-        self.wars = word_war_db.load_wars()
+        self.loaded_wars = word_war_db.load_wars()
+
         war_timer.start()
+
+    def activate_channel_wars(self, channel: ChannelData) -> None:
+        wars = self.loaded_wars.copy()
+
+        for war in wars:
+            if war.channel == channel.name:
+                self.active_wars.add(war)
+                self.loaded_wars.remove(war)
+
+                channel.newest_war_id = war.get_id()
 
     def begin_war(self, war: WordWar):
         current_epoch = time.time()
@@ -53,7 +67,7 @@ class WarTicker:
 
         if war.current_chain >= war.total_chains:
             war.end_war()
-            self.wars.remove(war)
+            self.active_wars.remove(war)
 
             if war.channel in core.bot_instance.channels \
                     and core.bot_instance.channels[war.channel].newest_war_id == war.get_id():
@@ -65,6 +79,8 @@ class WarTicker:
                 war.start_epoch = war.end_epoch + war.base_break + (war.base_break * (random.randrange(20) - 10)) / 100
                 war.end_epoch = war.start_epoch + war.base_duration + (
                             war.base_duration * (random.randrange(20) - 10)) / 100
+
+                war.duration = war.end_epoch - war.start_epoch
             else:
                 war.start_epoch = war.end_epoch + war.base_break
                 war.end_epoch = war.start_epoch + war.base_duration
@@ -114,7 +130,7 @@ class WarTicker:
 
 @war_timer.job(interval=timedelta(seconds=1))
 def war_update_loop():
-    wars = core.war_ticker.wars
+    wars = core.war_ticker.active_wars.copy()
     if wars is None or len(wars) <= 0:
         return
 

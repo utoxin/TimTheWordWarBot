@@ -152,7 +152,7 @@ class ChannelData(Channel):
     def is_muzzled(self):
         auto_muzzle = False
 
-        for war in core.war_ticker.wars:
+        for war in core.war_ticker.active_wars:
             if self.auto_muzzle and war.state is WarState.ACTIVE and self.name.lower() == war.channel.lower():
                 auto_muzzle = True
                 break

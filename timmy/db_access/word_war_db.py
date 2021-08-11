@@ -1,3 +1,5 @@
+from typing import Optional, List, Set
+
 from timmy import db_access
 from timmy.data.word_war import WordWar
 
@@ -23,7 +25,7 @@ class WordWarDb:
         cur.close()
         conn.close()
 
-    def update_war(self, war: WordWar):
+    def update_war(self, war: WordWar) -> None:
         update_query = "UPDATE `wars` SET `current_chain` = %(current_chain)s, `start_epoch` = %(start_epoch)s, " \
                        "end_epoch = %(end_epoch)s, `war_state` = %(state)s WHERE `uuid` = %(uuid)s"
 
@@ -35,7 +37,7 @@ class WordWarDb:
 
         self.save_war_members(war)
 
-    def save_war_members(self, war: WordWar):
+    def save_war_members(self, war: WordWar) -> None:
         delete_statement = "DELETE FROM `war_members` WHERE `war_uuid` = %(uuid)s"
         insert_statement = "INSERT INTO `war_members` SET `war_uuid` = %(uuid)s, `nick` = %(nick)s"
 
@@ -49,7 +51,7 @@ class WordWarDb:
 
         connection.close()
 
-    def load_war_members(self, war: WordWar):
+    def load_war_members(self, war: WordWar) -> Set[str]:
         select_statement = "SELECT * FROM `war_members` WHERE `war_uuid` = %(uuid)s"
 
         connection = self.db.get_connection()
@@ -65,8 +67,9 @@ class WordWarDb:
 
         return war_members
 
-    def load_wars(self):
-        select_all_statement = "SELECT * FROM `wars` WHERE `war_state` NOT IN ('CANCELLED', 'FINISHED')"
+    def load_wars(self) -> List[WordWar]:
+        select_all_statement = "SELECT * FROM `wars` WHERE `war_state` NOT IN ('CANCELLED', 'FINISHED') ORDER BY " \
+                               "`year`, `war_id`"
 
         wars = []
 
@@ -83,7 +86,7 @@ class WordWarDb:
 
         return wars
 
-    def load_war_by_id(self, war_id):
+    def load_war_by_id(self, war_id) -> Optional[WordWar]:
         select_statement = "SELECT * FROM `wars` WHERE CONCAT(`year`, '-', `war_id`) = %(war_id)s"
 
         connection = self.db.get_connection()

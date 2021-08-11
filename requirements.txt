@@ -4,3 +4,4 @@ timeloop
 pychance
 yoyo-migrations
 PyMySQL
+dice

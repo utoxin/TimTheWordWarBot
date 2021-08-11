@@ -1,4 +1,5 @@
 from .amusement.attackcommand import AttackCommand
+from .amusement.dicecommand import DiceCommand
 from .amusement.raptorcommands import RaptorCommands
 from .utility.admincommands import AdminCommands
 from .utility.channelcommands import ChannelCommands
@@ -30,3 +31,6 @@ def register_processors():
     channels.register_commands(event_handlers.command_handler_instance)
 
     interaction_controls.register_commands(event_handlers.command_handler_instance)
+
+    dice = DiceCommand()
+    dice.register_commands(event_handlers.command_handler_instance)

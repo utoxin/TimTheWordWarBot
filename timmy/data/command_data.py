@@ -1,9 +1,11 @@
+from typing import Optional
+
 from timmy.data.command_type import CommandType
 from timmy.data.userdata import UserData
 
 
 class CommandData:
-    issuer_data: UserData
+    issuer_data: Optional[UserData]
 
     def __init__(self):
         self.type = CommandType.UNKNOWN

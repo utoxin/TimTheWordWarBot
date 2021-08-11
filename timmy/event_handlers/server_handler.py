@@ -26,6 +26,8 @@ class ServerHandler:
         nick = event.source.nick
 
         if nick == connection.get_nickname():
+            from timmy.core import war_ticker
+            war_ticker.activate_channel_wars(channel)
             return
 
         if core.user_perms.is_ignored(nick, 'any'):
@@ -45,7 +47,7 @@ class ServerHandler:
                                        velociraptor_count, plural)
 
         if channel.chatter_settings['types']['helpful_reactions']:
-            channel_wars = [w for w in core.war_ticker.wars if w.channel.lower() == channel.name.lower()]
+            channel_wars = [w for w in core.war_ticker.active_wars if w.channel.lower() == channel.name.lower()]
             war_count = len(channel_wars)
 
             if war_count > 0:

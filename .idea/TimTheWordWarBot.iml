@@ -6,8 +6,9 @@
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/.idea/dictionaries" />
       <excludeFolder url="file://$MODULE_DIR$/Timmy.egg-info" />
+      <excludeFolder url="file://$MODULE_DIR$/venv3.9" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.10 (TimTheWordWarBot)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.9 (TimTheWordWarBot)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">

@@ -1,7 +1,7 @@
 import time
 import uuid
 from datetime import datetime
-from typing import Optional, Any
+from typing import Optional
 
 from timmy import db_access
 from timmy.data.war_state import WarState
@@ -23,7 +23,6 @@ class WordWar:
     randomness: bool
     start: Optional[WarState]
     war_members: set
-    db_access: object
 
     def __init__(self):
         self.year = 0
@@ -41,7 +40,9 @@ class WordWar:
         self.randomness = False
         self.state = None
         self.war_members = set()
-        self.db_access = db_access.word_war_db
+
+        from timmy.db_access import WordWarDb
+        self.db_access: WordWarDb = db_access.word_war_db
 
     def basic_setup(self, channel: str, starter: str, name: str, base_duration: float, start_epoch: float):
         self.uuid = uuid.uuid4()
@@ -111,29 +112,32 @@ class WordWar:
 
         return data
 
-    def end_war(self):
+    def end_war(self) -> None:
         self.state = WarState.FINISHED
         self.update_db()
 
-    def cancel_war(self):
+    def cancel_war(self) -> None:
         self.state = WarState.CANCELLED
         self.update_db()
 
-    def begin_war(self):
+    def begin_war(self) -> None:
         self.state = WarState.ACTIVE
         self.update_db()
 
-    def start_break(self):
+    def start_break(self) -> None:
         self.state = WarState.PENDING
         self.update_db()
 
-    def update_db(self):
+    def update_db(self) -> None:
         self.db_access.update_war(self)
 
-    def duration(self):
+    def update_war_members(self) -> None:
+        self.db_access.save_war_members(self)
+
+    def duration(self) -> float:
         return self.end_epoch - self.start_epoch
 
-    def get_name(self, include_id=False, include_duration=False, id_field_width=1, duration_field_width=1):
+    def get_name(self, include_id=False, include_duration=False, id_field_width=1, duration_field_width=1) -> str:
         name_parts = []
 
         if include_id:
@@ -211,4 +215,9 @@ class WordWar:
         return f"{self.get_id()}-{chain:d}"
 
     def add_member(self, member: str):
-        self.war_members
+        self.war_members.add(member)
+        self.update_war_members()
+
+    def remove_member(self, member: str) -> None:
+        self.war_members.remove(member)
+        self.update_war_members()
