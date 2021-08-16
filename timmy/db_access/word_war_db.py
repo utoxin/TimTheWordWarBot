@@ -8,10 +8,10 @@ class WordWarDb:
     def __init__(self):
         self.db = None
 
-    def init(self):
+    def init(self) -> None:
         self.db = db_access.connection_pool
 
-    def create_war(self, war: WordWar):
+    def create_war(self, war: WordWar) -> None:
         create_query = "INSERT INTO `wars` (`year`, `uuid`, `channel`, `starter`, `name`, `base_duration`, " \
                        "`base_break`, `total_chains`, `current_chain`, `start_epoch`, `end_epoch`, `randomness`, " \
                        "`war_state`, `created`) VALUES (%(year)s, %(uuid)s, %(channel)s, %(starter)s, %(name)s, " \
@@ -86,7 +86,7 @@ class WordWarDb:
 
         return wars
 
-    def load_war_by_id(self, war_id) -> Optional[WordWar]:
+    def load_war_by_id(self, war_id: int) -> Optional[WordWar]:
         select_statement = "SELECT * FROM `wars` WHERE CONCAT(`year`, '-', `war_id`) = %(war_id)s"
 
         connection = self.db.get_connection()

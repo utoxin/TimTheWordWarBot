@@ -16,7 +16,7 @@ class UserDirectory:
         self.nick_directory = IRCDict()
         self.temp_directory = IRCDict()
 
-    def _do_initial_db_load(self):
+    def _do_initial_db_load(self) -> None:
         select_statement = "SELECT * FROM `users`"
 
         connection = db_access.connection_pool.get_connection()
@@ -45,7 +45,7 @@ class UserDirectory:
 
         connection.close()
 
-    def find_user_data(self, nick, include_temp_data=False) -> Optional[UserData]:
+    def find_user_data(self, nick: str, include_temp_data: bool = False) -> Optional[UserData]:
         if not self.user_data_loaded:
             self._do_initial_db_load()
 
@@ -63,10 +63,10 @@ class UserDirectory:
         return None
 
     @staticmethod
-    def send_whois(nick):
+    def send_whois(nick: str) -> None:
         core.bot_instance.connection.whois(nick)
 
-    def cleanup_temp_list(self):
+    def cleanup_temp_list(self) -> None:
         for nick, user_data in self.temp_directory.items():
             time_difference = datetime.now() - user_data.last_whois_check
             if not user_data.registration_data_retrieved and time_difference > timedelta(hours=1):

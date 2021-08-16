@@ -1,4 +1,5 @@
 import time
+from typing import List
 
 from timmy import db_access
 from timmy.data.channel_data import ChannelData
@@ -8,10 +9,10 @@ class ChannelDb:
     def __init__(self):
         self.db = None
 
-    def init(self):
+    def init(self) -> None:
         self.db = db_access.connection_pool
 
-    def get_channel_list(self):
+    def get_channel_list(self) -> List[str]:
         select_statement = "SELECT `channel` FROM `channels` WHERE `active` = 1"
 
         connection = self.db.get_connection()
@@ -28,7 +29,7 @@ class ChannelDb:
 
         return channels
 
-    def join_channel(self, channel: ChannelData):
+    def join_channel(self, channel: ChannelData) -> None:
         insert_statement = "INSERT INTO `channels` (`channel`) VALUES (%(channel)s) ON DUPLICATE KEY UPDATE " \
                            "`active` = 1"
 
@@ -42,7 +43,7 @@ class ChannelDb:
 
         self.load_channel_data(channel)
 
-    def deactivate_channel(self, channel: ChannelData):
+    def deactivate_channel(self, channel: ChannelData) -> None:
         update_statement = "UPDATE `channels` SET `active` = 0 WHERE `channel` = %(channel)s"
 
         conn = self.db.get_connection()
@@ -51,7 +52,7 @@ class ChannelDb:
         cur.close()
         conn.close()
 
-    def save_channel_settings(self, channel: ChannelData):
+    def save_channel_settings(self, channel: ChannelData) -> None:
         update_statement = "UPDATE `channels` SET `reactive_chatter_level` = %(reactive_chatter_level)s, " \
                            "`chatter_name_multiplier` = %(chatter_name_multiplier)s, `random_chatter_level` = " \
                            "%(random_chatter_level)s, `tweet_bucket_max` = %(tweet_bucket_max)s, " \
@@ -117,7 +118,7 @@ class ChannelDb:
 
         connection.close()
 
-    def load_channel_data(self, channel: ChannelData):
+    def load_channel_data(self, channel: ChannelData) -> None:
         select_channel_statement = "SELECT * FROM `channels` WHERE `channel` = %(channel)s"
         select_chatter_statement = "SELECT `setting`, `value` FROM `channel_chatter_settings` WHERE `channel` = " \
                                    "%(channel)s"

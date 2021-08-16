@@ -5,10 +5,10 @@ class Settings:
     def __init__(self):
         self.db = None
 
-    def init(self):
+    def init(self) -> None:
         self.db = db_access.connection_pool
 
-    def get_setting(self, name):
+    def get_setting(self, name: str) -> str:
         conn = self.db.get_connection()
         setting_query = "SELECT `value` FROM `settings` WHERE `key` = %(name)s"
 
