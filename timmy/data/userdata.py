@@ -10,7 +10,6 @@ class UserData:
     last_whois_check: Optional[float]
     nicks: Set[str]
     recorded_wars: Set[str]
-    uuid: Optional[uuid]
     authed_user: str
     global_admin: bool
     total_sprint_wordcount: int

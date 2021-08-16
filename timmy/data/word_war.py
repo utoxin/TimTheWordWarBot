@@ -10,7 +10,6 @@ from timmy.data.war_state import WarState
 class WordWar:
     year: int
     war_id: int
-    uuid: Optional[uuid]
     channel: str
     starter: str
     name: str
@@ -78,7 +77,7 @@ class WordWar:
 
         self.db_access.create_war(self)
 
-    def load_from_db(self, row: Dict[str]) -> None:
+    def load_from_db(self, row: Dict[str, str]) -> None:
         self.uuid = uuid.UUID(row['uuid'])
         self.year = int(row['year'])
         self.war_id = int(row['war_id'])
