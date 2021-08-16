@@ -1,5 +1,7 @@
 import re
+from typing import Sequence, Optional
 
+from irc.client import Event, ServerConnection
 from irc.dict import IRCDict
 
 from timmy import core
@@ -21,14 +23,14 @@ class CommandHandler:
         self.admin_command_processors = IRCDict()
 
     @staticmethod
-    def init_command_processors():
+    def init_command_processors() -> None:
         from timmy import command_processors
         command_processors.register_processors()
 
-    def on_privmsg(self, connection, event):
+    def on_privmsg(self, connection: ServerConnection, event: Event) -> bool:
         return self.on_pubmsg(connection, event)
 
-    def on_pubmsg(self, connection, event):
+    def on_pubmsg(self, connection: ServerConnection, event: Event) -> bool:
         if core.user_perms.is_ignored(event.source.nick, 'hard'):
             return True
 
@@ -51,7 +53,7 @@ class CommandHandler:
 
         return True
 
-    def _parse_event(self, event):
+    def _parse_event(self, event: Event) -> Optional[CommandData]:
         command_data = CommandData()
 
         for command_type, matcher in self.matchers.items():
@@ -65,7 +67,7 @@ class CommandHandler:
         return None
 
     @staticmethod
-    def _setup_command_data(command_data, event, results):
+    def _setup_command_data(command_data: CommandData, event: Event, results: Sequence[str]) -> None:
         command_data.prefix = results[0]
         command_data.command = results[1].lower()
         command_data.args = results[2].split()
@@ -81,6 +83,6 @@ class CommandHandler:
             command_data.channel = event.target.lower()
 
     @staticmethod
-    def _unknown_command(connection, command_data):
+    def _unknown_command(connection: ServerConnection, command_data: CommandData) -> None:
         connection.privmsg(command_data.channel,
                            command_data.prefix + command_data.command + " was not part of my training.")

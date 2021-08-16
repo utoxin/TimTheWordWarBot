@@ -1,6 +1,7 @@
 import random
 import re
 from datetime import timedelta
+from typing import List, Dict, Tuple, Set, Optional, Pattern, Union
 
 from timeloop import Timeloop
 
@@ -10,6 +11,11 @@ markov_timer = Timeloop()
 
 
 class MarkovProcessor:
+    bad_words: Set[Pattern[str]]
+    bad_pairs: Set[Tuple[Pattern[str], Pattern[str]]]
+    alternate_words: Set[str]
+    alternate_pairs: Set[Tuple[str, str]]
+
     def __init__(self):
         self.db = None
         self.bad_words = set()
@@ -21,7 +27,7 @@ class MarkovProcessor:
         self.all_upper_pattern = re.compile('^[A-Z]+$')
         self.starts_upper_pattern = re.compile('^[A-Z]+[a-z]+$')
 
-    def init(self):
+    def init(self) -> None:
         if self.db is None:
             self.db = db_access.connection_pool
 
@@ -32,7 +38,7 @@ class MarkovProcessor:
 
             markov_timer.start()
 
-    def store_line(self, line_type: str, line: str):
+    def store_line(self, line_type: str, line: str) -> None:
         self.init()
 
         conn = self.db.get_connection()
@@ -47,7 +53,7 @@ class MarkovProcessor:
 
         conn.close()
 
-    def processing_loop(self):
+    def processing_loop(self) -> None:
         self.init()
 
         select_statement = "SELECT `id`, `type`, `text` FROM markov_processing_queue"
@@ -72,8 +78,8 @@ class MarkovProcessor:
         select_conn.close()
         delete_conn.close()
 
-    def _process_markov(self, message: str, message_type: str):
-        known_replacements = {}
+    def _process_markov(self, message: str, message_type: str) -> None:
+        known_replacements: Dict[Union[Tuple[str, str], str], Union[Tuple[str, str], str]] = {}
         full_message = message.split()
 
         for i in range(-1, len(full_message) + 1):
@@ -86,7 +92,9 @@ class MarkovProcessor:
             self._internal_markov_processing(full_message, known_replacements, words)
             self._store_triad(words[0][1], words[1][1], words[2][1], message_type)
 
-    def _internal_markov_processing(self, full_message, known_replacements, words):
+    def _internal_markov_processing(self, full_message: List[str],
+                                    known_replacements: Dict[Union[Tuple[str, str], str], Union[Tuple[str, str], str]],
+                                    words: list) -> None:
         for word in words:
             word[1] = self.__set_word(word[0], full_message)
             word[1] = self.__replace_word(known_replacements, word[1])
@@ -100,7 +108,7 @@ class MarkovProcessor:
             if 0 <= word[0] < len(full_message):
                 full_message[word[0]] = word[1]
 
-    def _process_markov4(self, message: str, message_type: str):
+    def _process_markov4(self, message: str, message_type: str) -> None:
         known_replacements = {}
         full_message = message.split()
 
@@ -115,7 +123,8 @@ class MarkovProcessor:
             self._internal_markov_processing(full_message, known_replacements, words)
             self._store_quad(words[0][1], words[1][1], words[2][1], words[3][1], message_type)
 
-    def __replace_pair(self, known_replacements, word1, word2):
+    def __replace_pair(self, known_replacements: Dict[Union[Tuple[str, str], str], Union[Tuple[str, str], str]],
+                       word1: str, word2: str) -> Tuple[str, str]:
         pair = (word1, word2)
         pair_string = "{} {}".format(word1, word2)
 
@@ -130,7 +139,8 @@ class MarkovProcessor:
 
         return word1, word2
 
-    def __replace_word(self, known_replacements, word):
+    def __replace_word(self, known_replacements: Dict[Union[Tuple[str, str], str], Union[Tuple[str, str], str]],
+                       word: str) -> str:
         if word in known_replacements:
             word = known_replacements[word]
         else:
@@ -141,7 +151,7 @@ class MarkovProcessor:
         return word
 
     @staticmethod
-    def __set_word(offset1, words):
+    def __set_word(offset1: int, words: List[str]) -> str:
         if offset1 < 0:
             word1 = ""
         elif offset1 >= len(words):
@@ -150,7 +160,7 @@ class MarkovProcessor:
             word1 = words[offset1]
         return word1
 
-    def _store_triad(self, word1, word2, word3, message_type):
+    def _store_triad(self, word1: str, word2: str, word3: str, message_type: str) -> None:
         first = self.get_markov_word_id(word1)
         second = self.get_markov_word_id(word2)
         third = self.get_markov_word_id(word3)
@@ -160,9 +170,9 @@ class MarkovProcessor:
         if message_type != 'emote':
             message_type = 'say'
 
-        add_triad_expression = "INSERT INTO `markov3_{}_data` (`first_id`, `second_id`, `third_id`, `count`) VALUES " \
-                               "(%(first)s, %(second)s, %(third)s, 1) ON DUPLICATE KEY UPDATE " \
-                               "count = count + 1".format(message_type)
+        add_triad_expression = f"INSERT INTO `markov3_{message_type}_data` (`first_id`, `second_id`, `third_id`, " \
+                               f"`count`) VALUES (%(first)s, %(second)s, %(third)s, 1) ON DUPLICATE KEY UPDATE " \
+                               f"count = count + 1"
 
         cursor = conn.cursor()
         cursor.execute(add_triad_expression, {
@@ -173,7 +183,7 @@ class MarkovProcessor:
 
         conn.close()
 
-    def _store_quad(self, word1, word2, word3, word4, message_type):
+    def _store_quad(self, word1: str, word2: str, word3: str, word4: str, message_type: str) -> None:
         first = self.get_markov_word_id(word1)
         second = self.get_markov_word_id(word2)
         third = self.get_markov_word_id(word3)
@@ -184,9 +194,9 @@ class MarkovProcessor:
         if message_type == 'novel':
             return
 
-        add_quad_expression = "INSERT INTO `markov4_{}_data` (`first_id`, `second_id`, `third_id`, `fourth_id`, " \
-                              "`count`) VALUES (%(first)s, %(second)s, %(third)s, %(fourth)s, 1) ON DUPLICATE KEY " \
-                              "UPDATE count = count + 1".format(message_type)
+        add_quad_expression = f"INSERT INTO `markov4_{message_type}_data` (`first_id`, `second_id`, `third_id`, " \
+                              f"`fourth_id`, `count`) VALUES (%(first)s, %(second)s, %(third)s, %(fourth)s, 1) ON " \
+                              f"DUPLICATE KEY UPDATE count = count + 1"
 
         cursor = conn.cursor()
         cursor.execute(add_quad_expression, {
@@ -198,7 +208,7 @@ class MarkovProcessor:
 
         conn.close()
 
-    def get_markov_word_id(self, word: str):
+    def get_markov_word_id(self, word: str) -> int:
         self.init()
 
         conn = self.db.get_connection()
@@ -224,7 +234,7 @@ class MarkovProcessor:
 
             return cursor.lastrowid
 
-    def get_markov_word_by_id(self, word_id: int):
+    def get_markov_word_by_id(self, word_id: int) -> Optional[str]:
         self.init()
 
         conn = self.db.get_connection()
@@ -243,7 +253,7 @@ class MarkovProcessor:
         else:
             return None
 
-    def _load_bad_words(self):
+    def _load_bad_words(self) -> None:
         conn = self.db.get_connection()
         select_statement = "SELECT `word` FROM `bad_words`"
 
@@ -255,7 +265,7 @@ class MarkovProcessor:
 
         conn.close()
 
-    def _load_bad_pairs(self):
+    def _load_bad_pairs(self) -> None:
         conn = self.db.get_connection()
         select_statement = "SELECT `word_one`, `word_two` FROM `bad_pairs`"
 
@@ -270,7 +280,7 @@ class MarkovProcessor:
 
         conn.close()
 
-    def _load_alternate_words(self):
+    def _load_alternate_words(self) -> None:
         conn = self.db.get_connection()
         select_statement = "SELECT `word` FROM `alternate_words`"
 
@@ -282,7 +292,7 @@ class MarkovProcessor:
 
         conn.close()
 
-    def _load_alternate_pairs(self):
+    def _load_alternate_pairs(self) -> None:
         conn = self.db.get_connection()
         select_statement = "SELECT `word_one`, `word_two` FROM `alternate_pairs`"
 
@@ -294,7 +304,7 @@ class MarkovProcessor:
 
         conn.close()
 
-    def _replace_bad_word(self, word):
+    def _replace_bad_word(self, word: str) -> str:
         if len(self.bad_words) == 0:
             return word
 
@@ -321,7 +331,7 @@ class MarkovProcessor:
 
         return word
 
-    def _replace_bad_pair(self, pair):
+    def _replace_bad_pair(self, pair: Tuple[str, str]) -> Tuple[str, str]:
         if len(self.bad_pairs):
             return pair
 
@@ -350,16 +360,16 @@ class MarkovProcessor:
         return pair
 
     @staticmethod
-    def _is_valid_email(email):
+    def _is_valid_email(email: str) -> bool:
         return re.match(r'^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$', email) is not None
 
     @staticmethod
-    def _is_url(url):
-        return re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', url) \
+    def _is_url(url: str) -> bool:
+        return re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(), ]|%[0-9a-fA-F][0-9a-fA-F])+', url) \
                is not None
 
 
 @markov_timer.job(interval=timedelta(seconds=30))
-def markov_processing_loop():
+def markov_processing_loop() -> None:
     from timmy.utilities import markov_processor
     markov_processor.processing_loop()

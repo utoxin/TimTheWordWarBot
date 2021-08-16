@@ -5,7 +5,16 @@ from timmy.data.userdata import UserData
 
 
 class CommandData:
+    type: CommandType
     issuer_data: Optional[UserData]
+    issuer: str
+    channel: str
+    command: str
+    args: list
+    arg_count: int
+    arg_string: str
+    prefix: str
+    in_pm: bool
 
     def __init__(self):
         self.type = CommandType.UNKNOWN

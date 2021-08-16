@@ -1,3 +1,5 @@
+from irc.client import ServerConnection, Event
+
 from timmy import db_access, core, utilities
 
 
@@ -5,7 +7,7 @@ class PostAuthHandler:
     def __init__(self):
         self.channel_join_started = False
 
-    def on_umode(self, connection, event):
+    def on_umode(self, connection: ServerConnection, event: Event) -> None:
         if not self.channel_join_started:
             self.channel_join_started = True
             channels = db_access.channel_db.get_channel_list()

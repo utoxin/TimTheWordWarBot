@@ -1,6 +1,8 @@
 import uuid
 from datetime import datetime, timedelta
 
+from irc.client import ServerConnection, Event
+
 from timmy import core
 from timmy.data.userdata import UserData
 from timmy.db_access import user_directory
@@ -8,23 +10,23 @@ from timmy.utilities import irc_logger
 
 
 class WhoisHandler:
-    def on_action(self, connection, event):
+    def on_action(self, connection: ServerConnection, event: Event) -> None:
         if event.source.nick is not None and event.source.nick != core.bot_instance.connection.nickname:
             self._handle_nick_event(event.source.nick)
 
-    def on_join(self, connection, event):
+    def on_join(self, connection: ServerConnection, event: Event) -> None:
         if event.source.nick is not None and event.source.nick != core.bot_instance.connection.nickname:
             self._handle_nick_event(event.source.nick)
 
-    def on_privmsg(self, connection, event):
+    def on_privmsg(self, connection: ServerConnection, event: Event) -> None:
         if event.source.nick is not None and event.source.nick != core.bot_instance.connection.nickname:
             self._handle_nick_event(event.source.nick)
 
-    def on_pubmsg(self, connection, event):
+    def on_pubmsg(self, connection: ServerConnection, event: Event) -> None:
         if event.source.nick is not None and event.source.nick != core.bot_instance.connection.nickname:
             self._handle_nick_event(event.source.nick)
 
-    def on_nick(self, connection, event):
+    def on_nick(self, connection: ServerConnection, event: Event) -> None:
         if event.source.nick is not None and event.source.nick != core.bot_instance.connection.nickname:
             old_nick = event.source.nick
             new_nick = event.target
@@ -41,7 +43,7 @@ class WhoisHandler:
 
             self._handle_nick_event(new_nick)
 
-    def on_namreply(self, connection, event):
+    def on_namreply(self, connection: ServerConnection, event: Event) -> None:
         for nick in event.arguments[2].split():
             if nick[0] in core.bot_instance.connection.features.prefix:
                 nick = nick[1:]
@@ -49,7 +51,7 @@ class WhoisHandler:
             self._handle_nick_event(nick)
 
     @staticmethod
-    def on_whoisaccount(connection, event):
+    def on_whoisaccount(connection: ServerConnection, event: Event) -> None:
         nick = event.arguments[0]
 
         if event.arguments[2] == 'is logged in as':
@@ -110,7 +112,7 @@ class WhoisHandler:
             irc_logger.log_message("Received whois response. Nick: {} :: Not Registered".format(nick))
 
     @staticmethod
-    def _handle_nick_event(nick):
+    def _handle_nick_event(nick: str) -> None:
         user_data = user_directory.find_user_data(nick, True)
 
         if user_data is None:

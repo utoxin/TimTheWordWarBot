@@ -1,3 +1,4 @@
+from irc.client import ServerConnection, Event
 from irc.dict import IRCDict
 
 from timmy import db_access, core
@@ -41,7 +42,7 @@ class InteractionControls(BaseCommand):
 
             self.initialized = True
 
-    def process(self, connection, event, command_data: CommandData):
+    def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         self.init()
 
         if core.user_perms.is_registered(command_data.issuer):
@@ -96,9 +97,7 @@ class InteractionControls(BaseCommand):
         else:
             self.respond_to_user(connection, event, "You must be logged in with NickServ to use these commands.")
 
-        return True
-
-    def interact_with_user(self, username, interaction):
+    def interact_with_user(self, username: str, interaction: str) -> bool:
         self.init()
 
         target: UserData = user_directory.find_user_data(username)
@@ -111,7 +110,7 @@ class InteractionControls(BaseCommand):
 
         return self.interaction_settings[target.authed_user][interaction]
 
-    def _save_interaction_settings(self):
+    def _save_interaction_settings(self) -> None:
         truncate_statement = "TRUNCATE `user_interaction_settings`"
         insert_statement = "INSERT INTO `user_interaction_settings` SET `username` = %(username)s, " \
                            "`setting` = %(setting)s, `value` = %(value)s"
@@ -130,7 +129,7 @@ class InteractionControls(BaseCommand):
 
         conn.close()
 
-    def _load_interaction_settings(self):
+    def _load_interaction_settings(self) -> None:
         select_statement = "SELECT `username`, `setting`, `value` FROM `user_interaction_settings`"
 
         conn = db_access.connection_pool.get_connection()

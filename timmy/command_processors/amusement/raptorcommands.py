@@ -1,3 +1,5 @@
+from irc.client import ServerConnection, Event
+
 from timmy import db_access
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
@@ -8,7 +10,7 @@ class RaptorCommands(BaseCommand):
     user_commands = {"raptor"}
     sub_commands = {"adopt", "release", "details", "rename", "reset"}
 
-    def process(self, connection, event, command_data: CommandData):
+    def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         user_data = db_access.user_directory.find_user_data(command_data.issuer)
 
         if user_data is None or not user_data.registration_data_retrieved:
@@ -27,7 +29,7 @@ class RaptorCommands(BaseCommand):
 
         self.handle_subcommand(connection, event, command_data)
 
-    def _adopt_handler(self, connection, event, command_data: CommandData):
+    def _adopt_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         user_data = db_access.user_directory.find_user_data(command_data.issuer)
 
         if user_data.raptor_adopted:
@@ -50,7 +52,7 @@ class RaptorCommands(BaseCommand):
                         user_data.raptor_favorite_color))
         return
 
-    def _release_handler(self, connection, event, command_data: CommandData):
+    def _release_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         user_data = db_access.user_directory.find_user_data(command_data.issuer)
 
         if not user_data.raptor_adopted:
@@ -78,7 +80,7 @@ class RaptorCommands(BaseCommand):
 
         return
 
-    def _details_handler(self, connection, event, command_data: CommandData):
+    def _details_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         user_data = db_access.user_directory.find_user_data(command_data.issuer)
 
         if not user_data.raptor_adopted:
@@ -106,7 +108,7 @@ class RaptorCommands(BaseCommand):
         self.respond_to_user(connection, event, response)
         return
 
-    def _rename_handler(self, connection, event, command_data: CommandData):
+    def _rename_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         user_data = db_access.user_directory.find_user_data(command_data.issuer)
 
         if not user_data.raptor_adopted:
@@ -130,7 +132,7 @@ class RaptorCommands(BaseCommand):
                 "poor thing.".format(" ".join(command_data.args[1:])))
         return
 
-    def _reset_handler(self, connection, event, command_data: CommandData):
+    def _reset_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         if command_data.arg_count < 2 or command_data.args[1] not in ['stats', 'bunnies', 'color']:
             self.respond_to_user(connection, event, "Specify whether you wish to reset 'stats', 'bunnies', or favorite "
                                                     "'color'")

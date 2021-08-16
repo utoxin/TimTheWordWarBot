@@ -1,15 +1,17 @@
 import random
 import re
 
+from irc.client import ServerConnection, Event
+
 from timmy import core, utilities
 from timmy.command_processors import interaction_controls
 from timmy.data.channel_data import ChannelData
 
 
 class ReactionHandler:
-    def on_action(self, connection, event):
+    def on_action(self, connection: ServerConnection, event: Event) -> None:
         if core.user_perms.is_ignored(event.source.nick, 'soft'):
-            return True
+            return
 
         channel: ChannelData = core.bot_instance.channels[event.target]
 
@@ -121,12 +123,12 @@ class ReactionHandler:
             
         utilities.markov_processor.store_line("emote", event.arguments[0])
 
-    def on_privmsg(self, connection, event):
+    def on_privmsg(self, connection: ServerConnection, event: Event) -> None:
         self.on_pubmsg(connection, event)
 
-    def on_pubmsg(self, connection, event):
+    def on_pubmsg(self, connection: ServerConnection, event: Event) -> None:
         if core.user_perms.is_ignored(event.source.nick, 'soft'):
-            return True
+            return
 
         channel: ChannelData = core.bot_instance.channels[event.target]
 
@@ -239,7 +241,7 @@ class ReactionHandler:
         utilities.markov_processor.store_line("say", event.arguments[0])
 
     @staticmethod
-    def _update_odds(channel: ChannelData):
+    def _update_odds(channel: ChannelData) -> None:
         for key in channel.max_odds.keys():
             if channel.current_odds[key] < channel.max_odds[key] and random.randrange(100) == 0:
                 channel.current_odds[key] += 1
@@ -247,7 +249,7 @@ class ReactionHandler:
         channel.save_data()
 
     @staticmethod
-    def _pick_grade():
+    def _pick_grade() -> str:
         grade = random.normalvariate(75, 15)
 
         if grade < 60:
@@ -278,7 +280,7 @@ class ReactionHandler:
         return 'A+'
 
     @staticmethod
-    def _interact(connection, event, message_type):
+    def _interact(connection: ServerConnection, event: Event, message_type: str) -> None:
         channel: ChannelData = core.bot_instance.channels[event.target]
 
         if channel.chatter_settings['random_level'] <= 0:

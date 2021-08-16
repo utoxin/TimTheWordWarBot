@@ -8,11 +8,11 @@ class TextGenerator:
     def __init__(self):
         self.pychance = PyChance()
 
-    def _ensure_init(self):
+    def _ensure_init(self) -> None:
         if len(self.pychance.tables) < 1:
             self._load_tables()
 
-    def _setup_temp_tables(self, input_data: dict):
+    def _setup_temp_tables(self, input_data: dict) -> None:
         self._ensure_init()
 
         for key, value in input_data.items():
@@ -28,7 +28,7 @@ class TextGenerator:
 
             self.pychance.tables[table_name].table_values = [value]
 
-    def _cleanup_temp_tables(self, input_data: dict):
+    def _cleanup_temp_tables(self, input_data: dict) -> None:
         self._ensure_init()
 
         for key, value in input_data.items():
@@ -37,7 +37,7 @@ class TextGenerator:
             if table_name in self.pychance.tables and self.pychance.tables[table_name].temporary is True:
                 del self.pychance.tables[table_name]
 
-    def get_string(self, input_string, input_data: dict = None):
+    def get_string(self, input_string: str, input_data: dict = None) -> str:
         self._ensure_init()
 
         if input_data is not None:
@@ -50,10 +50,10 @@ class TextGenerator:
 
         return result
 
-    def _load_tables(self):
+    def _load_tables(self) -> None:
         self.__load_simple_tables()
 
-    def __load_simple_tables(self):
+    def __load_simple_tables(self) -> None:
         db = db_access.connection_pool.get_connection()
         select_query = "SELECT `table_name`, `table_entry` FROM `pychance_basic_tables` `pbt` INNER JOIN " \
                        "`pychance_basic_table_entries` `pbte` ON (`pbt`.`uuid` = `pbte`.`pychance_basic_table_id`)"

@@ -4,6 +4,7 @@ import re
 import irc.client_aio
 import more_itertools
 from irc.bot import ExponentialBackoff, ServerSpec
+from irc.client import ServerConnection, Event
 from irc.dict import IRCDict
 from irc import client, modes
 from timmy import db_access, event_handlers
@@ -38,7 +39,7 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
         self.servers = None
         self.recon = None
 
-    def setup(self, host, database, user, password, port):
+    def setup(self, host: str, database: str, user: str, password: str, port: int) -> None:
         for i in self.handled_callbacks.keys():
             self.connection.add_global_handler(i, getattr(self, "_on_" + i), -20)
 
@@ -63,11 +64,11 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
 
         event_handlers.init_event_handlers()
 
-    def start(self):
+    def start(self) -> None:
         self._connect()
         self.reactor.process_forever()
 
-    def _connect(self):
+    def _connect(self) -> None:
         server = self.servers.peek()
         try:
             self.connect(
@@ -80,13 +81,13 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
         except irc.client_aio.ServerNotConnectedError:
             pass
 
-    def _on_action(self, connection, event):
+    def _on_action(self, connection: ServerConnection, event: Event) -> None:
         event = self._cleanup_color(event)
         for obj in self.handled_callbacks["action"]:
             if obj.on_action(connection, event):
                 break
 
-    def _on_disconnect(self, connection, event):
+    def _on_disconnect(self, connection: ServerConnection, event: Event) -> None:
         self.channels = IRCDict()
         self.recon.run(self)
 
@@ -94,12 +95,12 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             if obj.on_disconnect(connection, event):
                 break
 
-    def _on_invite(self, connection, event):
+    def _on_invite(self, connection: ServerConnection, event: Event) -> None:
         for obj in self.handled_callbacks["invite"]:
             if obj.on_invite(connection, event):
                 break
 
-    def _on_join(self, connection, event):
+    def _on_join(self, connection: ServerConnection, event: Event) -> None:
         ch = event.target
         nick = event.source.nick
 
@@ -113,7 +114,7 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             if obj.on_join(connection, event):
                 break
 
-    def _on_kick(self, connection, event):
+    def _on_kick(self, connection: ServerConnection, event: Event) -> None:
         nick = event.arguments[0]
         channel = event.target
 
@@ -127,7 +128,7 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             if obj.on_kick(connection, event):
                 break
 
-    def _on_mode(self, connection, event):
+    def _on_mode(self, connection: ServerConnection, event: Event) -> None:
         t = event.target
         if not irc.client.is_channel(t):
             # mode on self; disregard
@@ -143,7 +144,7 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             if obj.on_mode(connection, event):
                 break
 
-    def _on_namreply(self, connection, event):
+    def _on_namreply(self, connection: ServerConnection, event: Event) -> None:
         """
         event.arguments[0] == "@" for secret channels,
                           "*" for private channels,
@@ -175,7 +176,7 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             if obj.on_namreply(connection, event):
                 break
 
-    def _on_nick(self, connection, event):
+    def _on_nick(self, connection: ServerConnection, event: Event) -> None:
         before = event.source.nick
         after = event.target
         for ch in self.channels.values():
@@ -186,7 +187,7 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             if obj.on_nick(connection, event):
                 break
 
-    def _on_part(self, connection, event):
+    def _on_part(self, connection: ServerConnection, event: Event) -> None:
         nick = event.source.nick
         channel = event.target
 
@@ -199,19 +200,19 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             if obj.on_part(connection, event):
                 break
 
-    def _on_privmsg(self, connection, event):
+    def _on_privmsg(self, connection: ServerConnection, event: Event) -> None:
         event = self._cleanup_color(event)
         for obj in self.handled_callbacks["privmsg"]:
             if obj.on_privmsg(connection, event):
                 break
 
-    def _on_pubmsg(self, connection, event):
+    def _on_pubmsg(self, connection: ServerConnection, event: Event) -> None:
         event = self._cleanup_color(event)
         for obj in self.handled_callbacks["pubmsg"]:
             if obj.on_pubmsg(connection, event):
                 break
 
-    def _on_quit(self, connection, event):
+    def _on_quit(self, connection: ServerConnection, event: Event) -> None:
         nick = event.source.nick
         for ch in self.channels.values():
             if ch.has_user(nick):
@@ -221,23 +222,23 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             if obj.on_quit(connection, event):
                 break
 
-    def _on_umode(self, connection, event):
+    def _on_umode(self, connection: ServerConnection, event: Event) -> None:
         for obj in self.handled_callbacks["umode"]:
             if obj.on_umode(connection, event):
                 break
 
-    def _on_welcome(self, connection, event):
+    def _on_welcome(self, connection: ServerConnection, event: Event) -> None:
         for obj in self.handled_callbacks["welcome"]:
             if obj.on_welcome(connection, event):
                 break
 
-    def _on_whoisaccount(self, connection, event):
+    def _on_whoisaccount(self, connection: ServerConnection, event: Event) -> None:
         for obj in self.handled_callbacks["whoisaccount"]:
             if obj.on_whoisaccount(connection, event):
                 break
 
     @staticmethod
-    def _cleanup_color(event):
+    def _cleanup_color(event: Event) -> Event:
         event.arguments[0] = re.sub(r'[\x02\x1F\x0F\x16]|\x03(\d\d?(,\d\d?)?)?', '', event.arguments[0])
 
         return event

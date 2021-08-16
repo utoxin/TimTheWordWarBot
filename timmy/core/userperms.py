@@ -12,7 +12,7 @@ class UserPerms:
         self.soft_ignores = IRCDict()
         self.hard_ignores = IRCDict()
 
-    def _load_admin_data(self):
+    def _load_admin_data(self) -> None:
         select_statement = "SELECT * FROM `admins`"
 
         connection = db_access.connection_pool.get_connection()
@@ -28,7 +28,7 @@ class UserPerms:
 
         connection.close()
 
-    def _load_ignore_data(self):
+    def _load_ignore_data(self) -> None:
         select_statement = "SELECT `name`, `type` FROM `ignores`"
 
         connection = db_access.connection_pool.get_connection()
@@ -48,7 +48,7 @@ class UserPerms:
 
         connection.close()
 
-    def is_admin(self, nick, channel):
+    def is_admin(self, nick: str, channel: str) -> bool:
         if nick in core.bot_instance.channels[channel].opers():
             return True
 
@@ -60,11 +60,11 @@ class UserPerms:
         return user_data.global_admin or nick in self.admins  # or channel in self.admins
 
     @staticmethod
-    def is_registered(nick):
+    def is_registered(nick: str) -> bool:
         user_data = db_access.user_directory.nick_directory.get(nick)
         return user_data.registration_data_retrieved if user_data is not None else False
 
-    def is_ignored(self, nick, ignore_type='soft'):
+    def is_ignored(self, nick: str, ignore_type: str = 'soft') -> bool:
         if not self.ignore_data_loaded:
             self._load_ignore_data()
 

@@ -2,26 +2,28 @@ import random
 import re
 import threading
 
+from irc.client import ServerConnection, Event
+
 from timmy import core
 from timmy.data.channel_data import ChannelData
 from timmy.utilities import text_generator
 
 
 class ServerHandler:
-    def on_invite(self, connection, event):
+    def on_invite(self, connection: ServerConnection, event: Event) -> None:
         x = threading.Thread(target=self._on_invite, args=(connection, event), name="ServerHandler-on_invite")
         x.start()
 
     @staticmethod
-    def _on_invite(connection, event):
+    def _on_invite(connection: ServerConnection, event: Event) -> None:
         connection.join(event.arguments[0])
 
-    def on_join(self, connection, event):
+    def on_join(self, connection: ServerConnection, event: Event) -> None:
         x = threading.Thread(target=self._on_join, args=(connection, event), name="ServerHandler-on_join")
         x.start()
 
     @staticmethod
-    def _on_join(connection, event):
+    def _on_join(connection: ServerConnection, event: Event) -> None:
         channel: ChannelData = core.bot_instance.channels[event.target]
         nick = event.source.nick
 
@@ -43,8 +45,8 @@ class ServerHandler:
                     velociraptor_count = channel.raptor_data['active']
                     plural = "" if velociraptor_count == 1 else "s"
 
-                    connection.privmsg(channel.name, "This channel has a population of {:n} velociraptor{}!",
-                                       velociraptor_count, plural)
+                    connection.privmsg(channel.name, f"This channel has a population of {velociraptor_count:n} "
+                                                     f"velociraptor{plural}!")
 
         if channel.chatter_settings['types']['helpful_reactions']:
             channel_wars = [w for w in core.war_ticker.active_wars if w.channel.lower() == channel.name.lower()]

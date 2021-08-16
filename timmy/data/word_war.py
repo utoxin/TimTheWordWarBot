@@ -1,7 +1,7 @@
 import time
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Set, Dict
 
 from timmy import db_access
 from timmy.data.war_state import WarState
@@ -10,7 +10,7 @@ from timmy.data.war_state import WarState
 class WordWar:
     year: int
     war_id: int
-    uuid: Optional[object]
+    uuid: Optional[uuid]
     channel: str
     starter: str
     name: str
@@ -22,7 +22,7 @@ class WordWar:
     end_epoch: float
     randomness: bool
     start: Optional[WarState]
-    war_members: set
+    war_members: Set[str]
 
     def __init__(self):
         self.year = 0
@@ -44,7 +44,7 @@ class WordWar:
         from timmy.db_access import WordWarDb
         self.db_access: WordWarDb = db_access.word_war_db
 
-    def basic_setup(self, channel: str, starter: str, name: str, base_duration: float, start_epoch: float):
+    def basic_setup(self, channel: str, starter: str, name: str, base_duration: float, start_epoch: float) -> None:
         self.uuid = uuid.uuid4()
         self.channel = channel
         self.starter = starter
@@ -61,7 +61,7 @@ class WordWar:
         self.db_access.create_war(self)
 
     def advanced_setup(self, channel: str, starter: str, name: str, base_duration: float, start_epoch: float,
-                       total_chains: int, base_break: float, randomness: bool):
+                       total_chains: int, base_break: float, randomness: bool) -> None:
         self.uuid = uuid.uuid4()
         self.channel = channel
         self.starter = starter
@@ -78,7 +78,7 @@ class WordWar:
 
         self.db_access.create_war(self)
 
-    def load_from_db(self, row: dict):
+    def load_from_db(self, row: Dict[str]) -> None:
         self.uuid = uuid.UUID(row['uuid'])
         self.year = int(row['year'])
         self.war_id = int(row['war_id'])
@@ -94,7 +94,7 @@ class WordWar:
         self.randomness = bool(row['randomness'])
         self.state = WarState[row['war_state']]
 
-    def data_export(self):
+    def data_export(self) -> dict:
         data = {'uuid':          str(self.uuid),
                 'year':          self.year,
                 'war_id':        self.war_id,
@@ -156,22 +156,22 @@ class WordWar:
         return " ".join(name_parts)
 
     @staticmethod
-    def get_duration_text(duration: float):
-        text = ""
-        hours = 0
-        minutes = 0
+    def get_duration_text(duration: float) -> str:
+        text: str = ""
+        hours: int = 0
+        minutes: int = 0
 
-        tmp = duration
+        tmp: float = duration
 
         if tmp > (60 * 60):
-            hours = tmp // (60 * 60)
+            hours = int(tmp // (60 * 60))
             tmp = tmp % (60 * 60)
 
         if tmp > 60:
-            minutes = tmp // 60
+            minutes = int(tmp // 60)
             tmp = tmp % 60
 
-        seconds = tmp
+        seconds: float = tmp
 
         if hours > 0:
             text += f"{hours:,.0f}H "
@@ -184,13 +184,13 @@ class WordWar:
 
         return text.strip()
 
-    def get_internal_name(self):
+    def get_internal_name(self) -> str:
         return self.name.lower()
 
-    def get_description(self, id_field_width=1, duration_field_width=1):
-        current_epoch = time.time()
+    def get_description(self, id_field_width: int = 1, duration_field_width: int = 1) -> str:
+        current_epoch: float = time.time()
 
-        about = self.get_name(True, True, id_field_width, duration_field_width) + " :: "
+        about: str = self.get_name(True, True, id_field_width, duration_field_width) + " :: "
 
         if current_epoch < self.start_epoch:
             about += "Starts In: "
@@ -201,20 +201,20 @@ class WordWar:
 
         return about
 
-    def get_description_with_channel(self, id_field_width=1, duration_field_width=1):
+    def get_description_with_channel(self, id_field_width: int = 1, duration_field_width: int = 1) -> str:
         return self.get_description(id_field_width, duration_field_width) + " :: " + self.channel
 
-    def get_id(self):
+    def get_id(self) -> str:
         return f"{self.year:d}-{self.war_id:d}"
 
-    def get_chain_id(self):
+    def get_chain_id(self) -> str:
         chain = self.current_chain
         if self.state == WarState.FINISHED:
             chain -= 1
 
         return f"{self.get_id()}-{chain:d}"
 
-    def add_member(self, member: str):
+    def add_member(self, member: str) -> None:
         self.war_members.add(member)
         self.update_war_members()
 

@@ -2,6 +2,8 @@ import re
 import time
 from typing import Optional
 
+from irc.client import Event, ServerConnection
+
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
@@ -14,7 +16,7 @@ class WarCommands(BaseCommand):
     user_commands = {"war", "endwar", "starwar", "startwar", "chainwar", "listall", "listwars", "joinwar", "leavewar"}
     sub_commands = {"start", "cancel", "join", "leave", "report", "list"}
 
-    def process(self, connection, event, command_data: CommandData):
+    def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         if command_data.command == 'endwar':
             self.respond_to_user(connection, event, "The syntax for war-related commands has changed. Try "
                                                     "'!war cancel' in the future.")
@@ -66,7 +68,7 @@ class WarCommands(BaseCommand):
 
         self.handle_subcommand(connection, event, command_data)
 
-    def _start_handler(self, connection, event, command_data: CommandData):
+    def _start_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         if command_data.arg_count >= 2:
             to_start = 60
             total_chains = 1
@@ -232,7 +234,7 @@ class WarCommands(BaseCommand):
                                  "Options for chain wars: chains:<chain count>, random:1, break:<minutes>")
             self.respond_to_user(connection, event, "Example: !war start 10 delay:5 Let's Write!")
 
-    def _cancel_handler(self, connection, event, command_data: CommandData):
+    def _cancel_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         if command_data.arg_count > 1:
             name = " ".join(command_data.args[1:])
 
@@ -248,7 +250,7 @@ class WarCommands(BaseCommand):
         else:
             self.respond_to_user(connection, event, "Syntax: !war cancel <name or id>")
 
-    def _join_handler(self, connection, event, command_data: CommandData):
+    def _join_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         war = self._find_join_leave_war(connection, event, command_data)
 
         if war is not None:
@@ -261,7 +263,7 @@ class WarCommands(BaseCommand):
             else:
                 self.respond_to_user(connection, event, "That war is over or cancelled. Sorry!")
 
-    def _report_handler(self, connection, event, command_data: CommandData):
+    def _report_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         if command_data.arg_count < 2:
             self.respond_to_user(connection, event, "Usage: !war report <wordcount> [<war id>]")
             self.respond_to_user(connection, event, "Note: Wordcount should be words written during the war, not total "
@@ -321,7 +323,7 @@ class WarCommands(BaseCommand):
                 if not channel_data.is_muzzled():
                     core.raptor_ticker.handle_war_report(user_data, war, wordcount)
 
-    def _leave_handler(self, connection, event, command_data: CommandData) -> None:
+    def _leave_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         war = self._find_join_leave_war(connection, event, command_data)
 
         if war is not None:
@@ -330,7 +332,7 @@ class WarCommands(BaseCommand):
             war.remove_member(leaver)
             self.respond_to_user(connection, event, "You have left the war.")
 
-    def _list_handler(self, connection, event, command_data: CommandData) -> None:
+    def _list_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         all_wars = command_data.arg_count > 1 and command_data.args[1].lower() == "all"
         responded = False
 
@@ -360,7 +362,8 @@ class WarCommands(BaseCommand):
         if not responded:
             self.respond_to_user(connection, event, "No wars are currently available.")
 
-    def _find_join_leave_war(self, connection, event, command_data: CommandData) -> Optional[WordWar]:
+    def _find_join_leave_war(self, connection: ServerConnection, event: Event,
+                             command_data: CommandData) -> Optional[WordWar]:
         if event.type == "privmsg":
             self.respond_to_user(connection, event, "Sorry. This currently only works in regular channels.")
             return None
@@ -405,7 +408,7 @@ class WarCommands(BaseCommand):
 
         return return_war
 
-    def _remove_war(self, connection, event, command_data: CommandData, war: WordWar) -> None:
+    def _remove_war(self, connection: ServerConnection, event: Event, command_data: CommandData, war: WordWar) -> None:
         if command_data.issuer.lower() == war.starter.lower():
             core.war_ticker.active_wars.remove(war)
             war.cancel_war()

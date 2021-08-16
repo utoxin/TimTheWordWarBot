@@ -1,13 +1,33 @@
+import uuid
+
+from typing import Optional, Set
+
 from timmy import db_access
 
 
 class UserData:
+    registration_data_retrieved: bool
+    last_whois_check: Optional[float]
+    nicks: Set[str]
+    recorded_wars: Set[str]
+    uuid: Optional[uuid]
+    authed_user: str
+    global_admin: bool
+    total_sprint_wordcount: int
+    total_sprints: int
+    total_sprint_duration: float
+    raptor_adopted: bool
+    raptor_name: str
+    raptor_favorite_color: str
+    raptor_bunnies_stolen: int
+    last_bunny_raid: Optional[float]
+
     def __init__(self):
         self.registration_data_retrieved = False
         self.last_whois_check = None
 
         self.nicks = set()
-        self.recorded_wars = {}
+        self.recorded_wars = set()
 
         self.uuid = None
         self.authed_user = ""

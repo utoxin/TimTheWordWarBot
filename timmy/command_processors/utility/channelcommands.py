@@ -11,7 +11,7 @@ class ChannelCommands(BaseCommand):
     admin_commands = {'automuzzlewars', 'muzzle', 'chatterlevel', 'chatterflag', 'commandflag',
                       'twitterrelay', 'twitterbucket', 'part', 'unmuzzle'}
 
-    def process(self, connection: ServerConnection, event: Event, command_data: CommandData):
+    def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         from timmy.core import user_perms
         if not user_perms.is_admin(command_data.issuer, command_data.channel):
             self.respond_to_user(connection, event, "I'm sorry, only admins are allowed to do that.")
@@ -23,7 +23,7 @@ class ChannelCommands(BaseCommand):
         except AttributeError:
             self.respond_to_user(connection, event, "That command is not yet implemented.")
 
-    def _validate_channel(self, connection: ServerConnection, event: Event, candidate_channel, user):
+    def _validate_channel(self, connection: ServerConnection, event: Event, candidate_channel, user) -> bool:
         from timmy.core import user_perms, bot_instance
 
         if candidate_channel not in bot_instance.channels:
@@ -37,7 +37,7 @@ class ChannelCommands(BaseCommand):
 
         return True
 
-    def _unmuzzle_handler(self, connection: ServerConnection, event: Event, command_data: CommandData):
+    def _unmuzzle_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         from timmy.core import bot_instance
 
         if command_data.arg_count == 0:
@@ -53,9 +53,7 @@ class ChannelCommands(BaseCommand):
         self.respond_to_user(connection, event, "Channel unmuzzled.")
         return
 
-    def _part_handler(self, connection: ServerConnection, event: Event, command_data: CommandData):
-        from timmy.core import bot_instance
-
+    def _part_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         if command_data.arg_count == 0:
             target = command_data.channel
         else:
@@ -71,7 +69,7 @@ class ChannelCommands(BaseCommand):
 
         return
 
-    def _muzzle_handler(self, connection: ServerConnection, event: Event, command_data: CommandData):
+    def _muzzle_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         from timmy.core import bot_instance
 
         if command_data.arg_count == 0:
@@ -100,7 +98,7 @@ class ChannelCommands(BaseCommand):
         self.respond_to_user(connection, event, "Channel muzzled for specified time.")
         return
 
-    def _automuzzlewars_handler(self, connection: ServerConnection, event: Event, command_data: CommandData):
+    def _automuzzlewars_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         from timmy.core import bot_instance
 
         if command_data.arg_count == 0:
@@ -126,7 +124,7 @@ class ChannelCommands(BaseCommand):
         self.respond_to_user(connection, event, "Channel auto muzzle flag updated for {}.".format(target))
         return
 
-    def _chatterlevel_handler(self, connection: ServerConnection, event: Event, command_data: CommandData):
+    def _chatterlevel_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         from timmy.core import bot_instance
 
         def output_usage():
@@ -185,7 +183,7 @@ class ChannelCommands(BaseCommand):
                 name = max(min(name, 100), 0)
                 random = max(min(random, 100), 0)
 
-                channel_data.set_chatterflags(reactive, name, random)
+                channel_data.set_chatter_flags(reactive, name, random)
 
                 self.respond_to_user(connection, event, f"Reactive Chatter Level: {reactive:.3f}%/Msg - "
                                                         f"Name Multiplier: {name:.3f}")
@@ -200,7 +198,7 @@ class ChannelCommands(BaseCommand):
 
         return
 
-    def _chatterflag_handler(self, connection: ServerConnection, event: Event, command_data: CommandData):
+    def _chatterflag_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         from timmy.core import bot_instance
 
         if 1 <= command_data.arg_count <= 2 and command_data.args[command_data.arg_count - 1].lower() == 'list':
@@ -256,7 +254,7 @@ class ChannelCommands(BaseCommand):
                                                     "$chatterflag [<#channel>] set <type> <0/1>")
             self.respond_to_user(connection, event, f"Valid Chatter Types: all, {flags}")
 
-    def _commandflag_handler(self, connection: ServerConnection, event: Event, command_data: CommandData):
+    def _commandflag_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         from timmy.core import bot_instance
 
         if 1 <= command_data.arg_count <= 2 and command_data.args[command_data.arg_count - 1].lower() == 'list':

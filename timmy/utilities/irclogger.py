@@ -8,13 +8,13 @@ class IrcLogger:
         self.enabled = False
         self.log_channel = "#commandcenter"
 
-    def set_enabled(self, enabled):
+    def set_enabled(self, enabled: bool) -> None:
         self.enabled = enabled
 
-    def set_channel(self, log_channel):
+    def set_channel(self, log_channel: str) -> None:
         self.log_channel = log_channel
 
-    def log_message(self, message, layer=1):
+    def log_message(self, message, layer=1) -> None:
         if self.enabled:
             if isinstance(message, str):
                 core.bot_instance.connection.privmsg(self.log_channel, message)

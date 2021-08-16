@@ -12,11 +12,11 @@ idle_timer = Timeloop()
 
 class IdleTicker:
     @staticmethod
-    def init():
+    def init() -> None:
         idle_timer.start()
 
     @staticmethod
-    def tick():
+    def tick() -> None:
         today = datetime.now()
         is_november = today.month == 11
 
@@ -67,5 +67,5 @@ class IdleTicker:
 
 
 @idle_timer.job(interval=timedelta(seconds=60))
-def deidle_timer_loop():
+def deidle_timer_loop() -> None:
     core.idle_ticker.tick()

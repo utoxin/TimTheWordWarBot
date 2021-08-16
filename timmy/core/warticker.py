@@ -19,7 +19,7 @@ class WarTicker:
         self.loaded_wars: Set[WordWar] = set()
         self.active_wars: Set[WordWar] = set()
 
-    def load_wars(self):
+    def load_wars(self) -> None:
         self.loaded_wars = word_war_db.load_wars()
 
         war_timer.start()
@@ -34,7 +34,7 @@ class WarTicker:
 
                 channel.newest_war_id = war.get_id()
 
-    def begin_war(self, war: WordWar):
+    def begin_war(self, war: WordWar) -> None:
         current_epoch = time.time()
         late_start = int(current_epoch - war.start_epoch)
 
@@ -49,7 +49,7 @@ class WarTicker:
 
         war.begin_war()
 
-    def end_war(self, war: WordWar):
+    def end_war(self, war: WordWar) -> None:
         current_epoch = time.time()
         late_end = int(current_epoch - war.end_epoch)
 
@@ -92,7 +92,7 @@ class WarTicker:
                 core.bot_instance.channels[war.channel].newest_war_id = war.get_id()
 
     @staticmethod
-    def war_start_count(war: WordWar):
+    def war_start_count(war: WordWar) -> None:
         time_to_start = int(war.start_epoch - time.time())
 
         if time_to_start < 60:
@@ -109,7 +109,7 @@ class WarTicker:
         core.bot_instance.connection.privmsg(war.channel, message)
 
     @staticmethod
-    def war_end_count(war: WordWar):
+    def war_end_count(war: WordWar) -> None:
         time_to_end = int(war.end_epoch - time.time())
 
         if time_to_end < 60:
@@ -123,13 +123,13 @@ class WarTicker:
         core.bot_instance.connection.privmsg(war.channel, message)
 
     @staticmethod
-    def notify_war_members(war: WordWar, message):
+    def notify_war_members(war: WordWar, message: str) -> None:
         for nick in war.war_members:
             core.bot_instance.connection.privmsg(nick, message)
 
 
 @war_timer.job(interval=timedelta(seconds=1))
-def war_update_loop():
+def war_update_loop() -> None:
     wars = core.war_ticker.active_wars.copy()
     if wars is None or len(wars) <= 0:
         return

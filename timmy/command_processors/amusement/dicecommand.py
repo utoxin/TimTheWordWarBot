@@ -1,4 +1,5 @@
 import dice
+from irc.client import ServerConnection, Event
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
@@ -9,7 +10,7 @@ from timmy.data.command_data import CommandData
 class DiceCommand(BaseCommand):
     user_commands = {'roll'}
 
-    def process(self, connection, event, command_data: CommandData):
+    def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         if not command_data.in_pm:
             channel_data: ChannelData = core.bot_instance.channels[command_data.channel]
 

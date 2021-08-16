@@ -1,5 +1,8 @@
 import random
 from datetime import datetime
+from typing import Optional
+
+from irc.client import ServerConnection, Event
 
 from timmy import core
 from timmy.data.channel_data import ChannelData
@@ -10,10 +13,10 @@ from timmy.utilities import text_generator
 
 class RaptorTicker:
     @staticmethod
-    def _channel_raptor_cap(channel_data: ChannelData):
+    def _channel_raptor_cap(channel_data: ChannelData) -> int:
         return 100 + channel_data.raptor_data['strength']
 
-    def sighting(self, connection, event):
+    def sighting(self, connection: ServerConnection, event: Event) -> None:
         action = event.type == 'action'
         channel_data: ChannelData = core.bot_instance.channels[event.target]
 
@@ -39,7 +42,7 @@ class RaptorTicker:
                                                      text_generator.get_string("[raptor_sighting_old_message_response]")
                                                      )
 
-    def swarm(self, channel_data: ChannelData):
+    def swarm(self, channel_data: ChannelData) -> None:
         if random.randrange(100) <= 33:
             magic_number = random.randrange(100)
             raptor_cap = self._channel_raptor_cap(channel_data)
@@ -57,7 +60,7 @@ class RaptorTicker:
             else:
                 self._hatch_raptors(channel_data)
 
-    def war_report(self, user_data: UserData, war: WordWar, wordcount: int):
+    def war_report(self, user_data: UserData, war: WordWar, wordcount: int) -> None:
         actions = [
             'brag',
             'bunnies',
@@ -79,7 +82,7 @@ class RaptorTicker:
 
                 break
 
-    def _attack_channel(self, source_channel: ChannelData):
+    def _attack_channel(self, source_channel: ChannelData) -> None:
         max_attack = round(source_channel.raptor_data['active'] / 4)
 
         if max_attack <= 0:
@@ -132,7 +135,7 @@ class RaptorTicker:
                                                                            attack_count,
                                                                            defender_deaths))
 
-    def _colonize_channel(self, source_channel: ChannelData):
+    def _colonize_channel(self, source_channel: ChannelData) -> None:
         max_colony = source_channel.raptor_data['active'] // 4
 
         if max_colony <= 0:
@@ -157,7 +160,7 @@ class RaptorTicker:
                                                                         "join the colony.".format(colony_count,
                                                                                                   source_channel.name))
 
-    def _hatch_raptors(self, source_channel):
+    def _hatch_raptors(self, source_channel: ChannelData) -> None:
         if source_channel.raptor_data['active'] > 1:
             new_count = random.randrange(source_channel.raptor_data['active'] // 2)
 
@@ -172,7 +175,7 @@ class RaptorTicker:
             core.bot_instance.connection.privmsg(source_channel.name, self._hatching_message(new_count))
 
     @staticmethod
-    def _select_high_population_raptor_channel(exclude_channel):
+    def _select_high_population_raptor_channel(exclude_channel: ChannelData) -> Optional[ChannelData]:
         candidates = [c for c in core.bot_instance.channels if c.chatter_settings['types']['raptor'] and
                       c.raptor_data['active'] > 0 and not c.is_muzzled()]
         candidates.sort(key=lambda c: c.raptor_data['active'], reverse=True)
@@ -195,7 +198,7 @@ class RaptorTicker:
             return candidates[0]
 
     @staticmethod
-    def _select_low_population_raptor_channel(exclude_channel):
+    def _select_low_population_raptor_channel(exclude_channel: ChannelData) -> Optional[ChannelData]:
         candidates = [c for c in core.bot_instance.channels if c.chatter_settings['types']['raptor'] and
                       c.raptor_data['active'] > 0 and not c.is_muzzled()]
         candidates.sort(key=lambda c: c.raptor_data['active'])
@@ -219,7 +222,7 @@ class RaptorTicker:
             return candidates[0]
 
     @staticmethod
-    def _select_random_raptor_channel(exclude_channel):
+    def _select_random_raptor_channel(exclude_channel: ChannelData) -> Optional[ChannelData]:
         candidates = [c for c in core.bot_instance.channels if c.chatter_settings['types']['raptor'] and
                       c.raptor_data['active'] > 0 and not c.is_muzzled()]
 
@@ -231,8 +234,9 @@ class RaptorTicker:
             random.shuffle(candidates)
             return candidates[0]
 
-    def _brag_about_word_count(self, user_data: UserData, war_data: WordWar, word_count):
-        selected_channel = self._select_random_raptor_channel(war_data.channel)
+    def _brag_about_word_count(self, user_data: UserData, war_data: WordWar, word_count: int) -> None:
+        war_channel = core.bot_instance.channels[war_data.channel]
+        selected_channel = self._select_random_raptor_channel(war_channel)
 
         if selected_channel is None:
             return
@@ -244,15 +248,16 @@ class RaptorTicker:
 
         destination_message = text_generator.get_string("[raptor_brag_destination]", {
             'raptor_name':  user_data.raptor_name,
-            'channel_name': war_data.channel.name,
+            'channel_name': war_channel.name,
             'word_count': "{:n}".format(word_count),
         })
 
-        core.bot_instance.connection.privmsg(war_data.channel.name, origin_message)
+        core.bot_instance.connection.privmsg(war_channel.name, origin_message)
         core.bot_instance.connection.privmsg(selected_channel.name, destination_message)
 
-    def _steal_plot_bunnies(self, user_data: UserData, war_data: WordWar):
-        selected_channel = self._select_random_raptor_channel(war_data.channel)
+    def _steal_plot_bunnies(self, user_data: UserData, war_data: WordWar) -> None:
+        war_channel = core.bot_instance.channels[war_data.channel]
+        selected_channel = self._select_random_raptor_channel(war_channel)
 
         if selected_channel is None:
             return
@@ -273,19 +278,20 @@ class RaptorTicker:
 
         destination_message = text_generator.get_string("[raptor_steal_bunnies_destination_{:d}".format(threshold), {
             'raptor_name': user_data.raptor_name,
-            'channel_name': war_data.channel.name,
+            'channel_name': war_channel.name,
             'bunny_count': "{:n}".format(bunny_count),
         })
 
-        core.bot_instance.connection.privmsg(war_data.channel.name, origin_message)
+        core.bot_instance.connection.privmsg(war_channel.name, origin_message)
         core.bot_instance.connection.privmsg(selected_channel.name, destination_message)
 
         user_data.raptor_bunnies_stolen += bunny_count
         user_data.last_bunny_raid = datetime.now()
         user_data.save()
 
-    def _recruit_raptors(self, user_data: UserData, war_data: WordWar):
-        selected_channel = self._select_high_population_raptor_channel(war_data.channel)
+    def _recruit_raptors(self, user_data: UserData, war_data: WordWar) -> None:
+        war_channel = core.bot_instance.channels[war_data.channel]
+        selected_channel = self._select_high_population_raptor_channel(war_channel)
 
         if selected_channel is None:
             return
@@ -306,21 +312,21 @@ class RaptorTicker:
 
         destination_message = text_generator.get_string("[raptor_recruit_destination_{:d}".format(threshold), {
             'raptor_name': user_data.raptor_name,
-            'channel_name': war_data.channel.name,
+            'channel_name': war_channel.name,
             'raptor_count': "{:n}".format(raptor_count),
         })
 
-        core.bot_instance.connection.privmsg(war_data.channel.name, origin_message)
+        core.bot_instance.connection.privmsg(war_channel.name, origin_message)
         core.bot_instance.connection.privmsg(selected_channel.name, destination_message)
 
-        war_data.channel.record_sighting(raptor_count)
+        war_channel.record_sighting(raptor_count)
         selected_channel.raptor_data['active'] -= raptor_count
         if selected_channel.raptor_data['active'] < 0:
             selected_channel.raptor_data['active'] = 0
         selected_channel.save_data()
 
     @staticmethod
-    def _attack_message(channel, attack_count, defender_deaths, attack_survivors):
+    def _attack_message(channel: ChannelData, attack_count: int, defender_deaths: int, attack_survivors: int) -> str:
         return text_generator.get_string("[raptor_attack_message]", {
             'attack_count': "{:n}".format(attack_count),
             'channel_name': channel.name,
@@ -329,7 +335,7 @@ class RaptorTicker:
         })
 
     @staticmethod
-    def _defense_message(channel, attack_count, defender_deaths):
+    def _defense_message(channel: ChannelData, attack_count: int, defender_deaths: int) -> str:
         return text_generator.get_string("[raptor_defense_message]", {
             'attack_count': "{:n}".format(attack_count),
             'channel_name': channel.name,
@@ -337,7 +343,7 @@ class RaptorTicker:
         })
 
     @staticmethod
-    def _hatching_message(new_count):
+    def _hatching_message(new_count: int) -> str:
         if new_count == 1:
             return text_generator.get_string("[raptor_hatch_message_1]")
         else:

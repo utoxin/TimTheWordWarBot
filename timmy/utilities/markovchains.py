@@ -11,11 +11,11 @@ class MarkovChains:
         self.ending_punctuation = [".", ".", ".", ".", "!", "!", "?", "?", "!", "!", "?", "?", "...", "?!", "...!",
                                    "...?"]
 
-    def init(self):
+    def init(self) -> None:
         if self.db is None:
             self.db = db_access.connection_pool
 
-    def random_action(self, channel: ChannelData, message_type: str, message: str):
+    def random_action(self, channel: ChannelData, message_type: str, message: str) -> None:
         self.init()
 
         if message_type == 'mutter':
@@ -37,7 +37,7 @@ class MarkovChains:
             else:
                 channel.send_action(output)
 
-    def generate_markov(self, message_type: str, message: str):
+    def generate_markov(self, message_type: str, message: str) -> str:
         self.init()
 
         seed_word = 0
@@ -47,7 +47,7 @@ class MarkovChains:
 
         return self._generate_from_seed_word(message_type, seed_word)
 
-    def _get_seed_word(self, message_type: str, message: str, last_seed: int):
+    def _get_seed_word(self, message_type: str, message: str, last_seed: int) -> int:
         words = message.split()
         word_ids = set()
 
@@ -97,7 +97,7 @@ class MarkovChains:
 
         return 0
 
-    def _generate_from_seed_word(self, message_type: str, seed_word: int):
+    def _generate_from_seed_word(self, message_type: str, seed_word: int) -> str:
         conn = self.db.get_connection()
         cursor = conn.cursor()
 
