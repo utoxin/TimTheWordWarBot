@@ -1,3 +1,4 @@
+from .boxodoom_db import BoxODoomDb
 from .connection_pool import ConnectionPool
 from .settings import Settings
 from .userdirectory import UserDirectory
@@ -9,6 +10,7 @@ settings = Settings()
 word_war_db = WordWarDb()
 channel_db = ChannelDb()
 user_directory = UserDirectory()
+boxodoom_db = BoxODoomDb()
 
 
 def init_db_access():
@@ -20,3 +22,6 @@ def init_db_access():
 
     global channel_db
     channel_db.init()
+
+    global boxodoom_db
+    boxodoom_db.init()
