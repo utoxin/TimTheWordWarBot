@@ -22,7 +22,7 @@ class BoxODoomDb:
         challenge = random.randrange(10, 30)
 
         for record in cursor:
-            challenge = record['challenge']
+            challenge = float(record[0])
 
         connection.close()
 

@@ -1,4 +1,5 @@
 from .amusement.attackcommand import AttackCommand
+from .amusement.catchcommand import CatchCommand
 from .amusement.dicecommand import DiceCommand
 from .amusement.raptorcommands import RaptorCommands
 from .utility.admincommands import AdminCommands
@@ -6,6 +7,7 @@ from .utility.channelcommands import ChannelCommands
 from .utility.interactioncontrols import InteractionControls
 from .utility.timercommand import TimerCommand
 from timmy import event_handlers
+from .writing.boxodoomcommand import BoxODoomCommand
 from .writing.warcommands import WarCommands
 
 interaction_controls = InteractionControls()
@@ -34,3 +36,9 @@ def register_processors():
 
     dice = DiceCommand()
     dice.register_commands(event_handlers.command_handler_instance)
+
+    boxodoom = BoxODoomCommand()
+    boxodoom.register_commands(event_handlers.command_handler_instance)
+
+    catch = CatchCommand()
+    catch.register_commands(event_handlers.command_handler_instance)
