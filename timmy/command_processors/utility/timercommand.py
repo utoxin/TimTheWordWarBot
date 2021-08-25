@@ -1,7 +1,6 @@
 import threading
 
 from irc.client import ServerConnection, Event
-from irc.dict import IRCDict
 
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
@@ -9,9 +8,6 @@ from timmy.data.command_data import CommandData
 
 class TimerCommand(BaseCommand):
     user_commands = {'eggtimer', 'timer'}
-
-    def __init__(self):
-        self.user_timers = IRCDict()
 
     def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         duration = 15

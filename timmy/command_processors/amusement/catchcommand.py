@@ -11,12 +11,21 @@ class CatchCommand(BaseCommand):
     user_commands = {'catch'}
 
     def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
+        from timmy.command_processors import interaction_controls
+
         if not command_data.in_pm:
             channel_data: ChannelData = core.bot_instance.channels[command_data.channel]
 
-            if not channel_data.command_settings['dice']:
+            if not channel_data.command_settings['catch']:
                 self.respond_to_user(connection, event, "I'm sorry, I don't do that here.")
                 return
+
+            if command_data.arg_count > 0:
+                target = command_data.arg_string
+
+                if not interaction_controls.interact_with_user(target, command_data.command):
+                    self.respond_to_user(connection, event, "I'm sorry, it's been requested that I not do that.")
+                    return
 
         target = '[pokemon]'
 

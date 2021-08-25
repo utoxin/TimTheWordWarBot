@@ -243,6 +243,7 @@ class ChannelCommands(BaseCommand):
             else:
                 if flag in channel_data.chatter_settings['types']:
                     channel_data.chatter_settings['types'][flag] = value
+                    channel_data.save_data()
                     self.respond_to_user(connection, event, f"Chatter flag updated.")
                 else:
                     self.respond_to_user(connection, event, f"I'm sorry, but I don't have a setting for {flag}")
@@ -290,21 +291,22 @@ class ChannelCommands(BaseCommand):
             channel_data: ChannelData = bot_instance.channels[channel]
 
             if command == 'all':
-                for key, value in channel_data.chatter_settings.items():
-                    channel_data.chatter_settings[key] = value
+                for key, value in channel_data.command_settings.items():
+                    channel_data.command_settings[key] = value
 
                 channel_data.save_data()
 
                 self.respond_to_user(connection, event, f"All command flags updated.")
             else:
-                if command in channel_data.chatter_settings:
-                    channel_data.chatter_settings[command] = value
+                if command in channel_data.command_settings:
+                    channel_data.command_settings[command] = value
+                    channel_data.save_data()
                     self.respond_to_user(connection, event, f"Command flag updated.")
                 else:
                     self.respond_to_user(connection, event, f"I'm sorry, but I don't have a setting for {command}")
 
         else:
-            commands = ", ".join(ChannelData.chatter_settings_defaults.keys())
+            commands = ", ".join(ChannelData.command_defaults.keys())
 
             self.respond_to_user(connection, event, "Usage: $commandflag [<#channel>] list OR "
                                                     "$commandflag [<#channel>] set <type> <0/1>")

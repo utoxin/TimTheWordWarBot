@@ -1,10 +1,15 @@
 from .amusement.attackcommand import AttackCommand
 from .amusement.catchcommand import CatchCommand
+from .amusement.commandmentcommand import CommandmentCommand
 from .amusement.dicecommand import DiceCommand
+from .amusement.herdcommand import HerdCommand
+from .amusement.lickcommand import LickCommand
 from .amusement.raptorcommands import RaptorCommands
 from .utility.admincommands import AdminCommands
 from .utility.channelcommands import ChannelCommands
 from .utility.interactioncontrols import InteractionControls
+from .utility.pickonecommand import PickOneCommand
+from .utility.pingcommand import PingCommand
 from .utility.timercommand import TimerCommand
 from timmy import event_handlers
 from .writing.boxodoomcommand import BoxODoomCommand
@@ -42,3 +47,19 @@ def register_processors():
 
     catch = CatchCommand()
     catch.register_commands(event_handlers.command_handler_instance)
+
+    ping = PingCommand()
+    ping.register_commands(event_handlers.command_handler_instance)
+
+    pickone = PickOneCommand()
+    pickone.register_commands(event_handlers.command_handler_instance)
+
+    commandment = CommandmentCommand()
+    commandment.register_commands(event_handlers.command_handler_instance)
+
+    herd = HerdCommand()
+    herd.register_commands(event_handlers.command_handler_instance)
+
+    lick = LickCommand()
+    lick.register_commands(event_handlers.command_handler_instance)
+

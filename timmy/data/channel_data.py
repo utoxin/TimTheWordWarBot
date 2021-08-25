@@ -89,6 +89,7 @@ class ChannelData(Channel):
         'get': True,
         'herd': True,
         'lick': False,
+        'pickone': True,
         'ping': True,
         'search': True,
         'sing': True,

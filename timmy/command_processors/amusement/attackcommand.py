@@ -38,8 +38,6 @@ class AttackCommand(BaseCommand):
             else:
                 self.respond_to_user(connection, event, "I'm sorry, it's been requested that I not do that.")
 
-        return
-
     def attack_command(self, connection: ServerConnection, event: Event,
                        command_data: CommandData, target: str) -> None:
         damage_number = random.betavariate(3, 3) * 10000
