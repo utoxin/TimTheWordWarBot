@@ -1,7 +1,12 @@
 from .amusement.attackcommand import AttackCommand
 from .amusement.catchcommand import CatchCommand
 from .amusement.commandmentcommand import CommandmentCommand
+from .amusement.dance import DanceCommand
+from .amusement.defenstrate import DefenestrateCommand
 from .amusement.dicecommand import DiceCommand
+from .amusement.eightball import EightballCommand
+from .amusement.foof import FoofCommand
+from .amusement.fridge import FridgeCommand
 from .amusement.herdcommand import HerdCommand
 from .amusement.lickcommand import LickCommand
 from .amusement.raptorcommands import RaptorCommands
@@ -63,3 +68,17 @@ def register_processors():
     lick = LickCommand()
     lick.register_commands(event_handlers.command_handler_instance)
 
+    eightball = EightballCommand()
+    eightball.register_commands(event_handlers.command_handler_instance)
+
+    dance = DanceCommand()
+    dance.register_commands(event_handlers.command_handler_instance)
+
+    foof = FoofCommand()
+    foof.register_commands(event_handlers.command_handler_instance)
+
+    fridge = FridgeCommand()
+    fridge.register_commands(event_handlers.command_handler_instance)
+
+    defenestrate = DefenestrateCommand()
+    defenestrate.register_commands(event_handlers.command_handler_instance)

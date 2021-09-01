@@ -62,7 +62,7 @@ class MarkovChains:
 
         ids = ",".join([str(x) for x in word_ids])
 
-        if message_type == 'say' or message_type == 'emote':
+        if message_type == 'say' or message_type == 'action':
             select_statement = "SELECT * FROM (SELECT second_id FROM markov3_{}_data md WHERE md.first_id = 1 AND " \
                                "md.second_id != 1 AND md.third_id != 1 AND (md.second_id IN ({}) OR md.third_id " \
                                "IN ({})) GROUP BY md.second_id ORDER BY sum(md.count) LIMIT %(limit)s) derived " \
@@ -104,7 +104,7 @@ class MarkovChains:
         min_length = 1
         sentence = ""
 
-        if message_type == 'emote':
+        if message_type == 'action':
             procedure = 'generateMarkovEmote'
         elif message_type == 'say':
             procedure = 'generateMarkovSay'
@@ -135,7 +135,7 @@ class MarkovChains:
             else:
                 seed_word = 0
 
-            if message_type != 'emote':
+            if message_type != 'action':
                 next_sentence.capitalize()
 
             if sentence != '':

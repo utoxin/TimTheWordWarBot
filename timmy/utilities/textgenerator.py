@@ -26,7 +26,14 @@ class TextGenerator:
                 table = SimpleTable(table_name, temporary=True)
                 self.pychance.add_table(table_name, table)
 
-            self.pychance.tables[table_name].table_values = [value]
+            if isinstance(value, str):
+                self.pychance.tables[table_name].table_values = [value]
+            else:
+                try:
+                    iterator = iter(value)
+                    self.pychance.tables[table_name].table_values = list(iterator)
+                except TypeError:
+                    self.pychance.tables[table_name].table_values = [value]
 
     def _cleanup_temp_tables(self, input_data: dict) -> None:
         self._ensure_init()
