@@ -1,7 +1,7 @@
 import random
 import threading
 
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
@@ -37,27 +37,33 @@ class HerdCommand(BaseCommand):
                 self.respond_to_user(connection, event, "I'm sorry, it's been requested that I not do that.")
 
     def herd_command(self, connection: ServerConnection, event: Event, command_data: CommandData, target: str) -> None:
-        box_message = text_generator.get_string("collects several [color] boxes, and lays them around to attract "
-                                                "cats...")
+        box_message = text_generator.get_string(
+                "collects several [color] boxes, and lays them around to attract "
+                "cats..."
+        )
 
         self.send_action(connection, event, box_message)
 
         option = random.randrange(100)
 
         if option > 33:
-            herd_message = text_generator.get_string("[cat_herd]", {
-                'source': command_data.issuer,
-                'target': target
-            })
+            herd_message = text_generator.get_string(
+                    "[cat_herd]", {
+                        'source': command_data.issuer,
+                        'target': target
+                    }
+            )
         elif option > 11 and target != command_data.issuer:
-            herd_message = text_generator.get_string("gets confused and, [cat_herd]", {
-                'source': command_data.issuer,
-                'target': command_data.issuer
-            })
+            herd_message = text_generator.get_string(
+                    "gets confused and, [cat_herd]", {
+                        'source': command_data.issuer,
+                        'target': command_data.issuer
+                    }
+            )
         else:
             herd_message = "can't seem to find any cats. Maybe he used the wrong color of box?"
 
-        x = threading.Timer(2, self._timer_thread, args=(connection, event, herd_message))
+        x = threading.Timer(2, self._timer_thread, args = (connection, event, herd_message))
         x.start()
 
     def _timer_thread(self, connection: ServerConnection, event: Event, message: str) -> None:

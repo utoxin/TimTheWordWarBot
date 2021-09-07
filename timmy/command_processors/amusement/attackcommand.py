@@ -1,6 +1,6 @@
 import random
 
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
@@ -38,8 +38,9 @@ class AttackCommand(BaseCommand):
             else:
                 self.respond_to_user(connection, event, "I'm sorry, it's been requested that I not do that.")
 
-    def attack_command(self, connection: ServerConnection, event: Event,
-                       command_data: CommandData, target: str) -> None:
+    def attack_command(
+            self, connection: ServerConnection, event: Event, command_data: CommandData, target: str
+    ) -> None:
         damage_number = random.betavariate(3, 3) * 10000
 
         if damage_number > 9000:
@@ -47,10 +48,12 @@ class AttackCommand(BaseCommand):
         else:
             damage = f"{damage_number:,.2f}"
 
-        attack_message = text_generator.get_string("[attack_message]", {
-            'source': command_data.issuer,
-            'target': target,
-            'damage': damage
-        })
+        attack_message = text_generator.get_string(
+                "[attack_message]", {
+                    'source': command_data.issuer,
+                    'target': target,
+                    'damage': damage
+                }
+        )
 
         self.send_action(connection, event, attack_message)

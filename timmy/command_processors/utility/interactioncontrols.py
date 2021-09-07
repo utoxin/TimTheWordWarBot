@@ -1,7 +1,7 @@
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 from irc.dict import IRCDict
 
-from timmy import db_access, core
+from timmy import core, db_access
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.channel_data import ChannelData
 from timmy.data.command_data import CommandData
@@ -53,8 +53,10 @@ class InteractionControls(BaseCommand):
                     data: dict = self.interaction_settings[target.authed_user]
 
                     if not command_data.in_pm:
-                        self.respond_to_user(connection, event, "Sending status of interaction settings via private "
-                                                                "message.")
+                        self.respond_to_user(
+                                connection, event, "Sending status of interaction settings via private "
+                                                   "message."
+                        )
 
                     for key, value in data.items():
                         connection.privmsg(command_data.issuer, "{}: {}".format(key, value))
@@ -81,19 +83,27 @@ class InteractionControls(BaseCommand):
                         if not flag:
                             data[command_data.args[1]] = flag
                         else:
-                            del(data[command_data.args[1]])
+                            del (data[command_data.args[1]])
 
                         self._save_interaction_settings()
 
                         self.respond_to_user(connection, event, "Interaction flag updated.")
                     else:
-                        self.respond_to_user(connection, event, "I'm sorry, but I don't have a setting for {}".format(
-                                command_data.args[1]))
+                        self.respond_to_user(
+                                connection, event, "I'm sorry, but I don't have a setting for {}".format(
+                                        command_data.args[1]
+                                )
+                        )
             else:
-                self.respond_to_user(connection, event, "Usage: !interactionflag list OR !interactionflag set <type> "
-                                                        "<0/1>")
-                self.respond_to_user(connection, event, "Valid interaction types: all, {}".format(
-                        ", ".join(self.interactions)))
+                self.respond_to_user(
+                        connection, event, "Usage: !interactionflag list OR !interactionflag set <type> "
+                                           "<0/1>"
+                )
+                self.respond_to_user(
+                        connection, event, "Valid interaction types: all, {}".format(
+                                ", ".join(self.interactions)
+                        )
+                )
         else:
             self.respond_to_user(connection, event, "You must be logged in with NickServ to use these commands.")
 
@@ -121,11 +131,13 @@ class InteractionControls(BaseCommand):
 
         for user, settings in self.interaction_settings.items():
             for setting, value in settings.items():
-                cursor.execute(insert_statement, {
-                    'username': "{}".format(user),
-                    'setting': "{}".format(setting),
-                    'value': value == 1
-                })
+                cursor.execute(
+                        insert_statement, {
+                            'username': "{}".format(user),
+                            'setting':  "{}".format(setting),
+                            'value':    value == 1
+                        }
+                )
 
         conn.close()
 
@@ -133,7 +145,7 @@ class InteractionControls(BaseCommand):
         select_statement = "SELECT `username`, `setting`, `value` FROM `user_interaction_settings`"
 
         conn = db_access.connection_pool.get_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary = True)
         cursor.execute(select_statement)
 
         for row in cursor:

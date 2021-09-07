@@ -1,9 +1,9 @@
 from .boxodoom_db import BoxODoomDb
+from .channel_db import ChannelDb
 from .connection_pool import ConnectionPool
 from .settings import Settings
 from .userdirectory import UserDirectory
 from .word_war_db import WordWarDb
-from .channel_db import ChannelDb
 
 connection_pool = ConnectionPool()
 settings = Settings()

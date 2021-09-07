@@ -78,7 +78,7 @@ class WarTicker:
             if war.randomness:
                 war.start_epoch = war.end_epoch + war.base_break + (war.base_break * (random.randrange(20) - 10)) / 100
                 war.end_epoch = war.start_epoch + war.base_duration + (
-                            war.base_duration * (random.randrange(20) - 10)) / 100
+                        war.base_duration * (random.randrange(20) - 10)) / 100
 
                 war.duration = war.end_epoch - war.start_epoch
             else:
@@ -97,14 +97,16 @@ class WarTicker:
 
         if time_to_start < 60:
             message = "{}: Starting in {:d} {}.".format(
-                    war.get_name(), time_to_start, "seconds" if time_to_start > 1 else "second")
+                    war.get_name(), time_to_start, "seconds" if time_to_start > 1 else "second"
+            )
         else:
             minutes = time_to_start / 60
             if time_to_start % 60 == 0:
                 message = "{}: Starting in {:d} {}.".format(
-                        war.get_name(include_duration=True), int(minutes), "minutes" if minutes > 1 else "minute")
+                        war.get_name(include_duration = True), int(minutes), "minutes" if minutes > 1 else "minute"
+                )
             else:
-                message = "{}: Starting in {:.1f} minutes.".format(war.get_name(include_duration=True), minutes)
+                message = "{}: Starting in {:.1f} minutes.".format(war.get_name(include_duration = True), minutes)
 
         core.bot_instance.connection.privmsg(war.channel, message)
 
@@ -114,11 +116,13 @@ class WarTicker:
 
         if time_to_end < 60:
             message = "{}: {:d} {} remaining!".format(
-                    war.get_name(), time_to_end, "seconds" if time_to_end > 1 else "second")
+                    war.get_name(), time_to_end, "seconds" if time_to_end > 1 else "second"
+            )
         else:
             minutes = time_to_end // 60
             message = "{}: {:d} {} remaining.".format(
-                    war.get_name(), minutes, "minutes" if minutes > 1 else "minute")
+                    war.get_name(), minutes, "minutes" if minutes > 1 else "minute"
+            )
 
         core.bot_instance.connection.privmsg(war.channel, message)
 
@@ -128,7 +132,7 @@ class WarTicker:
             core.bot_instance.connection.privmsg(nick, message)
 
 
-@war_timer.job(interval=timedelta(seconds=1))
+@war_timer.job(interval = timedelta(seconds = 1))
 def war_update_loop() -> None:
     wars = core.war_ticker.active_wars.copy()
     if wars is None or len(wars) <= 0:

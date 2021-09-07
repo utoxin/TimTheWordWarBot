@@ -1,6 +1,6 @@
 import time
 
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.channel_data import ChannelData
@@ -31,8 +31,10 @@ class ChannelCommands(BaseCommand):
             return False
 
         if not user_perms.is_admin(user, candidate_channel):
-            self.respond_to_user(connection, event, "I'm sorry, you aren't an admin "
-                                                    "for '{}'.".format(candidate_channel))
+            self.respond_to_user(
+                    connection, event, "I'm sorry, you aren't an admin "
+                                       "for '{}'.".format(candidate_channel)
+            )
             return False
 
         return True
@@ -105,8 +107,10 @@ class ChannelCommands(BaseCommand):
             self.respond_to_user(connection, event, "Usage: $automuzzlewars [#channel] <0/1>")
             self.respond_to_user(connection, event, "Usage: Whether Timmy should auto-muzzle during word wars.")
             self.respond_to_user(connection, event, "Usage: 0 disables this feature, 1 enables it.")
-            self.respond_to_user(connection, event, "Example: $automuzzlewars 1  --  Enables automuzzle for this "
-                                                    "channel")
+            self.respond_to_user(
+                    connection, event, "Example: $automuzzlewars 1  --  Enables automuzzle for this "
+                                       "channel"
+            )
             return
 
         if command_data.arg_count == 1:
@@ -129,8 +133,10 @@ class ChannelCommands(BaseCommand):
 
         def output_usage():
             self.respond_to_user(connection, event, "Usage: $chatterlevel <#channel> list")
-            self.respond_to_user(connection, event, "Usage: $chatterlevel <#channel> set <%/Msg> <Name Multiplier> "
-                                                    "<%/Min>")
+            self.respond_to_user(
+                    connection, event, "Usage: $chatterlevel <#channel> set <%/Msg> <Name Multiplier> "
+                                       "<%/Min>"
+            )
 
         if command_data.arg_count == 1 or command_data.arg_count == 2:
             if command_data.arg_count == 1:
@@ -151,8 +157,10 @@ class ChannelCommands(BaseCommand):
                 random = channel_data.chatter_settings['random_level']
                 name = channel_data.chatter_settings['name_multiplier']
 
-                self.respond_to_user(connection, event, f"Reactive Chatter Level: {reactive:.3f}%/Msg - "
-                                                        f"Name Multiplier: {name:.3f}")
+                self.respond_to_user(
+                        connection, event, f"Reactive Chatter Level: {reactive:.3f}%/Msg - "
+                                           f"Name Multiplier: {name:.3f}"
+                )
                 self.respond_to_user(connection, event, f"Random Chatter Level: {random:.3f}%/Min")
             else:
                 output_usage()
@@ -185,8 +193,10 @@ class ChannelCommands(BaseCommand):
 
                 channel_data.set_chatter_flags(reactive, name, random)
 
-                self.respond_to_user(connection, event, f"Reactive Chatter Level: {reactive:.3f}%/Msg - "
-                                                        f"Name Multiplier: {name:.3f}")
+                self.respond_to_user(
+                        connection, event, f"Reactive Chatter Level: {reactive:.3f}%/Msg - "
+                                           f"Name Multiplier: {name:.3f}"
+                )
                 self.respond_to_user(connection, event, f"Random Chatter Level: {random:.3f}%/Min")
             else:
                 output_usage()
@@ -212,8 +222,10 @@ class ChannelCommands(BaseCommand):
 
             channel_data: ChannelData = bot_instance.channels[channel]
 
-            self.respond_to_user(connection, event, f"Sending status of chatter settings for {channel} via private "
-                                                    f"message.")
+            self.respond_to_user(
+                    connection, event, f"Sending status of chatter settings for {channel} via private "
+                                       f"message."
+            )
 
             for key, value in channel_data.chatter_settings['types'].items():
                 connection.privmsg(command_data.issuer, f"{key}: {value}")
@@ -251,8 +263,10 @@ class ChannelCommands(BaseCommand):
         else:
             flags = ", ".join(ChannelData.chatter_settings_defaults['types'].keys())
 
-            self.respond_to_user(connection, event, "Usage: $chatterflag [<#channel>] list OR "
-                                                    "$chatterflag [<#channel>] set <type> <0/1>")
+            self.respond_to_user(
+                    connection, event, "Usage: $chatterflag [<#channel>] list OR "
+                                       "$chatterflag [<#channel>] set <type> <0/1>"
+            )
             self.respond_to_user(connection, event, f"Valid Chatter Types: all, {flags}")
 
     def _commandflag_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
@@ -269,8 +283,10 @@ class ChannelCommands(BaseCommand):
 
             channel_data: ChannelData = bot_instance.channels[channel]
 
-            self.respond_to_user(connection, event, f"Sending status of command settings for {channel} via private "
-                                                    f"message.")
+            self.respond_to_user(
+                    connection, event, f"Sending status of command settings for {channel} via private "
+                                       f"message."
+            )
 
             for key, value in channel_data.command_settings.items():
                 connection.privmsg(command_data.issuer, f"{key}: {value}")
@@ -308,6 +324,8 @@ class ChannelCommands(BaseCommand):
         else:
             commands = ", ".join(ChannelData.command_defaults.keys())
 
-            self.respond_to_user(connection, event, "Usage: $commandflag [<#channel>] list OR "
-                                                    "$commandflag [<#channel>] set <type> <0/1>")
+            self.respond_to_user(
+                    connection, event, "Usage: $commandflag [<#channel>] list OR "
+                                       "$commandflag [<#channel>] set <type> <0/1>"
+            )
             self.respond_to_user(connection, event, f"Valid Command Types: all, {commands}")

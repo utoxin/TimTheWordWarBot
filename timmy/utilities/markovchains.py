@@ -73,8 +73,8 @@ class MarkovChains:
                                "md.second_id != 1 AND md.third_id != 1 AND md.fourth_id != 1 AND (md.second_id IN " \
                                "({}) OR md.third_id IN ({}) OR md.fourth_id IN ({})) GROUP BY md.second_id ORDER BY " \
                                "sum(md.count) LIMIT %(limit)s) derived ORDER BY RAND() LIMIT 1".format(
-                                    message_type, ids, ids, ids
-                                )
+                    message_type, ids, ids, ids
+            )
 
         else:
             return 0
@@ -85,7 +85,7 @@ class MarkovChains:
             inner_limit = len(words) // 4
 
         conn = self.db.get_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary = True)
         cursor.execute(select_statement, {'limit': inner_limit})
 
         result = cursor.fetchone()

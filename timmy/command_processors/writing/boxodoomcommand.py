@@ -14,12 +14,16 @@ class BoxODoomCommand(BaseCommand):
     def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         if command_data.arg_count != 2:
             self.respond_to_user(connection, event, "Usage: !boxodoom <difficulty> <duration in minutes>")
-            self.respond_to_user(connection, event, "Difficulty Options: extraeasy, easy, average, hard, extreme, "
-                                                    "insane, impossible, tadiera")
+            self.respond_to_user(
+                    connection, event, "Difficulty Options: extraeasy, easy, average, hard, extreme, "
+                                       "insane, impossible, tadiera"
+            )
             return
         else:
-            difficulty_pattern = re.compile('^((extra|super)?easy)|average|medium|normal|hard|extreme|insane|'
-                                            'impossible|tadiera$', re.IGNORECASE)
+            difficulty_pattern = re.compile(
+                    '^((extra|super)?easy)|average|medium|normal|hard|extreme|insane|'
+                    'impossible|tadiera$', re.IGNORECASE
+            )
 
             arg1check = difficulty_pattern.match(command_data.args[0])
             arg2check = difficulty_pattern.match(command_data.args[1])
@@ -34,8 +38,10 @@ class BoxODoomCommand(BaseCommand):
                     difficulty = command_data.args[1]
                     duration = float(command_data.args[0])
                 else:
-                    self.respond_to_user(connection, event, "Difficulty must be one of: extraeasy, easy, average, "
-                                                            "hard, extreme, insane, impossible, tadiera")
+                    self.respond_to_user(
+                            connection, event, "Difficulty must be one of: extraeasy, easy, average, "
+                                               "hard, extreme, insane, impossible, tadiera"
+                    )
                     return
             except TypeError:
                 duration = 0

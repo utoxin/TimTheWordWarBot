@@ -1,4 +1,4 @@
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 
 from timmy.db_access import settings
 

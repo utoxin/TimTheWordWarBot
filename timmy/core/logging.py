@@ -8,7 +8,7 @@ def setup_console_logger():
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
 
-    logging.basicConfig(level=logging.DEBUG, handlers=[handler])
+    logging.basicConfig(level = logging.DEBUG, handlers = [handler])
 
 
 def get_exception_logger():

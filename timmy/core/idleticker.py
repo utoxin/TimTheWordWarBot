@@ -1,11 +1,11 @@
 import random
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
 from timeloop import Timeloop
 
 from timmy import core
 from timmy.data.channel_data import ChannelData
-from timmy.utilities import markov_generator, irc_logger
+from timmy.utilities import markov_generator
 
 idle_timer = Timeloop()
 
@@ -66,6 +66,6 @@ class IdleTicker:
                     channel.send_message("I'm bored.")
 
 
-@idle_timer.job(interval=timedelta(seconds=60))
+@idle_timer.job(interval = timedelta(seconds = 60))
 def deidle_timer_loop() -> None:
     core.idle_ticker.tick()

@@ -3,10 +3,11 @@ import re
 
 import irc.client_aio
 import more_itertools
+from irc import modes
 from irc.bot import ExponentialBackoff, ServerSpec
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 from irc.dict import IRCDict
-from irc import client, modes
+
 from timmy import db_access, event_handlers
 from timmy.data.channel_data import ChannelData
 from timmy.utilities import irc_logger
@@ -76,7 +77,7 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
                     server.port,
                     self._nickname,
                     server.password,
-                    ircname=self._realname
+                    ircname = self._realname
             )
         except irc.client_aio.ServerNotConnectedError:
             pass

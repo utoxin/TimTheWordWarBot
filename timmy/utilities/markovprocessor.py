@@ -1,7 +1,7 @@
 import random
 import re
 from datetime import timedelta
-from typing import List, Dict, Tuple, Set, Optional, Pattern, Union
+from typing import Dict, List, Optional, Pattern, Set, Tuple, Union
 
 from timeloop import Timeloop
 
@@ -46,10 +46,12 @@ class MarkovProcessor:
                            "%(line)s, NOW())"
 
         cursor = conn.cursor()
-        cursor.execute(insert_statement, {
-            'line_type': line_type,
-            'line': line
-        })
+        cursor.execute(
+                insert_statement, {
+                    'line_type': line_type,
+                    'line':      line
+                }
+        )
 
         conn.close()
 
@@ -60,7 +62,7 @@ class MarkovProcessor:
         delete_statement = "DELETE FROM `markov_processing_queue` WHERE `id` = %(id)s"
 
         select_conn = self.db.get_connection()
-        select_cursor = select_conn.cursor(dictionary=True)
+        select_cursor = select_conn.cursor(dictionary = True)
 
         delete_conn = self.db.get_connection()
         delete_cursor = delete_conn.cursor()
@@ -92,9 +94,10 @@ class MarkovProcessor:
             self._internal_markov_processing(full_message, known_replacements, words)
             self._store_triad(words[0][1], words[1][1], words[2][1], message_type)
 
-    def _internal_markov_processing(self, full_message: List[str],
-                                    known_replacements: Dict[Union[Tuple[str, str], str], Union[Tuple[str, str], str]],
-                                    words: list) -> None:
+    def _internal_markov_processing(
+            self, full_message: List[str],
+            known_replacements: Dict[Union[Tuple[str, str], str], Union[Tuple[str, str], str]], words: list
+    ) -> None:
         for word in words:
             word[1] = self.__set_word(word[0], full_message)
             word[1] = self.__replace_word(known_replacements, word[1])
@@ -123,8 +126,10 @@ class MarkovProcessor:
             self._internal_markov_processing(full_message, known_replacements, words)
             self._store_quad(words[0][1], words[1][1], words[2][1], words[3][1], message_type)
 
-    def __replace_pair(self, known_replacements: Dict[Union[Tuple[str, str], str], Union[Tuple[str, str], str]],
-                       word1: str, word2: str) -> Tuple[str, str]:
+    def __replace_pair(
+            self, known_replacements: Dict[Union[Tuple[str, str], str], Union[Tuple[str, str], str]], word1: str,
+            word2: str
+    ) -> Tuple[str, str]:
         pair = (word1, word2)
         pair_string = "{} {}".format(word1, word2)
 
@@ -139,8 +144,9 @@ class MarkovProcessor:
 
         return word1, word2
 
-    def __replace_word(self, known_replacements: Dict[Union[Tuple[str, str], str], Union[Tuple[str, str], str]],
-                       word: str) -> str:
+    def __replace_word(
+            self, known_replacements: Dict[Union[Tuple[str, str], str], Union[Tuple[str, str], str]], word: str
+    ) -> str:
         if word in known_replacements:
             word = known_replacements[word]
         else:
@@ -175,11 +181,13 @@ class MarkovProcessor:
                                f"count = count + 1"
 
         cursor = conn.cursor()
-        cursor.execute(add_triad_expression, {
-            'first': first,
-            'second': second,
-            'third': third
-        })
+        cursor.execute(
+                add_triad_expression, {
+                    'first':  first,
+                    'second': second,
+                    'third':  third
+                }
+        )
 
         conn.close()
 
@@ -199,12 +207,14 @@ class MarkovProcessor:
                               f"DUPLICATE KEY UPDATE count = count + 1"
 
         cursor = conn.cursor()
-        cursor.execute(add_quad_expression, {
-            'first': first,
-            'second': second,
-            'third': third,
-            'fourth': fourth
-        })
+        cursor.execute(
+                add_quad_expression, {
+                    'first':  first,
+                    'second': second,
+                    'third':  third,
+                    'fourth': fourth
+                }
+        )
 
         conn.close()
 
@@ -218,7 +228,7 @@ class MarkovProcessor:
         select_word_statement = "SELECT id FROM markov_words WHERE word = %(word)s"
         add_word_statement = "INSERT INTO markov_words SET word = %(word)s"
 
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary = True)
         cursor.execute(select_word_statement, {'word': word})
 
         result = cursor.fetchone()
@@ -241,7 +251,7 @@ class MarkovProcessor:
 
         select_statement = "SELECT word FROM markov_words WHERE id = %(id)s"
 
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary = True)
         cursor.execute(select_statement, {'id': word_id})
 
         result = cursor.fetchone()
@@ -257,7 +267,7 @@ class MarkovProcessor:
         conn = self.db.get_connection()
         select_statement = "SELECT `word` FROM `bad_words`"
 
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary = True)
         cursor.execute(select_statement)
 
         for row in cursor:
@@ -269,14 +279,16 @@ class MarkovProcessor:
         conn = self.db.get_connection()
         select_statement = "SELECT `word_one`, `word_two` FROM `bad_pairs`"
 
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary = True)
         cursor.execute(select_statement)
 
         for row in cursor:
-            self.bad_pairs.add((
-                re.compile('(\\W|\\b)({})(\\W|\\b)'.format(re.escape(row['word_one'])), re.IGNORECASE),
-                re.compile('(\\W|\\b)({})(\\W|\\b)'.format(re.escape(row['word_two'])), re.IGNORECASE),
-            ))
+            self.bad_pairs.add(
+                    (
+                        re.compile('(\\W|\\b)({})(\\W|\\b)'.format(re.escape(row['word_one'])), re.IGNORECASE),
+                        re.compile('(\\W|\\b)({})(\\W|\\b)'.format(re.escape(row['word_two'])), re.IGNORECASE),
+                    )
+            )
 
         conn.close()
 
@@ -284,7 +296,7 @@ class MarkovProcessor:
         conn = self.db.get_connection()
         select_statement = "SELECT `word` FROM `alternate_words`"
 
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary = True)
         cursor.execute(select_statement)
 
         for row in cursor:
@@ -296,7 +308,7 @@ class MarkovProcessor:
         conn = self.db.get_connection()
         select_statement = "SELECT `word_one`, `word_two` FROM `alternate_pairs`"
 
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary = True)
         cursor.execute(select_statement)
 
         for row in cursor:
@@ -369,7 +381,7 @@ class MarkovProcessor:
                is not None
 
 
-@markov_timer.job(interval=timedelta(seconds=30))
+@markov_timer.job(interval = timedelta(seconds = 30))
 def markov_processing_loop() -> None:
     from timmy.utilities import markov_processor
     markov_processor.processing_loop()

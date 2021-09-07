@@ -4,99 +4,110 @@ from typing import Optional
 from irc.bot import Channel
 from irc.dict import IRCDict
 
-from timmy import db_access
-from timmy import core
+from timmy import core, db_access
 from timmy.data.war_state import WarState
 
 
 class ChannelData(Channel):
     current_odds: IRCDict
-    max_odds = IRCDict({
-        'answer': 65,
-        'aypwip': 100,
-        'cheeseburger': 50,
-        'eightball': 100,
-        'fox': 75,
-        'groot': 100,
-        'hug': 100,
-        'lights': 100,
-        'soon': 100,
-        'test': 100,
-        'tissue': 100,
-    })
+    max_odds = IRCDict(
+            {
+                'answer':       65,
+                'aypwip':       100,
+                'cheeseburger': 50,
+                'eightball':    100,
+                'fox':          75,
+                'groot':        100,
+                'hug':          100,
+                'lights':       100,
+                'soon':         100,
+                'test':         100,
+                'tissue':       100,
+            }
+    )
 
     chatter_settings: IRCDict
-    chatter_settings_defaults = IRCDict({
-        'reactive_level': 2.5,
-        'random_level': 1,
-        'name_multiplier': 1.5,
-        'types': IRCDict({
-            'banish': True,
-            'bored': False,
-            'catch': True,
-            'chainstory': True,
-            'challenge': True,
-            'dance': True,
-            'defenestrate': True,
-            'eightball': True,
-            'foof': True,
-            'fridge': True,
-            'get': True,
-            'greetings': True,
-            'groot': True,
-            'helpful_reactions': True,
-            'herd': True,
-            'markov': True,
-            'silly_reactions': True,
-            'sing': True,
-            'summon': True,
-            'velociraptor': True,
-        })
-    })
+    chatter_settings_defaults = IRCDict(
+            {
+                'reactive_level':  2.5,
+                'random_level':    1,
+                'name_multiplier': 1.5,
+                'types':           IRCDict(
+                        {
+                            'banish':            True,
+                            'bored':             False,
+                            'catch':             True,
+                            'chainstory':        True,
+                            'challenge':         True,
+                            'dance':             True,
+                            'defenestrate':      True,
+                            'eightball':         True,
+                            'foof':              True,
+                            'fridge':            True,
+                            'get':               True,
+                            'greetings':         True,
+                            'groot':             True,
+                            'helpful_reactions': True,
+                            'herd':              True,
+                            'markov':            True,
+                            'silly_reactions':   True,
+                            'sing':              True,
+                            'summon':            True,
+                            'velociraptor':      True,
+                        }
+                )
+            }
+    )
 
     raptor_data: IRCDict
-    raptor_data_defaults = IRCDict({
-        'sightings': 0,
-        'active': 0,
-        'dead': 0,
-        'killed': 0,
-        'strength': 0
-    })
+    raptor_data_defaults = IRCDict(
+            {
+                'sightings': 0,
+                'active':    0,
+                'dead':      0,
+                'killed':    0,
+                'strength':  0
+            }
+    )
 
     twitter_settings: IRCDict
-    twitter_settings_defaults = IRCDict({
-        'time': 0,
-        'bucket': 5.0,
-        'bucket_max': 10.0,
-        'bucket_charge_rate': 0.05,
-    })
+    twitter_settings_defaults = IRCDict(
+            {
+                'time':               0,
+                'bucket':             5.0,
+                'bucket_max':         10.0,
+                'bucket_charge_rate': 0.05,
+            }
+    )
 
     command_settings: IRCDict
-    command_defaults = IRCDict({
-        'attack': True,
-        'banish': True,
-        'catch': True,
-        'chainstory': True,
-        'challenge': True,
-        'commandment': True,
-        'defenestrate': True,
-        'dance': True,
-        'dice': True,
-        'eightball': True,
-        'expound': True,
-        'foof': True,
-        'fridge': True,
-        'get': True,
-        'herd': True,
-        'lick': False,
-        'pickone': True,
-        'ping': True,
-        'search': True,
-        'sing': True,
-        'summon': True,
-        'velociraptor': True,
-        'woot': True
-    })
+    command_defaults = IRCDict(
+            {
+                'attack':       True,
+                'banish':       True,
+                'catch':        True,
+                'chainstory':   True,
+                'challenge':    True,
+                'commandment':  True,
+                'defenestrate': True,
+                'dance':        True,
+                'dice':         True,
+                'eightball':    True,
+                'expound':      True,
+                'foof':         True,
+                'fridge':       True,
+                'get':          True,
+                'herd':         True,
+                'lick':         False,
+                'pickone':      True,
+                'ping':         True,
+                'search':       True,
+                'sing':         True,
+                'summon':       True,
+                'velociraptor': True,
+                'woot':         True
+            }
+    )
 
     def __init__(self, name):
         super().__init__()

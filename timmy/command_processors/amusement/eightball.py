@@ -1,6 +1,6 @@
 import random
 
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
@@ -20,10 +20,9 @@ class EightballCommand(BaseCommand):
                 self.respond_to_user(connection, event, "I'm sorry, I don't do that here.")
                 return
 
-        self.eightball_command(connection, event, command_data, command_data.issuer)
+        self.eightball_command(connection, event, command_data)
 
-    def eightball_command(self, connection: ServerConnection, event: Event, command_data: CommandData,
-                          target: str) -> None:
+    def eightball_command(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         if random.randint(0, 100) < 5:
             from timmy.utilities import markov_generator
             message = markov_generator.generate_markov('say', command_data.arg_string)
@@ -31,4 +30,3 @@ class EightballCommand(BaseCommand):
             message = text_generator.get_string('[eightball_answer]')
 
         self.respond_to_user(connection, event, message)
-

@@ -1,7 +1,7 @@
 import time
 import uuid
 from datetime import datetime
-from typing import Optional, Set, Dict
+from typing import Dict, Optional, Set
 
 from timmy import db_access
 from timmy.data.war_state import WarState
@@ -59,8 +59,10 @@ class WordWar:
 
         self.db_access.create_war(self)
 
-    def advanced_setup(self, channel: str, starter: str, name: str, base_duration: float, start_epoch: float,
-                       total_chains: int, base_break: float, randomness: bool) -> None:
+    def advanced_setup(
+            self, channel: str, starter: str, name: str, base_duration: float, start_epoch: float, total_chains: int,
+            base_break: float, randomness: bool
+    ) -> None:
         self.uuid = uuid.uuid4()
         self.channel = channel
         self.starter = starter
@@ -94,20 +96,22 @@ class WordWar:
         self.state = WarState[row['war_state']]
 
     def data_export(self) -> dict:
-        data = {'uuid':          str(self.uuid),
-                'year':          self.year,
-                'war_id':        self.war_id,
-                'channel':       self.channel,
-                'starter':       self.starter,
-                'name':          self.name,
-                'base_duration': self.base_duration,
-                'base_break':    self.base_break,
-                'total_chains':  self.total_chains,
-                'current_chain': self.current_chain,
-                'start_epoch':   self.start_epoch,
-                'end_epoch':     self.end_epoch,
-                'randomness':    self.randomness,
-                'state':         self.state.name}
+        data = {
+            'uuid':          str(self.uuid),
+            'year':          self.year,
+            'war_id':        self.war_id,
+            'channel':       self.channel,
+            'starter':       self.starter,
+            'name':          self.name,
+            'base_duration': self.base_duration,
+            'base_break':    self.base_break,
+            'total_chains':  self.total_chains,
+            'current_chain': self.current_chain,
+            'start_epoch':   self.start_epoch,
+            'end_epoch':     self.end_epoch,
+            'randomness':    self.randomness,
+            'state':         self.state.name
+        }
 
         return data
 
@@ -136,7 +140,9 @@ class WordWar:
     def duration(self) -> float:
         return self.end_epoch - self.start_epoch
 
-    def get_name(self, include_id=False, include_duration=False, id_field_width=1, duration_field_width=1) -> str:
+    def get_name(
+            self, include_id = False, include_duration = False, id_field_width = 1, duration_field_width = 1
+    ) -> str:
         name_parts = []
 
         if include_id:

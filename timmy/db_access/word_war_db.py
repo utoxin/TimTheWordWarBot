@@ -1,4 +1,4 @@
-from typing import Optional, List, Set
+from typing import List, Optional, Set
 
 from timmy import db_access
 from timmy.data.word_war import WordWar
@@ -55,7 +55,7 @@ class WordWarDb:
         select_statement = "SELECT * FROM `war_members` WHERE `war_uuid` = %(uuid)s"
 
         connection = self.db.get_connection()
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor(dictionary = True)
 
         war_members = set()
 
@@ -74,7 +74,7 @@ class WordWarDb:
         wars = []
 
         connection = self.db.get_connection()
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor(dictionary = True)
         cursor.execute(select_all_statement)
         for row in cursor:
             war = WordWar()
@@ -90,7 +90,7 @@ class WordWarDb:
         select_statement = "SELECT * FROM `wars` WHERE CONCAT(`year`, '-', `war_id`) = %(war_id)s"
 
         connection = self.db.get_connection()
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor(dictionary = True)
         cursor.execute(select_statement, {'war_id': war_id})
 
         war = None

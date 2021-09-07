@@ -18,8 +18,10 @@ class WarCommands(BaseCommand):
 
     def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         if command_data.command == 'endwar':
-            self.respond_to_user(connection, event, "The syntax for war-related commands has changed. Try "
-                                                    "'!war cancel' in the future.")
+            self.respond_to_user(
+                    connection, event, "The syntax for war-related commands has changed. Try "
+                                       "'!war cancel' in the future."
+            )
             command_data.command = 'war'
             command_data.args.insert(0, 'cancel')
             command_data.arg_count += 1
@@ -31,29 +33,37 @@ class WarCommands(BaseCommand):
             self.respond_to_user(connection, event, "The syntax for war-related commands has changed. Use '!war start'")
             return
         elif command_data.command == 'listall':
-            self.respond_to_user(connection, event, "The syntax for war-related commands has changed. Try "
-                                                    "'!war list all' in the future.")
+            self.respond_to_user(
+                    connection, event, "The syntax for war-related commands has changed. Try "
+                                       "'!war list all' in the future."
+            )
             command_data.command = 'war'
             command_data.args = ['list', 'all']
             command_data.arg_count = 2
             command_data.arg_string = 'list all'
         elif command_data.command == 'listwars':
-            self.respond_to_user(connection, event, "The syntax for war-related commands has changed. Try "
-                                                    "'!war list' in the future.")
+            self.respond_to_user(
+                    connection, event, "The syntax for war-related commands has changed. Try "
+                                       "'!war list' in the future."
+            )
             command_data.command = 'war'
             command_data.args = ['list']
             command_data.arg_count = 1
             command_data.arg_string = 'list'
         elif command_data.command == 'joinwar':
-            self.respond_to_user(connection, event, "The syntax for war-related commands has changed. Try "
-                                                    "'!war join' in the future.")
+            self.respond_to_user(
+                    connection, event, "The syntax for war-related commands has changed. Try "
+                                       "'!war join' in the future."
+            )
             command_data.command = 'war'
             command_data.args.insert(0, 'join')
             command_data.arg_count += 1
             command_data.arg_string = 'join ' + command_data.arg_string
         elif command_data.command == 'leavewar':
-            self.respond_to_user(connection, event, "The syntax for war-related commands has changed. Try "
-                                                    "'!war leave' in the future.")
+            self.respond_to_user(
+                    connection, event, "The syntax for war-related commands has changed. Try "
+                                       "'!war leave' in the future."
+            )
             command_data.command = 'war'
             command_data.args.insert(0, 'leave')
             command_data.arg_count += 1
@@ -111,11 +121,15 @@ class WarCommands(BaseCommand):
 
                             to_start = int(float(input_string) * 60)
                         except TypeError:
-                            self.respond_to_user(connection, event,
-                                                 "I didn't understand the start delay. Was it numeric?")
+                            self.respond_to_user(
+                                    connection, event,
+                                    "I didn't understand the start delay. Was it numeric?"
+                            )
                             from timmy.utilities import irc_logger
-                            irc_logger.log_message(f"Word War Exception: Start delay parse error. Input was: "
-                                                   f"{input_string}")
+                            irc_logger.log_message(
+                                    f"Word War Exception: Start delay parse error. Input was: "
+                                    f"{input_string}"
+                            )
                             return
 
                         i += 1
@@ -134,11 +148,15 @@ class WarCommands(BaseCommand):
 
                             total_chains = int(input_string)
                         except TypeError:
-                            self.respond_to_user(connection, event,
-                                                 "I didn't understand the chain count. Was it numeric?")
+                            self.respond_to_user(
+                                    connection, event,
+                                    "I didn't understand the chain count. Was it numeric?"
+                            )
                             from timmy.utilities import irc_logger
-                            irc_logger.log_message(f"Word War Exception: Chain count parse error. Input was: "
-                                                   f"{input_string}")
+                            irc_logger.log_message(
+                                    f"Word War Exception: Chain count parse error. Input was: "
+                                    f"{input_string}"
+                            )
                             return
 
                         i += 1
@@ -157,11 +175,15 @@ class WarCommands(BaseCommand):
 
                             delay = int(float(input_string) * 60)
                         except TypeError:
-                            self.respond_to_user(connection, event,
-                                                 "I didn't understand the break duration. Was it numeric?")
+                            self.respond_to_user(
+                                    connection, event,
+                                    "I didn't understand the break duration. Was it numeric?"
+                            )
                             from timmy.utilities import irc_logger
-                            irc_logger.log_message(f"Word War Exception: Break duration parse error. Input was: "
-                                                   f"{input_string}")
+                            irc_logger.log_message(
+                                    f"Word War Exception: Break duration parse error. Input was: "
+                                    f"{input_string}"
+                            )
                             return
 
                         i += 1
@@ -181,12 +203,16 @@ class WarCommands(BaseCommand):
                             do_randomness = int(input_string) == 1
 
                         except TypeError:
-                            self.respond_to_user(connection, event,
-                                                 "I didn't understand the randomness flag. Was it numeric?")
+                            self.respond_to_user(
+                                    connection, event,
+                                    "I didn't understand the randomness flag. Was it numeric?"
+                            )
 
                             from timmy.utilities import irc_logger
-                            irc_logger.log_message(f"Word War Exception: Random flag parse error. Input was: "
-                                                   f"{input_string}")
+                            irc_logger.log_message(
+                                    f"Word War Exception: Random flag parse error. Input was: "
+                                    f"{input_string}"
+                            )
                             return
 
                         i += 1
@@ -203,9 +229,11 @@ class WarCommands(BaseCommand):
                 war_name = command_data.issuer + "'s War"
 
             if re.match("^\\d+$", war_name):
-                self.respond_to_user(connection, event, "War names must be more than a number. It's possible you "
-                                                        "meant to specify the start delay. Try: !war start {} "
-                                                        "delay:{}".format(command_data.args[1], war_name))
+                self.respond_to_user(
+                        connection, event, "War names must be more than a number. It's possible you "
+                                           "meant to specify the start delay. Try: !war start {} "
+                                           "delay:{}".format(command_data.args[1], war_name)
+                )
                 return
 
             current_epoch = time.time()
@@ -215,8 +243,10 @@ class WarCommands(BaseCommand):
             if total_chains <= 1:
                 war.basic_setup(command_data.channel, event.source.nick, war_name, duration, current_epoch + to_start)
             else:
-                war.advanced_setup(command_data.channel, event.source.nick, war_name, duration,
-                                   current_epoch + to_start, total_chains, delay, do_randomness)
+                war.advanced_setup(
+                        command_data.channel, event.source.nick, war_name, duration,
+                        current_epoch + to_start, total_chains, delay, do_randomness
+                )
 
             core.war_ticker.active_wars.add(war)
 
@@ -224,14 +254,19 @@ class WarCommands(BaseCommand):
                 core.bot_instance.channels[command_data.channel].newest_war_id = war.get_id()
 
             if to_start > 0:
-                self.respond_to_user(connection, event,
-                                     "Your word war, {}, will start in {:.1f} minutes. The ID is {:d}-{:d}.".format(
-                                             war.get_name(), to_start / 60, war.year, war.war_id))
+                self.respond_to_user(
+                        connection, event,
+                        "Your word war, {}, will start in {:.1f} minutes. The ID is {:d}-{:d}.".format(
+                                war.get_name(), to_start / 60, war.year, war.war_id
+                        )
+                )
         else:
             self.respond_to_user(connection, event, "Usage: !war start <duration in minutes> [<options>] [<name>]")
             self.respond_to_user(connection, event, "Options for all wars: delay:<minutes>")
-            self.respond_to_user(connection, event,
-                                 "Options for chain wars: chains:<chain count>, random:1, break:<minutes>")
+            self.respond_to_user(
+                    connection, event,
+                    "Options for chain wars: chains:<chain count>, random:1, break:<minutes>"
+            )
             self.respond_to_user(connection, event, "Example: !war start 10 delay:5 Let's Write!")
 
     def _cancel_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
@@ -266,9 +301,11 @@ class WarCommands(BaseCommand):
     def _report_handler(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         if command_data.arg_count < 2:
             self.respond_to_user(connection, event, "Usage: !war report <wordcount> [<war id>]")
-            self.respond_to_user(connection, event, "Note: Wordcount should be words written during the war, not total "
-                                                    "count. The war id is optional. The last completed war will be "
-                                                    "selected by default.")
+            self.respond_to_user(
+                    connection, event, "Note: Wordcount should be words written during the war, not total "
+                                       "count. The war id is optional. The last completed war will be "
+                                       "selected by default."
+            )
         else:
             user_data = user_directory.find_user_data(command_data.issuer)
             channel_data = core.bot_instance.channels[command_data.channel]
@@ -278,13 +315,17 @@ class WarCommands(BaseCommand):
             elif channel_data.last_war_id != "":
                 war: WordWar = word_war_db.load_war_by_id(channel_data.last_war_id)
             else:
-                self.respond_to_user(connection, event, "I don't know which war finished last. Try providing the War "
-                                                        "ID")
+                self.respond_to_user(
+                        connection, event, "I don't know which war finished last. Try providing the War "
+                                           "ID"
+                )
                 return
 
             if user_data is None or not user_data.raptor_adopted:
-                self.respond_to_user(connection, event, "I'm sorry, you must be a registered user and have an adopted "
-                                                        "raptor to record your stats... (!raptor command)")
+                self.respond_to_user(
+                        connection, event, "I'm sorry, you must be a registered user and have an adopted "
+                                           "raptor to record your stats... (!raptor command)"
+                )
             elif war is None:
                 self.respond_to_user(connection, event, "That war couldn't be found...")
             elif war.state is WarState.CANCELLED:
@@ -296,11 +337,15 @@ class WarCommands(BaseCommand):
                 try:
                     wordcount = int(float(command_data.args[1]))
                 except TypeError:
-                    self.respond_to_user(connection, event,
-                                         "I didn't understand the wordcount. Was it numeric?")
+                    self.respond_to_user(
+                            connection, event,
+                            "I didn't understand the wordcount. Was it numeric?"
+                    )
                     from timmy.utilities import irc_logger
-                    irc_logger.log_message(f"Word War Exception: Wordcount parse error. Input was: "
-                                           f"{command_data.args[1]}")
+                    irc_logger.log_message(
+                            f"Word War Exception: Wordcount parse error. Input was: "
+                            f"{command_data.args[1]}"
+                    )
                     return
 
                 if war.get_chain_id() in user_data.recorded_wars:
@@ -316,9 +361,13 @@ class WarCommands(BaseCommand):
 
                 channel_data.raptor['strength'] += min(10, int(war.base_duration / 600))
 
-                self.respond_to_user(connection, event, "{} pulls out their {} notebook and makes a note of that "
-                                                        "wordcount.".format(user_data.raptor_name,
-                                                                            user_data.raptor_favorite_color))
+                self.respond_to_user(
+                        connection, event, "{} pulls out their {} notebook and makes a note of that "
+                                           "wordcount.".format(
+                                user_data.raptor_name,
+                                user_data.raptor_favorite_color
+                        )
+                )
 
                 if not channel_data.is_muzzled():
                     core.raptor_ticker.handle_war_report(user_data, war, wordcount)
@@ -362,8 +411,9 @@ class WarCommands(BaseCommand):
         if not responded:
             self.respond_to_user(connection, event, "No wars are currently available.")
 
-    def _find_join_leave_war(self, connection: ServerConnection, event: Event,
-                             command_data: CommandData) -> Optional[WordWar]:
+    def _find_join_leave_war(
+            self, connection: ServerConnection, event: Event, command_data: CommandData
+    ) -> Optional[WordWar]:
         if event.type == "privmsg":
             self.respond_to_user(connection, event, "Sorry. This currently only works in regular channels.")
             return None
@@ -374,8 +424,10 @@ class WarCommands(BaseCommand):
             if channel_data.newest_war_id != "":
                 war = self._find_war_by_id(channel_data.newest_war_id)
             else:
-                self.respond_to_user(connection, event,
-                                     "Hmmm. I don't seem to have a record of an upcoming war. Try providing a war ID?")
+                self.respond_to_user(
+                        connection, event,
+                        "Hmmm. I don't seem to have a record of an upcoming war. Try providing a war ID?"
+                )
                 self.respond_to_user(connection, event, "Usage: !war {} [<war id>]".format(command_data.args[0]))
                 return None
         else:

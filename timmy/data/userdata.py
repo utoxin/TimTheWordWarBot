@@ -1,5 +1,3 @@
-import uuid
-
 from typing import Optional, Set
 
 from timmy import db_access
@@ -50,18 +48,20 @@ class UserData:
 
         connection = db_access.connection_pool.get_connection()
         cursor = connection.cursor()
-        cursor.execute(update_statement, {
-            'uuid':                   str(self.uuid),
-            'authed_user':            self.authed_user,
-            'global_admin':           self.global_admin,
-            'total_sprint_wordcount': self.total_sprint_wordcount,
-            'total_sprints':          self.total_sprints,
-            'total_sprint_duration':  self.total_sprint_duration,
-            'raptor_adopted':         self.raptor_adopted,
-            'raptor_name':            self.raptor_name,
-            'raptor_favorite_color':  self.raptor_favorite_color,
-            'raptor_bunnies_stolen':  self.raptor_bunnies_stolen,
-            'last_bunny_raid':        self.last_bunny_raid
-        })
+        cursor.execute(
+                update_statement, {
+                    'uuid':                   str(self.uuid),
+                    'authed_user':            self.authed_user,
+                    'global_admin':           self.global_admin,
+                    'total_sprint_wordcount': self.total_sprint_wordcount,
+                    'total_sprints':          self.total_sprints,
+                    'total_sprint_duration':  self.total_sprint_duration,
+                    'raptor_adopted':         self.raptor_adopted,
+                    'raptor_name':            self.raptor_name,
+                    'raptor_favorite_color':  self.raptor_favorite_color,
+                    'raptor_bunnies_stolen':  self.raptor_bunnies_stolen,
+                    'last_bunny_raid':        self.last_bunny_raid
+                }
+        )
 
         connection.close()

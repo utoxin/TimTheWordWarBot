@@ -1,5 +1,5 @@
 import uuid
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from irc.dict import IRCDict
@@ -20,7 +20,7 @@ class UserDirectory:
         select_statement = "SELECT * FROM `users`"
 
         connection = db_access.connection_pool.get_connection()
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor(dictionary = True)
         cursor.execute(select_statement)
 
         for row in cursor:
@@ -69,6 +69,6 @@ class UserDirectory:
     def cleanup_temp_list(self) -> None:
         for nick, user_data in self.temp_directory.items():
             time_difference = datetime.now() - user_data.last_whois_check
-            if not user_data.registration_data_retrieved and time_difference > timedelta(hours=1):
+            if not user_data.registration_data_retrieved and time_difference > timedelta(hours = 1):
                 # TODO: Add irc-logging call :: "Removing stale temp user: NICK"
                 del self.temp_directory[nick]

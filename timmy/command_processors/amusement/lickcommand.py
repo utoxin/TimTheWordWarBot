@@ -1,4 +1,4 @@
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
@@ -34,9 +34,11 @@ class LickCommand(BaseCommand):
                 self.respond_to_user(connection, event, "I'm sorry, it's been requested that I not do that.")
 
     def lick_command(self, connection: ServerConnection, event: Event, command_data: CommandData, target: str) -> None:
-        lick_message = text_generator.get_string("licks [target]. Tastes like [flavor].", {
-            'source': command_data.issuer,
-            'target': target
-        })
+        lick_message = text_generator.get_string(
+                "licks [target]. Tastes like [flavor].", {
+                    'source': command_data.issuer,
+                    'target': target
+                }
+        )
 
         self.send_action(connection, event, lick_message)

@@ -1,6 +1,6 @@
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 
-from timmy import db_access, core, utilities
+from timmy import core, db_access, utilities
 
 
 class PostAuthHandler:

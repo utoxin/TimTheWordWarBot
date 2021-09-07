@@ -1,3 +1,4 @@
+from timmy import event_handlers
 from .amusement.attackcommand import AttackCommand
 from .amusement.catchcommand import CatchCommand
 from .amusement.commandmentcommand import CommandmentCommand
@@ -16,7 +17,6 @@ from .utility.interactioncontrols import InteractionControls
 from .utility.pickonecommand import PickOneCommand
 from .utility.pingcommand import PingCommand
 from .utility.timercommand import TimerCommand
-from timmy import event_handlers
 from .writing.boxodoomcommand import BoxODoomCommand
 from .writing.warcommands import WarCommands
 

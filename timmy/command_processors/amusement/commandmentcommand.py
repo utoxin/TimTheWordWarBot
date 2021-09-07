@@ -1,4 +1,4 @@
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand

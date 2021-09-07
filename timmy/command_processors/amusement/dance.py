@@ -1,6 +1,6 @@
 import random
 
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
@@ -37,4 +37,3 @@ class DanceCommand(BaseCommand):
             message = f"flails about in a fashion that vaguely resembles the {dance}. Sort of."
 
         self.send_action(connection, event, message)
-

@@ -65,21 +65,23 @@ class ChannelDb:
 
         connection = self.db.get_connection()
         cursor = connection.cursor()
-        cursor.execute(update_statement, {
-            'reactive_chatter_level':   channel.chatter_settings['reactive_level'],
-            'chatter_name_multiplier':  channel.chatter_settings['name_multiplier'],
-            'random_chatter_level':     channel.chatter_settings['random_level'],
-            'tweet_bucket_max':         channel.twitter_settings['bucket_max'],
-            'tweet_bucket_charge_rate': channel.twitter_settings['bucket_charge_rate'],
-            'auto_muzzle_wars':         channel.auto_muzzle,
-            'velociraptor_sightings':   channel.raptor_data['sightings'],
-            'active_velociraptors':     channel.raptor_data['active'],
-            'dead_velociraptors':       channel.raptor_data['dead'],
-            'killed_velociraptors':     channel.raptor_data['killed'],
-            'muzzle_expiration':        int(channel.muzzled_until) if channel._muzzled else None,
-            'raptor_strength_boost':    channel.raptor_data['strength'],
-            'channel':                  channel.name
-        })
+        cursor.execute(
+                update_statement, {
+                    'reactive_chatter_level':   channel.chatter_settings['reactive_level'],
+                    'chatter_name_multiplier':  channel.chatter_settings['name_multiplier'],
+                    'random_chatter_level':     channel.chatter_settings['random_level'],
+                    'tweet_bucket_max':         channel.twitter_settings['bucket_max'],
+                    'tweet_bucket_charge_rate': channel.twitter_settings['bucket_charge_rate'],
+                    'auto_muzzle_wars':         channel.auto_muzzle,
+                    'velociraptor_sightings':   channel.raptor_data['sightings'],
+                    'active_velociraptors':     channel.raptor_data['active'],
+                    'dead_velociraptors':       channel.raptor_data['dead'],
+                    'killed_velociraptors':     channel.raptor_data['killed'],
+                    'muzzle_expiration':        int(channel.muzzled_until) if channel._muzzled else None,
+                    'raptor_strength_boost':    channel.raptor_data['strength'],
+                    'channel':                  channel.name
+                }
+        )
 
         delete_chatter_statement = "DELETE FROM `channel_chatter_settings` WHERE `channel` = %(channel)s"
         delete_command_statement = "DELETE FROM `channel_command_settings` WHERE `channel` = %(channel)s"
@@ -97,24 +99,30 @@ class ChannelDb:
                                    "%(account)s"
 
         for key, value in channel.chatter_settings['types'].items():
-            cursor.execute(insert_chatter_statement, {
-                'channel': channel.name,
-                'setting': str(key),
-                'value':   int(value)
-            })
+            cursor.execute(
+                    insert_chatter_statement, {
+                        'channel': channel.name,
+                        'setting': str(key),
+                        'value':   int(value)
+                    }
+            )
 
         for key, value in channel.command_settings.items():
-            cursor.execute(insert_command_statement, {
-                'channel': channel.name,
-                'setting': str(key),
-                'value':   int(value)
-            })
+            cursor.execute(
+                    insert_command_statement, {
+                        'channel': channel.name,
+                        'setting': str(key),
+                        'value':   int(value)
+                    }
+            )
 
         for account in channel.twitter_accounts:
-            cursor.execute(insert_twitter_statement, {
-                'channel': channel.name,
-                'account': str(account)
-            })
+            cursor.execute(
+                    insert_twitter_statement, {
+                        'channel': channel.name,
+                        'account': str(account)
+                    }
+            )
 
         connection.close()
 
@@ -127,7 +135,7 @@ class ChannelDb:
         select_twitter_statement = "SELECT `account` FROM `channel_twitter_feeds` WHERE `channel` = %(channel)s"
 
         connection = self.db.get_connection()
-        select_cursor = connection.cursor(dictionary=True)
+        select_cursor = connection.cursor(dictionary = True)
 
         select_cursor.execute(select_channel_statement, {'channel': channel.name})
         for row in select_cursor:

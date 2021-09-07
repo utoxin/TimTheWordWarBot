@@ -1,6 +1,6 @@
 from irc.dict import IRCDict
 
-from timmy import db_access, core
+from timmy import core, db_access
 
 
 class UserPerms:
@@ -16,7 +16,7 @@ class UserPerms:
         select_statement = "SELECT * FROM `admins`"
 
         connection = db_access.connection_pool.get_connection()
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor(dictionary = True)
         cursor.execute(select_statement)
 
         self.admins.clear()
@@ -32,7 +32,7 @@ class UserPerms:
         select_statement = "SELECT `name`, `type` FROM `ignores`"
 
         connection = db_access.connection_pool.get_connection()
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor(dictionary = True)
         cursor.execute(select_statement)
 
         self.soft_ignores.clear()

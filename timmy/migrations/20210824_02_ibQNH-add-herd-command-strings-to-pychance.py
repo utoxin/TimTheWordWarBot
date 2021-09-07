@@ -59,9 +59,11 @@ def add_entries(conn: Connection):
 def remove_entries(conn: Connection):
     with conn.cursor() as cursor:
         for list_entry in entries_to_add:
-            cursor.execute("DELETE pbt, pbte FROM `pychance_basic_tables` pbt INNER JOIN "
-                           "`pychance_basic_table_entries` pbte ON (pbt.uuid = pbte.pychance_basic_table_id)"
-                           "WHERE pbt.table_name = %s", list_entry[0])
+            cursor.execute(
+                    "DELETE pbt, pbte FROM `pychance_basic_tables` pbt INNER JOIN "
+                    "`pychance_basic_table_entries` pbte ON (pbt.uuid = pbte.pychance_basic_table_id)"
+                    "WHERE pbt.table_name = %s", list_entry[0]
+            )
 
 
 steps = [

@@ -1,5 +1,5 @@
 import re
-from typing import Sequence, Optional
+from typing import Optional, Sequence
 
 from irc.client import Event, ServerConnection
 from irc.dict import IRCDict
@@ -74,7 +74,7 @@ class CommandHandler:
         command_data.arg_count = len(command_data.args)
         command_data.arg_string = results[2]
         command_data.issuer = event.source.nick.lower()
-        command_data.issuer_data = user_directory.find_user_data(nick=event.source.nick)
+        command_data.issuer_data = user_directory.find_user_data(nick = event.source.nick)
 
         if event.type == "privmsg":
             command_data.channel = event.source.nick.lower()
@@ -84,5 +84,7 @@ class CommandHandler:
 
     @staticmethod
     def _unknown_command(connection: ServerConnection, command_data: CommandData) -> None:
-        connection.privmsg(command_data.channel,
-                           command_data.prefix + command_data.command + " was not part of my training.")
+        connection.privmsg(
+                command_data.channel,
+                command_data.prefix + command_data.command + " was not part of my training."
+        )

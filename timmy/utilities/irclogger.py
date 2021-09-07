@@ -14,7 +14,7 @@ class IrcLogger:
     def set_channel(self, log_channel: str) -> None:
         self.log_channel = log_channel
 
-    def log_message(self, message, layer=1) -> None:
+    def log_message(self, message, layer = 1) -> None:
         if self.enabled:
             if isinstance(message, str):
                 core.bot_instance.connection.privmsg(self.log_channel, message)
@@ -22,8 +22,10 @@ class IrcLogger:
                 for line in message:
                     self.log_message(line, layer + 1)
             else:
-                core.bot_instance.connection.privmsg(self.log_channel,
-                                                     "Received message of type {} from {}".format(
-                                                             type(message),
-                                                             inspect.stack()[layer].function
-                                                     ))
+                core.bot_instance.connection.privmsg(
+                        self.log_channel,
+                        "Received message of type {} from {}".format(
+                                type(message),
+                                inspect.stack()[layer].function
+                        )
+                )

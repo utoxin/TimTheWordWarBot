@@ -1,7 +1,7 @@
 import random
 import threading
 
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
@@ -52,24 +52,29 @@ class FridgeCommand(BaseCommand):
             else:
                 self.respond_to_user(connection, event, "I'm sorry, it's been requested that I not do that.")
 
-    def fridge_command(self, connection: ServerConnection, event: Event, command_data: CommandData,
-                       target: str) -> None:
+    def fridge_command(
+            self, connection: ServerConnection, event: Event, command_data: CommandData, target: str
+    ) -> None:
         initial_delay = random.random() + 0.5
-        initial_message = text_generator.get_string("[start_message]", {
-            'start_message': self.start_messages
-        })
+        initial_message = text_generator.get_string(
+                "[start_message]", {
+                    'start_message': self.start_messages
+                }
+        )
 
-        x = threading.Timer(initial_delay, self._timer_thread, args=(connection, event, initial_message))
+        x = threading.Timer(initial_delay, self._timer_thread, args = (connection, event, initial_message))
         x.start()
 
-        second_message = text_generator.get_string("[throw_message]", {
-            'throw_message': self.throw_messages,
-            'thrower': command_data.issuer,
-            'target': target
-        })
+        second_message = text_generator.get_string(
+                "[throw_message]", {
+                    'throw_message': self.throw_messages,
+                    'thrower':       command_data.issuer,
+                    'target':        target
+                }
+        )
 
         secondary_delay = initial_delay + 0.5 + random.random() * 2
-        y = threading.Timer(secondary_delay, self._timer_thread, args=(connection, event, second_message))
+        y = threading.Timer(secondary_delay, self._timer_thread, args = (connection, event, second_message))
         y.start()
 
     def _timer_thread(self, connection: ServerConnection, event: Event, message: str) -> None:

@@ -1,7 +1,7 @@
 import random
 import re
 
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 
 from timmy import core, utilities
 from timmy.command_processors import interaction_controls
@@ -72,8 +72,10 @@ class ReactionHandler:
                 channel.send_action("passes {} a tissue.".format(event.source.nick))
                 interacted = True
 
-            elif re.search("are you (thinking|pondering) what i.*m (thinking|pondering)", event.arguments[0],
-                           re.IGNORECASE) \
+            elif re.search(
+                    "are you (thinking|pondering) what i.*m (thinking|pondering)", event.arguments[0],
+                    re.IGNORECASE
+            ) \
                     and interaction_controls.interact_with_user(event.source.nick, 'silly_reactions') \
                     and random.randrange(100) < channel.current_odds['aypwip']:
                 channel.current_odds['aypwip'] -= 1
@@ -84,9 +86,11 @@ class ReactionHandler:
                     and interaction_controls.interact_with_user(event.source.nick, 'silly_reactions') \
                     and random.randrange(100) < channel.current_odds['answer']:
                 channel.current_odds['answer'] -= 1
-                channel.send_action("sighs at the question. \"The answer is 42. I thought you knew that...\"".format(
-                        event.source.nick
-                ))
+                channel.send_action(
+                        "sighs at the question. \"The answer is 42. I thought you knew that...\"".format(
+                                event.source.nick
+                        )
+                )
                 interacted = True
 
             elif re.search("{}.*[?]".format(core.bot_instance.connection.nickname), event.arguments[0], re.IGNORECASE) \
@@ -114,13 +118,15 @@ class ReactionHandler:
         if channel.chatter_settings['types']['helpful_reactions'] \
                 and interaction_controls.interact_with_user(event.source.nick, 'helpful_reactions'):
             if re.search("how do (i|you) (change|set) ?(my|your)? (nick|name)", event.arguments[0], re.IGNORECASE):
-                channel.send_message("{}: To change your name type the following, putting the name you want instead of "
-                                     "NewNameHere: /nick NewNameHere".format(event.source.nick))
+                channel.send_message(
+                        "{}: To change your name type the following, putting the name you want instead of "
+                        "NewNameHere: /nick NewNameHere".format(event.source.nick)
+                )
                 interacted = True
 
         if not interacted:
             self._interact(connection, event, 'emote')
-            
+
         utilities.markov_processor.store_line("emote", event.arguments[0])
 
     def on_privmsg(self, connection: ServerConnection, event: Event) -> None:
@@ -179,8 +185,12 @@ class ReactionHandler:
                     and interaction_controls.interact_with_user(event.source.nick, 'silly_reactions') \
                     and random.randrange(100) < channel.current_odds['test']:
                 channel.current_odds['test'] -= 1
-                channel.send_message("{}: After due consideration, your test earned a: {}".format(event.source.nick,
-                                                                                                  self._pick_grade()))
+                channel.send_message(
+                        "{}: After due consideration, your test earned a: {}".format(
+                                event.source.nick,
+                                self._pick_grade()
+                        )
+                )
                 interacted = True
 
             elif ":'(" in event.arguments[0] \
@@ -190,8 +200,10 @@ class ReactionHandler:
                 channel.send_action("passes {} a tissue.".format(event.source.nick))
                 interacted = True
 
-            elif re.search("are you (thinking|pondering) what i.*m (thinking|pondering)", event.arguments[0],
-                           re.IGNORECASE) \
+            elif re.search(
+                    "are you (thinking|pondering) what i.*m (thinking|pondering)", event.arguments[0],
+                    re.IGNORECASE
+            ) \
                     and interaction_controls.interact_with_user(event.source.nick, 'silly_reactions') \
                     and random.randrange(100) < channel.current_odds['aypwip']:
                 channel.current_odds['aypwip'] -= 1
@@ -202,9 +214,11 @@ class ReactionHandler:
                     and interaction_controls.interact_with_user(event.source.nick, 'silly_reactions') \
                     and random.randrange(100) < channel.current_odds['answer']:
                 channel.current_odds['answer'] -= 1
-                channel.send_message("The answer is 42. Everyone knows that.".format(
-                        event.source.nick
-                ))
+                channel.send_message(
+                        "The answer is 42. Everyone knows that.".format(
+                                event.source.nick
+                        )
+                )
                 interacted = True
 
             elif re.search("{}.*[?]".format(core.bot_instance.connection.nickname), event.arguments[0], re.IGNORECASE) \
@@ -231,8 +245,10 @@ class ReactionHandler:
         if channel.chatter_settings['types']['helpful_reactions'] \
                 and interaction_controls.interact_with_user(event.source.nick, 'helpful_reactions'):
             if re.search("how do (i|you) (change|set) ?(my|your)? (nick|name)", event.arguments[0], re.IGNORECASE):
-                channel.send_message("{}: To change your name type the following, putting the name you want instead of "
-                                     "NewNameHere: /nick NewNameHere".format(event.source.nick))
+                channel.send_message(
+                        "{}: To change your name type the following, putting the name you want instead of "
+                        "NewNameHere: /nick NewNameHere".format(event.source.nick)
+                )
                 interacted = True
 
         if not interacted:

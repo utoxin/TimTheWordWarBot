@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
 
-from irc.client import ServerConnection, Event
+from irc.client import Event, ServerConnection
 
 from timmy import core
 from timmy.data.userdata import UserData
@@ -56,10 +56,12 @@ class WhoisHandler:
 
         if event.arguments[2] == 'is logged in as':
             authed_as = event.arguments[1]
-            irc_logger.log_message("Received whois response. Nick: {} :: Registered As: {}".format(
-                    nick,
-                    authed_as
-            ))
+            irc_logger.log_message(
+                    "Received whois response. Nick: {} :: Registered As: {}".format(
+                            nick,
+                            authed_as
+                    )
+            )
 
             if core.user_perms.is_ignored(authed_as, 'soft'):
                 core.user_perms.soft_ignores['nick'] = True
@@ -71,10 +73,12 @@ class WhoisHandler:
             nick_data = user_directory.nick_directory.get(nick)
             if auth_data is not None:
                 if nick_data is None:
-                    irc_logger.log_message("Adding {} to existing user {}".format(
-                            nick,
-                            auth_data.uuid
-                    ))
+                    irc_logger.log_message(
+                            "Adding {} to existing user {}".format(
+                                    nick,
+                                    auth_data.uuid
+                            )
+                    )
 
                     user_directory.nick_directory[nick] = auth_data
                     auth_data.nicks.add(nick)
@@ -83,10 +87,12 @@ class WhoisHandler:
                 temp_data = user_directory.temp_directory.get(nick)
 
                 if temp_data is not None:
-                    irc_logger.log_message("Moving {} to permanent user {}".format(
-                            nick,
-                            temp_data.uuid
-                    ))
+                    irc_logger.log_message(
+                            "Moving {} to permanent user {}".format(
+                                    nick,
+                                    temp_data.uuid
+                            )
+                    )
 
                     temp_data.registration_data_retrieved = True
                     temp_data.authed_user = authed_as
@@ -130,9 +136,9 @@ class WhoisHandler:
                 if user_data.last_whois_check is not None:
                     time_difference = datetime.now() - user_data.last_whois_check
                 else:
-                    time_difference = timedelta(minutes=60)
+                    time_difference = timedelta(minutes = 60)
 
-                if time_difference > timedelta(minutes=10):
+                if time_difference > timedelta(minutes = 10):
                     user_data.last_whois_check = datetime.now()
                     irc_logger.log_message("Sending another whois request for {}".format(nick))
                     user_directory.send_whois(nick)
