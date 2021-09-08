@@ -11,6 +11,7 @@ from .amusement.fridge import FridgeCommand
 from .amusement.herdcommand import HerdCommand
 from .amusement.lickcommand import LickCommand
 from .amusement.raptorcommands import RaptorCommands
+from .amusement.woot import WootCommand
 from .utility.admincommands import AdminCommands
 from .utility.channelcommands import ChannelCommands
 from .utility.interactioncontrols import InteractionControls
@@ -82,3 +83,6 @@ def register_processors():
 
     defenestrate = DefenestrateCommand()
     defenestrate.register_commands(event_handlers.command_handler_instance)
+
+    woot = WootCommand()
+    woot.register_commands(event_handlers.command_handler_instance)
