@@ -13,6 +13,7 @@ from .amusement.herdcommand import HerdCommand
 from .amusement.lickcommand import LickCommand
 from .amusement.raptorcommands import RaptorCommands
 from .amusement.sing import SingCommand
+from .amusement.search import SearchCommand
 from .amusement.woot import WootCommand
 from .utility.admincommands import AdminCommands
 from .utility.channelcommands import ChannelCommands
@@ -99,3 +100,5 @@ def register_processors():
     sing = SingCommand()
     sing.register_commands(event_handlers.command_handler_instance)
 
+    search = SearchCommand()
+    search.register_commands(event_handlers.command_handler_instance)
