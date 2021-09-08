@@ -33,8 +33,10 @@ class GetCommands(BaseCommand):
 
             if not interaction_controls.interact_with_user(target, 'get'):
                 self.respond_to_user(connection, event, "I'm sorry, it's been requested that I not do that.")
-        elif not interaction_controls.interact_with_user(command_data.issuer, command_data.command):
+                return
+        elif not interaction_controls.interact_with_user(command_data.issuer, 'get'):
             self.respond_to_user(connection, event, "I'm sorry, it's been requested that I not do that.")
+            return
 
         if command_data.command == 'get':
             self.get_command(connection, event, command_data)

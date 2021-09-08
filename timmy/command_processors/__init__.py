@@ -20,6 +20,7 @@ from .utility.pickonecommand import PickOneCommand
 from .utility.pingcommand import PingCommand
 from .utility.timercommand import TimerCommand
 from .writing.boxodoomcommand import BoxODoomCommand
+from .writing.challenge import ChallengeCommands
 from .writing.warcommands import WarCommands
 
 interaction_controls = InteractionControls()
@@ -90,3 +91,6 @@ def register_processors():
 
     getcommands = GetCommands()
     getcommands.register_commands(event_handlers.command_handler_instance)
+
+    challengecommand = ChallengeCommands()
+    challengecommand.register_commands(event_handlers.command_handler_instance)
