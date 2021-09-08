@@ -8,6 +8,7 @@ from .amusement.dicecommand import DiceCommand
 from .amusement.eightball import EightballCommand
 from .amusement.foof import FoofCommand
 from .amusement.fridge import FridgeCommand
+from .amusement.getcommands import GetCommands
 from .amusement.herdcommand import HerdCommand
 from .amusement.lickcommand import LickCommand
 from .amusement.raptorcommands import RaptorCommands
@@ -86,3 +87,6 @@ def register_processors():
 
     woot = WootCommand()
     woot.register_commands(event_handlers.command_handler_instance)
+
+    getcommands = GetCommands()
+    getcommands.register_commands(event_handlers.command_handler_instance)
