@@ -48,26 +48,42 @@ class SummonCommand(BaseCommand):
             self, connection: ServerConnection, event: Event, command_data: CommandData, target: str
     ) -> None:
         initial_delay = random.random() + 0.5
-        initial_message = text_generator.get_string("[defenestration_starter]")
+        initial_message = text_generator.get_string("[summon_start]", {
+            'target': target,
+            'summoner': command_data.issuer,
+            'alternate': '[deity]'
+        })
 
         x = threading.Timer(initial_delay, self._timer_thread, args = (connection, event, initial_message))
         x.start()
 
-        random_choice = random.randint(0, 100)
+        second_message = text_generator.get_string("[summon_end]", {
+            'target':    target,
+            'summoner':  command_data.issuer,
+            'alternate': '[deity]'
+        })
+        secondary_delay = initial_delay + 0.5 + random.random() * 2
+        y = threading.Timer(secondary_delay, self._timer_thread, args = (connection, event, second_message))
+        y.start()
 
-        if random_choice > 33:
-            second_message = text_generator.get_string(
-                    "[defenestration_success]", {
-                        'target': target
-                    }
-            )
-        else:
-            second_message = text_generator.get_string(
-                    "[defenestration_failure]", {
-                        'target': command_data.issuer
-                    }
-            )
+    def banish_command(
+            self, connection: ServerConnection, event: Event, command_data: CommandData, target: str
+    ) -> None:
+        initial_delay = random.random() + 0.5
+        initial_message = text_generator.get_string("[banish_start]", {
+            'target': target,
+            'banisher': command_data.issuer,
+            'alternate': '[deity]'
+        })
 
+        x = threading.Timer(initial_delay, self._timer_thread, args = (connection, event, initial_message))
+        x.start()
+
+        second_message = text_generator.get_string("[banish_end]", {
+            'target':    target,
+            'banisher':  command_data.issuer,
+            'alternate': '[deity]'
+        })
         secondary_delay = initial_delay + 0.5 + random.random() * 2
         y = threading.Timer(secondary_delay, self._timer_thread, args = (connection, event, second_message))
         y.start()
