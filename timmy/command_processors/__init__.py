@@ -12,6 +12,7 @@ from .amusement.getcommands import GetCommands
 from .amusement.herdcommand import HerdCommand
 from .amusement.lickcommand import LickCommand
 from .amusement.raptorcommands import RaptorCommands
+from .amusement.summon import SummonCommand
 from .amusement.sing import SingCommand
 from .amusement.search import SearchCommand
 from .amusement.woot import WootCommand
@@ -96,6 +97,9 @@ def register_processors():
 
     challengecommand = ChallengeCommands()
     challengecommand.register_commands(event_handlers.command_handler_instance)
+
+    summoncommand = SummonCommand()
+    summoncommand.register_commands(event_handlers.command_handler_instance)
 
     sing = SingCommand()
     sing.register_commands(event_handlers.command_handler_instance)
