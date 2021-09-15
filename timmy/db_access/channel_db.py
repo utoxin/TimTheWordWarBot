@@ -1,5 +1,5 @@
 import time
-from typing import List
+from typing import Dict, List
 
 from timmy import db_access
 from timmy.data.channel_data import ChannelData
@@ -173,3 +173,59 @@ class ChannelDb:
         connection.close()
 
         self.save_channel_settings(channel)
+
+    def get_channel_groups(self) -> Dict[str, List[str]]:
+        select_statement = "SELECT `name`, `channel` FROM `channel_groups` INNER JOIN `channels` ON " \
+                           "(`channel_groups`.`channel_id` = `channels`.`id`)"
+
+        connection = self.db.get_connection()
+
+        channel_groups = {}
+
+        cursor = connection.cursor()
+        cursor.execute(select_statement)
+
+        for channel in cursor:
+            if channel[0] not in channel_groups.keys():
+                channel_groups[channel[0]] = []
+
+            channel_groups[channel[0]].append(channel[1])
+
+        connection.close()
+
+        return channel_groups
+
+    def add_to_channel_group(self, group: str, channel: str) -> None:
+        insert_statement = "INSERT INTO `channel_groups` SET `name` = %(group)s, `channel_id` = (SELECT `id` FROM " \
+                           "`channels` WHERE `channel` = %(channel)s)"
+
+        connection = self.db.get_connection()
+
+        insert_cursor = connection.cursor()
+        insert_cursor.execute(insert_statement, {'group': group, 'channel': channel})
+        insert_cursor.close()
+
+        connection.close()
+
+    def remove_from_channel_group(self, group: str, channel: str) -> None:
+        delete_statement = "DELETE FROM `channel_groups` WHERE `name` = %(group)s AND `channel_id` = (SELECT `id` " \
+                           "FROM `channels` WHERE `channel` = %(channel)s)"
+
+        connection = self.db.get_connection()
+
+        delete_cursor = connection.cursor()
+        delete_cursor.execute(delete_statement, {'group': group, 'channel': channel})
+        delete_cursor.close()
+
+        connection.close()
+
+    def destroy_channel_group(self, group: str) -> None:
+        delete_statement = "DELETE FROM `channel_groups` WHERE `name` = %(group)s"
+
+        connection = self.db.get_connection()
+
+        delete_cursor = connection.cursor()
+        delete_cursor.execute(delete_statement, {'group': group})
+        delete_cursor.close()
+
+        connection.close()
