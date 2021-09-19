@@ -104,11 +104,11 @@ class UserPerms:
         connection = db_access.connection_pool.get_connection()
         cursor = connection.cursor()
 
-        cursor.execute(insert_statement, {'nick': nick, 'type': type})
+        cursor.execute(insert_statement, {'nick': nick, 'type': ignore_type})
 
-        if type == 'soft':
+        if ignore_type == 'soft' and nick in self.soft_ignores:
             del self.soft_ignores[nick]
-        elif type == 'hard':
+        elif ignore_type == 'hard' and nick in self.hard_ignores:
             del self.hard_ignores[nick]
-        elif type == 'admin':
+        elif ignore_type == 'admin' and nick in self.admin_ignores:
             del self.admin_ignores[nick]
