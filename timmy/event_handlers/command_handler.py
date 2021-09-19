@@ -31,7 +31,7 @@ class CommandHandler:
         return self.on_pubmsg(connection, event)
 
     def on_pubmsg(self, connection: ServerConnection, event: Event) -> bool:
-        if core.user_perms.is_ignored(event.source.nick, 'hard'):
+        if core.user_perms.is_ignored(event.source.nick, 'admin'):
             return True
 
         command_data = self._parse_event(event)
@@ -39,6 +39,9 @@ class CommandHandler:
             return False
 
         if command_data.type in [CommandType.SKYNET_USER, CommandType.SKYNET_ADMIN]:
+            return True
+
+        if core.user_perms.is_ignored(event.source.nick, 'hard') and command_data.command != 'unignore':
             return True
 
         if command_data.type == CommandType.TIMMY_USER and command_data.command in self.user_command_processors:

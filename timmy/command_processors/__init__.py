@@ -19,6 +19,7 @@ from .amusement.woot import WootCommand
 from .utility.admincommands import AdminCommands
 from .utility.channelcommands import ChannelCommands
 from .utility.channelgroupcommands import ChannelGroupCommands
+from .utility.ignorecommands import IgnoreCommands
 from .utility.interactioncontrols import InteractionControls
 from .utility.pickonecommand import PickOneCommand
 from .utility.pingcommand import PingCommand
@@ -110,3 +111,6 @@ def register_processors():
 
     channel_groups = ChannelGroupCommands()
     channel_groups.register_commands(event_handlers.command_handler_instance)
+
+    ignore_commands = IgnoreCommands()
+    ignore_commands.register_commands(event_handlers.command_handler_instance)

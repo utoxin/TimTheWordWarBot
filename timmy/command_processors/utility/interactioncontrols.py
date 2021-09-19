@@ -118,6 +118,9 @@ class InteractionControls(BaseCommand):
         if interaction not in self.interaction_settings[target.authed_user]:
             return True
 
+        if core.user_perms.is_ignored(target, 'any'):
+            return False
+
         return self.interaction_settings[target.authed_user][interaction]
 
     def _save_interaction_settings(self) -> None:
