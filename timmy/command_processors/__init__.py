@@ -18,6 +18,7 @@ from .amusement.search import SearchCommand
 from .amusement.woot import WootCommand
 from .utility.admincommands import AdminCommands
 from .utility.channelcommands import ChannelCommands
+from .utility.channelgroupcommands import ChannelGroupCommands
 from .utility.interactioncontrols import InteractionControls
 from .utility.pickonecommand import PickOneCommand
 from .utility.pingcommand import PingCommand
@@ -106,3 +107,6 @@ def register_processors():
 
     search = SearchCommand()
     search.register_commands(event_handlers.command_handler_instance)
+
+    channel_groups = ChannelGroupCommands()
+    channel_groups.register_commands(event_handlers.command_handler_instance)

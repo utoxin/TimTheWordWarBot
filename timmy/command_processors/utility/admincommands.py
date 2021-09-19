@@ -5,10 +5,11 @@ from irc.client import Event, ServerConnection
 
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
+from timmy.db_access import channel_db
 
 
 class AdminCommands(BaseCommand):
-    admin_commands = {'shutdown', 'ignore', 'unignore', 'listignores', 'channelgroup'}
+    admin_commands = {'shutdown', 'ignore', 'unignore', 'listignores', 'shout'}
 
     def process(self, connection: ServerConnection, event: Event, command_data: CommandData):
         if command_data.command == 'shutdown':
@@ -19,5 +20,37 @@ class AdminCommands(BaseCommand):
                 sys.exit(0)
             else:
                 self.respond_to_user(connection, event, "Only a global admin can do that!")
+
+        elif command_data.command == 'shout':
+            channel_groups = channel_db.get_channel_groups()
+
+            if command_data.arg_count == 0:
+                self.respond_to_user(connection, event, "Usage: $shout <message>")
+                self.respond_to_user(connection, event, "USage: $shout @<channelgroup> <message>")
+                return
+            else:
+                destination = 'all'
+                message = command_data.arg_string
+
+                if command_data.args[0].startswith("@"):
+                    if command_data.arg_count == 1:
+                        self.respond_to_user(connection, event, "USage: $shout @<channelgroup> <message>")
+                        return
+                    else:
+                        destination = command_data.args[0][1:]
+                        message = " ".join(command_data.args[1:])
+
+                if destination == 'all':
+                    from timmy.core import bot_instance
+                    target_channels = bot_instance.channels
+                else:
+                    if destination not in channel_groups:
+                        self.respond_to_user(connection, event, "Channel group not found.")
+                        return
+                    else:
+                        target_channels = channel_groups[destination]
+
+                for channel in target_channels:
+                    connection.privmsg(channel, f"{command_data.issuer} shouts @{destination}: {message}")
 
         return
