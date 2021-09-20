@@ -6,6 +6,7 @@ from .amusement.dance import DanceCommand
 from .amusement.defenstrate import DefenestrateCommand
 from .amusement.dicecommand import DiceCommand
 from .amusement.eightball import EightballCommand
+from .amusement.expound import ExpoundCommand
 from .amusement.foof import FoofCommand
 from .amusement.fridge import FridgeCommand
 from .amusement.getcommands import GetCommands
@@ -118,3 +119,6 @@ def register_processors():
 
     raptorstats = RaptorStatsCommand()
     raptorstats.register_commands(event_handlers.command_handler_instance)
+
+    expound = ExpoundCommand()
+    expound.register_commands(event_handlers.command_handler_instance)
