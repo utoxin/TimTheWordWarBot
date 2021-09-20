@@ -11,6 +11,7 @@ from .amusement.fridge import FridgeCommand
 from .amusement.getcommands import GetCommands
 from .amusement.herdcommand import HerdCommand
 from .amusement.lickcommand import LickCommand
+from .amusement.raptoprstats import RaptorStatsCommand
 from .amusement.raptorcommands import RaptorCommands
 from .amusement.summon import SummonCommand
 from .amusement.sing import SingCommand
@@ -114,3 +115,6 @@ def register_processors():
 
     ignore_commands = IgnoreCommands()
     ignore_commands.register_commands(event_handlers.command_handler_instance)
+
+    raptorstats = RaptorStatsCommand()
+    raptorstats.register_commands(event_handlers.command_handler_instance)
