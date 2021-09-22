@@ -27,6 +27,7 @@ from .utility.pickonecommand import PickOneCommand
 from .utility.pingcommand import PingCommand
 from .utility.timercommand import TimerCommand
 from .writing.boxodoomcommand import BoxODoomCommand
+from .writing.chainstory import ChainStoryCommands
 from .writing.challenge import ChallengeCommands
 from .writing.warcommands import WarCommands
 
@@ -122,3 +123,6 @@ def register_processors():
 
     expound = ExpoundCommand()
     expound.register_commands(event_handlers.command_handler_instance)
+
+    chainstory = ChainStoryCommands()
+    chainstory.register_commands(event_handlers.command_handler_instance)
