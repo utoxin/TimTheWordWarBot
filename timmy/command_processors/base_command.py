@@ -1,5 +1,7 @@
 from irc.client import Event, ServerConnection
 
+from timmy import core
+from timmy.data.channel_data import ChannelData
 from timmy.data.command_data import CommandData
 from timmy.event_handlers import CommandHandler
 
@@ -8,6 +10,12 @@ class BaseCommand:
     user_commands = {}
     admin_commands = {}
     sub_commands = {}
+
+    allowed_in_pm = True
+    interaction_checks = True
+    permitted_checks = True
+
+    command_flag_map = {}
 
     @staticmethod
     def respond_to_user(connection: ServerConnection, event: Event, message: str) -> None:
@@ -44,3 +52,46 @@ class BaseCommand:
 
         subcommand_handler = getattr(self, '_' + command_data.args[0] + '_handler')
         subcommand_handler(connection, event, command_data)
+
+    def _execution_checks(self, connection: ServerConnection, event: Event, command_data: CommandData) -> bool:
+        if command_data.in_pm:
+            if not self.allowed_in_pm:
+                self.respond_to_user(connection, event, "You can't do that in a private message.")
+                return False
+        else:
+            channel_data: ChannelData = core.bot_instance.channels[command_data.channel]
+
+            flag_name = command_data.command
+            if command_data.command in self.command_flag_map:
+                flag_name = self.command_flag_map[command_data.command]
+
+            if not channel_data.command_settings[flag_name]:
+                self.respond_to_user(connection, event, "I'm sorry, I don't do that here.")
+                return False
+
+        return self._interaction_flag_check(connection, event, command_data)
+
+    def _interaction_flag_check(self, connection: ServerConnection, event: Event, command_data: CommandData) -> bool:
+        if not self.interaction_checks:
+            return True
+
+        from timmy.command_processors import interaction_controls
+
+        flag_name = command_data.command
+        if command_data.command in self.command_flag_map:
+            flag_name = self.command_flag_map[command_data.command]
+
+        if command_data.arg_count > 0:
+            target = command_data.arg_string
+
+            if interaction_controls.interact_with_user(target, flag_name):
+                return True
+            else:
+                self.respond_to_user(connection, event, "I'm sorry, it's been requested that I not do that.")
+                return False
+        else:
+            if interaction_controls.interact_with_user(command_data.issuer, command_data.command):
+                return True
+            else:
+                self.respond_to_user(connection, event, "I'm sorry, it's been requested that I not do that.")
+                return False
