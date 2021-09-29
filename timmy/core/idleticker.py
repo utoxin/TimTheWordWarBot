@@ -5,22 +5,20 @@ from timeloop import Timeloop
 
 from timmy import core
 from timmy.data.channel_data import ChannelData
+from timmy.db_access import chainstory_db
 from timmy.utilities import markov_generator
 
 idle_timer = Timeloop()
 
 
 class IdleTicker:
-    @staticmethod
-    def init() -> None:
+    def init(self) -> None:
         idle_timer.start()
 
-    @staticmethod
-    def tick() -> None:
+    def tick(self) -> None:
         today = datetime.now()
-        is_november = today.month == 11
 
-        # TODO: Add novel writing ticker here
+        self.novel_writing_tick()
 
         # TODO: Add twitter deidle code here
 
@@ -64,6 +62,35 @@ class IdleTicker:
                     core.raptor_ticker.swarm(channel)
                 elif action == 'bored':
                     channel.send_message("I'm bored.")
+
+    def novel_writing_tick(self):
+        today = datetime.now()
+        is_november = today.month == 11
+
+        if is_november:
+            wordcount = chainstory_db.word_count()
+            expected_wordcount = today.day * 50000 / 30.0
+
+            relative_pace = max(0.5, wordcount / expected_wordcount)
+            odds_of_writing = 2.5 / (relative_pace * relative_pace)
+
+            if random.random() * 100 < odds_of_writing:
+                last_lines = chainstory_db.get_last_lines()
+                new_line = markov_generator.generate_markov('novel', last_lines[len(last_lines) - 1])
+
+                chainstory_db.add_line(new_line, "Timmy")
+
+                channel: ChannelData
+                for channel in core.bot_instance.channels.values():
+                    if random.randint(0, 100) > 15:
+                        continue
+
+                    if channel.chatter_settings['types']['chainstory'] and not channel.is_muzzled() and \
+                            channel.chatter_settings['random_level'] > 0:
+                        core.bot_instance.connection.action(channel, "opens up his novel file, considers for a minute, "
+                                                                     "and then rapidly types in several words. (Help "
+                                                                     "Timmy out by using the Chain Story commands. "
+                                                                     "See !help for information.)")
 
 
 @idle_timer.job(interval = timedelta(seconds = 60))
