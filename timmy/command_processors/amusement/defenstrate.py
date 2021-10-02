@@ -4,12 +4,14 @@ import threading
 from irc.client import Event, ServerConnection
 
 from timmy.command_processors.base_command import BaseCommand
+from timmy.core import bot_instance
 from timmy.data.command_data import CommandData
 from timmy.utilities import text_generator
 
 
 class DefenestrateCommand(BaseCommand):
     user_commands = {'defenestrate'}
+    amusement_commands = {'defenestrate'}
 
     def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         if self._execution_checks(connection, event, command_data):
@@ -19,6 +21,19 @@ class DefenestrateCommand(BaseCommand):
                 target = command_data.issuer
 
             self.defenestrate_command(connection, event, command_data, target)
+
+    def process_amusement(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
+        users = bot_instance.channels[command_data.channel].users()
+
+        if len(users) == 0:
+            return
+
+        target = users[random.randint(0, len(users))]
+
+        command_data.args[0] = target
+        command_data.arg_string = target
+
+        self.process(connection, event, command_data)
 
     def defenestrate_command(
             self, connection: ServerConnection, event: Event, command_data: CommandData, target: str

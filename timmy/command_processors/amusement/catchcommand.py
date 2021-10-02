@@ -7,6 +7,7 @@ from timmy.utilities import text_generator
 
 class CatchCommand(BaseCommand):
     user_commands = {'catch'}
+    amusement_commands = {'catch'}
 
     def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
         if self._execution_checks(connection, event, command_data):

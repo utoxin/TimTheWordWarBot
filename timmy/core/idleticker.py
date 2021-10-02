@@ -1,6 +1,7 @@
 import random
 from datetime import datetime, timedelta
 
+from irc.dict import IRCDict
 from timeloop import Timeloop
 
 from timmy import core
@@ -12,6 +13,9 @@ idle_timer = Timeloop()
 
 
 class IdleTicker:
+    def __init__(self):
+        self.amusement_command_processors = IRCDict()
+
     def init(self) -> None:
         idle_timer.start()
 
