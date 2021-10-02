@@ -67,6 +67,9 @@ class IdleTicker:
         today = datetime.now()
         is_november = today.month == 11
 
+        # TESTING
+        is_november = True
+
         if is_november:
             wordcount = chainstory_db.word_count()
             expected_wordcount = today.day * 50000 / 30.0
