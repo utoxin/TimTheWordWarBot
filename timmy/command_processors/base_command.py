@@ -91,7 +91,7 @@ class BaseCommand:
             if len(users) == 0:
                 return
 
-            target = users[random.randint(0, len(users))]
+            target = users[random.randint(0, len(users) - 1)]
 
             command_data.args[0] = target
             command_data.arg_string = target
