@@ -1,7 +1,5 @@
 import random
 
-from irc.client import Event
-
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
 from timmy.utilities import text_generator
@@ -12,11 +10,11 @@ class SingCommand(BaseCommand):
     amusement_commands = {'sing'}
     interaction_checks = False
 
-    def process(self, event: Event, command_data: CommandData) -> None:
-        if self._execution_checks(event, command_data):
-            self.sing_command(event)
+    def process(self, command_data: CommandData) -> None:
+        if self._execution_checks(command_data):
+            self.sing_command(command_data)
 
-    def sing_command(self, event: Event) -> None:
+    def sing_command(self, command_data: CommandData) -> None:
         song = text_generator.get_string('[song]')
 
         random_check = random.randint(0, 100)
@@ -30,4 +28,4 @@ class SingCommand(BaseCommand):
         else:
             message = f"screeches out some words from '{song}', and all the windows shatter... Ouch."
 
-        self.send_action(event, message)
+        self.send_action(command_data, message)

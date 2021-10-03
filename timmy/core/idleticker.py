@@ -1,7 +1,6 @@
 import random
 from datetime import datetime, timedelta
 
-from irc.client import Event
 from irc.dict import IRCDict
 from timeloop import Timeloop
 
@@ -83,10 +82,9 @@ class IdleTicker:
         amusement_command.arg_string = ""
         amusement_command.prefix = "!"
         amusement_command.automatic = True
+        amusement_command.in_pm = False
 
-        event = Event('privmsg', 'Timmy', channel.name)
-
-        self.amusement_command_processors[selected_command].process_amusement(event, amusement_command)
+        self.amusement_command_processors[selected_command].process_amusement(amusement_command)
 
     def novel_writing_tick(self):
         today = datetime.now()

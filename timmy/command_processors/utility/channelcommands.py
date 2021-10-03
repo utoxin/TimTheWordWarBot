@@ -1,7 +1,5 @@
 import time
 
-from irc.client import Event
-
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.channel_data import ChannelData
 from timmy.data.command_data import CommandData
@@ -11,52 +9,52 @@ class ChannelCommands(BaseCommand):
     admin_commands = {'automuzzlewars', 'muzzle', 'chatterlevel', 'chatterflag', 'commandflag',
                       'twitterrelay', 'twitterbucket', 'part', 'unmuzzle'}
 
-    def process(self, event: Event, command_data: CommandData) -> None:
+    def process(self, command_data: CommandData) -> None:
         from timmy.core import user_perms
         if not user_perms.is_admin(command_data.issuer, command_data.channel):
-            self.respond_to_user(event, "I'm sorry, only admins are allowed to do that.")
+            self.respond_to_user(command_data, "I'm sorry, only admins are allowed to do that.")
             return
 
         try:
             command_handler = getattr(self, '_' + command_data.command + '_handler')
-            command_handler(event, command_data)
+            command_handler(command_data)
         except AttributeError:
-            self.respond_to_user(event, "That command is not yet implemented.")
+            self.respond_to_user(command_data, "That command is not yet implemented.")
 
-    def _validate_channel(self, event: Event, candidate_channel, user) -> bool:
+    def _validate_channel(self, command_data: CommandData, candidate_channel: str, user: str) -> bool:
         from timmy.core import user_perms, bot_instance
 
         if candidate_channel not in bot_instance.channels:
-            self.respond_to_user(event, f"I don't know about '{candidate_channel}'. Sorry.")
+            self.respond_to_user(command_data, f"I don't know about '{candidate_channel}'. Sorry.")
             return False
 
         if not user_perms.is_admin(user, candidate_channel):
-            self.respond_to_user(event, f"I'm sorry, you aren't an admin for '{candidate_channel}'.")
+            self.respond_to_user(command_data, f"I'm sorry, you aren't an admin for '{candidate_channel}'.")
             return False
 
         return True
 
-    def _unmuzzle_handler(self, event: Event, command_data: CommandData) -> None:
+    def _unmuzzle_handler(self, command_data: CommandData) -> None:
         from timmy.core import bot_instance
 
         if command_data.arg_count == 0:
             target = command_data.channel
         else:
-            if not self._validate_channel(event, command_data.args[0], command_data.issuer):
+            if not self._validate_channel(command_data, command_data.args[0], command_data.issuer):
                 return
 
             target = command_data.args[0]
 
         bot_instance.channels[target].set_muzzle_flag(False, 0)
 
-        self.respond_to_user(event, "Channel unmuzzled.")
+        self.respond_to_user(command_data, "Channel unmuzzled.")
         return
 
-    def _part_handler(self, event: Event, command_data: CommandData) -> None:
+    def _part_handler(self, command_data: CommandData) -> None:
         if command_data.arg_count == 0:
             target = command_data.channel
         else:
-            if not self._validate_channel(event, command_data.args[0], command_data.issuer):
+            if not self._validate_channel(command_data, command_data.args[0], command_data.issuer):
                 return
 
             target = command_data.args[0]
@@ -65,24 +63,24 @@ class ChannelCommands(BaseCommand):
         bot_instance.connection.part([target], "Bye!")
 
         if target != command_data.channel:
-            self.respond_to_user(event, "Channel left.")
+            self.respond_to_user(command_data, "Channel left.")
 
         return
 
-    def _muzzle_handler(self, event: Event, command_data: CommandData) -> None:
+    def _muzzle_handler(self, command_data: CommandData) -> None:
         from timmy.core import bot_instance
 
         if command_data.arg_count == 0:
-            self.respond_to_user(event, "Usage: $muzzle [#channel] <duration in minutes>")
-            self.respond_to_user(event, "Usage: Duration of -1 means indefinite.")
-            self.respond_to_user(event, "Example: $muzzle 10  --  Will muzzle Timmy for 10 minutes.")
+            self.respond_to_user(command_data, "Usage: $muzzle [#channel] <duration in minutes>")
+            self.respond_to_user(command_data, "Usage: Duration of -1 means indefinite.")
+            self.respond_to_user(command_data, "Example: $muzzle 10  --  Will muzzle Timmy for 10 minutes.")
             return
 
         if command_data.arg_count == 1:
             target = command_data.channel
             duration = float(command_data.args[0])
         else:
-            if not self._validate_channel(event, command_data.args[0], command_data.issuer):
+            if not self._validate_channel(command_data, command_data.args[0], command_data.issuer):
                 return
 
             target = command_data.args[0].lower()
@@ -95,24 +93,24 @@ class ChannelCommands(BaseCommand):
 
         bot_instance.channels[target].set_muzzle_flag(True, expiration)
 
-        self.respond_to_user(event, "Channel muzzled for specified time.")
+        self.respond_to_user(command_data, "Channel muzzled for specified time.")
         return
 
-    def _automuzzlewars_handler(self, event: Event, command_data: CommandData) -> None:
+    def _automuzzlewars_handler(self, command_data: CommandData) -> None:
         from timmy.core import bot_instance
 
         if command_data.arg_count == 0:
-            self.respond_to_user(event, "Usage: $automuzzlewars [#channel] <0/1>")
-            self.respond_to_user(event, "Usage: Whether Timmy should auto-muzzle during word wars.")
-            self.respond_to_user(event, "Usage: 0 disables this feature, 1 enables it.")
-            self.respond_to_user(event, "Example: $automuzzlewars 1  --  Enables automuzzle for this channel")
+            self.respond_to_user(command_data, "Usage: $automuzzlewars [#channel] <0/1>")
+            self.respond_to_user(command_data, "Usage: Whether Timmy should auto-muzzle during word wars.")
+            self.respond_to_user(command_data, "Usage: 0 disables this feature, 1 enables it.")
+            self.respond_to_user(command_data, "Example: $automuzzlewars 1  --  Enables automuzzle for this channel")
             return
 
         if command_data.arg_count == 1:
             target = command_data.channel
             flag = int(command_data.args[0]) == 1
         else:
-            if not self._validate_channel(event, command_data.args[0], command_data.issuer):
+            if not self._validate_channel(command_data, command_data.args[0], command_data.issuer):
                 return
 
             target = command_data.args[0].lower()
@@ -120,15 +118,15 @@ class ChannelCommands(BaseCommand):
 
         bot_instance.channels[target].set_muzzle_flag(flag)
 
-        self.respond_to_user(event, "Channel auto muzzle flag updated for {}.".format(target))
+        self.respond_to_user(command_data, "Channel auto muzzle flag updated for {}.".format(target))
         return
 
-    def _chatterlevel_handler(self, event: Event, command_data: CommandData) -> None:
+    def _chatterlevel_handler(self, command_data: CommandData) -> None:
         from timmy.core import bot_instance
 
         def output_usage():
-            self.respond_to_user(event, "Usage: $chatterlevel <#channel> list")
-            self.respond_to_user(event, "Usage: $chatterlevel <#channel> set <%/Msg> <Name Multiplier> <%/Min>")
+            self.respond_to_user(command_data, "Usage: $chatterlevel <#channel> list")
+            self.respond_to_user(command_data, "Usage: $chatterlevel <#channel> set <%/Msg> <Name Multiplier> <%/Min>")
 
         if command_data.arg_count == 1 or command_data.arg_count == 2:
             if command_data.arg_count == 1:
@@ -138,7 +136,7 @@ class ChannelCommands(BaseCommand):
                 channel = command_data.args[0].lower()
                 command = command_data.args[1].lower()
 
-                if not self._validate_channel(event, channel, command_data.issuer):
+                if not self._validate_channel(command_data, channel, command_data.issuer):
                     return
 
             if command == 'list':
@@ -149,9 +147,9 @@ class ChannelCommands(BaseCommand):
                 random = channel_data.chatter_settings['random_level']
                 name = channel_data.chatter_settings['name_multiplier']
 
-                self.respond_to_user(event, f"Reactive Chatter Level: {reactive:.3f}%/Msg - Name Multiplier: "
-                                            f"{name:.3f}")
-                self.respond_to_user(event, f"Random Chatter Level: {random:.3f}%/Min")
+                self.respond_to_user(command_data, f"Reactive Chatter Level: {reactive:.3f}%/Msg - Name Multiplier: "
+                                                   f"{name:.3f}")
+                self.respond_to_user(command_data, f"Random Chatter Level: {random:.3f}%/Min")
             else:
                 output_usage()
                 return
@@ -170,7 +168,7 @@ class ChannelCommands(BaseCommand):
                 name = float(command_data.args[3])
                 random = float(command_data.args[4])
 
-                if not self._validate_channel(event, channel, command_data.issuer):
+                if not self._validate_channel(command_data, channel, command_data.issuer):
                     return
 
             if command == 'set':
@@ -183,9 +181,9 @@ class ChannelCommands(BaseCommand):
 
                 channel_data.set_chatter_flags(reactive, name, random)
 
-                self.respond_to_user(event, f"Reactive Chatter Level: {reactive:.3f}%/Msg - Name Multiplier: "
-                                            f"{name:.3f}")
-                self.respond_to_user(event, f"Random Chatter Level: {random:.3f}%/Min")
+                self.respond_to_user(command_data, f"Reactive Chatter Level: {reactive:.3f}%/Msg - Name Multiplier: "
+                                                   f"{name:.3f}")
+                self.respond_to_user(command_data, f"Random Chatter Level: {random:.3f}%/Min")
             else:
                 output_usage()
                 return
@@ -196,7 +194,7 @@ class ChannelCommands(BaseCommand):
 
         return
 
-    def _chatterflag_handler(self, event: Event, command_data: CommandData) -> None:
+    def _chatterflag_handler(self, command_data: CommandData) -> None:
         from timmy.core import bot_instance
 
         if 1 <= command_data.arg_count <= 2 and command_data.args[command_data.arg_count - 1].lower() == 'list':
@@ -205,12 +203,12 @@ class ChannelCommands(BaseCommand):
             else:
                 channel = command_data.args[0].lower()
 
-            if not self._validate_channel(event, channel, command_data.issuer):
+            if not self._validate_channel(command_data, channel, command_data.issuer):
                 return
 
             channel_data: ChannelData = bot_instance.channels[channel]
 
-            self.respond_to_user(event, f"Sending status of chatter settings for {channel} via private message.")
+            self.respond_to_user(command_data, f"Sending status of chatter settings for {channel} via private message.")
 
             for key, value in channel_data.chatter_settings['types'].items():
                 bot_instance.connection.privmsg(command_data.issuer, f"{key}: {value}")
@@ -225,7 +223,7 @@ class ChannelCommands(BaseCommand):
                 flag = command_data.args[2].lower()
                 value = int(command_data.args[3]) == 1
 
-            if not self._validate_channel(event, channel, command_data.issuer):
+            if not self._validate_channel(command_data, channel, command_data.issuer):
                 return
 
             channel_data: ChannelData = bot_instance.channels[channel]
@@ -236,23 +234,23 @@ class ChannelCommands(BaseCommand):
 
                 channel_data.save_data()
 
-                self.respond_to_user(event, f"All chatter flags updated.")
+                self.respond_to_user(command_data, f"All chatter flags updated.")
             else:
                 if flag in channel_data.chatter_settings['types']:
                     channel_data.chatter_settings['types'][flag] = value
                     channel_data.save_data()
-                    self.respond_to_user(event, f"Chatter flag updated.")
+                    self.respond_to_user(command_data, f"Chatter flag updated.")
                 else:
-                    self.respond_to_user(event, f"I'm sorry, but I don't have a setting for {flag}")
+                    self.respond_to_user(command_data, f"I'm sorry, but I don't have a setting for {flag}")
 
         else:
             flags = ", ".join(ChannelData.chatter_settings_defaults['types'].keys())
 
-            self.respond_to_user(event, "Usage: $chatterflag [<#channel>] list OR $chatterflag [<#channel>] set <type> "
-                                        "<0/1>")
-            self.respond_to_user(event, f"Valid Chatter Types: all, {flags}")
+            self.respond_to_user(command_data, "Usage: $chatterflag [<#channel>] list OR $chatterflag [<#channel>] set "
+                                               "<type> <0/1>")
+            self.respond_to_user(command_data, f"Valid Chatter Types: all, {flags}")
 
-    def _commandflag_handler(self, event: Event, command_data: CommandData) -> None:
+    def _commandflag_handler(self, command_data: CommandData) -> None:
         from timmy.core import bot_instance
 
         if 1 <= command_data.arg_count <= 2 and command_data.args[command_data.arg_count - 1].lower() == 'list':
@@ -261,12 +259,12 @@ class ChannelCommands(BaseCommand):
             else:
                 channel = command_data.args[0].lower()
 
-            if not self._validate_channel(event, channel, command_data.issuer):
+            if not self._validate_channel(command_data, channel, command_data.issuer):
                 return
 
             channel_data: ChannelData = bot_instance.channels[channel]
 
-            self.respond_to_user(event, f"Sending status of command settings for {channel} via private message.")
+            self.respond_to_user(command_data, f"Sending status of command settings for {channel} via private message.")
 
             for key, value in channel_data.command_settings.items():
                 bot_instance.connection.privmsg(command_data.issuer, f"{key}: {value}")
@@ -281,7 +279,7 @@ class ChannelCommands(BaseCommand):
                 command = command_data.args[2].lower()
                 value = int(command_data.args[3]) == 1
 
-            if not self._validate_channel(event, channel, command_data.issuer):
+            if not self._validate_channel(command_data, channel, command_data.issuer):
                 return
 
             channel_data: ChannelData = bot_instance.channels[channel]
@@ -292,18 +290,18 @@ class ChannelCommands(BaseCommand):
 
                 channel_data.save_data()
 
-                self.respond_to_user(event, f"All command flags updated.")
+                self.respond_to_user(command_data, f"All command flags updated.")
             else:
                 if command in channel_data.command_settings:
                     channel_data.command_settings[command] = value
                     channel_data.save_data()
-                    self.respond_to_user(event, f"Command flag updated.")
+                    self.respond_to_user(command_data, f"Command flag updated.")
                 else:
-                    self.respond_to_user(event, f"I'm sorry, but I don't have a setting for {command}")
+                    self.respond_to_user(command_data, f"I'm sorry, but I don't have a setting for {command}")
 
         else:
             commands = ", ".join(ChannelData.command_defaults.keys())
 
-            self.respond_to_user(event, "Usage: $commandflag [<#channel>] list OR $commandflag [<#channel>] set <type> "
-                                        "<0/1>")
-            self.respond_to_user(event, f"Valid Command Types: all, {commands}")
+            self.respond_to_user(command_data, "Usage: $commandflag [<#channel>] list OR $commandflag [<#channel>] set "
+                                               "<type> <0/1>")
+            self.respond_to_user(command_data, f"Valid Command Types: all, {commands}")

@@ -1,5 +1,3 @@
-from irc.client import Event
-
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
 from timmy.utilities import text_generator
@@ -9,8 +7,8 @@ class CatchCommand(BaseCommand):
     user_commands = {'catch'}
     amusement_commands = {'catch'}
 
-    def process(self, event: Event, command_data: CommandData) -> None:
-        if self._execution_checks(event, command_data):
+    def process(self, command_data: CommandData) -> None:
+        if self._execution_checks(command_data):
             target = '[pokemon]'
 
             if command_data.arg_count > 0:
@@ -36,5 +34,5 @@ class CatchCommand(BaseCommand):
                     }
             )
 
-            self.send_action(event, initial_message)
-            self.send_action(event, catch_message)
+            self.send_action(command_data, initial_message)
+            self.send_action(command_data, catch_message)

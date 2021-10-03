@@ -1,5 +1,3 @@
-from irc.client import Event
-
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.channel_data import ChannelData
@@ -15,24 +13,21 @@ class RaptorStatsCommand(BaseCommand):
         'raptorstats': 'velociraptor'
     }
 
-    def process(self, event: Event, command_data: CommandData) -> None:
-        if self._execution_checks(event, command_data):
+    def process(self, command_data: CommandData) -> None:
+        if self._execution_checks(command_data):
             channel_data: ChannelData = core.bot_instance.channels[command_data.channel]
 
-            self.respond_to_user(event, f"There have been {channel_data.raptor_data['sightings']} velociraptor "
-                                        f"sightings in this channel, and {channel_data.raptor_data['active']} are still"
-                                        f" here.")
+            self.respond_to_user(command_data, f"There have been {channel_data.raptor_data['sightings']} velociraptor "
+                                               f"sightings in this channel, and {channel_data.raptor_data['active']} "
+                                               f"are still here.")
 
-            self.respond_to_user(event, f"{channel_data.raptor_data['dead']} velociraptors in this channel have been "
-                                        f"killed by other swarms."
-                                 )
+            self.respond_to_user(command_data, f"{channel_data.raptor_data['dead']} velociraptors in this channel have "
+                                               f"been killed by other swarms.")
 
-            self.respond_to_user(event, f"Swarms from this channel have killed {channel_data.raptor_data['killed']} "
-                                        f"other velociraptors."
-                                 )
+            self.respond_to_user(command_data, f"Swarms from this channel have killed "
+                                               f"{channel_data.raptor_data['killed']} other velociraptors.")
 
             if channel_data.raptor_data['strength'] > 0:
-                self.respond_to_user(event, f"It looks like the training you've been doing has helped organize the "
-                                            f"local raptors! The area can now support "
-                                            f"{100 + channel_data.raptor_data['strength']} of them."
-                                     )
+                self.respond_to_user(command_data, f"It looks like the training you've been doing has helped organize "
+                                                   f"the local raptors! The area can now support "
+                                                   f"{100 + channel_data.raptor_data['strength']} of them.")

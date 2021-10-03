@@ -97,7 +97,7 @@ class ReactionHandler:
                     and interaction_controls.interact_with_user(event.source.nick, 'silly_reactions') \
                     and random.randrange(100) < channel.current_odds['eightball']:
                 channel.current_odds['eightball'] -= 1
-                channel.send_message(utilities.text_generator.get_string("[eightball]"))
+                channel.send_message(utilities.text_generator.get_string("[eightball_answer]"))
                 interacted = True
 
         if channel.chatter_settings['types']['groot'] \
@@ -108,7 +108,7 @@ class ReactionHandler:
                 # TODO: Vary punctuation, using a list
                 interacted = True
 
-        if channel.chatter_settings['types']['velociraptor'] \
+        if not interacted and channel.chatter_settings['types']['velociraptor'] \
                 and interaction_controls.interact_with_user(event.source.nick, 'velociraptor'):
             if "raptor" in event.arguments[0].lower() and random.randrange(100) < channel.current_odds['velociraptor']:
                 channel.current_odds['velociraptor'] -= 1
@@ -225,7 +225,7 @@ class ReactionHandler:
                     and interaction_controls.interact_with_user(event.source.nick, 'silly_reactions') \
                     and random.randrange(100) < channel.current_odds['eightball']:
                 channel.current_odds['eightball'] -= 1
-                channel.send_message(utilities.text_generator.get_string("[eightball]"))
+                channel.send_message(utilities.text_generator.get_string("[eightball_answer]"))
                 interacted = True
 
         if channel.chatter_settings['types']['groot'] \
@@ -236,7 +236,7 @@ class ReactionHandler:
                 # TODO: Vary punctuation, using a list
                 interacted = True
 
-        if channel.chatter_settings['types']['velociraptor'] \
+        if not interacted and channel.chatter_settings['types']['velociraptor'] \
                 and interaction_controls.interact_with_user(event.source.nick, 'velociraptor'):
             if "raptor" in event.arguments[0].lower():
                 core.raptor_ticker.sighting(connection, event)

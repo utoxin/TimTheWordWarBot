@@ -1,5 +1,3 @@
-from irc.client import Event
-
 from timmy import db_access
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
@@ -10,32 +8,33 @@ class RaptorCommands(BaseCommand):
     user_commands = {"raptor"}
     sub_commands = {"adopt", "release", "details", "rename", "reset"}
 
-    def process(self, event: Event, command_data: CommandData) -> None:
+    def process(self, command_data: CommandData) -> None:
         user_data = db_access.user_directory.find_user_data(command_data.issuer)
 
         if user_data is None or not user_data.registration_data_retrieved:
-            self.respond_to_user(event, "I'm sorry, you must be registered before you can work with raptors... (Please "
-                                        "ensure you are registered and identified with NickServ.)")
+            self.respond_to_user(command_data, "I'm sorry, you must be registered before you can work with raptors... "
+                                               "(Please ensure you are registered and identified with NickServ.)")
             return
 
         if command_data.arg_count < 1:
-            self.respond_to_user(event, "Raptors recently became fascinated by writing, so we created a raptor adoption"
-                                        " program. They will monitor your word sprints, and share the details with you "
-                                        "when asked. Don't worry, they probably won't eat your cat.")
-            self.respond_to_user(event, "Valid subcommands: adopt, release, details, rename, reset")
+            self.respond_to_user(command_data, "Raptors recently became fascinated by writing, so we created a raptor "
+                                               "adoption program. They will monitor your word sprints, and share the "
+                                               "details with you when asked. Don't worry, they probably won't eat your "
+                                               "cat.")
+            self.respond_to_user(command_data, "Valid subcommands: adopt, release, details, rename, reset")
             return
 
-        self.handle_subcommand(event, command_data)
+        self.handle_subcommand(command_data)
 
-    def _adopt_handler(self, event: Event, command_data: CommandData) -> None:
+    def _adopt_handler(self, command_data: CommandData) -> None:
         user_data = db_access.user_directory.find_user_data(command_data.issuer)
 
         if user_data.raptor_adopted:
-            self.respond_to_user(event, "Due to safety regulations, you may only adopt a single raptor.")
+            self.respond_to_user(command_data, "Due to safety regulations, you may only adopt a single raptor.")
             return
 
         if command_data.arg_count < 2:
-            self.respond_to_user(event, "You need to provide a name to adopt your new raptor.")
+            self.respond_to_user(command_data, "You need to provide a name to adopt your new raptor.")
             return
 
         user_data.raptor_adopted = True
@@ -44,20 +43,20 @@ class RaptorCommands(BaseCommand):
 
         user_data.save()
 
-        self.respond_to_user(event, f"Excellent! I've noted your raptor's name. Just so you know, their favorite "
-                                    f"color is {user_data.raptor_favorite_color}.")
+        self.respond_to_user(command_data, f"Excellent! I've noted your raptor's name. Just so you know, their favorite"
+                                           f" color is {user_data.raptor_favorite_color}.")
         return
 
-    def _release_handler(self, event: Event, command_data: CommandData) -> None:
+    def _release_handler(self, command_data: CommandData) -> None:
         user_data = db_access.user_directory.find_user_data(command_data.issuer)
 
         if not user_data.raptor_adopted:
-            self.respond_to_user(event, "I don't have any record of you having a raptor. Are you sure that isn't your "
-                                        "cat?")
+            self.respond_to_user(command_data, "I don't have any record of you having a raptor. Are you sure that isn't"
+                                               " your cat?")
             return
 
-        self.respond_to_user(event, f"I'll release {user_data.raptor_name} back into the wild. I'm sure they'll adjust "
-                                    f"well...")
+        self.respond_to_user(command_data, f"I'll release {user_data.raptor_name} back into the wild. I'm sure they'll "
+                                           f"adjust well...")
 
         user_data.raptor_adopted = False
         user_data.total_sprint_wordcount = 0
@@ -74,11 +73,12 @@ class RaptorCommands(BaseCommand):
 
         return
 
-    def _details_handler(self, event: Event, command_data: CommandData) -> None:
+    def _details_handler(self, command_data: CommandData) -> None:
         user_data = db_access.user_directory.find_user_data(command_data.issuer)
 
         if not user_data.raptor_adopted:
-            self.respond_to_user(event, "You haven't adopted a raptor, so they can't very well give you any details.")
+            self.respond_to_user(command_data, "You haven't adopted a raptor, so they can't very well give you any "
+                                               "details.")
             return
 
         wpm = 0
@@ -92,53 +92,57 @@ class RaptorCommands(BaseCommand):
                    f"minute. In their efforts to help you, {user_data.raptor_name} has stolen " \
                    f"{user_data.raptor_bunnies_stolen:n} plot bunnies from other channels."
 
-        self.respond_to_user(event, response)
+        self.respond_to_user(command_data, response)
         return
 
-    def _rename_handler(self, event: Event, command_data: CommandData) -> None:
+    def _rename_handler(self, command_data: CommandData) -> None:
         user_data = db_access.user_directory.find_user_data(command_data.issuer)
 
         if not user_data.raptor_adopted:
-            self.respond_to_user(event, "I don't have any record of you having a raptor. I can't rename your children.")
+            self.respond_to_user(command_data, "I don't have any record of you having a raptor. I can't rename your "
+                                               "children.")
             return
 
         if command_data.arg_count < 2:
-            self.respond_to_user(event, "You need to provide a new name.")
+            self.respond_to_user(command_data, "You need to provide a new name.")
             return
 
         user_data.raptor_name = " ".join(command_data.args[1:])
         user_data.save()
 
-        self.respond_to_user(event, f"Okay... your raptor should respond to the name {user_data.raptor_name} now. "
-                                    f"Don't do this too often or you'll confuse the poor thing.")
+        self.respond_to_user(command_data, f"Okay... your raptor should respond to the name {user_data.raptor_name} "
+                                           f"now. Don't do this too often or you'll confuse the poor thing.")
         return
 
-    def _reset_handler(self, event: Event, command_data: CommandData) -> None:
+    def _reset_handler(self, command_data: CommandData) -> None:
         if command_data.arg_count < 2 or command_data.args[1] not in ['stats', 'bunnies', 'color']:
-            self.respond_to_user(event, "Specify whether you wish to reset 'stats', 'bunnies', or favorite 'color'")
-            self.respond_to_user(event, "Example: !raptor reset stats")
+            self.respond_to_user(command_data, "Specify whether you wish to reset 'stats', 'bunnies', or favorite "
+                                               "'color'")
+            self.respond_to_user(command_data, "Example: !raptor reset stats")
             return
 
         user_data = db_access.user_directory.find_user_data(command_data.issuer)
 
         if command_data.args[1] == 'stats':
-            self.respond_to_user(event, f"{user_data.raptor_name} opens a fresh {user_data.raptor_favorite_color} "
-                                        f"notebook, and prepares to record more stats.")
+            self.respond_to_user(command_data, f"{user_data.raptor_name} opens a fresh "
+                                               f"{user_data.raptor_favorite_color} notebook, and prepares to record "
+                                               f"more stats.")
             user_data.total_sprint_wordcount = 0
             user_data.total_sprints = 0
             user_data.total_sprint_duration = 0
             user_data.recorded_wars = {}
 
         if command_data.args[1] == 'bunnies':
-            self.respond_to_user(event, f"{user_data.raptor_name} opens up the pens where they were holding "
-                                        f"{user_data.raptor_bunnies_stolen:n} plot bunnies and lets them run free.")
+            self.respond_to_user(command_data, f"{user_data.raptor_name} opens up the pens where they were holding "
+                                               f"{user_data.raptor_bunnies_stolen:n} plot bunnies and lets them run "
+                                               f"free.")
             user_data.raptor_bunnies_stolen = 0
             user_data.last_bunny_raid = None
 
         if command_data.args[1] == 'color':
             user_data.raptor_favorite_color = text_generator.get_string("[color]")
-            self.respond_to_user(event, f"{user_data.raptor_name} decides they much prefer "
-                                        f"{user_data.raptor_favorite_color}, and copy all of your stats into a new "
-                                        f"notebook.")
+            self.respond_to_user(command_data, f"{user_data.raptor_name} decides they much prefer "
+                                               f"{user_data.raptor_favorite_color}, and copy all of your stats into a "
+                                               f"new notebook.")
 
         user_data.save()

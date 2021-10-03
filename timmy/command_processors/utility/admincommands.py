@@ -1,8 +1,6 @@
 import sys
 import time
 
-from irc.client import Event
-
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
 from timmy.db_access import channel_db
@@ -11,24 +9,24 @@ from timmy.db_access import channel_db
 class AdminCommands(BaseCommand):
     admin_commands = {'shutdown', 'ignore', 'unignore', 'listignores', 'shout'}
 
-    def process(self, event: Event, command_data: CommandData):
+    def process(self, command_data: CommandData):
         from timmy.core import user_perms, bot_instance
 
         if command_data.command == 'shutdown':
             if command_data.issuer_data.global_admin:
-                self.respond_to_user(event, "Shutting down.........")
+                self.respond_to_user(command_data, "Shutting down.........")
                 bot_instance.connection.quit("Help, help! I'm being repressed!")
                 time.sleep(1)
                 sys.exit(0)
             else:
-                self.respond_to_user(event, "Only a global admin can do that!")
+                self.respond_to_user(command_data, "Only a global admin can do that!")
 
         elif command_data.command == 'shout':
             channel_groups = channel_db.get_channel_groups()
 
             if command_data.arg_count == 0:
-                self.respond_to_user(event, "Usage: $shout <message>")
-                self.respond_to_user(event, "USage: $shout @<channelgroup> <message>")
+                self.respond_to_user(command_data, "Usage: $shout <message>")
+                self.respond_to_user(command_data, "USage: $shout @<channelgroup> <message>")
                 return
             else:
                 destination = 'all'
@@ -36,7 +34,7 @@ class AdminCommands(BaseCommand):
 
                 if command_data.args[0].startswith("@"):
                     if command_data.arg_count == 1:
-                        self.respond_to_user(event, "USage: $shout @<channelgroup> <message>")
+                        self.respond_to_user(command_data, "USage: $shout @<channelgroup> <message>")
                         return
                     else:
                         destination = command_data.args[0][1:]
@@ -47,7 +45,7 @@ class AdminCommands(BaseCommand):
                     target_channels = bot_instance.channels
                 else:
                     if destination not in channel_groups:
-                        self.respond_to_user(event, "Channel group not found.")
+                        self.respond_to_user(command_data, "Channel group not found.")
                         return
                     else:
                         target_channels = channel_groups[destination]
@@ -57,21 +55,21 @@ class AdminCommands(BaseCommand):
 
         elif command_data.command == 'ignore':
             if command_data.arg_count != 1:
-                self.respond_to_user(event, "Usage: $ignore <user>")
+                self.respond_to_user(command_data, "Usage: $ignore <user>")
             else:
                 user_perms.add_ignore(command_data.args[0], 'admin')
-                self.respond_to_user(event, "User added to admin ignore list.")
+                self.respond_to_user(command_data, "User added to admin ignore list.")
 
         elif command_data.command == 'unignore':
             if command_data.arg_count != 1:
-                self.respond_to_user(event, "Usage: $unignore <user>")
+                self.respond_to_user(command_data, "Usage: $unignore <user>")
             else:
                 user_perms.remove_ignore(command_data.args[0], 'admin')
-                self.respond_to_user(event, "User removed from admin ignore list.")
+                self.respond_to_user(command_data, "User removed from admin ignore list.")
 
         elif command_data.command == 'listignores':
-            self.respond_to_user(event, f"There are {len(user_perms.admin_ignores)} users on the admin ignore list. "
-                                        f"Sending the list in private.")
+            self.respond_to_user(command_data, f"There are {len(user_perms.admin_ignores)} users on the admin ignore "
+                                               f"list. Sending the list in private.")
 
             bot_instance.connection.privmsg(command_data.issuer, "Ignored users: " +
                                             ", ".join(user_perms.admin_ignores.keys()))

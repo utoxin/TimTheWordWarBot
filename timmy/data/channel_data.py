@@ -1,3 +1,4 @@
+import copy
 import time
 from typing import Optional
 
@@ -124,14 +125,14 @@ class ChannelData(Channel):
         self.muzzled_until = None
         self.auto_muzzle = True
 
-        self.command_settings = ChannelData.command_defaults
-        self.chatter_settings = ChannelData.chatter_settings_defaults
-        self.current_odds = ChannelData.max_odds
+        self.command_settings = copy.deepcopy(ChannelData.command_defaults)
+        self.chatter_settings = copy.deepcopy(ChannelData.chatter_settings_defaults)
+        self.current_odds = copy.deepcopy(ChannelData.max_odds)
 
         self.twitter_accounts = {}
-        self.twitter_settings = ChannelData.twitter_settings_defaults
+        self.twitter_settings = copy.deepcopy(ChannelData.twitter_settings_defaults)
 
-        self.raptor_data = ChannelData.raptor_data_defaults
+        self.raptor_data = copy.deepcopy(ChannelData.raptor_data_defaults)
 
     def join_channel(self) -> None:
         db_access.channel_db.join_channel(self)
@@ -146,11 +147,11 @@ class ChannelData(Channel):
         db_access.channel_db.load_channel_data(self)
 
     def set_defaults(self) -> None:
-        self.current_odds = ChannelData.max_odds
-        self.twitter_settings = ChannelData.twitter_settings_defaults
-        self.chatter_settings = ChannelData.chatter_settings_defaults
-        self.command_settings = ChannelData.command_defaults
-        self.raptor_data = ChannelData.raptor_data_defaults
+        self.current_odds = copy.deepcopy(ChannelData.max_odds)
+        self.twitter_settings = copy.deepcopy(ChannelData.twitter_settings_defaults)
+        self.chatter_settings = copy.deepcopy(ChannelData.chatter_settings_defaults)
+        self.command_settings = copy.deepcopy(ChannelData.command_defaults)
+        self.raptor_data = copy.deepcopy(ChannelData.raptor_data_defaults)
 
     def amusement_chatter_available(self) -> bool:
         amusements = ['get', 'eightball', 'fridge', 'defenestrate', 'sing', 'foof', 'dance', 'summon', 'catch',

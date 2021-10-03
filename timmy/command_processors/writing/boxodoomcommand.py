@@ -1,8 +1,6 @@
 import math
 import re
 
-from irc.client import Event
-
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
 from timmy.db_access import boxodoom_db
@@ -11,11 +9,11 @@ from timmy.db_access import boxodoom_db
 class BoxODoomCommand(BaseCommand):
     user_commands = {"boxodoom"}
 
-    def process(self, event: Event, command_data: CommandData) -> None:
+    def process(self, command_data: CommandData) -> None:
         if command_data.arg_count != 2:
-            self.respond_to_user(event, "Usage: !boxodoom <difficulty> <duration in minutes>")
-            self.respond_to_user(event, "Difficulty Options: extraeasy, easy, average, hard, extreme, insane, "
-                                        "impossible, tadiera")
+            self.respond_to_user(command_data, "Usage: !boxodoom <difficulty> <duration in minutes>")
+            self.respond_to_user(command_data, "Difficulty Options: extraeasy, easy, average, hard, extreme, insane, "
+                                               "impossible, tadiera")
             return
         else:
             difficulty_pattern = re.compile(
@@ -36,14 +34,14 @@ class BoxODoomCommand(BaseCommand):
                     difficulty = command_data.args[1]
                     duration = float(command_data.args[0])
                 else:
-                    self.respond_to_user(event, "Difficulty must be one of: extraeasy, easy, average, hard, extreme, "
-                                                "insane, impossible, tadiera")
+                    self.respond_to_user(command_data, "Difficulty must be one of: extraeasy, easy, average, hard, "
+                                                       "extreme, insane, impossible, tadiera")
                     return
             except TypeError:
                 duration = 0
 
             if duration == 0:
-                self.respond_to_user(event, "Duration must be greater than 0.")
+                self.respond_to_user(command_data, "Duration must be greater than 0.")
                 return
 
             original_difficulty = difficulty
@@ -75,4 +73,4 @@ class BoxODoomCommand(BaseCommand):
 
             goal = round(duration * challenge * modifier)
 
-            self.respond_to_user(event, f"Your goal is: {goal:,} in {duration} minutes.")
+            self.respond_to_user(command_data, f"Your goal is: {goal:,} in {duration} minutes.")

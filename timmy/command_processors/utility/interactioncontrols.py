@@ -1,4 +1,3 @@
-from irc.client import Event
 from irc.dict import IRCDict
 
 from timmy import core, db_access
@@ -42,7 +41,7 @@ class InteractionControls(BaseCommand):
 
             self.initialized = True
 
-    def process(self, event: Event, command_data: CommandData) -> None:
+    def process(self, command_data: CommandData) -> None:
         self.init()
 
         if core.user_perms.is_registered(command_data.issuer):
@@ -53,12 +52,14 @@ class InteractionControls(BaseCommand):
                     data: dict = self.interaction_settings[target.authed_user]
 
                     if not command_data.in_pm:
-                        self.respond_to_user(event, "Sending status of interaction settings via private message.")
+                        self.respond_to_user(command_data, "Sending status of interaction settings via private "
+                                                           "message.")
 
+                    from timmy.core import bot_instance
                     for key, value in data.items():
-                        connection.privmsg(command_data.issuer, "{}: {}".format(key, value))
+                        bot_instance.connection.privmsg(command_data.issuer, "{}: {}".format(key, value))
                 else:
-                    self.respond_to_user(event, "No settings stored for that user.")
+                    self.respond_to_user(command_data, "No settings stored for that user.")
 
             elif command_data.arg_count == 3 and command_data.args[0].lower() == 'set':
                 if target.authed_user not in self.interaction_settings:
@@ -73,7 +74,7 @@ class InteractionControls(BaseCommand):
 
                     self._save_interaction_settings()
 
-                    self.respond_to_user(event, "All interaction flags updated.")
+                    self.respond_to_user(command_data, "All interaction flags updated.")
                 else:
                     if command_data.args[1] in self.interactions:
                         # We only need to store disabled interactions. Default is enabled.
@@ -84,15 +85,16 @@ class InteractionControls(BaseCommand):
 
                         self._save_interaction_settings()
 
-                        self.respond_to_user(event, "Interaction flag updated.")
+                        self.respond_to_user(command_data, "Interaction flag updated.")
                     else:
-                        self.respond_to_user(event, "I'm sorry, but I don't have a setting for {}".format(
-                                command_data.args[1]))
+                        self.respond_to_user(command_data, f"I'm sorry, but I don't have a setting for "
+                                                           f"{command_data.args[1]}")
             else:
-                self.respond_to_user(event, "Usage: !interactionflag list OR !interactionflag set <type> <0/1>")
-                self.respond_to_user(event, "Valid interaction types: all, {}".format(", ".join(self.interactions)))
+                self.respond_to_user(command_data, "Usage: !interactionflag list OR !interactionflag set <type> <0/1>")
+                self.respond_to_user(command_data, "Valid interaction types: all, {}"
+                                     .format(", ".join(self.interactions)))
         else:
-            self.respond_to_user(event, "You must be logged in with NickServ to use these commands.")
+            self.respond_to_user(command_data, "You must be logged in with NickServ to use these commands.")
 
     def interact_with_user(self, username: str, interaction: str) -> bool:
         self.init()

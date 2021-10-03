@@ -1,5 +1,3 @@
-from irc.client import Event
-
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
 from timmy.utilities import text_generator
@@ -15,18 +13,18 @@ class ChallengeCommands(BaseCommand):
         'challengefor': 'challenge'
     }
 
-    def process(self, event: Event, command_data: CommandData) -> None:
-        if self._execution_checks(event, command_data):
+    def process(self, command_data: CommandData) -> None:
+        if self._execution_checks(command_data):
             if command_data.command == 'challenge':
-                self.challenge_command(event, command_data.issuer)
+                self.challenge_command(command_data, command_data.issuer)
             elif command_data.command == 'challengefor':
                 if command_data.arg_count < 1:
-                    self.respond_to_user(event, f"Usage: !{command_data.command} <target>")
+                    self.respond_to_user(command_data, f"Usage: !{command_data.command} <target>")
                     return
 
-                self.challenge_command(event, command_data.args[0])
+                self.challenge_command(command_data, command_data.args[0])
 
-    def challenge_command(self, event: Event, recipient: str) -> None:
+    def challenge_command(self, command_data: CommandData, recipient: str) -> None:
         challenge = text_generator.get_string("[challenge_template]", {})
 
-        self.send_action(event, f"challenges {recipient}: {challenge}")
+        self.send_action(command_data, f"challenges {recipient}: {challenge}")

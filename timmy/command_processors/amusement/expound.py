@@ -1,7 +1,5 @@
 import random
 
-from irc.client import Event
-
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.channel_data import ChannelData
@@ -13,8 +11,8 @@ class ExpoundCommand(BaseCommand):
     interaction_checks = False
     allowed_in_pm = False
 
-    def process(self, event: Event, command_data: CommandData) -> None:
-        if self._execution_checks(event, command_data):
+    def process(self, command_data: CommandData) -> None:
+        if self._execution_checks(command_data):
             from timmy.utilities import markov_generator
 
             channel_data: ChannelData = core.bot_instance.channels[command_data.channel]

@@ -1,7 +1,5 @@
 import random
 
-from irc.client import Event
-
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
 from timmy.utilities import text_generator
@@ -12,11 +10,11 @@ class DanceCommand(BaseCommand):
     amusement_commands = {'dance'}
     interaction_checks = False
 
-    def process(self, event: Event, command_data: CommandData) -> None:
-        if self._execution_checks(event, command_data):
-            self.dance_command(event)
+    def process(self, command_data: CommandData) -> None:
+        if self._execution_checks(command_data):
+            self.dance_command(command_data)
 
-    def dance_command(self, event: Event) -> None:
+    def dance_command(self, command_data: CommandData) -> None:
         dance = text_generator.get_string('[dance]')
 
         random_check = random.randint(0, 100)
@@ -30,4 +28,4 @@ class DanceCommand(BaseCommand):
         else:
             message = f"flails about in a fashion that vaguely resembles the {dance}. Sort of."
 
-        self.send_action(event, message)
+        self.send_action(command_data, message)
