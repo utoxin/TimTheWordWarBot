@@ -21,6 +21,9 @@ class MarkovChains:
         if message_type == 'mutter':
             output = self.generate_markov('say', message)
 
+            if output == "":
+                return
+
             if len(output) > 350:
                 output = output[:350] + "..."
 
@@ -28,6 +31,9 @@ class MarkovChains:
 
         else:
             output = self.generate_markov(message_type, message)
+
+            if output == "":
+                return
 
             if len(output) > 400:
                 output = output[:400] + "..."
