@@ -91,7 +91,8 @@ class BaseCommand:
 
             target = random.choice(users)
 
-            command_data.args[0] = target
+            command_data.args = [target]
+            command_data.arg_count = 1
             command_data.arg_string = target
 
             self.process(command_data)
