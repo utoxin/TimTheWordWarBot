@@ -70,7 +70,7 @@ class IdleTicker:
 
     def amusement_tick(self, channel: ChannelData) -> None:
         amusement_commands = list(self.amusement_command_processors.keys())
-        selected_command = amusement_commands[random.randint(0, len(amusement_commands))]
+        selected_command = random.choice(amusement_commands)
 
         amusement_command = CommandData()
         amusement_command.type = CommandType.TIMMY_USER
