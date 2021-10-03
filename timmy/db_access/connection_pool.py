@@ -2,10 +2,12 @@ from typing import Optional
 
 import mysql.connector
 from mysql.connector import Error, pooling
-from mysql.connector.pooling import PooledMySQLConnection
+from mysql.connector.pooling import MySQLConnectionPool, PooledMySQLConnection
 
 
 class ConnectionPool:
+    __pool: Optional[MySQLConnectionPool]
+
     def __init__(self):
         self.__pool = None
 
@@ -30,3 +32,5 @@ class ConnectionPool:
 
         if connection.is_connected():
             return connection
+        else:
+            self.__pool.reset_session()
