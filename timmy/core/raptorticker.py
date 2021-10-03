@@ -190,8 +190,8 @@ class RaptorTicker:
 
     @staticmethod
     def _select_high_population_raptor_channel(exclude_channel: ChannelData) -> Optional[ChannelData]:
-        candidates = [v for (k, v) in core.bot_instance.channels.items() if v.chatter_settings['types']['raptor'] and
-                      v.raptor_data['active'] > 0 and not v.is_muzzled()]
+        candidates = [v for (k, v) in core.bot_instance.channels.items() if v.chatter_settings['types']['velociraptor']
+                      and v.raptor_data['active'] > 0 and not v.is_muzzled()]
         candidates.sort(key = lambda c: c.raptor_data['active'], reverse = True)
 
         candidates.remove(exclude_channel)
@@ -213,8 +213,8 @@ class RaptorTicker:
 
     @staticmethod
     def _select_low_population_raptor_channel(exclude_channel: ChannelData) -> Optional[ChannelData]:
-        candidates = [v for (k, v) in core.bot_instance.channels.items() if v.chatter_settings['types']['raptor'] and
-                      v.raptor_data['active'] > 0 and not v.is_muzzled()]
+        candidates = [v for (k, v) in core.bot_instance.channels.items() if v.chatter_settings['types']['velociraptor']
+                      and v.raptor_data['active'] > 0 and not v.is_muzzled()]
         candidates.sort(key = lambda c: c.raptor_data['active'])
 
         candidates.remove(exclude_channel)
@@ -237,8 +237,8 @@ class RaptorTicker:
 
     @staticmethod
     def _select_random_raptor_channel(exclude_channel: ChannelData) -> Optional[ChannelData]:
-        candidates = [v for (k, v) in core.bot_instance.channels.items() if v.chatter_settings['types']['raptor'] and
-                      v.raptor_data['active'] > 0 and not v.is_muzzled()]
+        candidates = [v for (k, v) in core.bot_instance.channels.items() if v.chatter_settings['types']['velociraptor']
+                      and v.raptor_data['active'] > 0 and not v.is_muzzled()]
 
         candidates.remove(exclude_channel)
 
