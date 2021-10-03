@@ -45,12 +45,12 @@ class CommandHandler:
             return True
 
         if command_data.type == CommandType.TIMMY_USER and command_data.command in self.user_command_processors:
-            self.user_command_processors[command_data.command].process(connection, event, command_data)
+            self.user_command_processors[command_data.command].process(event, command_data)
         elif command_data.type == CommandType.TIMMY_ADMIN and command_data.command in self.admin_command_processors:
-            self.admin_command_processors[command_data.command].process(connection, event, command_data)
+            self.admin_command_processors[command_data.command].process(event, command_data)
         elif command_data.type == CommandType.TIMMY_ADMIN and command_data.command.isnumeric():
             from timmy.command_processors.base_command import BaseCommand
-            BaseCommand.respond_to_user(connection, event, "Thank you for your donation to my pizza fund!")
+            BaseCommand.respond_to_user(event, "Thank you for your donation to my pizza fund!")
         else:
             self._unknown_command(connection, command_data)
 

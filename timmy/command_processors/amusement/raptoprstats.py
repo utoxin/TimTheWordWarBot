@@ -1,4 +1,4 @@
-from irc.client import Event, ServerConnection
+from irc.client import Event
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
@@ -15,28 +15,24 @@ class RaptorStatsCommand(BaseCommand):
         'raptorstats': 'velociraptor'
     }
 
-    def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
-        if self._execution_checks(connection, event, command_data):
+    def process(self, event: Event, command_data: CommandData) -> None:
+        if self._execution_checks(event, command_data):
             channel_data: ChannelData = core.bot_instance.channels[command_data.channel]
 
-            self.respond_to_user(
-                connection, event, f"There have been {channel_data.raptor_data['sightings']} velociraptor sightings "
-                                   f"in this channel, and {channel_data.raptor_data['active']} are still here."
-                )
+            self.respond_to_user(event, f"There have been {channel_data.raptor_data['sightings']} velociraptor "
+                                        f"sightings in this channel, and {channel_data.raptor_data['active']} are still"
+                                        f" here.")
 
-            self.respond_to_user(
-                connection, event, f"{channel_data.raptor_data['dead']} velociraptors in this channel have been killed "
-                                   f"by other swarms."
-                )
+            self.respond_to_user(event, f"{channel_data.raptor_data['dead']} velociraptors in this channel have been "
+                                        f"killed by other swarms."
+                                 )
 
-            self.respond_to_user(
-                connection, event, f"Swarms from this channel have killed {channel_data.raptor_data['killed']} other "
-                                   f"velociraptors."
-                )
+            self.respond_to_user(event, f"Swarms from this channel have killed {channel_data.raptor_data['killed']} "
+                                        f"other velociraptors."
+                                 )
 
             if channel_data.raptor_data['strength'] > 0:
-                self.respond_to_user(
-                    connection, event, f"It looks like the training you've been doing has helped organize the local "
-                                       f"raptors! The area can now support {100 + channel_data.raptor_data['strength']}"
-                                       f" of them."
-                    )
+                self.respond_to_user(event, f"It looks like the training you've been doing has helped organize the "
+                                            f"local raptors! The area can now support "
+                                            f"{100 + channel_data.raptor_data['strength']} of them."
+                                     )

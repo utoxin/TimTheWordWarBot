@@ -1,10 +1,9 @@
 import random
 import threading
 
-from irc.client import Event, ServerConnection
+from irc.client import Event
 
 from timmy.command_processors.base_command import BaseCommand
-from timmy.core import bot_instance
 from timmy.data.command_data import CommandData
 from timmy.utilities import text_generator
 
@@ -12,36 +11,22 @@ from timmy.utilities import text_generator
 class DefenestrateCommand(BaseCommand):
     user_commands = {'defenestrate'}
     amusement_commands = {'defenestrate'}
+    amusement_requires_target = True
 
-    def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
-        if self._execution_checks(connection, event, command_data):
+    def process(self, event: Event, command_data: CommandData) -> None:
+        if self._execution_checks(event, command_data):
             if command_data.arg_count > 0:
                 target = command_data.arg_string
             else:
                 target = command_data.issuer
 
-            self.defenestrate_command(connection, event, command_data, target)
+            self.defenestrate_command(event, command_data, target)
 
-    def process_amusement(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
-        users = bot_instance.channels[command_data.channel].users()
-
-        if len(users) == 0:
-            return
-
-        target = users[random.randint(0, len(users))]
-
-        command_data.args[0] = target
-        command_data.arg_string = target
-
-        self.process(connection, event, command_data)
-
-    def defenestrate_command(
-            self, connection: ServerConnection, event: Event, command_data: CommandData, target: str
-    ) -> None:
+    def defenestrate_command(self, event: Event, command_data: CommandData, target: str) -> None:
         initial_delay = random.random() + 0.5
         initial_message = text_generator.get_string("[defenestration_starter]")
 
-        x = threading.Timer(initial_delay, self._timer_thread, args = (connection, event, initial_message))
+        x = threading.Timer(initial_delay, self._timer_thread, args = (event, initial_message))
         x.start()
 
         random_choice = random.randint(0, 100)
@@ -60,8 +45,8 @@ class DefenestrateCommand(BaseCommand):
             )
 
         secondary_delay = initial_delay + 0.5 + random.random() * 2
-        y = threading.Timer(secondary_delay, self._timer_thread, args = (connection, event, second_message))
+        y = threading.Timer(secondary_delay, self._timer_thread, args = (event, second_message))
         y.start()
 
-    def _timer_thread(self, connection: ServerConnection, event: Event, message: str) -> None:
-        self.send_action(connection, event, message)
+    def _timer_thread(self, event: Event, message: str) -> None:
+        self.send_action(event, message)

@@ -15,6 +15,7 @@ class CommandData:
     arg_string: str
     prefix: str
     in_pm: bool
+    automatic: bool
 
     def __init__(self):
         self.type = CommandType.UNKNOWN
@@ -26,6 +27,7 @@ class CommandData:
         self.arg_string = ""
         self.prefix = ""
         self.in_pm = False
+        self.automatic = False
 
     def __str__(self):
         return "Command: %s, Issuer: %s, Args: %s".format(self.prefix + self.command, self.issuer, self.arg_string)

@@ -1,7 +1,7 @@
 import random
 import threading
 
-from irc.client import Event, ServerConnection
+from irc.client import Event
 
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
@@ -10,22 +10,21 @@ from timmy.utilities import text_generator
 
 class SummonCommand(BaseCommand):
     user_commands = {'summon', 'banish'}
+    amusement_commands = {'summon', 'banish'}
 
-    def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
-        if self._execution_checks(connection, event, command_data):
+    def process(self, event: Event, command_data: CommandData) -> None:
+        if self._execution_checks(event, command_data):
             if command_data.arg_count == 0:
                 target = text_generator.get_string("[deity]")
             else:
                 target = command_data.arg_string
 
             if command_data.command == 'summon':
-                self.summon_command(connection, event, command_data, target)
+                self.summon_command(event, command_data, target)
             else:
-                self.banish_command(connection, event, command_data, target)
+                self.banish_command(event, command_data, target)
 
-    def summon_command(
-            self, connection: ServerConnection, event: Event, command_data: CommandData, target: str
-    ) -> None:
+    def summon_command(self, event: Event, command_data: CommandData, target: str) -> None:
         initial_delay = random.random() + 0.5
         initial_message = text_generator.get_string("[summon_start]", {
             'target': target,
@@ -33,7 +32,7 @@ class SummonCommand(BaseCommand):
             'alternate': '[deity]'
         })
 
-        x = threading.Timer(initial_delay, self._timer_thread, args = (connection, event, initial_message))
+        x = threading.Timer(initial_delay, self._timer_thread, args = (event, initial_message))
         x.start()
 
         second_message = text_generator.get_string("[summon_end]", {
@@ -42,12 +41,10 @@ class SummonCommand(BaseCommand):
             'alternate': '[deity]'
         })
         secondary_delay = initial_delay + 0.5 + random.random() * 2
-        y = threading.Timer(secondary_delay, self._timer_thread, args = (connection, event, second_message))
+        y = threading.Timer(secondary_delay, self._timer_thread, args = (event, second_message))
         y.start()
 
-    def banish_command(
-            self, connection: ServerConnection, event: Event, command_data: CommandData, target: str
-    ) -> None:
+    def banish_command(self, event: Event, command_data: CommandData, target: str) -> None:
         initial_delay = random.random() + 0.5
         initial_message = text_generator.get_string("[banish_start]", {
             'target': target,
@@ -55,7 +52,7 @@ class SummonCommand(BaseCommand):
             'alternate': '[deity]'
         })
 
-        x = threading.Timer(initial_delay, self._timer_thread, args = (connection, event, initial_message))
+        x = threading.Timer(initial_delay, self._timer_thread, args = (event, initial_message))
         x.start()
 
         second_message = text_generator.get_string("[banish_end]", {
@@ -64,8 +61,8 @@ class SummonCommand(BaseCommand):
             'alternate': '[deity]'
         })
         secondary_delay = initial_delay + 0.5 + random.random() * 2
-        y = threading.Timer(secondary_delay, self._timer_thread, args = (connection, event, second_message))
+        y = threading.Timer(secondary_delay, self._timer_thread, args = (event, second_message))
         y.start()
 
-    def _timer_thread(self, connection: ServerConnection, event: Event, message: str) -> None:
-        self.send_action(connection, event, message)
+    def _timer_thread(self, event: Event, message: str) -> None:
+        self.send_action(event, message)

@@ -1,7 +1,8 @@
-from irc.client import Event, ServerConnection
+import random
+
+from irc.client import Event
 
 from timmy import core
-from timmy.core.idleticker import idle_timer
 from timmy.data.channel_data import ChannelData
 from timmy.data.command_data import CommandData
 from timmy.event_handlers import CommandHandler
@@ -16,29 +17,48 @@ class BaseCommand:
     allowed_in_pm = True
     interaction_checks = True
     permitted_checks = True
+    amusement_requires_target = False
 
     command_flag_map = {}
 
     @staticmethod
-    def respond_to_user(connection: ServerConnection, event: Event, message: str) -> None:
+    def respond_to_user(event: Event, message: str) -> None:
+        if message == '':
+            # TODO: Add logging to this, to track issues?
+            return
+
+        from timmy.core import bot_instance
+
         if event.type == "privmsg":
-            connection.privmsg(event.source.nick, message)
+            bot_instance.connection.privmsg(event.source.nick, message)
         else:
-            connection.privmsg(event.target, event.source.nick + ": " + message)
+            bot_instance.connection.privmsg(event.target, event.source.nick + ": " + message)
 
     @staticmethod
-    def send_message(connection: ServerConnection, event: Event, message: str) -> None:
+    def send_message(event: Event, message: str) -> None:
+        if message == '':
+            # TODO: Add logging to this, to track issues?
+            return
+
+        from timmy.core import bot_instance
+
         if event.type == "privmsg":
-            connection.privmsg(event.source.nick, message)
+            bot_instance.connection.privmsg(event.source.nick, message)
         else:
-            connection.privmsg(event.target, message)
+            bot_instance.connection.privmsg(event.target, message)
 
     @staticmethod
-    def send_action(connection: ServerConnection, event: Event, message: str) -> None:
+    def send_action(event: Event, message: str) -> None:
+        if message == '':
+            # TODO: Add logging to this, to track issues?
+            return
+
+        from timmy.core import bot_instance
+
         if event.type == "privmsg":
-            connection.action(event.source.nick, message)
+            bot_instance.connection.action(event.source.nick, message)
         else:
-            connection.action(event.target, message)
+            bot_instance.connection.action(event.target, message)
 
     def register_commands(self, command_handler: CommandHandler) -> None:
         for command in self.user_commands:
@@ -47,27 +67,43 @@ class BaseCommand:
         for command in self.admin_commands:
             command_handler.admin_command_processors[command] = self
 
+        from timmy.core import idle_ticker
         for command in self.amusement_commands:
-            idle_timer.amusement_command_processors[command] = self
+            idle_ticker.amusement_command_processors[command] = self
 
-    def handle_subcommand(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
+    def handle_subcommand(self, event: Event, command_data: CommandData) -> None:
         if command_data.arg_count < 1 or command_data.args[0] not in self.sub_commands:
-            self.respond_to_user(connection, event, "Valid subcommands: " + ", ".join(self.sub_commands))
+            self.respond_to_user(event, "Valid subcommands: " + ", ".join(self.sub_commands))
             return
 
         subcommand_handler = getattr(self, '_' + command_data.args[0] + '_handler')
-        subcommand_handler(connection, event, command_data)
+        subcommand_handler(event, command_data)
 
-    def process(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
+    def process(self, event: Event, command_data: CommandData) -> None:
         return
 
-    def process_amusement(self, connection: ServerConnection, event: Event, command_data: CommandData) -> None:
-        self.process(connection, event, command_data)
+    def process_amusement(self, event: Event, command_data: CommandData) -> None:
+        if self.amusement_requires_target:
+            from timmy.core import bot_instance
 
-    def _execution_checks(self, connection: ServerConnection, event: Event, command_data: CommandData) -> bool:
+            users = bot_instance.channels[command_data.channel].users()
+
+            if len(users) == 0:
+                return
+
+            target = users[random.randint(0, len(users))]
+
+            command_data.args[0] = target
+            command_data.arg_string = target
+
+            self.process(event, command_data)
+        else:
+            self.process(event, command_data)
+
+    def _execution_checks(self, event: Event, command_data: CommandData) -> bool:
         if command_data.in_pm:
             if not self.allowed_in_pm:
-                self.respond_to_user(connection, event, "You can't do that in a private message.")
+                self.respond_to_user(event, "You can't do that in a private message.")
                 return False
         else:
             channel_data: ChannelData = core.bot_instance.channels[command_data.channel]
@@ -77,12 +113,12 @@ class BaseCommand:
                 flag_name = self.command_flag_map[command_data.command]
 
             if not channel_data.command_settings[flag_name]:
-                self.respond_to_user(connection, event, "I'm sorry, I don't do that here.")
+                command_data.automatic or self.respond_to_user(event, "I'm sorry, I don't do that here.")
                 return False
 
-        return self._interaction_flag_check(connection, event, command_data)
+        return self._interaction_flag_check(event, command_data)
 
-    def _interaction_flag_check(self, connection: ServerConnection, event: Event, command_data: CommandData) -> bool:
+    def _interaction_flag_check(self, event: Event, command_data: CommandData) -> bool:
         if not self.interaction_checks:
             return True
 
@@ -98,11 +134,13 @@ class BaseCommand:
             if interaction_controls.interact_with_user(target, flag_name):
                 return True
             else:
-                self.respond_to_user(connection, event, "I'm sorry, it's been requested that I not do that.")
+                command_data.automatic or self.respond_to_user(event, "I'm sorry, it's been requested that I not do "
+                                                                      "that.")
                 return False
         else:
             if interaction_controls.interact_with_user(command_data.issuer, command_data.command):
                 return True
             else:
-                self.respond_to_user(connection, event, "I'm sorry, it's been requested that I not do that.")
+                command_data.automatic or self.respond_to_user(event, "I'm sorry, it's been requested that I not do "
+                                                                      "that.")
                 return False
