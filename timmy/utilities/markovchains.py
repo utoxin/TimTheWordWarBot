@@ -3,7 +3,6 @@ import re
 
 from timmy import db_access, utilities
 from timmy.data.channel_data import ChannelData
-from timmy.utilities import irc_logger
 
 
 class MarkovChains:
@@ -119,6 +118,7 @@ class MarkovChains:
             procedure = 'generateMarkovNovel'
             min_length = 150
         else:
+            from timmy.utilities import irc_logger
             irc_logger.log_message(f"Markov Generation Failed With type {message_type}")
             conn.close()
             return ''
