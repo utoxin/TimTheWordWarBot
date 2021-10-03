@@ -42,7 +42,7 @@ class ChainStoryDb:
         connection.close()
 
     def word_count(self) -> int:
-        select_statement = "SELECT SUM( LENGTH( STRING ) - LENGTH( REPLACE( STRING ,  ' ',  '' ) ) +1 ) " \
+        select_statement = "SELECT IFNULL(SUM( LENGTH( STRING ) - LENGTH( REPLACE( STRING ,  ' ',  '' ) ) +1 ), 0) " \
                            "AS word_count FROM story WHERE YEAR(`created`) = YEAR(NOW())"
 
         connection = self.db.get_connection()
