@@ -125,7 +125,7 @@ class ReactionHandler:
                 interacted = True
 
         if not interacted:
-            self._interact(connection, event, 'emote')
+            self._interact(event, 'emote')
 
         utilities.markov_processor.store_line("emote", event.arguments[0])
 
@@ -252,7 +252,7 @@ class ReactionHandler:
                 interacted = True
 
         if not interacted:
-            self._interact(connection, event, 'say')
+            self._interact(event, 'say')
 
         utilities.markov_processor.store_line("say", event.arguments[0])
 
@@ -296,7 +296,7 @@ class ReactionHandler:
         return 'A+'
 
     @staticmethod
-    def _interact(connection: ServerConnection, event: Event, message_type: str) -> None:
+    def _interact(event: Event, message_type: str) -> None:
         channel: ChannelData = core.bot_instance.channels[event.target]
 
         if channel.chatter_settings['random_level'] <= 0:
@@ -330,5 +330,6 @@ class ReactionHandler:
                 utilities.markov_generator.random_action(channel, message_type, event.arguments[0])
 
             elif action == 'amusement':
-                # TODO: Connection to amusement actions
+                from timmy.core import idle_ticker
+                idle_ticker.amusement_tick(channel)
                 pass
