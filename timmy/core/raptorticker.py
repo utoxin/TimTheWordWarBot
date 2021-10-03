@@ -163,23 +163,15 @@ class RaptorTicker:
             source_channel.record_leaving_raptors(colony_count)
 
             core.bot_instance.connection.privmsg(
-                    source_channel.name, "Apparently feeling crowded, {} of the "
-                                         "velociraptors head off in search of new "
-                                         "territory. After searching, they settle in "
-                                         "{}.".format(
-                            colony_count,
-                            colonize_channel.name
-                    )
+                    source_channel.name, f"Apparently feeling crowded, {colony_count} of the velociraptors head off in "
+                                         f"search of new territory. After searching, they settle in "
+                                         f"{colonize_channel.name}."
             )
 
             core.bot_instance.connection.privmsg(
-                    colonize_channel.name, "A swarm of {} velociraptors appears from the "
-                                           "direction of {}. The local raptors are "
-                                           "nervous, but the strangers simply want to "
-                                           "join the colony.".format(
-                            colony_count,
-                            source_channel.name
-                    )
+                    colonize_channel.name, f"A swarm of {colony_count} velociraptors appears from the direction of "
+                                           f"{source_channel.name}. The local raptors are nervous, but the strangers "
+                                           f"simply want to join the colony."
             )
 
     def _hatch_raptors(self, source_channel: ChannelData) -> None:
@@ -198,8 +190,8 @@ class RaptorTicker:
 
     @staticmethod
     def _select_high_population_raptor_channel(exclude_channel: ChannelData) -> Optional[ChannelData]:
-        candidates = [c for c in core.bot_instance.channels if c.chatter_settings['types']['raptor'] and
-                      c.raptor_data['active'] > 0 and not c.is_muzzled()]
+        candidates = [v for (k, v) in core.bot_instance.channels if v.chatter_settings['types']['raptor'] and
+                      v.raptor_data['active'] > 0 and not v.is_muzzled()]
         candidates.sort(key = lambda c: c.raptor_data['active'], reverse = True)
 
         candidates.remove(exclude_channel)
@@ -221,8 +213,8 @@ class RaptorTicker:
 
     @staticmethod
     def _select_low_population_raptor_channel(exclude_channel: ChannelData) -> Optional[ChannelData]:
-        candidates = [c for c in core.bot_instance.channels if c.chatter_settings['types']['raptor'] and
-                      c.raptor_data['active'] > 0 and not c.is_muzzled()]
+        candidates = [v for (k, v) in core.bot_instance.channels if v.chatter_settings['types']['raptor'] and
+                      v.raptor_data['active'] > 0 and not v.is_muzzled()]
         candidates.sort(key = lambda c: c.raptor_data['active'])
 
         candidates.remove(exclude_channel)
@@ -245,8 +237,8 @@ class RaptorTicker:
 
     @staticmethod
     def _select_random_raptor_channel(exclude_channel: ChannelData) -> Optional[ChannelData]:
-        candidates = [c for c in core.bot_instance.channels if c.chatter_settings['types']['raptor'] and
-                      c.raptor_data['active'] > 0 and not c.is_muzzled()]
+        candidates = [v for (k, v) in core.bot_instance.channels if v.chatter_settings['types']['raptor'] and
+                      v.raptor_data['active'] > 0 and not v.is_muzzled()]
 
         candidates.remove(exclude_channel)
 
