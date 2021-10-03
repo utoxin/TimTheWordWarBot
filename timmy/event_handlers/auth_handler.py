@@ -9,6 +9,7 @@ class AuthHandler:
         self.auth_type = ""
         self.auth_data = ""
         self.post_identify = ""
+        self.post_auth_sent = False
 
     def init(self) -> None:
         self.auth_on_welcome = settings.get_setting('auth_on_welcome') == "1"
@@ -25,6 +26,7 @@ class AuthHandler:
             connection.privmsg('nickserv', 'IDENTIFY ' + self.auth_data)
 
     def on_umode(self, connection: ServerConnection, event: Event) -> None:
-        if event.target == connection.nickname:
+        if event.target == connection.nickname and not self.post_auth_sent:
+            self.post_auth_sent = True
             if self.post_identify != '':
                 connection.send_raw(self.post_identify)
