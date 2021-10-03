@@ -129,7 +129,7 @@ class ChannelData(Channel):
         self.chatter_settings = copy.deepcopy(ChannelData.chatter_settings_defaults)
         self.current_odds = copy.deepcopy(ChannelData.max_odds)
 
-        self.twitter_accounts = {}
+        self.twitter_accounts = []
         self.twitter_settings = copy.deepcopy(ChannelData.twitter_settings_defaults)
 
         self.raptor_data = copy.deepcopy(ChannelData.raptor_data_defaults)
