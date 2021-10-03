@@ -1,3 +1,5 @@
+import threading
+
 from irc.client import Event, ServerConnection
 
 from timmy import core, db_access, utilities
@@ -12,8 +14,23 @@ class PostAuthHandler:
             self.channel_join_started = True
             channels = db_access.channel_db.get_channel_list()
 
-            for channel in channels:
-                connection.join(channel)
+            delay = 0
+            delay_step = 10 / len(channels)
 
-            core.init_core_tickers()
-            utilities.init_utility_tickers()
+            for channel in channels:
+                delay += delay_step
+                y = threading.Timer(delay, self._timer_thread, args = [channel])
+                y.start()
+
+            y = threading.Timer(delay + delay_step, self._timer_thread_two)
+            y.start()
+
+    @staticmethod
+    def _timer_thread(channel: str) -> None:
+        from timmy.core import bot_instance
+        bot_instance.connection.join(channel)
+
+    @staticmethod
+    def _timer_thread_two() -> None:
+        core.init_core_tickers()
+        utilities.init_utility_tickers()
