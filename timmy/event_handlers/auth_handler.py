@@ -24,6 +24,7 @@ class AuthHandler:
         if self.auth_type == 'nickserv':
             connection.privmsg('nickserv', 'IDENTIFY ' + self.auth_data)
 
-        if self.post_identify != '':
-            connection.send_raw(self.post_identify)
-
+    def on_umode(self, connection: ServerConnection, event: Event) -> None:
+        if event.target == connection.nickname:
+            if self.post_identify != '':
+                connection.send_raw(self.post_identify)

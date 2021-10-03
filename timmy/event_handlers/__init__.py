@@ -46,6 +46,7 @@ def init_event_handlers():
     bot_instance.handled_callbacks["privmsg"].append(command_handler_instance)
     bot_instance.handled_callbacks['privmsg'].append(reaction_handler_instance)
 
+    bot_instance.handled_callbacks["umode"].append(auth_handler_instance)
     bot_instance.handled_callbacks["umode"].append(postauth_handler_instance)
 
     bot_instance.handled_callbacks["welcome"].append(auth_handler_instance)
