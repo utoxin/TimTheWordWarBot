@@ -84,12 +84,12 @@ class BaseCommand:
         if self.amusement_requires_target:
             from timmy.core import bot_instance
 
-            users = bot_instance.channels[command_data.channel].users()
+            users = list(bot_instance.channels[command_data.channel].users())
 
             if len(users) == 0:
                 return
 
-            target = users[random.randint(0, len(users) - 1)]
+            target = random.choice(users)
 
             command_data.args[0] = target
             command_data.arg_string = target
