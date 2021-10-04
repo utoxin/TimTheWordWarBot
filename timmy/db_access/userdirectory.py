@@ -70,7 +70,7 @@ class UserDirectory:
     def cleanup_temp_list(self) -> None:
         local_copy = copy.deepcopy(self.temp_directory)
 
-        for nick, user_data in local_copy:
+        for nick, user_data in local_copy.items():
             time_difference = datetime.now() - user_data.last_whois_check
             if not user_data.registration_data_retrieved and time_difference > timedelta(hours = 1):
                 # TODO: Add irc-logging call :: "Removing stale temp user: NICK"
