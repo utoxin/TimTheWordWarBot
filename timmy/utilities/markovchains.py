@@ -110,7 +110,7 @@ class MarkovChains:
         min_length = 1
         sentence = ""
 
-        if message_type == 'action':
+        if message_type == 'action' or message_type == 'emote':
             procedure = 'generateMarkovEmote'
         elif message_type == 'say':
             procedure = 'generateMarkovSay'
