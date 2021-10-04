@@ -1,3 +1,4 @@
+import copy
 import uuid
 from datetime import datetime, timedelta
 from typing import Optional
@@ -67,7 +68,9 @@ class UserDirectory:
         core.bot_instance.connection.whois(nick)
 
     def cleanup_temp_list(self) -> None:
-        for nick, user_data in self.temp_directory.items():
+        local_copy = copy.deepcopy(self.temp_directory)
+
+        for nick, user_data in local_copy:
             time_difference = datetime.now() - user_data.last_whois_check
             if not user_data.registration_data_retrieved and time_difference > timedelta(hours = 1):
                 # TODO: Add irc-logging call :: "Removing stale temp user: NICK"
