@@ -13,6 +13,9 @@ class ChallengeCommands(BaseCommand):
         'challengefor': 'challenge'
     }
 
+    help_topics = [('user', 'challenge commands', '!challenge', 'Request a challenge.'),
+                   ('user', 'challenge commands', '!challengefor <name>', 'Challenge someone else.')]
+
     def process(self, command_data: CommandData) -> None:
         if self._execution_checks(command_data):
             if command_data.command == 'challenge':

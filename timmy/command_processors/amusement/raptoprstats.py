@@ -13,6 +13,8 @@ class RaptorStatsCommand(BaseCommand):
         'raptorstats': 'velociraptor'
     }
 
+    help_topics = [('user', 'amusement commands', '!raptorstats', 'Details of this channel\'s raptor activity.')]
+
     def process(self, command_data: CommandData) -> None:
         if self._execution_checks(command_data):
             channel_data: ChannelData = core.bot_instance.channels[command_data.channel]

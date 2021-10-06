@@ -8,6 +8,9 @@ class DiceCommand(BaseCommand):
     user_commands = {'roll'}
     interaction_checks = False
 
+    help_topics = [('user', 'amusement commands', '!roll <dice string>', 'Generates a random number, as if rolling '
+                                                                         'the specified dice. Example: !roll 2d6')]
+
     def process(self, command_data: CommandData) -> None:
         if self._execution_checks(command_data):
             if command_data.arg_count > 0:

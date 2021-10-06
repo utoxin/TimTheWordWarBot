@@ -15,7 +15,7 @@ class PostAuthHandler:
             channels = db_access.channel_db.get_channel_list()
 
             delay = 0
-            delay_step = 30 / len(channels)
+            delay_step = 0.2
 
             for channel in channels:
                 delay += delay_step

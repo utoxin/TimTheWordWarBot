@@ -18,6 +18,10 @@ class GetCommands(BaseCommand):
         'getfrom': 'get'
     }
 
+    help_topics = [('user', 'amusement commands', '!get [<anything>]', 'I will fetch you what you ask for. Maybe.'),
+                   ('user', 'amusement commands', '!getfor <someone> [<anything>]', 'I will get something for someone '
+                                                                                    'else.')]
+
     def process(self, command_data: CommandData) -> None:
         if self._execution_checks(command_data):
             if (command_data.command == 'getfor' or command_data.command == 'getfrom') and command_data.arg_count < 1:

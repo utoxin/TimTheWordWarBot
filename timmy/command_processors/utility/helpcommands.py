@@ -37,6 +37,9 @@ class HelpCommands(BaseCommand):
                                    "channel.")
 
     def handle_admin_help(self, command_data: CommandData) -> None:
+        self.send_action(command_data, f"whispers something to {command_data.issuer}. (Check for a new window or tab "
+                                       f"with the help text.)")
+
         self.__send_all_topics(command_data, 'admin')
 
     def __send_all_topics(self, command_data: CommandData, user_type: str) -> None:

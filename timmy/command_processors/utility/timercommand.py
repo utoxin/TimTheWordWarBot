@@ -7,6 +7,8 @@ from timmy.data.command_data import CommandData
 class TimerCommand(BaseCommand):
     user_commands = {'eggtimer', 'timer'}
 
+    help_topics = [('user', 'general commands', '!timer <time>', 'I will send you a message after <time> minutes.')]
+
     def process(self, command_data: CommandData) -> None:
         duration = 15
         if command_data.arg_count > 0:

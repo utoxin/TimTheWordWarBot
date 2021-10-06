@@ -336,7 +336,7 @@ class MarkovProcessor:
                 break
 
         if self._is_url(word) or self._is_valid_email(word):
-            word = 'https://amzn.to/2wBOVPV'
+            word = 'https://amzn.to/3BwoMyx'
 
         if re.match("^\\(?(\\d{3})\\)?[- ]?(\\d{2,3})[- ]?(\\d{4})$", word):
             word = '867-5309'

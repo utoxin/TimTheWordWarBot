@@ -10,6 +10,9 @@ class EightballCommand(BaseCommand):
     amusement_commands = {'eightball'}
     interaction_checks = False
 
+    help_topics = [('user', 'amusement commands', '!eightball <question>', 'I can tell you (with some degree of '
+                                                                           'inaccuracy) how likely something is.')]
+
     def process(self, command_data: CommandData) -> None:
         if self._execution_checks(command_data):
             self.eightball_command(command_data)

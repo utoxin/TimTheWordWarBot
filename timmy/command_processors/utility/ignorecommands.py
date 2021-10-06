@@ -5,6 +5,12 @@ from timmy.data.command_data import CommandData
 class IgnoreCommands(BaseCommand):
     user_commands = {'ignore', 'unignore'}
 
+    help_topics = [('user', 'general commands', '!ignore <hard/soft>',
+                   'Make Timmy ignore you. Soft lets you keep using commands. Hard is EVERYTHING except !unignore.'),
+                   ('user', 'general commands', '!unignore',
+                    'Turns off !ignore. Note: If an admin imposed the ignore, this will have no effect.'),
+                   ]
+
     def process(self, command_data: CommandData):
         from timmy.core import user_perms
 
