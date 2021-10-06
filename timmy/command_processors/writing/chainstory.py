@@ -11,6 +11,13 @@ class ChainStoryCommands(BaseCommand):
 
     interaction_checks = False
 
+    help_topics = [('user', 'chain story', '!chain info', 'General info about the current status of my novel.'),
+                   ('user', 'chain story', '!chain last', 'The last paragraph of my novel, so you have something to '
+                                                          'base the next bit on.'),
+                   ('user', 'chain story', '!chain new <paragraph>', 'Provide the next paragraph of my great novel!'),
+                   ('user', 'chain story', '!chain count', 'Get the current wordcount and contributor count for my '
+                                                           'novel.')]
+
     command_flag_map = {
         'chainstory': 'chainstory',
         'chainlast':  'chainstory',
@@ -104,7 +111,7 @@ class ChainStoryCommands(BaseCommand):
                                            f"see!")
 
         self.respond_to_user(command_data, "You can read an excerpt in my profile here: "
-                                           "https://www.nanowrimo.org/en/participants/timmybot")
+                                           "https://nanowrimo.org/participants/timmybot")
         return
 
     def _count_handler(self, command_data: CommandData) -> None:

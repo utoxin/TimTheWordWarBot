@@ -14,6 +14,15 @@ class WarCommands(BaseCommand):
     user_commands = {"war", "endwar", "starwar", "startwar", "chainwar", "listall", "listwars", "joinwar", "leavewar"}
     sub_commands = {"start", "cancel", "join", "leave", "report", "list"}
 
+    help_topics = [('user', 'word war commands', '!war start', 'Creates a new war.'),
+                   ('user', 'word war commands', '!war cancel', 'Cancels an existing ware.'),
+                   ('user', 'word war commands', '!war join [<war id>]', 'Signs up for notifications about a war. '
+                                                                         'Defaults to most recently created.'),
+                   ('user', 'word war commands', '!war leave [<war id>]', 'Cancel notifications for a war. Defaults '
+                                                                          'to most recently created.'),
+                   ('user', 'word war commands', '!war report', 'Report your wordcount for a war.'),
+                   ('user', 'word war commands', '!war list [all]', 'List wars in current channel or globally.')]
+
     def process(self, command_data: CommandData) -> None:
         if command_data.command == 'endwar':
             self.respond_to_user(command_data, "The syntax for war-related commands has changed. Try '!war cancel' in "

@@ -9,6 +9,11 @@ from timmy.db_access import channel_db
 class AdminCommands(BaseCommand):
     admin_commands = {'shutdown', 'ignore', 'unignore', 'listignores', 'shout'}
 
+    help_topics = [('admin', 'core admin commands', '$ignore <username>', 'Places user on the admin-ignore list. They '
+                                                                          'can not remove themselves from that list.'),
+                   ('admin', 'core admin commands', '$unignore <username>', 'Remove user from all ignore lists.'),
+                   ('admin', 'core admin commands', '$listignores', 'Lists all admin ignores.')]
+
     def process(self, command_data: CommandData):
         from timmy.core import user_perms, bot_instance
 

@@ -6,8 +6,17 @@ from timmy.data.command_data import CommandData
 
 
 class ChannelCommands(BaseCommand):
-    admin_commands = {'automuzzlewars', 'muzzle', 'chatterlevel', 'chatterflag', 'commandflag',
-                      'twitterrelay', 'twitterbucket', 'part', 'unmuzzle'}
+    admin_commands = ['automuzzlewars', 'muzzle', 'chatterlevel', 'chatterflag', 'commandflag',
+                      'twitterrelay', 'twitterbucket', 'part', 'unmuzzle']
+
+    help_topics = [('admin', 'channel commands', '$muzzle [#channel] <minutes>', 'Turns on the muzzle flag '
+                                                                                 'temporarily. -1 is indefinite.'),
+                   ('admin', 'channel commands', '$automuzzlewars [#channel] <0/1>', 'Whether to auto-muzzle during '
+                                                                                     'word wars.'),
+                   ('admin', 'channel commands', '$chatterlevel', 'Control the chatter level for Timmy.'),
+                   ('admin', 'channel commands', '$chatterflag', 'Control what chatter types Timmy will use.'),
+                   ('admin', 'channel commands', '$commandflag', 'Control what commands can be used in the channel.'),
+                   ('admin', 'channel commands', '$part', 'Force Timmy to leave this channel.')]
 
     def process(self, command_data: CommandData) -> None:
         from timmy.core import user_perms

@@ -8,6 +8,16 @@ class RaptorCommands(BaseCommand):
     user_commands = {"raptor"}
     sub_commands = {"adopt", "release", "details", "rename", "reset"}
 
+    help_topics = [('user', 'raptor commands', '!raptor adopt <name>', 'Adopts a new raptor, and names it.'),
+                   ('user', 'raptor commands', '!raptor rename <name>', 'Renames your raptor.'),
+                   ('user', 'raptor commands', '!raptor release', 'Releases your raptor back into the wild. (Resets '
+                                                                  'all your stats.'),
+                   ('user', 'raptor commands', '!raptor details', 'See the stats your raptor has kept track of.'),
+                   ('user', 'raptor commands', '!war report <wordcount>', 'Use after a word war to have your raptor '
+                                                                          'record your wordcount stats.'),
+                   ('user', 'raptor commands', '!raptor reset <stats/bunnies/color>', 'Reset individual parts of your '
+                                                                                      'raptor\'s details.')]
+
     def process(self, command_data: CommandData) -> None:
         user_data = db_access.user_directory.find_user_data(command_data.issuer)
 

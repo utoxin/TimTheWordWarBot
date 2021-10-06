@@ -21,6 +21,7 @@ from .amusement.woot import WootCommand
 from .utility.admincommands import AdminCommands
 from .utility.channelcommands import ChannelCommands
 from .utility.channelgroupcommands import ChannelGroupCommands
+from .utility.creditscommand import CreditsCommand
 from .utility.helpcommands import HelpCommands
 from .utility.ignorecommands import IgnoreCommands
 from .utility.interactioncontrols import InteractionControls
@@ -130,3 +131,6 @@ def register_processors():
 
     chainstory = ChainStoryCommands()
     chainstory.register_commands(event_handlers.command_handler_instance)
+
+    creditscommand = CreditsCommand()
+    creditscommand.register_commands(event_handlers.command_handler_instance)
