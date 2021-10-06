@@ -1,7 +1,7 @@
 -- Add bad pairs
 -- depends: 20210729_01_dGwId-init-markov-words
 
-INSERT INTO `alternate_pairs` (`id`, `word_one`, `word_two`)
+INSERT IGNORE INTO `alternate_pairs` (`id`, `word_one`, `word_two`)
 VALUES (31, 'aww', 'noodles'),
        (2, 'banana', 'shenanigans'),
        (3, 'barbara', 'streisand'),

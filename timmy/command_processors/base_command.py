@@ -1,5 +1,7 @@
 import random
 
+from irc.dict import IRCDict
+
 from timmy import core
 from timmy.data.channel_data import ChannelData
 from timmy.data.command_data import CommandData
@@ -7,17 +9,19 @@ from timmy.event_handlers import CommandHandler
 
 
 class BaseCommand:
-    user_commands = {}
-    admin_commands = {}
-    sub_commands = {}
-    amusement_commands = {}
+    user_commands = []
+    admin_commands = []
+    sub_commands = []
+    amusement_commands = []
 
     allowed_in_pm = True
     interaction_checks = True
     permitted_checks = True
     amusement_requires_target = False
 
-    command_flag_map = {}
+    command_flag_map = IRCDict()
+
+    help_topics = []  # Example: [('admin', 'category', 'keyword', 'description'), ...]
 
     @staticmethod
     def respond_to_user(command_data: CommandData, message: str) -> None:
@@ -58,6 +62,16 @@ class BaseCommand:
         else:
             bot_instance.connection.action(command_data.channel, message)
 
+    @staticmethod
+    def pm_user(command_data: CommandData, message: str) -> None:
+        if message == '':
+            # TODO: Add logging to this, to track issues?
+            return
+
+        from timmy.core import bot_instance
+
+        bot_instance.connection.privmsg(command_data.issuer, message)
+
     def register_commands(self, command_handler: CommandHandler) -> None:
         for command in self.user_commands:
             command_handler.user_command_processors[command] = self
@@ -69,6 +83,10 @@ class BaseCommand:
         for command in self.amusement_commands:
             idle_ticker.amusement_command_processors[command] = self
 
+        from timmy.command_processors import help_commands
+        for user_type, category, topic, description in self.help_topics:
+            help_commands.add_help_topic(user_type, category, topic, description)
+
     def handle_subcommand(self, command_data: CommandData) -> None:
         if command_data.arg_count < 1 or command_data.args[0] not in self.sub_commands:
             self.respond_to_user(command_data, "Valid subcommands: " + ", ".join(self.sub_commands))
@@ -76,6 +94,9 @@ class BaseCommand:
 
         subcommand_handler = getattr(self, '_' + command_data.args[0] + '_handler')
         subcommand_handler(command_data)
+
+    def help_method(self):
+        return
 
     def process(self, command_data: CommandData) -> None:
         return
@@ -133,13 +154,17 @@ class BaseCommand:
             if interaction_controls.interact_with_user(target, flag_name):
                 return True
             else:
-                command_data.automatic or self.respond_to_user(command_data, "I'm sorry, it's been requested that I not"
-                                                                             " do that.")
+                command_data.automatic or self.respond_to_user(
+                    command_data, "I'm sorry, it's been requested that I not"
+                                  " do that."
+                    )
                 return False
         else:
             if interaction_controls.interact_with_user(command_data.issuer, command_data.command):
                 return True
             else:
-                command_data.automatic or self.respond_to_user(command_data, "I'm sorry, it's been requested that I not"
-                                                                             " do that.")
+                command_data.automatic or self.respond_to_user(
+                    command_data, "I'm sorry, it's been requested that I not"
+                                  " do that."
+                    )
                 return False

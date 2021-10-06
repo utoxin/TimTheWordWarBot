@@ -21,6 +21,7 @@ from .amusement.woot import WootCommand
 from .utility.admincommands import AdminCommands
 from .utility.channelcommands import ChannelCommands
 from .utility.channelgroupcommands import ChannelGroupCommands
+from .utility.helpcommands import HelpCommands
 from .utility.ignorecommands import IgnoreCommands
 from .utility.interactioncontrols import InteractionControls
 from .utility.pickonecommand import PickOneCommand
@@ -32,9 +33,14 @@ from .writing.challenge import ChallengeCommands
 from .writing.warcommands import WarCommands
 
 interaction_controls = InteractionControls()
+help_commands = HelpCommands()
 
 
 def register_processors():
+    help_commands.register_commands(event_handlers.command_handler_instance)
+
+    interaction_controls.register_commands(event_handlers.command_handler_instance)
+
     timer = TimerCommand()
     timer.register_commands(event_handlers.command_handler_instance)
 
@@ -52,8 +58,6 @@ def register_processors():
 
     channels = ChannelCommands()
     channels.register_commands(event_handlers.command_handler_instance)
-
-    interaction_controls.register_commands(event_handlers.command_handler_instance)
 
     dice = DiceCommand()
     dice.register_commands(event_handlers.command_handler_instance)

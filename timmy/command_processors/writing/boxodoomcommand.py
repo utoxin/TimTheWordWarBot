@@ -7,7 +7,12 @@ from timmy.db_access import boxodoom_db
 
 
 class BoxODoomCommand(BaseCommand):
-    user_commands = {"boxodoom"}
+    user_commands = ["boxodoom"]
+
+    help_topics = [('user', 'general commands', '!boxodoom <difficulty> <duration>',
+                   'Difficulty is extraeasy/easy/average/hard/extreme/insane/impossible/tadiera, duration in '
+                   'minutes.')
+                   ]
 
     def process(self, command_data: CommandData) -> None:
         if command_data.arg_count != 2:
