@@ -28,8 +28,6 @@ class ServerHandler:
         nick = event.source.nick
 
         if nick == connection.get_nickname():
-            from timmy.core import war_ticker
-            war_ticker.activate_channel_wars(channel)
             return
 
         if core.user_perms.is_ignored(nick, 'any'):
