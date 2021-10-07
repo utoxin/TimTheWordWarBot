@@ -176,10 +176,10 @@ class RaptorTicker:
 
     def _hatch_raptors(self, source_channel: ChannelData) -> None:
         if source_channel.raptor_data['active'] > 1:
-            new_count = random.randrange(source_channel.raptor_data['active'] // 2)
+            new_count = random.randrange(max(1, source_channel.raptor_data['active'] // 2))
 
             if source_channel.raptor_data['active'] >= 4:
-                new_count -= random.randrange(source_channel.raptor_data['active'] // 4)
+                new_count -= random.randrange(max(1, source_channel.raptor_data['active'] // 4))
 
             if new_count < 1:
                 return
@@ -258,14 +258,14 @@ class RaptorTicker:
         origin_message = text_generator.get_string(
                 "[raptor_brag_origin]", {
                     'raptor_name':  user_data.raptor_name,
-                    'channel_name': selected_channel.name,
+                    'destination_channel': selected_channel.name,
                 }
         )
 
         destination_message = text_generator.get_string(
                 "[raptor_brag_destination]", {
                     'raptor_name':  user_data.raptor_name,
-                    'channel_name': war_channel.name,
+                    'origin_channel': war_channel.name,
                     'word_count':   "{:n}".format(word_count),
                 }
         )
@@ -291,15 +291,15 @@ class RaptorTicker:
         origin_message = text_generator.get_string(
                 "[raptor_steal_bunnies_origin_{:d}]".format(threshold), {
                     'raptor_name':  user_data.raptor_name,
-                    'channel_name': selected_channel.name,
+                    'destination_channel': selected_channel.name,
                     'bunny_count':  "{:n}".format(bunny_count),
                 }
         )
 
         destination_message = text_generator.get_string(
-                "[raptor_steal_bunnies_destination_{:d}".format(threshold), {
+                "[raptor_steal_bunnies_destination_{:d}]".format(threshold), {
                     'raptor_name':  user_data.raptor_name,
-                    'channel_name': war_channel.name,
+                    'origin_channel': war_channel.name,
                     'bunny_count':  "{:n}".format(bunny_count),
                 }
         )
@@ -318,7 +318,7 @@ class RaptorTicker:
         if selected_channel is None:
             return
 
-        raptor_count = random.randrange(selected_channel.raptor_data['active'] // 10)
+        raptor_count = random.randrange(max(1, selected_channel.raptor_data['active'] // 10))
         threshold = 0
 
         if raptor_count > 1:
@@ -329,15 +329,15 @@ class RaptorTicker:
         origin_message = text_generator.get_string(
                 "[raptor_recruit_origin_{:d}]".format(threshold), {
                     'raptor_name':  user_data.raptor_name,
-                    'channel_name': selected_channel.name,
+                    'destination_channel': selected_channel.name,
                     'raptor_count': "{:n}".format(raptor_count),
                 }
         )
 
         destination_message = text_generator.get_string(
-                "[raptor_recruit_destination_{:d}".format(threshold), {
+                "[raptor_recruit_destination_{:d}]".format(threshold), {
                     'raptor_name':  user_data.raptor_name,
-                    'channel_name': war_channel.name,
+                    'origin_channel': war_channel.name,
                     'raptor_count': "{:n}".format(raptor_count),
                 }
         )
@@ -356,7 +356,7 @@ class RaptorTicker:
         return text_generator.get_string(
                 "[raptor_attack_message]", {
                     'attack_count': "{:n}".format(attack_count),
-                    'channel_name': channel.name,
+                    'target_channel': channel.name,
                     'kill_count':   "{:n}".format(defender_deaths),
                     'return_count': "{:n}".format(attack_survivors)
                 }
@@ -367,7 +367,7 @@ class RaptorTicker:
         return text_generator.get_string(
                 "[raptor_defense_message]", {
                     'attack_count': "{:n}".format(attack_count),
-                    'channel_name': channel.name,
+                    'source_channel': channel.name,
                     'kill_count':   "{:n}".format(defender_deaths)
                 }
         )

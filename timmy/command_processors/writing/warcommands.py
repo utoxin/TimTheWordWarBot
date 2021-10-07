@@ -325,18 +325,19 @@ class WarCommands(BaseCommand):
                     user_data.total_sprint_duration += war.duration() / 60
 
                 user_data.total_sprint_wordcount += wordcount
+
                 user_data.recorded_wars[war.get_chain_id()] = wordcount
 
                 user_data.save()
 
-                channel_data.raptor['strength'] += min(10, int(war.base_duration / 600))
+                channel_data.raptor_data['strength'] += min(10, int(war.base_duration / 600))
 
                 self.respond_to_user(command_data, f"{user_data.raptor_name} pulls out their "
                                                    f"{user_data.raptor_favorite_color} notebook and makes a note of "
                                                    f"that wordcount.")
 
                 if not channel_data.is_muzzled():
-                    core.raptor_ticker.handle_war_report(user_data, war, wordcount)
+                    core.raptor_ticker.war_report(user_data, war, wordcount)
 
     def _leave_handler(self, command_data: CommandData) -> None:
         war = self._find_join_leave_war(command_data)

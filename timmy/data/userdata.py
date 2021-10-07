@@ -1,5 +1,7 @@
 from typing import Optional, Set
 
+from irc.dict import IRCDict
+
 from timmy import db_access
 
 
@@ -7,7 +9,7 @@ class UserData:
     registration_data_retrieved: bool
     last_whois_check: Optional[float]
     nicks: Set[str]
-    recorded_wars: Set[str]
+    recorded_wars: IRCDict
     authed_user: str
     global_admin: bool
     total_sprint_wordcount: int
@@ -24,7 +26,7 @@ class UserData:
         self.last_whois_check = None
 
         self.nicks = set()
-        self.recorded_wars = set()
+        self.recorded_wars = IRCDict()
 
         self.uuid = None
         self.authed_user = ""
