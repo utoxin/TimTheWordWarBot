@@ -1,12 +1,12 @@
 """
-
+Fix Raptor Messages, Part 2
 """
 import uuid
 
 from pymysql import Connection
 from yoyo import step
 
-__depends__ = {'20210720_04_K0JYN'}
+__depends__ = {'20211007_01_ohGDB-fix-raptor-messages'}
 
 entries_to_add = [
     ['raptor_sighting_action_response', [

@@ -6,7 +6,6 @@ from typing import Set
 from timeloop import Timeloop
 
 from timmy import core
-from timmy.data.channel_data import ChannelData
 from timmy.data.war_state import WarState
 from timmy.data.word_war import WordWar
 from timmy.db_access import word_war_db
@@ -23,16 +22,6 @@ class WarTicker:
         self.loaded_wars = word_war_db.load_wars()
 
         war_timer.start()
-
-    def activate_channel_wars(self, channel: ChannelData) -> None:
-        wars = self.loaded_wars.copy()
-
-        for war in wars:
-            if war.channel == channel.name:
-                self.active_wars.add(war)
-                self.loaded_wars.remove(war)
-
-                channel.newest_war_id = war.get_id()
 
     def begin_war(self, war: WordWar) -> None:
         current_epoch = time.time()
@@ -134,6 +123,16 @@ class WarTicker:
 
 @war_timer.job(interval = timedelta(seconds = 1))
 def war_update_loop() -> None:
+    from timmy.core import bot_instance
+    loaded_wars = core.war_ticker.loaded_wars.copy()
+
+    for war in loaded_wars:
+        if war.channel in bot_instance.channels.keys():
+            core.war_ticker.active_wars.add(war)
+            core.war_ticker.loaded_wars.remove(war)
+
+            bot_instance.channels[war.channel].newest_war_id = war.get_id()
+
     wars = core.war_ticker.active_wars.copy()
     if wars is None or len(wars) <= 0:
         return
