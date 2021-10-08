@@ -109,9 +109,6 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             self.channels[ch] = ChannelData(ch)
             self.channels[ch].join_channel()
 
-            from timmy.core import war_ticker
-            war_ticker.activate_channel_wars(self.channels[ch])
-
         self.channels[ch].add_user(nick)
 
         for obj in self.handled_callbacks["join"]:

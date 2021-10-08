@@ -25,9 +25,6 @@ class PostAuthHandler:
             y = threading.Timer(delay + delay_step, self._timer_thread_two)
             y.start()
 
-            y = threading.Timer(delay + delay_step * 2, self._timer_thread_three)
-            y.start()
-
     @staticmethod
     def _timer_thread(channel: str) -> None:
         from timmy.core import bot_instance
@@ -37,13 +34,5 @@ class PostAuthHandler:
     def _timer_thread_two() -> None:
         core.init_core_tickers()
         utilities.init_utility_tickers()
-
-    @staticmethod
-    def _timer_thread_three() -> None:
-        from timmy.core import bot_instance
-        from timmy.core import war_ticker
-
-        for channel in bot_instance.channels:
-            war_ticker.activate_channel_wars(channel)
 
 
