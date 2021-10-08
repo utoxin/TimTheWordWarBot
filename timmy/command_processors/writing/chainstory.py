@@ -6,8 +6,8 @@ from timmy.data.command_data import CommandData
 
 
 class ChainStoryCommands(BaseCommand):
-    user_commands = {"chainstory", "chainlast", "chainnew", "chaininfo", "chaincount"}
-    sub_commands = {"last", "new", "info", "count"}
+    user_commands = ["chainstory", "chainlast", "chainnew", "chaininfo", "chaincount"]
+    sub_commands = ["last", "new", "info", "count"]
 
     interaction_checks = False
 

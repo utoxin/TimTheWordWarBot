@@ -4,8 +4,8 @@ from timmy.utilities import text_generator
 
 
 class CatchCommand(BaseCommand):
-    user_commands = {'catch'}
-    amusement_commands = {'catch'}
+    user_commands = ['catch']
+    amusement_commands = ['catch']
 
     def process(self, command_data: CommandData) -> None:
         if self._execution_checks(command_data):

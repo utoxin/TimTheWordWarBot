@@ -11,8 +11,8 @@ from timmy.db_access import user_directory, word_war_db
 
 
 class WarCommands(BaseCommand):
-    user_commands = {"war", "endwar", "starwar", "startwar", "chainwar", "listall", "listwars", "joinwar", "leavewar"}
-    sub_commands = {"start", "cancel", "join", "leave", "report", "list"}
+    user_commands = ["war", "endwar", "starwar", "startwar", "chainwar", "listall", "listwars", "joinwar", "leavewar"]
+    sub_commands = ["start", "cancel", "join", "leave", "report", "list"]
 
     help_topics = [('user', 'word war commands', '!war start', 'Creates a new war.'),
                    ('user', 'word war commands', '!war cancel', 'Cancels an existing ware.'),

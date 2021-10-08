@@ -7,7 +7,7 @@ from timmy.data.command_data import CommandData
 
 
 class ExpoundCommand(BaseCommand):
-    user_commands = {'expound'}
+    user_commands = ['expound']
     interaction_checks = False
     allowed_in_pm = False
 

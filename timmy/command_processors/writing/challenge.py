@@ -4,8 +4,8 @@ from timmy.utilities import text_generator
 
 
 class ChallengeCommands(BaseCommand):
-    user_commands = {"challenge", "challengefor"}
-    amusement_commands = {"challengefor"}
+    user_commands = ["challenge", "challengefor"]
+    amusement_commands = ["challengefor"]
     amusement_requires_target = True
 
     command_flag_map = {

@@ -7,8 +7,8 @@ from timmy.utilities import text_generator
 
 
 class SummonCommand(BaseCommand):
-    user_commands = {'summon', 'banish'}
-    amusement_commands = {'summon', 'banish'}
+    user_commands = ['summon', 'banish']
+    amusement_commands = ['summon', 'banish']
 
     def process(self, command_data: CommandData) -> None:
         if self._execution_checks(command_data):

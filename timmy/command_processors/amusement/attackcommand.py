@@ -6,7 +6,7 @@ from timmy.utilities import text_generator
 
 
 class AttackCommand(BaseCommand):
-    user_commands = {'attack'}
+    user_commands = ['attack']
 
     def process(self, command_data: CommandData) -> None:
         if self._execution_checks(command_data):

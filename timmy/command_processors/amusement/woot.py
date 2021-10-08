@@ -3,7 +3,7 @@ from timmy.data.command_data import CommandData
 
 
 class WootCommand(BaseCommand):
-    user_commands = {'woot'}
+    user_commands = ['woot']
     interaction_checks = False
 
     def process(self, command_data: CommandData) -> None:

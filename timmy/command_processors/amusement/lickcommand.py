@@ -4,7 +4,7 @@ from timmy.utilities import text_generator
 
 
 class LickCommand(BaseCommand):
-    user_commands = {'lick'}
+    user_commands = ['lick']
 
     def process(self, command_data: CommandData) -> None:
         if self._execution_checks(command_data):

@@ -5,7 +5,7 @@ from timmy.data.command_data import CommandData
 
 
 class DiceCommand(BaseCommand):
-    user_commands = {'roll'}
+    user_commands = ['roll']
     interaction_checks = False
 
     help_topics = [('user', 'amusement commands', '!roll <dice string>', 'Generates a random number, as if rolling '

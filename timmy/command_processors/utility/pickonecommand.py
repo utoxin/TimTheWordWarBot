@@ -5,7 +5,7 @@ from timmy.data.command_data import CommandData
 
 
 class PickOneCommand(BaseCommand):
-    user_commands = {'pickone'}
+    user_commands = ['pickone']
     interaction_checks = False
 
     def process(self, command_data: CommandData) -> None:

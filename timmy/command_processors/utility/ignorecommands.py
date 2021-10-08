@@ -3,7 +3,7 @@ from timmy.data.command_data import CommandData
 
 
 class IgnoreCommands(BaseCommand):
-    user_commands = {'ignore', 'unignore'}
+    user_commands = ['ignore', 'unignore']
 
     help_topics = [('user', 'general commands', '!ignore <hard/soft>',
                    'Make Timmy ignore you. Soft lets you keep using commands. Hard is EVERYTHING except !unignore.'),

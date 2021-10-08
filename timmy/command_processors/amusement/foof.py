@@ -7,8 +7,8 @@ from timmy.utilities import text_generator
 
 
 class FoofCommand(BaseCommand):
-    user_commands = {'foof'}
-    amusement_commands = {'foof'}
+    user_commands = ['foof']
+    amusement_commands = ['foof']
     amusement_requires_target = True
 
     def process(self, command_data: CommandData) -> None:

@@ -6,7 +6,7 @@ from timmy.utilities import text_generator
 
 
 class SearchCommand(BaseCommand):
-    user_commands = {'search'}
+    user_commands = ['search']
 
     def process(self, command_data: CommandData) -> None:
         if self._execution_checks(command_data):

@@ -8,8 +8,8 @@ from timmy.utilities import text_generator
 
 
 class GetCommands(BaseCommand):
-    user_commands = {'get', 'getfor', 'getfrom'}
-    amusement_commands = {'getfor'}
+    user_commands = ['get', 'getfor', 'getfrom']
+    amusement_commands = ['getfor']
     amusement_requires_target = True
 
     command_flag_map = {

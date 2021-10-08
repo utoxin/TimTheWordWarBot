@@ -4,7 +4,7 @@ from timmy.utilities import text_generator
 
 
 class CommandmentCommand(BaseCommand):
-    user_commands = {'commandment'}
+    user_commands = ['commandment']
     interaction_checks = False
 
     def process(self, command_data: CommandData) -> None:

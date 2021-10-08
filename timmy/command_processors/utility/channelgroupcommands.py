@@ -4,8 +4,8 @@ from timmy.db_access import channel_db
 
 
 class ChannelGroupCommands(BaseCommand):
-    admin_commands = {'channelgroup'}
-    sub_commands = {'list', 'add', 'remove', 'destroy'}
+    admin_commands = ['channelgroup']
+    sub_commands = ['list', 'add', 'remove', 'destroy']
 
     def process(self, command_data: CommandData) -> None:
         self.handle_subcommand(command_data)

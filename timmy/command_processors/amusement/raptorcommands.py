@@ -5,8 +5,8 @@ from timmy.utilities import text_generator
 
 
 class RaptorCommands(BaseCommand):
-    user_commands = {"raptor"}
-    sub_commands = {"adopt", "release", "details", "rename", "reset"}
+    user_commands = ["raptor"]
+    sub_commands = ["adopt", "release", "details", "rename", "reset"]
 
     help_topics = [('user', 'raptor commands', '!raptor adopt <name>', 'Adopts a new raptor, and names it.'),
                    ('user', 'raptor commands', '!raptor rename <name>', 'Renames your raptor.'),

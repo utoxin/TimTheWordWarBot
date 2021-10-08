@@ -6,8 +6,8 @@ from timmy.utilities import text_generator
 
 
 class SingCommand(BaseCommand):
-    user_commands = {'sing'}
-    amusement_commands = {'sing'}
+    user_commands = ['sing']
+    amusement_commands = ['sing']
     interaction_checks = False
 
     def process(self, command_data: CommandData) -> None:

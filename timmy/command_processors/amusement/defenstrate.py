@@ -7,8 +7,8 @@ from timmy.utilities import text_generator
 
 
 class DefenestrateCommand(BaseCommand):
-    user_commands = {'defenestrate'}
-    amusement_commands = {'defenestrate'}
+    user_commands = ['defenestrate']
+    amusement_commands = ['defenestrate']
     amusement_requires_target = True
 
     def process(self, command_data: CommandData) -> None:

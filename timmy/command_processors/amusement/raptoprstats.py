@@ -5,7 +5,7 @@ from timmy.data.command_data import CommandData
 
 
 class RaptorStatsCommand(BaseCommand):
-    user_commands = {'raptorstats'}
+    user_commands = ['raptorstats']
 
     allowed_in_pm = False
     interaction_checks = False

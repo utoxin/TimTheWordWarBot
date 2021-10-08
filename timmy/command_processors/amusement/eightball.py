@@ -6,8 +6,8 @@ from timmy.utilities import text_generator
 
 
 class EightballCommand(BaseCommand):
-    user_commands = {'eightball'}
-    amusement_commands = {'eightball'}
+    user_commands = ['eightball']
+    amusement_commands = ['eightball']
     interaction_checks = False
 
     help_topics = [('user', 'amusement commands', '!eightball <question>', 'I can tell you (with some degree of '

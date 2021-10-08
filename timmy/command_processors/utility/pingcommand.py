@@ -3,7 +3,7 @@ from timmy.data.command_data import CommandData
 
 
 class PingCommand(BaseCommand):
-    user_commands = {'ping'}
+    user_commands = ['ping']
     interaction_checks = False
 
     def process(self, command_data: CommandData) -> None:

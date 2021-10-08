@@ -7,8 +7,8 @@ from timmy.utilities import text_generator
 
 
 class HerdCommand(BaseCommand):
-    user_commands = {'herd'}
-    amusement_commands = {'herd'}
+    user_commands = ['herd']
+    amusement_commands = ['herd']
     amusement_requires_target = True
 
     def process(self, command_data: CommandData) -> None:

@@ -7,8 +7,8 @@ from timmy.utilities import text_generator
 
 
 class FridgeCommand(BaseCommand):
-    user_commands = {'fridge'}
-    amusement_commands = {'fridge'}
+    user_commands = ['fridge']
+    amusement_commands = ['fridge']
     amusement_requires_target = True
 
     start_messages = {

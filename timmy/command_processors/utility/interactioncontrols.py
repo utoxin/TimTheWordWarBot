@@ -9,7 +9,7 @@ from timmy.db_access import user_directory
 
 
 class InteractionControls(BaseCommand):
-    user_commands = {'interactionflag'}
+    user_commands = ['interactionflag']
 
     help_topics = [('user', 'interaction controls', '!interactionflag', 'Command for managing how Timmy will interact '
                                                                         'with you, randomly or via amusement commands.')
