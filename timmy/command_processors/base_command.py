@@ -110,6 +110,7 @@ class BaseCommand:
             from timmy.core import bot_instance
 
             users = list(bot_instance.channels[command_data.channel].users())
+            users.remove(bot_instance.connection.get_nickname())
 
             if len(users) == 0:
                 return

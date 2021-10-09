@@ -44,8 +44,12 @@ class IdleTicker:
 
                 if channel.chatter_settings['types']['markov']:
                     actions.append('markov')
+                    actions.append('markov')
+                    actions.append('markov')
+                    actions.append('markov')
 
                 if channel.amusement_chatter_available():
+                    actions.append('amusement')
                     actions.append('amusement')
 
                 if channel.chatter_settings['types']['bored']:
