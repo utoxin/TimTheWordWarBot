@@ -23,6 +23,10 @@ class BaseCommand:
 
     help_topics = []  # Example: [('admin', 'category', 'keyword', 'description'), ...]
 
+    def __init__(self):
+        from timmy import event_handlers
+        self.register_commands(event_handlers.command_handler_instance)
+
     @staticmethod
     def respond_to_user(command_data: CommandData, message: str) -> None:
         if message == '':
@@ -34,7 +38,10 @@ class BaseCommand:
         if command_data.in_pm:
             bot_instance.connection.privmsg(command_data.issuer, message)
         else:
-            bot_instance.connection.privmsg(command_data.channel, command_data.issuer + ": " + message)
+            if command_data.issuer == bot_instance.connection.get_nickname():
+                bot_instance.connection.privmsg(command_data.channel, message)
+            else:
+                bot_instance.connection.privmsg(command_data.channel, command_data.issuer + ": " + message)
 
     @staticmethod
     def send_message(command_data: CommandData, message: str) -> None:
@@ -94,9 +101,6 @@ class BaseCommand:
 
         subcommand_handler = getattr(self, '_' + command_data.args[0] + '_handler')
         subcommand_handler(command_data)
-
-    def help_method(self):
-        return
 
     def process(self, command_data: CommandData) -> None:
         return

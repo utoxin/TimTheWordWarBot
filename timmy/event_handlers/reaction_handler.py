@@ -104,8 +104,7 @@ class ReactionHandler:
                 and interaction_controls.interact_with_user(event.source.nick, 'groot'):
             if "groot" in event.arguments[0].lower() and random.randrange(100) < channel.current_odds['groot']:
                 channel.current_odds['groot'] -= 1
-                channel.send_action("mutters, \"I am groot.\"")
-                # TODO: Vary punctuation, using a list
+                channel.send_action(utilities.text_generator.get_string("mutters, \"[groot]\""))
                 interacted = True
 
         if not interacted and channel.chatter_settings['types']['velociraptor'] \
@@ -232,8 +231,7 @@ class ReactionHandler:
                 and interaction_controls.interact_with_user(event.source.nick, 'groot'):
             if "groot" in event.arguments[0].lower() and random.randrange(100) < channel.current_odds['groot']:
                 channel.current_odds['groot'] -= 1
-                channel.send_message("I am groot.")
-                # TODO: Vary punctuation, using a list
+                channel.send_message(utilities.text_generator.get_string("[groot]"))
                 interacted = True
 
         if not interacted and channel.chatter_settings['types']['velociraptor'] \

@@ -1,13 +1,10 @@
-import sys
-import time
-
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
 from timmy.db_access import channel_db
 
 
 class AdminCommands(BaseCommand):
-    admin_commands = ['shutdown', 'ignore', 'unignore', 'listignores', 'shout']
+    admin_commands = ['ignore', 'unignore', 'listignores', 'shout']
 
     help_topics = [('admin', 'core admin commands', '$ignore <username>', 'Places user on the admin-ignore list. They '
                                                                           'can not remove themselves from that list.'),
@@ -17,16 +14,7 @@ class AdminCommands(BaseCommand):
     def process(self, command_data: CommandData):
         from timmy.core import user_perms, bot_instance
 
-        if command_data.command == 'shutdown':
-            if command_data.issuer_data.global_admin:
-                self.respond_to_user(command_data, "Shutting down.........")
-                bot_instance.connection.quit("Help, help! I'm being repressed!")
-                time.sleep(1)
-                sys.exit(0)
-            else:
-                self.respond_to_user(command_data, "Only a global admin can do that!")
-
-        elif command_data.command == 'shout':
+        if command_data.command == 'shout':
             channel_groups = channel_db.get_channel_groups()
 
             if command_data.arg_count == 0:
@@ -76,7 +64,5 @@ class AdminCommands(BaseCommand):
             self.respond_to_user(command_data, f"There are {len(user_perms.admin_ignores)} users on the admin ignore "
                                                f"list. Sending the list in private.")
 
-            bot_instance.connection.privmsg(command_data.issuer, "Ignored users: " +
-                                            ", ".join(user_perms.admin_ignores.keys()))
-
+            self.pm_user(command_data, "Ignored users: " + ", ".join(user_perms.admin_ignores.keys()))
         return

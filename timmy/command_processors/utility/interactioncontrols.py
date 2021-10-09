@@ -20,6 +20,9 @@ class InteractionControls(BaseCommand):
         self.initialized = False
         self.interactions = set()
 
+    def late_init(self):
+        super().__init__()
+
     def init(self):
         if not self.initialized:
             for entry in ChannelData.chatter_settings_defaults['types'].keys():

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from irc.dict import IRCDict
 from timeloop import Timeloop
 
-from timmy import core
+from timmy import core, utilities
 from timmy.data.channel_data import ChannelData
 from timmy.data.command_data import CommandData
 from timmy.data.command_type import CommandType
@@ -51,6 +51,9 @@ class IdleTicker:
                 if channel.chatter_settings['types']['bored']:
                     actions.append('bored')
 
+                if channel.chatter_settings['types']['groot']:
+                    actions.append('groot')
+
                 if channel.chatter_settings['types']['velociraptor']:
                     actions.append('velociraptor')
 
@@ -67,6 +70,8 @@ class IdleTicker:
                     core.raptor_ticker.swarm(channel)
                 elif action == 'bored':
                     channel.send_message("I'm bored.")
+                elif action == 'groot':
+                    channel.send_message(utilities.text_generator.get_string("mutters, \"[groot]\""))
 
     def amusement_tick(self, channel: ChannelData) -> None:
         amusement_commands = list(self.amusement_command_processors.keys())

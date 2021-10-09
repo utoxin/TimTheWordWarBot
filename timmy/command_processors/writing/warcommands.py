@@ -1,3 +1,4 @@
+import logging
 import re
 import time
 from typing import Optional
@@ -146,7 +147,8 @@ class WarCommands(BaseCommand):
                             from timmy.utilities import irc_logger
                             irc_logger.log_message(
                                     f"Word War Exception: Chain count parse error. Input was: "
-                                    f"{input_string}"
+                                    f"{input_string}",
+                                    logging.ERROR
                             )
                             return
 
@@ -171,7 +173,8 @@ class WarCommands(BaseCommand):
                             from timmy.utilities import irc_logger
                             irc_logger.log_message(
                                     f"Word War Exception: Break duration parse error. Input was: "
-                                    f"{input_string}"
+                                    f"{input_string}",
+                                    logging.ERROR
                             )
                             return
 
@@ -198,7 +201,8 @@ class WarCommands(BaseCommand):
                             from timmy.utilities import irc_logger
                             irc_logger.log_message(
                                     f"Word War Exception: Random flag parse error. Input was: "
-                                    f"{input_string}"
+                                    f"{input_string}",
+                                    logging.ERROR
                             )
                             return
 

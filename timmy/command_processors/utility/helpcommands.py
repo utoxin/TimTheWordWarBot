@@ -17,6 +17,9 @@ class HelpCommands(BaseCommand):
         self.__help_topics['admin'] = IRCDict()
         self.__help_topics['user'] = IRCDict()
 
+    def late_init(self):
+        super().__init__()
+
     def process(self, command_data: CommandData) -> None:
         if command_data.type == CommandType.TIMMY_USER:
             self.handle_user_help(command_data)

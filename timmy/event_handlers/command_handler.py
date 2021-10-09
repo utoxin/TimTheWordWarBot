@@ -1,3 +1,4 @@
+import logging
 import re
 from typing import Optional, Sequence
 
@@ -31,6 +32,10 @@ class CommandHandler:
         return self.on_pubmsg(connection, event)
 
     def on_pubmsg(self, connection: ServerConnection, event: Event) -> bool:
+        from timmy.utilities import irc_logger
+
+        irc_logger.log_message(f"Received Command: {event.arguments[0]}", logging.DEBUG)
+
         if core.user_perms.is_ignored(event.source.nick, 'admin'):
             return True
 
