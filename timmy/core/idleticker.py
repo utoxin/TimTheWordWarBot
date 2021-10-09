@@ -71,7 +71,7 @@ class IdleTicker:
                 elif action == 'bored':
                     channel.send_message("I'm bored.")
                 elif action == 'groot':
-                    channel.send_message(utilities.text_generator.get_string("mutters, \"[groot]\""))
+                    channel.send_message(utilities.text_generator.get_string("[groot]"))
 
     def amusement_tick(self, channel: ChannelData) -> None:
         amusement_commands = list(self.amusement_command_processors.keys())
