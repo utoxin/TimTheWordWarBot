@@ -20,6 +20,7 @@ from .amusement.woot import WootCommand
 from .owner.loglevel import LogLevelCommand
 from .owner.shutdown import ShutdownCommand
 from .utility.admincommands import AdminCommands
+from .utility.badwords import BadWordCommands
 from .utility.channelcommands import ChannelCommands
 from .utility.channelgroupcommands import ChannelGroupCommands
 from .utility.creditscommand import CreditsCommand
@@ -67,6 +68,7 @@ def register_processors():
     AdminCommands()
     LogLevelCommand()
     ShutdownCommand()
+    BadWordCommands()
 
     # Utility Commands
     ChannelGroupCommands()

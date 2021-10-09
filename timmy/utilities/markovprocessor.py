@@ -263,6 +263,107 @@ class MarkovProcessor:
         else:
             return None
 
+    def add_bad_word(self, word: str) -> None:
+        insert_sql = "REPLACE INTO bad_words SET word = %(bad_word)s"
+        delete_sql = "DELETE FROM markov_words WHERE word COLLATE utf8_general_ci REGEXP %(regexp)s"
+
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(insert_sql, {'bad_word': word})
+        cursor.execute(delete_sql, {'regexp': f"^[[:punct:]]*{word}[[:punct:]]*$"})
+
+        conn.close()
+
+        self.bad_words.add(re.compile('(\\W|\\b)({})(\\W|\\b)'.format(re.escape(word)), re.IGNORECASE))
+
+    def add_bad_pair(self, word_one: str, word_two: str) -> None:
+        insert_sql = "REPLACE INTO bad_pairs SET word_one = %(word_one)s, word_two = %(word_two)s"
+
+        delete_sql_1 = "DELETE msd.* FROM markov3_say_data msd INNER JOIN markov_words mw1 ON (msd.first_id = mw1.id)" \
+                       " INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_one)s AND mw2.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_two)s"
+
+        delete_sql_2 = "DELETE msd.* FROM markov3_say_data msd INNER JOIN markov_words mw1 ON (msd.second_id = " \
+                       "mw1.id) INNER JOIN markov_words mw2 ON (msd.third_id = mw2.id) WHERE mw1.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_one)s AND mw2.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_two)s"
+
+        delete_sql_3 = "DELETE msd.* FROM markov3_emote_data msd INNER JOIN markov_words mw1 ON (msd.first_id = " \
+                       "mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_one)s AND mw2.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_two)s"
+
+        delete_sql_4 = "DELETE msd.* FROM markov3_emote_data msd INNER JOIN markov_words mw1 ON (msd.second_id = " \
+                       "mw1.id) INNER JOIN markov_words mw2 ON (msd.third_id = mw2.id) WHERE mw1.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_one)s AND mw2.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_two)s"
+
+        delete_sql_5 = "DELETE msd.* FROM markov3_emote_data msd INNER JOIN markov_words mw1 ON (msd.first_id = " \
+                       "mw1.id) INNER JOIN markov_words mw2 ON (msd.second_id = mw2.id) WHERE mw1.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_one)s AND mw2.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_two)s"
+
+        delete_sql_6 = "DELETE msd.* FROM markov3_emote_data msd INNER JOIN markov_words mw1 ON (msd.second_id = " \
+                       "mw1.id) INNER JOIN markov_words mw2 ON (msd.third_id = mw2.id) WHERE mw1.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_one)s AND mw2.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_two)s"
+
+        delete_sql_7 = "DELETE msd.* FROM markov3_emote_data msd INNER JOIN markov_words mw1 ON (msd.third_id = " \
+                       "mw1.id) INNER JOIN markov_words mw2 ON (msd.fourth_id = mw2.id) WHERE mw1.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_one)s AND mw2.word " \
+                       "COLLATE utf8_general_ci REGEXP %(word_two)s"
+
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(insert_sql, {'word_one': word_one, 'word_two': word_two})
+
+        cursor.execute(delete_sql_1, {
+            'word_one': f"^[[:punct:]]*{word_one}[[:punct:]]*$",
+            'word_two': f"^[[:punct:]]*{word_two}[[:punct:]]*$"
+        })
+
+        cursor.execute(delete_sql_2, {
+            'word_one': f"^[[:punct:]]*{word_one}[[:punct:]]*$",
+            'word_two': f"^[[:punct:]]*{word_two}[[:punct:]]*$"
+        })
+
+        cursor.execute(delete_sql_3, {
+            'word_one': f"^[[:punct:]]*{word_one}[[:punct:]]*$",
+            'word_two': f"^[[:punct:]]*{word_two}[[:punct:]]*$"
+        })
+
+        cursor.execute(delete_sql_4, {
+            'word_one': f"^[[:punct:]]*{word_one}[[:punct:]]*$",
+            'word_two': f"^[[:punct:]]*{word_two}[[:punct:]]*$"
+        })
+
+        cursor.execute(delete_sql_5, {
+            'word_one': f"^[[:punct:]]*{word_one}[[:punct:]]*$",
+            'word_two': f"^[[:punct:]]*{word_two}[[:punct:]]*$"
+        })
+
+        cursor.execute(delete_sql_6, {
+            'word_one': f"^[[:punct:]]*{word_one}[[:punct:]]*$",
+            'word_two': f"^[[:punct:]]*{word_two}[[:punct:]]*$"
+        })
+
+        cursor.execute(delete_sql_7, {
+            'word_one': f"^[[:punct:]]*{word_one}[[:punct:]]*$",
+            'word_two': f"^[[:punct:]]*{word_two}[[:punct:]]*$"
+        })
+
+        conn.close()
+
+        self.bad_pairs.add(
+                (
+                    re.compile('(\\W|\\b)({})(\\W|\\b)'.format(re.escape(word_one)), re.IGNORECASE),
+                    re.compile('(\\W|\\b)({})(\\W|\\b)'.format(re.escape(word_two)), re.IGNORECASE),
+                )
+        )
+
     def _load_bad_words(self) -> None:
         conn = self.db.get_connection()
         select_statement = "SELECT `word` FROM `bad_words`"
