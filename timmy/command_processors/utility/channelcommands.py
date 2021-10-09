@@ -74,6 +74,11 @@ class ChannelCommands(BaseCommand):
         if target != command_data.channel:
             self.respond_to_user(command_data, "Channel left.")
 
+        channel_data: ChannelData = bot_instance.channels[target]
+
+        from timmy.db_access import channel_db
+        channel_db.deactivate_channel(channel_data)
+
         return
 
     def _muzzle_handler(self, command_data: CommandData) -> None:
