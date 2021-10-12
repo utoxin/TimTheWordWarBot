@@ -26,7 +26,7 @@ services:
     build:
       context: ../
       dockerfile: Dockerfile
-    image: python:3.10-rc-slim
+    image: python:3.10-slim
     networks:
       - internal
       - public
