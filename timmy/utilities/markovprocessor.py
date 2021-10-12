@@ -474,7 +474,10 @@ class MarkovProcessor:
 
     @staticmethod
     def _is_valid_email(email: str) -> bool:
-        return re.match(r'^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$', email) is not None
+        pattern = re.compile(r"^([a-z]|[0-9]|\-|\_|\+|\.)+\@([a-z]|[0-9]){2,}\.[a-z]{2,}(\.[a-z]{2,})?$",
+                             re.IGNORECASE | re.MULTILINE | re.UNICODE)
+
+        return re.match(pattern, email) is not None
 
     @staticmethod
     def _is_url(url: str) -> bool:
