@@ -61,7 +61,7 @@ class ChannelDb:
                            "`active_velociraptors` = %(active_velociraptors)s, `dead_velociraptors` = " \
                            "%(dead_velociraptors)s, `killed_velociraptors` = %(killed_velociraptors)s, " \
                            "`muzzle_expiration` = %(muzzle_expiration)s, `raptor_strength_boost` = " \
-                           "%(raptor_strength_boost)s WHERE `channel` = %(channel)s"
+                           "%(raptor_strength_boost)s, `timezone` = %(timezone)s WHERE `channel` = %(channel)s"
 
         connection = self.db.get_connection()
         cursor = connection.cursor()
@@ -79,7 +79,8 @@ class ChannelDb:
                     'killed_velociraptors':     channel.raptor_data['killed'],
                     'muzzle_expiration':        int(channel.muzzled_until) if channel._muzzled else None,
                     'raptor_strength_boost':    channel.raptor_data['strength'],
-                    'channel':                  channel.name
+                    'channel':                  channel.name,
+                    'timezone':                 channel.timezone
                 }
         )
 
@@ -153,6 +154,7 @@ class ChannelDb:
             channel.raptor_data['killed'] = row['killed_velociraptors']
             channel.raptor_data['strength'] = row['raptor_strength_boost']
 
+            channel.timezone = row['timezone']
             channel.auto_muzzle = row['auto_muzzle_wars'] == 1
             channel.muzzled_until = row['muzzle_expiration']
             if channel.muzzled_until is not None and channel.muzzled_until > time.time():

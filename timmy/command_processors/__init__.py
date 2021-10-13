@@ -1,3 +1,4 @@
+from .admin.timezonecommand import TimezoneCommand
 from .amusement.attackcommand import AttackCommand
 from .amusement.catchcommand import CatchCommand
 from .amusement.commandmentcommand import CommandmentCommand
@@ -66,9 +67,10 @@ def register_processors():
 
     # Admin Commands
     AdminCommands()
+    BadWordCommands()
     LogLevelCommand()
     ShutdownCommand()
-    BadWordCommands()
+    TimezoneCommand()
 
     # Utility Commands
     ChannelGroupCommands()

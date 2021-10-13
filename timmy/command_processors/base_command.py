@@ -173,3 +173,16 @@ class BaseCommand:
                                   " do that."
                     )
                 return False
+
+    def _validate_channel(self, command_data: CommandData, candidate_channel: str, user: str) -> bool:
+        from timmy.core import user_perms, bot_instance
+
+        if candidate_channel not in bot_instance.channels:
+            self.respond_to_user(command_data, f"I don't know about '{candidate_channel}'. Sorry.")
+            return False
+
+        if not user_perms.is_admin(user, candidate_channel):
+            self.respond_to_user(command_data, f"I'm sorry, you aren't an admin for '{candidate_channel}'.")
+            return False
+
+        return True

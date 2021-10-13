@@ -97,6 +97,7 @@ class WarCommands(BaseCommand):
 
             # Options for all wars
             start_delay_pattern = re.compile("^(?:start|delay):([0-9.]*)$", re.IGNORECASE)
+            schedule_pattern = re.compile(r"^at:(\d+:\d+)?$", re.IGNORECASE)
 
             # Options for chainwars
             chain_pattern = re.compile("^chains?:([0-9.]*)$", re.IGNORECASE)
@@ -126,6 +127,54 @@ class WarCommands(BaseCommand):
                                     f"{input_string}"
                             )
                             return
+
+                        i += 1
+                        continue
+
+                    match = schedule_pattern.match(command_data.args[i])
+                    if match:
+                        results = match.groups()
+                        input_string = ""
+
+                        if results[0] == "" and i < (command_data.arg_count - 1):
+                            i += 1
+                            input_string = command_data.args[i]
+                        else:
+                            input_string = results[0]
+
+                        # 8:10 08:09 Arg 1: 0-23 Arg 2: 0-59
+                        time_validation = re.compile(r"^(\d{1,2}):(\d{2})$", re.IGNORECASE)
+
+                        validation_match = time_validation.match(input_string)
+                        if match:
+                            validation_results = validation_match.groups()
+                            try:
+                                hours = int(validation_results[0])
+                                minutes = int(validation_results[1])
+
+                                if 0 <= hours <= 23 or 0 <= minutes <= 59:
+
+                                else:
+                                    self.respond_to_user(
+                                            command_data, "I didn't understand the time argument for 'at'. It "
+                                                          "should be in 24-hour format. For example: 19:45."
+                                    )
+
+                            except TypeError:
+                                self.respond_to_user(
+                                    command_data, "I didn't understand the time argument for 'at'. It "
+                                                  "should be in 24-hour format. For example: 19:45."
+                                    )
+                                from timmy.utilities import irc_logger
+                                irc_logger.log_message(
+                                        f"Word War Exception: Start time parse error. Input was: "
+                                        f"{input_string}"
+                                )
+                                return
+
+                        else:
+                            self.respond_to_user(command_data, "I didn't understand the time argument for 'at'. It "
+                                                               "should be in 24-hour format. For example: 19:45.")
 
                         i += 1
                         continue
