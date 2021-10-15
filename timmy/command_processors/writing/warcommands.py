@@ -1,7 +1,10 @@
 import logging
 import re
 import time
+from datetime import datetime, timedelta
 from typing import Optional
+
+from pytz import timezone
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
@@ -97,6 +100,7 @@ class WarCommands(BaseCommand):
 
             # Options for all wars
             start_delay_pattern = re.compile("^(?:start|delay):([0-9.]*)$", re.IGNORECASE)
+            schedule_pattern = re.compile(r"^at:(\d+:\d+)?$", re.IGNORECASE)
 
             # Options for chainwars
             chain_pattern = re.compile("^chains?:([0-9.]*)$", re.IGNORECASE)
@@ -126,6 +130,68 @@ class WarCommands(BaseCommand):
                                     f"{input_string}"
                             )
                             return
+
+                        i += 1
+                        continue
+
+                    match = schedule_pattern.match(command_data.args[i])
+                    if match:
+                        results = match.groups()
+
+                        if results[0] == "" and i < (command_data.arg_count - 1):
+                            i += 1
+                            input_string = command_data.args[i]
+                        else:
+                            input_string = results[0]
+
+                        # 8:10 08:09 Arg 1: 0-23 Arg 2: 0-59
+                        time_validation = re.compile(r"^(\d{1,2}):(\d{2})$", re.IGNORECASE)
+
+                        validation_match = time_validation.match(input_string)
+                        if match:
+                            validation_results = validation_match.groups()
+                            try:
+                                hours = int(validation_results[0])
+                                minutes = int(validation_results[1])
+
+                                if 0 <= hours <= 23 or 0 <= minutes <= 59:
+                                    utc_timezone = timezone('UTC')
+                                    channel_timezone = timezone(core.bot_instance.channels[command_data.channel]
+                                                                .timezone)
+
+                                    utc_datetime: datetime = utc_timezone.localize(datetime.utcnow())
+                                    channel_datetime: datetime = utc_datetime.astimezone(channel_timezone)
+
+                                    request_datetime = channel_datetime.replace(hour = hours, minute = minutes,
+                                                                                second = 0, microsecond = 0)
+
+                                    if request_datetime < channel_datetime:
+                                        request_datetime = request_datetime + timedelta(days=1)
+
+                                    requested_delay = request_datetime - channel_datetime
+                                    to_start = requested_delay.total_seconds()
+
+                                else:
+                                    self.respond_to_user(
+                                            command_data, "I didn't understand the time argument for 'at'. It "
+                                                          "should be in 24-hour format. For example: 19:45."
+                                    )
+
+                            except TypeError:
+                                self.respond_to_user(
+                                    command_data, "I didn't understand the time argument for 'at'. It "
+                                                  "should be in 24-hour format. For example: 19:45."
+                                    )
+                                from timmy.utilities import irc_logger
+                                irc_logger.log_message(
+                                        f"Word War Exception: Start time parse error. Input was: "
+                                        f"{input_string}"
+                                )
+                                return
+
+                        else:
+                            self.respond_to_user(command_data, "I didn't understand the time argument for 'at'. It "
+                                                               "should be in 24-hour format. For example: 19:45.")
 
                         i += 1
                         continue
@@ -248,10 +314,13 @@ class WarCommands(BaseCommand):
                                      .format(war.get_name(), to_start / 60, war.year, war.war_id))
         else:
             self.respond_to_user(command_data, "Usage: !war start <duration in minutes> [<options>] [<name>]")
-            self.respond_to_user(command_data, "Options for all wars: delay:<minutes>")
+            self.respond_to_user(command_data, "Options for all wars: delay:<minutes>, at:<time>")
             self.respond_to_user(command_data, "Options for chain wars: chains:<chain count>, random:1, "
                                                "break:<minutes>")
             self.respond_to_user(command_data, "Example: !war start 10 delay:5 Let's Write!")
+            self.respond_to_user(command_data, "Example: !war start 10 at:15:30 Let's Write!")
+            self.respond_to_user(command_data, "Note: The 'at' option assumes UTC unless you set your channel "
+                                               "$timezone.")
 
     def _cancel_handler(self, command_data: CommandData) -> None:
         if command_data.arg_count > 1:

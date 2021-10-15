@@ -115,6 +115,8 @@ class ChannelData(Channel):
 
         self.name = name
 
+        self.timezone = "UTC"
+
         self.last_speaker = ""
         self.last_speaker_time = 0.0
 
@@ -229,3 +231,7 @@ class ChannelData(Channel):
 
     def send_action(self, message: str) -> None:
         core.bot_instance.connection.action(self.name, message)
+
+    def set_timezone(self, timezone: str) -> None:
+        self.timezone = timezone
+        self.save_data()
