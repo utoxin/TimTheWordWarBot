@@ -1,7 +1,10 @@
 import logging
 import re
 import time
+from datetime import datetime, timedelta
 from typing import Optional
+
+from pytz import timezone
 
 from timmy import core
 from timmy.command_processors.base_command import BaseCommand
@@ -134,7 +137,6 @@ class WarCommands(BaseCommand):
                     match = schedule_pattern.match(command_data.args[i])
                     if match:
                         results = match.groups()
-                        input_string = ""
 
                         if results[0] == "" and i < (command_data.arg_count - 1):
                             i += 1
@@ -153,6 +155,21 @@ class WarCommands(BaseCommand):
                                 minutes = int(validation_results[1])
 
                                 if 0 <= hours <= 23 or 0 <= minutes <= 59:
+                                    utc_timezone = timezone('UTC')
+                                    channel_timezone = timezone(core.bot_instance.channels[command_data.channel]
+                                                                .timezone)
+
+                                    utc_datetime: datetime = utc_timezone.localize(datetime.utcnow())
+                                    channel_datetime: datetime = utc_datetime.astimezone(channel_timezone)
+
+                                    request_datetime = channel_datetime.replace(hour = hours, minute = minutes,
+                                                                                second = 0, microsecond = 0)
+
+                                    if request_datetime < channel_datetime:
+                                        request_datetime = request_datetime + timedelta(days=1)
+
+                                    requested_delay = request_datetime - channel_datetime
+                                    to_start = requested_delay.total_seconds()
 
                                 else:
                                     self.respond_to_user(
@@ -297,10 +314,13 @@ class WarCommands(BaseCommand):
                                      .format(war.get_name(), to_start / 60, war.year, war.war_id))
         else:
             self.respond_to_user(command_data, "Usage: !war start <duration in minutes> [<options>] [<name>]")
-            self.respond_to_user(command_data, "Options for all wars: delay:<minutes>")
+            self.respond_to_user(command_data, "Options for all wars: delay:<minutes>, at:<time>")
             self.respond_to_user(command_data, "Options for chain wars: chains:<chain count>, random:1, "
                                                "break:<minutes>")
             self.respond_to_user(command_data, "Example: !war start 10 delay:5 Let's Write!")
+            self.respond_to_user(command_data, "Example: !war start 10 at:15:30 Let's Write!")
+            self.respond_to_user(command_data, "Note: The 'at' option assumes UTC unless you set your channel "
+                                               "$timezone.")
 
     def _cancel_handler(self, command_data: CommandData) -> None:
         if command_data.arg_count > 1:
