@@ -14,7 +14,7 @@ class TimezoneCommand(BaseCommand):
             return
 
         target = command_data.channel
-        timezone = command_data.arg_string
+        timezone = "_".join(command_data.args)
 
         if not self._is_channel_admin(command_data, target, command_data.issuer):
             return
