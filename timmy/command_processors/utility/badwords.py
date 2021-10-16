@@ -9,6 +9,9 @@ class BadWordCommands(BaseCommand):
                                                                                 'Timmy\'s Markov DB')]
 
     def process(self, command_data: CommandData):
+        if not self._is_channel_admin(command_data, command_data.channel, command_data.issuer):
+            return
+
         if command_data.command == 'badword':
             if command_data.arg_count != 1 or command_data.args[0] == '':
                 self.respond_to_user(command_data, "Usage: $badword <word>")

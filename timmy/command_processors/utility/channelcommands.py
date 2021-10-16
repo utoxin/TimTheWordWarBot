@@ -36,7 +36,7 @@ class ChannelCommands(BaseCommand):
         if command_data.arg_count == 0:
             target = command_data.channel
         else:
-            if not self._validate_channel(command_data, command_data.args[0], command_data.issuer):
+            if not self._is_channel_admin(command_data, command_data.args[0], command_data.issuer):
                 return
 
             target = command_data.args[0]
@@ -50,7 +50,7 @@ class ChannelCommands(BaseCommand):
         if command_data.arg_count == 0:
             target = command_data.channel
         else:
-            if not self._validate_channel(command_data, command_data.args[0], command_data.issuer):
+            if not self._is_channel_admin(command_data, command_data.args[0], command_data.issuer):
                 return
 
             target = command_data.args[0]
@@ -81,7 +81,7 @@ class ChannelCommands(BaseCommand):
             target = command_data.channel
             duration = float(command_data.args[0])
         else:
-            if not self._validate_channel(command_data, command_data.args[0], command_data.issuer):
+            if not self._is_channel_admin(command_data, command_data.args[0], command_data.issuer):
                 return
 
             target = command_data.args[0].lower()
@@ -111,7 +111,7 @@ class ChannelCommands(BaseCommand):
             target = command_data.channel
             flag = int(command_data.args[0]) == 1
         else:
-            if not self._validate_channel(command_data, command_data.args[0], command_data.issuer):
+            if not self._is_channel_admin(command_data, command_data.args[0], command_data.issuer):
                 return
 
             target = command_data.args[0].lower()
@@ -137,7 +137,7 @@ class ChannelCommands(BaseCommand):
                 channel = command_data.args[0].lower()
                 command = command_data.args[1].lower()
 
-                if not self._validate_channel(command_data, channel, command_data.issuer):
+                if not self._is_channel_admin(command_data, channel, command_data.issuer):
                     return
 
             if command == 'list':
@@ -169,7 +169,7 @@ class ChannelCommands(BaseCommand):
                 name = float(command_data.args[3])
                 random = float(command_data.args[4])
 
-                if not self._validate_channel(command_data, channel, command_data.issuer):
+                if not self._is_channel_admin(command_data, channel, command_data.issuer):
                     return
 
             if command == 'set':
@@ -204,7 +204,7 @@ class ChannelCommands(BaseCommand):
             else:
                 channel = command_data.args[0].lower()
 
-            if not self._validate_channel(command_data, channel, command_data.issuer):
+            if not self._is_channel_admin(command_data, channel, command_data.issuer):
                 return
 
             channel_data: ChannelData = bot_instance.channels[channel]
@@ -224,7 +224,7 @@ class ChannelCommands(BaseCommand):
                 flag = command_data.args[2].lower()
                 value = int(command_data.args[3]) == 1
 
-            if not self._validate_channel(command_data, channel, command_data.issuer):
+            if not self._is_channel_admin(command_data, channel, command_data.issuer):
                 return
 
             channel_data: ChannelData = bot_instance.channels[channel]
@@ -260,7 +260,7 @@ class ChannelCommands(BaseCommand):
             else:
                 channel = command_data.args[0].lower()
 
-            if not self._validate_channel(command_data, channel, command_data.issuer):
+            if not self._is_channel_admin(command_data, channel, command_data.issuer):
                 return
 
             channel_data: ChannelData = bot_instance.channels[channel]
@@ -280,7 +280,7 @@ class ChannelCommands(BaseCommand):
                 command = command_data.args[2].lower()
                 value = int(command_data.args[3]) == 1
 
-            if not self._validate_channel(command_data, channel, command_data.issuer):
+            if not self._is_channel_admin(command_data, channel, command_data.issuer):
                 return
 
             channel_data: ChannelData = bot_instance.channels[channel]

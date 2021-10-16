@@ -5,6 +5,7 @@ from irc.dict import IRCDict
 from timmy import core
 from timmy.data.channel_data import ChannelData
 from timmy.data.command_data import CommandData
+from timmy.data.command_type import CommandType
 from timmy.event_handlers import CommandHandler
 
 
@@ -174,7 +175,7 @@ class BaseCommand:
                     )
                 return False
 
-    def _validate_channel(self, command_data: CommandData, candidate_channel: str, user: str) -> bool:
+    def _is_channel_admin(self, command_data: CommandData, candidate_channel: str, user: str) -> bool:
         from timmy.core import user_perms, bot_instance
 
         if candidate_channel not in bot_instance.channels:

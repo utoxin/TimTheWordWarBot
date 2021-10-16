@@ -19,11 +19,11 @@ class TimezoneCommand(BaseCommand):
             target = command_data.channel
             timezone = command_data.args[0]
         else:
-            if not self._validate_channel(command_data, command_data.args[0], command_data.issuer):
-                return
-
             target = command_data.args[0]
             timezone = command_data.args[1]
+
+        if not self._is_channel_admin(command_data, target, command_data.issuer):
+            return
 
         if timezone in common_timezones:
             from timmy.core import bot_instance

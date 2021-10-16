@@ -17,36 +17,42 @@ class AdminCommands(BaseCommand):
         if command_data.command == 'shout':
             channel_groups = channel_db.get_channel_groups()
 
-            if command_data.arg_count == 0:
-                self.respond_to_user(command_data, "Usage: $shout <message>")
-                self.respond_to_user(command_data, "USage: $shout @<channelgroup> <message>")
-                return
-            else:
-                destination = 'all'
-                message = command_data.arg_string
-
-                if command_data.args[0].startswith("@"):
-                    if command_data.arg_count == 1:
-                        self.respond_to_user(command_data, "USage: $shout @<channelgroup> <message>")
-                        return
-                    else:
-                        destination = command_data.args[0][1:]
-                        message = " ".join(command_data.args[1:])
-
-                if destination == 'all':
-                    from timmy.core import bot_instance
-                    target_channels = bot_instance.channels
+            if command_data.issuer_data.global_admin:
+                if command_data.arg_count == 0:
+                    self.respond_to_user(command_data, "Usage: $shout <message>")
+                    self.respond_to_user(command_data, "USage: $shout @<channelgroup> <message>")
+                    return
                 else:
-                    if destination not in channel_groups:
-                        self.respond_to_user(command_data, "Channel group not found.")
-                        return
-                    else:
-                        target_channels = channel_groups[destination]
+                    destination = 'all'
+                    message = command_data.arg_string
 
-                for channel in target_channels:
-                    bot_instance.connection.privmsg(channel, f"{command_data.issuer} shouts @{destination}: {message}")
+                    if command_data.args[0].startswith("@"):
+                        if command_data.arg_count == 1:
+                            self.respond_to_user(command_data, "USage: $shout @<channelgroup> <message>")
+                            return
+                        else:
+                            destination = command_data.args[0][1:]
+                            message = " ".join(command_data.args[1:])
+
+                    if destination == 'all':
+                        from timmy.core import bot_instance
+                        target_channels = bot_instance.channels
+                    else:
+                        if destination not in channel_groups:
+                            self.respond_to_user(command_data, "Channel group not found.")
+                            return
+                        else:
+                            target_channels = channel_groups[destination]
+
+                    for channel in target_channels:
+                        bot_instance.connection.privmsg(channel, f"{command_data.issuer} shouts @{destination}: {message}")
+            else:
+                self.respond_to_user(command_data, "Only the bot owner can do that!")
 
         elif command_data.command == 'ignore':
+            if not self._is_channel_admin(command_data, command_data.channel, command_data.issuer):
+                return
+
             if command_data.arg_count != 1:
                 self.respond_to_user(command_data, "Usage: $ignore <user>")
             else:
@@ -54,6 +60,9 @@ class AdminCommands(BaseCommand):
                 self.respond_to_user(command_data, "User added to admin ignore list.")
 
         elif command_data.command == 'unignore':
+            if not self._is_channel_admin(command_data, command_data.channel, command_data.issuer):
+                return
+
             if command_data.arg_count != 1:
                 self.respond_to_user(command_data, "Usage: $unignore <user>")
             else:
@@ -61,6 +70,9 @@ class AdminCommands(BaseCommand):
                 self.respond_to_user(command_data, "User removed from admin ignore list.")
 
         elif command_data.command == 'listignores':
+            if not self._is_channel_admin(command_data, command_data.channel, command_data.issuer):
+                return
+
             self.respond_to_user(command_data, f"There are {len(user_perms.admin_ignores)} users on the admin ignore "
                                                f"list. Sending the list in private.")
 

@@ -8,7 +8,10 @@ class ChannelGroupCommands(BaseCommand):
     sub_commands = ['list', 'add', 'remove', 'destroy']
 
     def process(self, command_data: CommandData) -> None:
-        self.handle_subcommand(command_data)
+        if command_data.issuer_data.global_admin:
+            self.handle_subcommand(command_data)
+        else:
+            self.respond_to_user(command_data, "Only the bot owner can do that!")
 
     def _list_handler(self, command_data: CommandData) -> None:
         channel_groups = channel_db.get_channel_groups()

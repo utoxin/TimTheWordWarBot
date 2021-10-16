@@ -1,6 +1,9 @@
+import logging
+
 from irc.dict import IRCDict
 
 from timmy import core, db_access
+from timmy.utilities import irc_logger
 
 
 class UserPerms:
@@ -52,6 +55,10 @@ class UserPerms:
         connection.close()
 
     def is_admin(self, nick: str, channel: str) -> bool:
+        irc_logger.log_message(f"Performing admin check on {nick} for {channel}", logging.DEBUG)
+        irc_logger.log_message("Known Opers: " + ", ".join(list(core.bot_instance.channels[channel].opers())),
+                               logging.DEBUG)
+
         if nick in core.bot_instance.channels[channel].opers():
             return True
 
