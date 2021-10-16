@@ -12,15 +12,15 @@ class TimezoneCommand(BaseCommand):
                     )]
 
     def process(self, command_data: CommandData) -> None:
-        if command_data.arg_count == 0 or command_data.arg_count > 2:
+        if command_data.arg_count == 0:
             self._usage(command_data)
             return
         if command_data.arg_count == 1:
             target = command_data.channel
-            timezone = command_data.args[0]
+            timezone = command_data.arg_string
         else:
             target = command_data.args[0]
-            timezone = command_data.args[1]
+            timezone = " ".join(command_data.args[1:])
 
         if not self._is_channel_admin(command_data, target, command_data.issuer):
             return
