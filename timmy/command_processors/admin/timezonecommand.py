@@ -6,21 +6,15 @@ from pytz import common_timezones
 class TimezoneCommand(BaseCommand):
     admin_commands = ['timezone']
 
-    help_topics = [('admin', 'core admin commands', '$timezone [<channel>] <timezone>', 'Update the given channel\'s '
-                                                                                       'timezone, or the current '
-                                                                                       'channel if none was specified.'
-                    )]
+    help_topics = [('admin', 'core admin commands', '$timezone <timezone>', 'Update the current channel\'s timezone')]
 
     def process(self, command_data: CommandData) -> None:
         if command_data.arg_count == 0:
             self._usage(command_data)
             return
-        if command_data.arg_count == 1:
-            target = command_data.channel
-            timezone = command_data.arg_string
-        else:
-            target = command_data.args[0]
-            timezone = " ".join(command_data.args[1:])
+
+        target = command_data.channel
+        timezone = command_data.arg_string
 
         if not self._is_channel_admin(command_data, target, command_data.issuer):
             return
@@ -35,9 +29,8 @@ class TimezoneCommand(BaseCommand):
             self._usage(command_data)
 
     def _usage(self, command_data: CommandData) -> None:
-        self.respond_to_user(command_data, "Usage: $timezone [<channel>] <timezone>")
+        self.respond_to_user(command_data, "Usage: $timezone <timezone>")
         self.respond_to_user(command_data, "Example: $timezone America/Denver")
-        self.respond_to_user(command_data, "Example: $timezone #channel America/Chicago")
         self.respond_to_user(command_data, "You can find your timezone in the list on this page: "
                              "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones and provide the TZ "
                              "Database Name.")
