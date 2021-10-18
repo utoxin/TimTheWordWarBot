@@ -23,6 +23,7 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             "invite":       [],
             "join":         [],
             "kick":         [],
+            "mode":         [],
             "namreply":     [],
             "nick":         [],
             "part":         [],
