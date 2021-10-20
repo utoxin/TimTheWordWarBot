@@ -32,6 +32,11 @@ class PostAuthHandler:
 
     @staticmethod
     def _timer_thread_two() -> None:
+        from timmy.utilities.interval import Interval
+        from timmy.utilities.interval import scheduler_tick
+        interval = Interval(1, scheduler_tick)
+        interval.start()
+
         core.init_core_tickers()
         utilities.init_utility_tickers()
 

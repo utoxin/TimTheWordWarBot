@@ -1,13 +1,13 @@
+import logging
 import random
 import re
-from datetime import timedelta
+import sys
+import traceback
 from typing import Dict, List, Optional, Pattern, Set, Tuple, Union
 
-from timeloop import Timeloop
+import schedule
 
 from timmy import db_access
-
-markov_timer = Timeloop()
 
 
 class MarkovProcessor:
@@ -36,7 +36,13 @@ class MarkovProcessor:
             self._load_alternate_words()
             self._load_alternate_pairs()
 
-            markov_timer.start()
+            schedule.every(1).minutes.do(markov_processing_loop).tag('markovticker')
+
+    def reset_timer(self) -> None:
+        schedule.clear('markovticker')
+
+        self.__init__()
+        self.init()
 
     def store_line(self, line_type: str, line: str) -> None:
         self.init()
@@ -485,7 +491,12 @@ class MarkovProcessor:
                is not None
 
 
-@markov_timer.job(interval = timedelta(seconds = 30))
 def markov_processing_loop() -> None:
-    from timmy.utilities import markov_processor
-    markov_processor.processing_loop()
+    try:
+        from timmy.utilities import markov_processor
+        markov_processor.processing_loop()
+    except Exception:
+        _, _, exc_tb = sys.exc_info()
+        from timmy.utilities import irc_logger
+        irc_logger.log_message(traceback.format_tb(exc_tb), logging.ERROR)
+
