@@ -19,6 +19,7 @@ from .amusement.sing import SingCommand
 from .amusement.search import SearchCommand
 from .amusement.woot import WootCommand
 from .owner.loglevel import LogLevelCommand
+from .owner.reload import ReloadCommand
 from .owner.shutdown import ShutdownCommand
 from .utility.admincommands import AdminCommands
 from .utility.badwords import BadWordCommands
@@ -69,6 +70,7 @@ def register_processors():
     AdminCommands()
     BadWordCommands()
     LogLevelCommand()
+    ReloadCommand()
     ShutdownCommand()
     TimezoneCommand()
 

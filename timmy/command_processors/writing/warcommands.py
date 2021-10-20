@@ -100,7 +100,7 @@ class WarCommands(BaseCommand):
 
             # Options for all wars
             start_delay_pattern = re.compile("^(?:start|delay):([0-9.]*)$", re.IGNORECASE)
-            schedule_pattern = re.compile(r"^at:(\d+:\d+)?$", re.IGNORECASE)
+            schedule_pattern = re.compile(r"^at:(\S*)$", re.IGNORECASE)
 
             # Options for chainwars
             chain_pattern = re.compile("^chains?:([0-9.]*)$", re.IGNORECASE)
@@ -148,13 +148,13 @@ class WarCommands(BaseCommand):
                         time_validation = re.compile(r"^(\d{1,2}):(\d{2})$", re.IGNORECASE)
 
                         validation_match = time_validation.match(input_string)
-                        if match:
+                        if validation_match:
                             validation_results = validation_match.groups()
                             try:
                                 hours = int(validation_results[0])
                                 minutes = int(validation_results[1])
 
-                                if 0 <= hours <= 23 or 0 <= minutes <= 59:
+                                if 0 <= hours <= 23 and 0 <= minutes <= 59:
                                     utc_timezone = timezone('UTC')
                                     channel_timezone = timezone(core.bot_instance.channels[command_data.channel]
                                                                 .timezone)
@@ -176,6 +176,7 @@ class WarCommands(BaseCommand):
                                             command_data, "I didn't understand the time argument for 'at'. It "
                                                           "should be in 24-hour format. For example: 19:45."
                                     )
+                                    return
 
                             except TypeError:
                                 self.respond_to_user(
@@ -192,6 +193,7 @@ class WarCommands(BaseCommand):
                         else:
                             self.respond_to_user(command_data, "I didn't understand the time argument for 'at'. It "
                                                                "should be in 24-hour format. For example: 19:45.")
+                            return
 
                         i += 1
                         continue

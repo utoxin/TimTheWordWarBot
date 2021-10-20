@@ -10,6 +10,9 @@ def setup_console_logger():
 
     logging.basicConfig(level = logging.DEBUG, handlers = [handler])
 
+    schedule_logger = logging.getLogger('schedule')
+    schedule_logger.setLevel(level = logging.INFO)
+
 
 def get_exception_logger():
     """

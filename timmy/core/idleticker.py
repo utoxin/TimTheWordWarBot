@@ -1,8 +1,11 @@
+import logging
 import random
+import sys
+import traceback
 from datetime import datetime, timedelta
 
+import schedule
 from irc.dict import IRCDict
-from timeloop import Timeloop
 
 from timmy import core, utilities
 from timmy.data.channel_data import ChannelData
@@ -11,15 +14,17 @@ from timmy.data.command_type import CommandType
 from timmy.db_access import chainstory_db
 from timmy.utilities import markov_generator
 
-idle_timer = Timeloop()
-
 
 class IdleTicker:
     def __init__(self):
         self.amusement_command_processors = IRCDict()
 
     def init(self) -> None:
-        idle_timer.start()
+        schedule.every(1).minutes.do(deidle_timer_loop).tag('idleticker')
+
+    def reset_timer(self) -> None:
+        schedule.clear('idleticker')
+        self.init()
 
     def tick(self) -> None:
         today = datetime.now()
@@ -125,6 +130,11 @@ class IdleTicker:
                                                                      "See !help for information.)")
 
 
-@idle_timer.job(interval = timedelta(seconds = 60))
 def deidle_timer_loop() -> None:
-    core.idle_ticker.tick()
+    try:
+        core.idle_ticker.tick()
+    except Exception:
+        _, _, exc_tb = sys.exc_info()
+        from timmy.utilities import irc_logger
+        irc_logger.log_message(traceback.format_tb(exc_tb), logging.ERROR)
+

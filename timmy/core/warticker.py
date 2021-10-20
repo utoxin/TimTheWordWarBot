@@ -1,16 +1,16 @@
+import logging
 import random
+import sys
 import time
-from datetime import timedelta
+import traceback
 from typing import Set
 
-from timeloop import Timeloop
+import schedule
 
 from timmy import core
 from timmy.data.war_state import WarState
 from timmy.data.word_war import WordWar
 from timmy.db_access import word_war_db
-
-war_timer = Timeloop()
 
 
 class WarTicker:
@@ -18,10 +18,14 @@ class WarTicker:
         self.loaded_wars: Set[WordWar] = set()
         self.active_wars: Set[WordWar] = set()
 
+    def reset_timer(self) -> None:
+        schedule.clear('warticker')
+        self.__init__()
+        self.load_wars()
+
     def load_wars(self) -> None:
         self.loaded_wars = word_war_db.load_wars()
-
-        war_timer.start()
+        schedule.every(1).seconds.do(war_update_loop).tag('warticker')
 
     def begin_war(self, war: WordWar) -> None:
         current_epoch = time.time()
@@ -121,54 +125,59 @@ class WarTicker:
             core.bot_instance.connection.privmsg(nick, message)
 
 
-@war_timer.job(interval = timedelta(seconds = 1))
 def war_update_loop() -> None:
-    from timmy.core import bot_instance
-    loaded_wars = core.war_ticker.loaded_wars.copy()
+    try:
+        from timmy.core import bot_instance
+        loaded_wars = core.war_ticker.loaded_wars.copy()
 
-    for war in loaded_wars:
-        if war.channel in bot_instance.channels.keys():
-            core.war_ticker.active_wars.add(war)
-            core.war_ticker.loaded_wars.remove(war)
+        for war in loaded_wars:
+            if war.channel in bot_instance.channels.keys():
+                core.war_ticker.active_wars.add(war)
+                core.war_ticker.loaded_wars.remove(war)
 
-            bot_instance.channels[war.channel].newest_war_id = war.get_id()
+                bot_instance.channels[war.channel].newest_war_id = war.get_id()
 
-    wars = core.war_ticker.active_wars.copy()
-    if wars is None or len(wars) <= 0:
-        return
+        wars = core.war_ticker.active_wars.copy()
+        if wars is None or len(wars) <= 0:
+            return
 
-    current_epoch = time.time()
+        current_epoch = time.time()
 
-    for war in wars:
-        if war.start_epoch >= current_epoch:
-            time_difference = int(war.start_epoch - current_epoch)
+        for war in wars:
+            if war.start_epoch >= current_epoch:
+                time_difference = int(war.start_epoch - current_epoch)
 
-            if time_difference in [600, 300, 60, 30, 5, 4, 3, 2, 1]:
-                core.war_ticker.war_start_count(war)
-            elif time_difference == 0:
-                core.war_ticker.begin_war(war)
-            elif time_difference >= 3600:
-                if time_difference % 3600 == 0:
+                if time_difference in [600, 300, 60, 30, 5, 4, 3, 2, 1]:
                     core.war_ticker.war_start_count(war)
-            elif time_difference >= 1800:
-                if time_difference % 1800 == 0:
-                    core.war_ticker.war_start_count(war)
-        else:
-            if war.end_epoch >= current_epoch:
-                if war.state == WarState.PENDING:
+                elif time_difference == 0:
                     core.war_ticker.begin_war(war)
-                else:
-                    time_difference = int(war.end_epoch - current_epoch)
-
-                    if time_difference in [600, 300, 60, 5, 4, 3, 2, 1]:
-                        core.war_ticker.war_end_count(war)
-                    elif time_difference == 0:
-                        core.war_ticker.end_war(war)
-                    elif time_difference >= 3600:
-                        if time_difference % 3600 == 0:
-                            core.war_ticker.war_end_count(war)
-                    elif time_difference >= 1800:
-                        if time_difference % 1800 == 0:
-                            core.war_ticker.war_end_count(war)
+                elif time_difference >= 3600:
+                    if time_difference % 3600 == 0:
+                        core.war_ticker.war_start_count(war)
+                elif time_difference >= 1800:
+                    if time_difference % 1800 == 0:
+                        core.war_ticker.war_start_count(war)
             else:
-                core.war_ticker.end_war(war)
+                if war.end_epoch >= current_epoch:
+                    if war.state == WarState.PENDING:
+                        core.war_ticker.begin_war(war)
+                    else:
+                        time_difference = int(war.end_epoch - current_epoch)
+
+                        if time_difference in [600, 300, 60, 5, 4, 3, 2, 1]:
+                            core.war_ticker.war_end_count(war)
+                        elif time_difference == 0:
+                            core.war_ticker.end_war(war)
+                        elif time_difference >= 3600:
+                            if time_difference % 3600 == 0:
+                                core.war_ticker.war_end_count(war)
+                        elif time_difference >= 1800:
+                            if time_difference % 1800 == 0:
+                                core.war_ticker.war_end_count(war)
+                else:
+                    core.war_ticker.end_war(war)
+    except Exception:
+        _, _, exc_tb = sys.exc_info()
+        from timmy.utilities import irc_logger
+        irc_logger.log_message(traceback.format_tb(exc_tb), logging.ERROR)
+
