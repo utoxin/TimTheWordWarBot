@@ -97,6 +97,7 @@ class UserPerms:
         cursor = connection.cursor()
 
         cursor.execute(insert_statement, {'nick': nick, 'type': ignore_type})
+        connection.close()
 
         if ignore_type == 'soft':
             self.soft_ignores[nick] = True
@@ -112,6 +113,7 @@ class UserPerms:
         cursor = connection.cursor()
 
         cursor.execute(insert_statement, {'nick': nick, 'type': ignore_type})
+        connection.close()
 
         if ignore_type == 'soft' and nick in self.soft_ignores:
             del self.soft_ignores[nick]

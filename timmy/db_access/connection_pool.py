@@ -1,3 +1,5 @@
+import inspect
+import logging
 from typing import Optional
 
 import mysql.connector
@@ -28,6 +30,12 @@ class ConnectionPool:
             print("Error while connecting to database using connection pool: ", e)
 
     def get_connection(self) -> Optional[PooledMySQLConnection]:
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+
+        from timmy.utilities import irc_logger
+        irc_logger.log_message(f"DB Connection Requested From: {calframe[1][3]}", logging.DEBUG)
+
         connection = self.__pool.get_connection()
 
         if connection.is_connected():
