@@ -22,7 +22,8 @@ class IrcLogger:
     def log_message(self, message, log_level = logging.INFO, layer = 1) -> None:
         if self._enabled and log_level >= self._log_level:
             if isinstance(message, str):
-                core.bot_instance.connection.privmsg(self._log_channel, message)
+                for line in message.rstrip().splitlines(False):
+                    core.bot_instance.connection.privmsg(self._log_channel, line)
             elif isinstance(message, list):
                 for line in message:
                     self.log_message(line, log_level, layer + 1)
