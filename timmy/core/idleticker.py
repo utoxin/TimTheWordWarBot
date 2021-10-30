@@ -1,8 +1,5 @@
-import logging
 import random
-import sys
-import traceback
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import schedule
 from irc.dict import IRCDict

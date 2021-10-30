@@ -1,6 +1,8 @@
 import sys
 import time
 
+import schedule
+
 from timmy.command_processors.base_command import BaseCommand
 from timmy.data.command_data import CommandData
 
@@ -14,6 +16,7 @@ class ShutdownCommand(BaseCommand):
         from timmy.core import bot_instance
 
         if command_data.issuer_data.global_admin:
+            schedule.clear()
             self.respond_to_user(command_data, "Shutting down.........")
             bot_instance.connection.quit("Help, help! I'm being repressed!")
             time.sleep(1)
