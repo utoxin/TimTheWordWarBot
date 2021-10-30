@@ -93,11 +93,11 @@ class ChannelDb:
         cursor.execute(delete_twitter_statement, {'channel': channel.name})
 
         insert_chatter_statement = "INSERT INTO `channel_chatter_settings` SET `channel` = %(channel)s, `setting` = " \
-                                   "%(setting)s, `value` = %(value)s"
+                                   "%(setting)s, `value` = %(value)s ON DUPLICATE KEY UPDATE `value` = %(value)s"
         insert_command_statement = "INSERT INTO `channel_command_settings` SET `channel` = %(channel)s, `setting` = " \
-                                   "%(setting)s, `value` = %(value)s"
-        insert_twitter_statement = "INSERT INTO `channel_twitter_feeds` SET `channel` = %(channel)s, `account` = " \
-                                   "%(account)s"
+                                   "%(setting)s, `value` = %(value)s ON DUPLICATE KEY UPDATE `value` = %(value)s"
+        insert_twitter_statement = "INSERT IGNORE INTO `channel_twitter_feeds` SET `channel` = %(channel)s, " \
+                                   "`account` = %(account)s"
 
         for key, value in channel.chatter_settings['types'].items():
             cursor.execute(
