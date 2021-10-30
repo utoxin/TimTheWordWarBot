@@ -1,5 +1,7 @@
 import inspect
 import logging
+import sys
+import traceback
 
 from timmy import core
 
@@ -35,3 +37,9 @@ class IrcLogger:
                                 inspect.stack()[layer].function
                         )
                 )
+
+    def log_traceback(self) -> None:
+        _, exc, exc_tb = sys.exc_info()
+
+        self.log_message(exc.__str__(), logging.ERROR)
+        self.log_message(traceback.format_tb(exc_tb), logging.ERROR)
