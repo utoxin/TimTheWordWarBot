@@ -3,6 +3,9 @@ import threading
 from irc.client import Event, ServerConnection
 
 from timmy import core, db_access, utilities
+from timmy.utilities.interval import Interval, scheduler_tick
+
+interval = Interval(0.5, scheduler_tick)
 
 
 class PostAuthHandler:
@@ -32,9 +35,6 @@ class PostAuthHandler:
 
     @staticmethod
     def _timer_thread_two() -> None:
-        from timmy.utilities.interval import Interval
-        from timmy.utilities.interval import scheduler_tick
-        interval = Interval(1, scheduler_tick)
         interval.start()
 
         core.init_core_tickers()
