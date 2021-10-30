@@ -361,12 +361,17 @@ class WarCommands(BaseCommand):
                                                "by default.")
         else:
             user_data = user_directory.find_user_data(command_data.issuer)
-            channel_data = core.bot_instance.channels[command_data.channel]
 
             if len(command_data.args) == 3:
                 war: WordWar = word_war_db.load_war_by_id(command_data.args[2])
-            elif channel_data.last_war_id != "":
-                war: WordWar = word_war_db.load_war_by_id(channel_data.last_war_id)
+            elif not command_data.in_pm:
+                channel_data = core.bot_instance.channels[command_data.channel]
+
+                if channel_data.last_war_id != "":
+                    war: WordWar = word_war_db.load_war_by_id(channel_data.last_war_id)
+                else:
+                    self.respond_to_user(command_data, "I don't know which war finished last. Try providing the War ID")
+                    return
             else:
                 self.respond_to_user(command_data, "I don't know which war finished last. Try providing the War ID")
                 return
@@ -405,14 +410,15 @@ class WarCommands(BaseCommand):
 
                 user_data.save()
 
-                channel_data.raptor_data['strength'] += min(10, int(war.base_duration / 600))
-
                 self.respond_to_user(command_data, f"{user_data.raptor_name} pulls out their "
                                                    f"{user_data.raptor_favorite_color} notebook and makes a note of "
                                                    f"that wordcount.")
 
-                if not channel_data.is_muzzled():
-                    core.raptor_ticker.war_report(user_data, war, wordcount)
+                if not command_data.in_pm:
+                    channel_data.raptor_data['strength'] += min(10, int(war.base_duration / 600))
+
+                    if not channel_data.is_muzzled():
+                        core.raptor_ticker.war_report(user_data, war, wordcount)
 
     def _leave_handler(self, command_data: CommandData) -> None:
         war = self._find_join_leave_war(command_data)

@@ -34,14 +34,14 @@ class CommandHandler:
     def on_pubmsg(self, connection: ServerConnection, event: Event) -> bool:
         from timmy.utilities import irc_logger
 
-        irc_logger.log_message(f"Received Command: {event.arguments[0]}", logging.DEBUG)
-
         if core.user_perms.is_ignored(event.source.nick, 'admin'):
             return True
 
         command_data = self._parse_event(event)
         if command_data is None:
             return False
+
+        irc_logger.log_message(f"Received Command: {event.arguments[0]}", logging.DEBUG)
 
         if command_data.type in [CommandType.SKYNET_USER, CommandType.SKYNET_ADMIN]:
             return True

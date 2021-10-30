@@ -177,7 +177,6 @@ def war_update_loop() -> None:
                 else:
                     core.war_ticker.end_war(war)
     except Exception:
-        _, _, exc_tb = sys.exc_info()
         from timmy.utilities import irc_logger
-        irc_logger.log_message(traceback.format_tb(exc_tb), logging.ERROR)
+        irc_logger.log_traceback()
 

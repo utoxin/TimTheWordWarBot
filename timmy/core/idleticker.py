@@ -134,7 +134,6 @@ def deidle_timer_loop() -> None:
     try:
         core.idle_ticker.tick()
     except Exception:
-        _, _, exc_tb = sys.exc_info()
         from timmy.utilities import irc_logger
-        irc_logger.log_message(traceback.format_tb(exc_tb), logging.ERROR)
+        irc_logger.log_traceback()
 

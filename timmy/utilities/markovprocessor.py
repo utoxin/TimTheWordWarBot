@@ -496,7 +496,6 @@ def markov_processing_loop() -> None:
         from timmy.utilities import markov_processor
         markov_processor.processing_loop()
     except Exception:
-        _, _, exc_tb = sys.exc_info()
         from timmy.utilities import irc_logger
-        irc_logger.log_message(traceback.format_tb(exc_tb), logging.ERROR)
+        irc_logger.log_traceback()
 
