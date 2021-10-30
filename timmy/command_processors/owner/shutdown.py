@@ -17,6 +17,10 @@ class ShutdownCommand(BaseCommand):
 
         if command_data.issuer_data.global_admin:
             schedule.clear()
+
+            from timmy.event_handlers.postauth_handler import interval
+            interval.stop()
+
             self.respond_to_user(command_data, "Shutting down.........")
             bot_instance.connection.quit("Help, help! I'm being repressed!")
             time.sleep(1)
