@@ -24,6 +24,6 @@ class BoxODoomDb:
         for record in cursor:
             challenge = float(record[0])
 
-        connection.close()
+        self.db.close_connection(connection)
 
         return challenge

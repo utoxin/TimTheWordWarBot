@@ -66,4 +66,4 @@ class UserData:
                 }
         )
 
-        connection.close()
+        db_access.connection_pool.close_connection(connection)

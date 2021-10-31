@@ -138,7 +138,7 @@ class InteractionControls(BaseCommand):
                         }
                 )
 
-        conn.close()
+        db_access.connection_pool.close_connection(conn)
 
     def _load_interaction_settings(self) -> None:
         select_statement = "SELECT `username`, `setting`, `value` FROM `user_interaction_settings`"
@@ -153,4 +153,4 @@ class InteractionControls(BaseCommand):
 
             self.interaction_settings[row['username']][row['setting']] = row['value'] == 1
 
-        conn.close()
+        db_access.connection_pool.close_connection(conn)

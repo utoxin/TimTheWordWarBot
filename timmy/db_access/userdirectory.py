@@ -44,7 +44,7 @@ class UserDirectory:
 
         self.user_data_loaded = True
 
-        connection.close()
+        db_access.connection_pool.close_connection(connection)
 
     def find_user_data(self, nick: str, include_temp_data: bool = False) -> Optional[UserData]:
         if not self.user_data_loaded:

@@ -23,7 +23,7 @@ class ChainStoryDb:
         for channel in cursor:
             paragraphs.append(channel[1])
 
-        connection.close()
+        self.db.close_connection(connection)
 
         paragraphs.reverse()
 
@@ -39,7 +39,7 @@ class ChainStoryDb:
         insert_cursor.execute(insert_statement, {'new_line': new_line, 'author': author})
         insert_cursor.close()
 
-        connection.close()
+        self.db.close_connection(connection)
 
     def word_count(self) -> int:
         select_statement = "SELECT IFNULL(SUM( LENGTH( STRING ) - LENGTH( REPLACE( STRING ,  ' ',  '' ) ) +1 ), 0) " \
@@ -55,7 +55,7 @@ class ChainStoryDb:
         for record in cursor:
             count = record[0]
 
-        connection.close()
+        self.db.close_connection(connection)
 
         return count
 
@@ -72,6 +72,6 @@ class ChainStoryDb:
         for record in cursor:
             count = record[0]
 
-        connection.close()
+        self.db.close_connection(connection)
 
         return count

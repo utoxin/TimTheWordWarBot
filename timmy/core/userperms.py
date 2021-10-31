@@ -30,7 +30,7 @@ class UserPerms:
 
         self.admin_data_loaded = True
 
-        connection.close()
+        db_access.connection_pool.close_connection(connection)
 
     def _load_ignore_data(self) -> None:
         select_statement = "SELECT `name`, `type` FROM `ignores`"
@@ -52,7 +52,7 @@ class UserPerms:
 
         self.ignore_data_loaded = True
 
-        connection.close()
+        db_access.connection_pool.close_connection(connection)
 
     def is_admin(self, nick: str, channel: str) -> bool:
         irc_logger.log_message(f"Performing admin check on {nick} for {channel}", logging.DEBUG)
@@ -97,7 +97,7 @@ class UserPerms:
         cursor = connection.cursor()
 
         cursor.execute(insert_statement, {'nick': nick, 'type': ignore_type})
-        connection.close()
+        db_access.connection_pool.close_connection(connection)
 
         if ignore_type == 'soft':
             self.soft_ignores[nick] = True
@@ -113,7 +113,7 @@ class UserPerms:
         cursor = connection.cursor()
 
         cursor.execute(insert_statement, {'nick': nick, 'type': ignore_type})
-        connection.close()
+        db_access.connection_pool.close_connection(connection)
 
         if ignore_type == 'soft' and nick in self.soft_ignores:
             del self.soft_ignores[nick]

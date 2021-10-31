@@ -25,7 +25,7 @@ class ChannelDb:
         for channel in cursor:
             channels.append(channel[0])
 
-        connection.close()
+        self.db.close_connection(connection)
 
         return channels
 
@@ -39,7 +39,7 @@ class ChannelDb:
         insert_cursor.execute(insert_statement, {'channel': channel.name})
         insert_cursor.close()
 
-        connection.close()
+        self.db.close_connection(connection)
 
         self.load_channel_data(channel)
 
@@ -50,7 +50,7 @@ class ChannelDb:
         cur = conn.cursor()
         cur.execute(update_statement, {'channel': channel.name})
         cur.close()
-        conn.close()
+        self.db.close_connection(conn)
 
     def save_channel_settings(self, channel: ChannelData) -> None:
         update_statement = "UPDATE `channels` SET `reactive_chatter_level` = %(reactive_chatter_level)s, " \
@@ -125,7 +125,7 @@ class ChannelDb:
                     }
             )
 
-        connection.close()
+        self.db.close_connection(connection)
 
     def load_channel_data(self, channel: ChannelData) -> None:
         select_channel_statement = "SELECT * FROM `channels` WHERE `channel` = %(channel)s"
@@ -172,7 +172,7 @@ class ChannelDb:
         for row in select_cursor:
             channel.twitter_accounts.append(row['account'])
 
-        connection.close()
+        self.db.close_connection(connection)
 
         self.save_channel_settings(channel)
 
@@ -193,7 +193,7 @@ class ChannelDb:
 
             channel_groups[channel[0]].append(channel[1])
 
-        connection.close()
+        self.db.close_connection(connection)
 
         return channel_groups
 
@@ -207,7 +207,7 @@ class ChannelDb:
         insert_cursor.execute(insert_statement, {'group': group, 'channel': channel})
         insert_cursor.close()
 
-        connection.close()
+        self.db.close_connection(connection)
 
     def remove_from_channel_group(self, group: str, channel: str) -> None:
         delete_statement = "DELETE FROM `channel_groups` WHERE `name` = %(group)s AND `channel_id` = (SELECT `id` " \
@@ -219,7 +219,7 @@ class ChannelDb:
         delete_cursor.execute(delete_statement, {'group': group, 'channel': channel})
         delete_cursor.close()
 
-        connection.close()
+        self.db.close_connection(connection)
 
     def destroy_channel_group(self, group: str) -> None:
         delete_statement = "DELETE FROM `channel_groups` WHERE `name` = %(group)s"
@@ -230,4 +230,4 @@ class ChannelDb:
         delete_cursor.execute(delete_statement, {'group': group})
         delete_cursor.close()
 
-        connection.close()
+        self.db.close_connection(connection)

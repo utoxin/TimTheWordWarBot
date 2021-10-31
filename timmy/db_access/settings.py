@@ -18,6 +18,6 @@ class Settings:
         res = cur.fetchone()
 
         cur.close()
-        conn.close()
+        self.db.close_connection(conn)
 
         return res[0]

@@ -23,7 +23,7 @@ class WordWarDb:
         cur.execute(create_query, war.data_export())
         war.war_id = cur.lastrowid
         cur.close()
-        conn.close()
+        self.db.close_connection(conn)
 
     def update_war(self, war: WordWar) -> None:
         update_query = "UPDATE `wars` SET `current_chain` = %(current_chain)s, `start_epoch` = %(start_epoch)s, " \
@@ -33,7 +33,7 @@ class WordWarDb:
         cur = conn.cursor()
         cur.execute(update_query, war.data_export())
         cur.close()
-        conn.close()
+        self.db.close_connection(conn)
 
         self.save_war_members(war)
 
@@ -49,7 +49,7 @@ class WordWarDb:
         for nick in war.war_members:
             cursor.execute(insert_statement, {'uuid': str(war.uuid), 'nick': nick})
 
-        connection.close()
+        self.db.close_connection(connection)
 
     def load_war_members(self, war: WordWar) -> Set[str]:
         select_statement = "SELECT * FROM `war_members` WHERE `war_uuid` = %(uuid)s"
@@ -63,7 +63,7 @@ class WordWarDb:
         for row in cursor:
             war_members.add(row['nick'])
 
-        connection.close()
+        self.db.close_connection(connection)
 
         return war_members
 
@@ -82,7 +82,7 @@ class WordWarDb:
             war.war_members = self.load_war_members(war)
             wars.append(war)
 
-        connection.close()
+        self.db.close_connection(connection)
 
         return wars
 
@@ -99,6 +99,6 @@ class WordWarDb:
             war = WordWar()
             war.load_from_db(row)
 
-        connection.close()
+        self.db.close_connection(connection)
 
         return war

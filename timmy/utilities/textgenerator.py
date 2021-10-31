@@ -73,4 +73,4 @@ class TextGenerator:
             else:
                 self.pychance.tables[row['table_name']].add_value(row['table_entry'])
 
-        db.close()
+        db_access.connection_pool.close_connection(db)

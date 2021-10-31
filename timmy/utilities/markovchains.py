@@ -96,7 +96,7 @@ class MarkovChains:
 
         result = cursor.fetchone()
 
-        conn.close()
+        self.db.close_connection(conn)
 
         if result is not None:
             return result['second_id']
@@ -164,6 +164,6 @@ class MarkovChains:
             if random.randrange(100) < ((1 - ((min_length - cur_words) / min_length)) * 25):
                 break
 
-        conn.close()
+        self.db.close_connection(conn)
 
         return sentence

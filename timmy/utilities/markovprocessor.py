@@ -59,7 +59,7 @@ class MarkovProcessor:
                 }
         )
 
-        conn.close()
+        self.db.close_connection(conn)
 
     def processing_loop(self) -> None:
         self.init()
@@ -83,8 +83,9 @@ class MarkovProcessor:
 
             delete_cursor.execute(delete_statement, {'id': row['id']})
 
-        select_conn.close()
-        delete_conn.close()
+        self.db.close_connection(select_conn)
+        self.db.close_connection(delete_conn)
+
 
     def _process_markov(self, message: str, message_type: str) -> None:
         known_replacements: Dict[Union[Tuple[str, str], str], Union[Tuple[str, str], str]] = {}
@@ -195,7 +196,7 @@ class MarkovProcessor:
                 }
         )
 
-        conn.close()
+        self.db.close_connection(conn)
 
     def _store_quad(self, word1: str, word2: str, word3: str, word4: str, message_type: str) -> None:
         first = self.get_markov_word_id(word1)
@@ -222,7 +223,7 @@ class MarkovProcessor:
                 }
         )
 
-        conn.close()
+        self.db.close_connection(conn)
 
     def get_markov_word_id(self, word: str) -> int:
         self.init()
@@ -240,13 +241,13 @@ class MarkovProcessor:
         result = cursor.fetchone()
 
         if result is not None:
-            conn.close()
+            self.db.close_connection(conn)
 
             return result['id']
         else:
             cursor.execute(add_word_statement, {'word': word})
 
-            conn.close()
+            self.db.close_connection(conn)
 
             return cursor.lastrowid
 
@@ -262,7 +263,7 @@ class MarkovProcessor:
 
         result = cursor.fetchone()
 
-        conn.close()
+        self.db.close_connection(conn)
 
         if result is not None:
             return result['word'].decode('utf-8')
@@ -279,7 +280,7 @@ class MarkovProcessor:
         cursor.execute(insert_sql, {'bad_word': word})
         cursor.execute(delete_sql, {'regexp': f"^[[:punct:]]*{word}[[:punct:]]*$"})
 
-        conn.close()
+        self.db.close_connection(conn)
 
         self.bad_words.add(re.compile('(\\W|\\b)({})(\\W|\\b)'.format(re.escape(word)), re.IGNORECASE))
 
@@ -361,7 +362,7 @@ class MarkovProcessor:
             'word_two': f"^[[:punct:]]*{word_two}[[:punct:]]*$"
         })
 
-        conn.close()
+        self.db.close_connection(conn)
 
         self.bad_pairs.add(
                 (
@@ -380,7 +381,7 @@ class MarkovProcessor:
         for row in cursor:
             self.bad_words.add(re.compile('(\\W|\\b)({})(\\W|\\b)'.format(re.escape(row['word'])), re.IGNORECASE))
 
-        conn.close()
+        self.db.close_connection(conn)
 
     def _load_bad_pairs(self) -> None:
         conn = self.db.get_connection()
@@ -397,7 +398,7 @@ class MarkovProcessor:
                     )
             )
 
-        conn.close()
+        self.db.close_connection(conn)
 
     def _load_alternate_words(self) -> None:
         conn = self.db.get_connection()
@@ -409,7 +410,7 @@ class MarkovProcessor:
         for row in cursor:
             self.alternate_words.add(row['word'])
 
-        conn.close()
+        self.db.close_connection(conn)
 
     def _load_alternate_pairs(self) -> None:
         conn = self.db.get_connection()
@@ -421,7 +422,7 @@ class MarkovProcessor:
         for row in cursor:
             self.alternate_pairs.add((row['word_one'], row['word_two']))
 
-        conn.close()
+        self.db.close_connection(conn)
 
     def _replace_bad_word(self, word: str) -> str:
         if len(self.bad_words) == 0:
