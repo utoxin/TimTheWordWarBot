@@ -1,8 +1,6 @@
 import logging
 import random
 import re
-import sys
-import traceback
 from typing import Dict, List, Optional, Pattern, Set, Tuple, Union
 
 import schedule
@@ -15,6 +13,7 @@ class MarkovProcessor:
     bad_pairs: Set[Tuple[Pattern[str], Pattern[str]]]
     alternate_words: Set[str]
     alternate_pairs: Set[Tuple[str, str]]
+    jobs_running: int
 
     def __init__(self):
         self.db = None
@@ -26,6 +25,7 @@ class MarkovProcessor:
         self.clean_string_pattern = re.compile('[^a-z]', re.IGNORECASE)
         self.all_upper_pattern = re.compile('^[A-Z]+$')
         self.starts_upper_pattern = re.compile('^[A-Z]+[a-z]+$')
+        self.jobs_running = 0
 
     def init(self) -> None:
         if self.db is None:
@@ -64,6 +64,13 @@ class MarkovProcessor:
     def processing_loop(self) -> None:
         self.init()
 
+        if self.jobs_running >= 5:
+            from timmy.utilities import irc_logger
+            irc_logger.log_message("Too Many Markov Processing Jobs Running!", logging.ERROR)
+            return
+
+        self.jobs_running += 1
+
         select_statement = "SELECT `id`, `type`, `text` FROM markov_processing_queue"
         delete_statement = "DELETE FROM `markov_processing_queue` WHERE `id` = %(id)s"
 
@@ -86,6 +93,7 @@ class MarkovProcessor:
         self.db.close_connection(select_conn)
         self.db.close_connection(delete_conn)
 
+        self.jobs_running -= 1
 
     def _process_markov(self, message: str, message_type: str) -> None:
         known_replacements: Dict[Union[Tuple[str, str], str], Union[Tuple[str, str], str]] = {}

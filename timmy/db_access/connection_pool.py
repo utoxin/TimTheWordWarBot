@@ -20,7 +20,7 @@ class ConnectionPool:
         try:
             self.__pool = mysql.connector.pooling.MySQLConnectionPool(
                     pool_name = "timmy_pool",
-                    pool_size = 32,
+                    pool_size = 50,
                     pool_reset_session = True,
                     host = host,
                     database = database,
