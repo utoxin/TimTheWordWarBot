@@ -121,10 +121,10 @@ class IdleTicker:
 
                     if channel.chatter_settings['types']['chainstory'] and not channel.is_muzzled() and \
                             channel.chatter_settings['random_level'] > 0:
-                        core.bot_instance.connection.action(channel, "opens up his novel file, considers for a minute, "
-                                                                     "and then rapidly types in several words. (Help "
-                                                                     "Timmy out by using the Chain Story commands. "
-                                                                     "See !help for information.)")
+                        core.bot_instance.connection.action(channel.name, "opens up his novel file, considers for a "
+                                                                          "minute, and then rapidly types in several "
+                                                                          "words. (Help Timmy out by using the Chain "
+                                                                          "Story commands. See !help for information.)")
 
 
 def deidle_timer_loop() -> None:

@@ -66,7 +66,7 @@ class ChainStoryCommands(BaseCommand):
         last_lines = chainstory_db.get_last_lines()
 
         for line in last_lines:
-            bot_instance.connection.privmsg(command_data.issuer, line)
+            bot_instance.connection.privmsg(command_data.issuer, line[:480])
 
         self.respond_to_user(command_data, "I sent you the last three paragraphs in a private message... They're too "
                                            "awesome for everyone to see!")

@@ -1,6 +1,7 @@
 import logging
 import random
 import re
+import time
 from typing import Dict, List, Optional, Pattern, Set, Tuple, Union
 
 import schedule
@@ -62,9 +63,7 @@ class MarkovProcessor:
         self.db.close_connection(conn)
 
     def processing_loop(self) -> None:
-        self.init()
-
-        if self.jobs_running >= 5:
+        if self.jobs_running > 1:
             from timmy.utilities import irc_logger
             irc_logger.log_message("Too Many Markov Processing Jobs Running!", logging.ERROR)
             return
@@ -196,6 +195,9 @@ class MarkovProcessor:
                                f"count = count + 1"
 
         cursor = conn.cursor()
+
+        start_time = time.time()
+
         cursor.execute(
                 add_triad_expression, {
                     'first':  first,
@@ -203,6 +205,13 @@ class MarkovProcessor:
                     'third':  third
                 }
         )
+
+        end_time = time.time()
+
+        total_time = round((end_time - start_time) * 1000)
+
+        from timmy.utilities import irc_logger
+        irc_logger.log_message(f"Storing Triad Took: {total_time} milliseconds.", logging.DEBUG)
 
         self.db.close_connection(conn)
 
@@ -234,8 +243,6 @@ class MarkovProcessor:
         self.db.close_connection(conn)
 
     def get_markov_word_id(self, word: str) -> int:
-        self.init()
-
         conn = self.db.get_connection()
 
         word = word[:50]
@@ -260,8 +267,6 @@ class MarkovProcessor:
             return cursor.lastrowid
 
     def get_markov_word_by_id(self, word_id: int) -> Optional[str]:
-        self.init()
-
         conn = self.db.get_connection()
 
         select_statement = "SELECT word FROM markov_words WHERE id = %(id)s"
