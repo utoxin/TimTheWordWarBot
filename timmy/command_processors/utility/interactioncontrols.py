@@ -36,11 +36,11 @@ class InteractionControls(BaseCommand):
             self.interactions.remove('chainstory')
             self.interactions.remove('commandment')
             self.interactions.remove('dance')
-            self.interactions.remove('dice')
             self.interactions.remove('eightball')
             self.interactions.remove('expound')
             self.interactions.remove('markov')
             self.interactions.remove('ping')
+            self.interactions.remove('roll')
             self.interactions.remove('sing')
             self.interactions.remove('woot')
 
