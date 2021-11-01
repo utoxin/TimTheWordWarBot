@@ -65,7 +65,7 @@ class CommandHandler:
         command_data = CommandData()
 
         for command_type, matcher in self.matchers.items():
-            match = matcher.match(event.arguments[0])
+            match = matcher.match(event.arguments[0].strip())
             if match:
                 results = match.groups()
                 self._setup_command_data(command_data, event, results)

@@ -88,7 +88,7 @@ class WarCommands(BaseCommand):
 
             try:
                 duration = float(command_data.args[1]) * 60
-            except TypeError:
+            except ValueError:
                 self.respond_to_user(command_data, "I couldn't understand the duration. Was it numeric?")
                 return
 
@@ -99,13 +99,13 @@ class WarCommands(BaseCommand):
             delay = duration / 2
 
             # Options for all wars
-            start_delay_pattern = re.compile("^(?:start|delay):([0-9.]*)$", re.IGNORECASE)
+            start_delay_pattern = re.compile(r"^(?:start|delay):(\S*)$", re.IGNORECASE)
             schedule_pattern = re.compile(r"^at:(\S*)$", re.IGNORECASE)
 
             # Options for chainwars
-            chain_pattern = re.compile("^chains?:([0-9.]*)$", re.IGNORECASE)
-            break_pattern = re.compile("^break:([0-9.]*)$", re.IGNORECASE)
-            randomness_pattern = re.compile("^random:([01]*)$", re.IGNORECASE)
+            chain_pattern = re.compile(r"^chains?:(\S*)$", re.IGNORECASE)
+            break_pattern = re.compile(r"^break:(\S*)$", re.IGNORECASE)
+            randomness_pattern = re.compile(r"^random:([01]*)$", re.IGNORECASE)
 
             if command_data.arg_count >= 3:
                 i = 2
@@ -122,7 +122,7 @@ class WarCommands(BaseCommand):
                                 input_string = results[0]
 
                             to_start = int(float(input_string) * 60)
-                        except TypeError:
+                        except ValueError:
                             self.respond_to_user(command_data, "I didn't understand the start delay. Was it numeric?")
                             from timmy.utilities import irc_logger
                             irc_logger.log_message(
@@ -178,7 +178,7 @@ class WarCommands(BaseCommand):
                                     )
                                     return
 
-                            except TypeError:
+                            except ValueError:
                                 self.respond_to_user(
                                     command_data, "I didn't understand the time argument for 'at'. It "
                                                   "should be in 24-hour format. For example: 19:45."
@@ -210,7 +210,7 @@ class WarCommands(BaseCommand):
                                 input_string = results[0]
 
                             total_chains = int(input_string)
-                        except TypeError:
+                        except ValueError:
                             self.respond_to_user(command_data, "I didn't understand the chain count. Was it numeric?")
                             from timmy.utilities import irc_logger
                             irc_logger.log_message(
@@ -235,7 +235,7 @@ class WarCommands(BaseCommand):
                                 input_string = results[0]
 
                             delay = int(float(input_string) * 60)
-                        except TypeError:
+                        except ValueError:
                             self.respond_to_user(command_data, "I didn't understand the break duration. Was it "
                                                                "numeric?")
                             from timmy.utilities import irc_logger
@@ -262,7 +262,7 @@ class WarCommands(BaseCommand):
 
                             do_randomness = int(input_string) == 1
 
-                        except TypeError:
+                        except ValueError:
                             self.respond_to_user(command_data, "I didn't understand the randomness flag. Was it "
                                                                "numeric?")
 
