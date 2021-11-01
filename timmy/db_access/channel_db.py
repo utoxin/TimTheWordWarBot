@@ -63,6 +63,11 @@ class ChannelDb:
                            "`muzzle_expiration` = %(muzzle_expiration)s, `raptor_strength_boost` = " \
                            "%(raptor_strength_boost)s, `timezone` = %(timezone)s WHERE `channel` = %(channel)s"
 
+        muzzle_time = None
+
+        if channel.muzzled:
+            muzzle_time = int(channel.muzzled_until)
+
         connection = self.db.get_connection()
         cursor = connection.cursor()
         cursor.execute(
@@ -77,7 +82,7 @@ class ChannelDb:
                     'active_velociraptors':     channel.raptor_data['active'],
                     'dead_velociraptors':       channel.raptor_data['dead'],
                     'killed_velociraptors':     channel.raptor_data['killed'],
-                    'muzzle_expiration':        int(channel.muzzled_until) if channel._muzzled else None,
+                    'muzzle_expiration':        muzzle_time,
                     'raptor_strength_boost':    channel.raptor_data['strength'],
                     'channel':                  channel.name,
                     'timezone':                 channel.timezone
@@ -158,7 +163,7 @@ class ChannelDb:
             channel.auto_muzzle = row['auto_muzzle_wars'] == 1
             channel.muzzled_until = row['muzzle_expiration']
             if channel.muzzled_until is not None and channel.muzzled_until > time.time():
-                channel._muzzled = True
+                channel.muzzled = True
 
         select_cursor.execute(select_chatter_statement, {'channel': channel.name})
         for row in select_cursor:

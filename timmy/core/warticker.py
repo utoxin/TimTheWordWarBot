@@ -1,8 +1,5 @@
-import logging
 import random
-import sys
 import time
-import traceback
 from typing import Set
 
 import schedule
@@ -72,8 +69,6 @@ class WarTicker:
                 war.start_epoch = war.end_epoch + war.base_break + (war.base_break * (random.randrange(20) - 10)) / 100
                 war.end_epoch = war.start_epoch + war.base_duration + (
                         war.base_duration * (random.randrange(20) - 10)) / 100
-
-                war.duration = war.end_epoch - war.start_epoch
             else:
                 war.start_epoch = war.end_epoch + war.base_break
                 war.end_epoch = war.start_epoch + war.base_duration

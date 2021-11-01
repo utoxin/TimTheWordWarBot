@@ -20,7 +20,7 @@ class ChannelCommands(BaseCommand):
 
     def process(self, command_data: CommandData) -> None:
         from timmy.core import user_perms
-        if not user_perms.is_admin(command_data.issuer, command_data.channel):
+        if not command_data.in_pm and not user_perms.is_admin(command_data.issuer, command_data.channel):
             self.respond_to_user(command_data, "I'm sorry, only admins are allowed to do that.")
             return
 
@@ -117,7 +117,7 @@ class ChannelCommands(BaseCommand):
             target = command_data.args[0].lower()
             flag = int(command_data.args[1]) == 1
 
-        bot_instance.channels[target].set_muzzle_flag(flag)
+        bot_instance.channels[target].set_auto_muzzle(flag)
 
         self.respond_to_user(command_data, "Channel auto muzzle flag updated for {}.".format(target))
         return

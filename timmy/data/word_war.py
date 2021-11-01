@@ -150,8 +150,8 @@ class WordWar:
             name_parts.append(f"[ID {db_id:<{id_field_width:d}}]")
 
         if include_duration:
-            duration = self.get_duration_text(self.duration())
-            name_parts.append(f"[{duration:<{duration_field_width:d}}]")
+            duration_value = self.get_duration_text(self.duration())
+            name_parts.append(f"[{duration_value:<{duration_field_width:d}}]")
 
         name_parts.append(self.name)
 
@@ -161,12 +161,12 @@ class WordWar:
         return " ".join(name_parts)
 
     @staticmethod
-    def get_duration_text(duration: float) -> str:
+    def get_duration_text(duration_value: float) -> str:
         text: str = ""
         hours: int = 0
         minutes: int = 0
 
-        tmp: float = duration
+        tmp: float = duration_value
 
         if tmp > (60 * 60):
             hours = int(tmp // (60 * 60))

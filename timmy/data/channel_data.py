@@ -123,7 +123,7 @@ class ChannelData(Channel):
         self.last_war_id = ""
         self.newest_war_id = ""
 
-        self._muzzled = False
+        self.muzzled = False
         self.muzzled_until = None
         self.auto_muzzle = True
 
@@ -173,16 +173,16 @@ class ChannelData(Channel):
                 auto_muzzle = True
                 break
 
-        return self._muzzled or auto_muzzle
+        return self.muzzled or auto_muzzle
 
     def clear_timed_muzzle(self) -> None:
-        if self._muzzled and self.muzzled_until is not None and (self.muzzled_until < time.time()):
-            self._muzzled = False
+        if self.muzzled and self.muzzled_until is not None and (self.muzzled_until < time.time()):
+            self.muzzled = False
             self.muzzled_until = 0.0
             self.save_data()
 
     def set_muzzle_flag(self, muzzled: bool, timeout: Optional[float] = None) -> None:
-        self._muzzled = muzzled
+        self.muzzled = muzzled
         self.muzzled_until = timeout
         self.save_data()
 

@@ -219,6 +219,9 @@ class RaptorTicker:
 
         candidates.remove(exclude_channel)
 
+        if len(candidates) <= 0:
+            return None
+
         total_raptors = sum(c.raptor_data['active'] for c in candidates)
         max_raptors = max(c.raptor_data['active'] for c in candidates)
 
