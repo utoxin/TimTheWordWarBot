@@ -138,7 +138,7 @@ class BaseCommand:
             if command_data.command in self.command_flag_map:
                 flag_name = self.command_flag_map[command_data.command]
 
-            if not channel_data.command_settings[flag_name]:
+            if flag_name not in channel_data.command_settings or not channel_data.command_settings[flag_name]:
                 command_data.automatic or self.respond_to_user(command_data, "I'm sorry, I don't do that here.")
                 return False
 
