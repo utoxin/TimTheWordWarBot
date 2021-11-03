@@ -71,10 +71,10 @@ class WarCommands(BaseCommand):
             command_data.arg_string = 'leave ' + command_data.arg_string
 
         if command_data.arg_count >= 1:
-            if command_data.args[0] == 'create':
+            if command_data.args[0].lower() == 'create':
                 command_data.args[0] = 'start'
 
-            if command_data.args[0] == 'end':
+            if command_data.args[0].lower() == 'end':
                 command_data.args[0] = 'cancel'
 
         self.handle_subcommand(command_data)

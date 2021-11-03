@@ -5,7 +5,6 @@ from irc.dict import IRCDict
 from timmy import core
 from timmy.data.channel_data import ChannelData
 from timmy.data.command_data import CommandData
-from timmy.data.command_type import CommandType
 from timmy.event_handlers import CommandHandler
 
 
@@ -96,11 +95,11 @@ class BaseCommand:
             help_commands.add_help_topic(user_type, category, topic, description)
 
     def handle_subcommand(self, command_data: CommandData) -> None:
-        if command_data.arg_count < 1 or command_data.args[0] not in self.sub_commands:
+        if command_data.arg_count < 1 or command_data.args[0].lower() not in self.sub_commands:
             self.respond_to_user(command_data, "Valid subcommands: " + ", ".join(self.sub_commands))
             return
 
-        subcommand_handler = getattr(self, '_' + command_data.args[0] + '_handler')
+        subcommand_handler = getattr(self, '_' + command_data.args[0].lower() + '_handler')
         subcommand_handler(command_data)
 
     def process(self, command_data: CommandData) -> None:
