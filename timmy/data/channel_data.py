@@ -136,6 +136,11 @@ class ChannelData(Channel):
 
         self.raptor_data = copy.deepcopy(ChannelData.raptor_data_defaults)
 
+        self.should_be_saved = True
+
+    def flag_as_temporary(self):
+        self.should_be_saved = False
+
     def join_channel(self) -> None:
         db_access.channel_db.join_channel(self)
 
@@ -143,7 +148,8 @@ class ChannelData(Channel):
         db_access.channel_db.deactivate_channel(self)
 
     def save_data(self) -> None:
-        db_access.channel_db.save_channel_settings(self)
+        if self.should_be_saved:
+            db_access.channel_db.save_channel_settings(self)
 
     def load_data(self) -> None:
         db_access.channel_db.load_channel_data(self)

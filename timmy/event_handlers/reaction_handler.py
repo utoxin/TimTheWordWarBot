@@ -13,7 +13,11 @@ class ReactionHandler:
         if core.user_perms.is_ignored(event.source.nick, 'soft'):
             return
 
-        channel: ChannelData = core.bot_instance.channels[event.target]
+        if event.target in core.bot_instance.channels:
+            channel: ChannelData = core.bot_instance.channels[event.target]
+        else:
+            channel: ChannelData = ChannelData(event.source.nick)
+            channel.flag_as_temporary()
 
         if channel.is_muzzled():
             return
@@ -135,7 +139,11 @@ class ReactionHandler:
         if core.user_perms.is_ignored(event.source.nick, 'soft'):
             return
 
-        channel: ChannelData = core.bot_instance.channels[event.target]
+        if event.target in core.bot_instance.channels:
+            channel: ChannelData = core.bot_instance.channels[event.target]
+        else:
+            channel: ChannelData = ChannelData(event.source.nick)
+            channel.flag_as_temporary()
 
         if channel.is_muzzled():
             return
