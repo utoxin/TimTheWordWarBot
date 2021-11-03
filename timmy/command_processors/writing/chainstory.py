@@ -65,8 +65,10 @@ class ChainStoryCommands(BaseCommand):
 
         last_lines = chainstory_db.get_last_lines()
 
+        max_length = 512 - (10 + len(command_data.issuer))
+
         for line in last_lines:
-            bot_instance.connection.privmsg(command_data.issuer, line[:480])
+            bot_instance.connection.privmsg(command_data.issuer, line[:max_length])
 
         self.respond_to_user(command_data, "I sent you the last three paragraphs in a private message... They're too "
                                            "awesome for everyone to see!")
@@ -102,8 +104,10 @@ class ChainStoryCommands(BaseCommand):
         word_count = chainstory_db.word_count()
         author_count = chainstory_db.author_count()
 
+        max_length = 512 - (10 + len(command_data.issuer))
+
         for line in last_lines:
-            bot_instance.connection.privmsg(command_data.issuer, line)
+            bot_instance.connection.privmsg(command_data.issuer, line[:max_length])
 
         self.respond_to_user(command_data, f"My novel is currently {word_count:,} words long, with paragraphs written "
                                            f"by {author_count:,} different people, and I sent you the last three "

@@ -116,6 +116,9 @@ class WarTicker:
 
     @staticmethod
     def notify_war_members(war: WordWar, message: str) -> None:
+        db_id = war.get_id()
+        message += f" [ID {db_id}]"
+
         for nick in war.war_members:
             core.bot_instance.connection.privmsg(nick, message)
 
