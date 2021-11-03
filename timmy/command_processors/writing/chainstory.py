@@ -65,7 +65,7 @@ class ChainStoryCommands(BaseCommand):
 
         last_lines = chainstory_db.get_last_lines()
 
-        max_length = 512 - (10 + len(command_data.issuer))
+        max_length = 512 - (12 + len(command_data.issuer))
 
         for line in last_lines:
             bot_instance.connection.privmsg(command_data.issuer, line[:max_length])
@@ -104,7 +104,7 @@ class ChainStoryCommands(BaseCommand):
         word_count = chainstory_db.word_count()
         author_count = chainstory_db.author_count()
 
-        max_length = 512 - (10 + len(command_data.issuer))
+        max_length = 512 - (12 + len(command_data.issuer))
 
         for line in last_lines:
             bot_instance.connection.privmsg(command_data.issuer, line[:max_length])
