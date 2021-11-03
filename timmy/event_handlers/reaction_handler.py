@@ -303,7 +303,10 @@ class ReactionHandler:
 
     @staticmethod
     def _interact(event: Event, message_type: str) -> None:
-        channel: ChannelData = core.bot_instance.channels[event.target]
+        if event.target in core.bot_instance.channels:
+            channel: ChannelData = core.bot_instance.channels[event.target]
+        else:
+            return
 
         if channel.chatter_settings['random_level'] <= 0:
             return
