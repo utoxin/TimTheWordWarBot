@@ -389,7 +389,7 @@ class WarCommands(BaseCommand):
             else:
                 try:
                     wordcount = int(float(command_data.args[1]))
-                except TypeError:
+                except ValueError:
                     self.respond_to_user(command_data, "I didn't understand the wordcount. Was it numeric?")
                     from timmy.utilities import irc_logger
                     irc_logger.log_message(

@@ -14,7 +14,7 @@ class TimerCommand(BaseCommand):
         if command_data.arg_count > 0:
             try:
                 duration = int(command_data.args[0])
-            except TypeError:
+            except ValueError:
                 self.respond_to_user(command_data, "Could not understand first parameter. Was it numeric?")
                 return
 

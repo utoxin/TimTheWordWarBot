@@ -27,7 +27,8 @@ class ConnectionPool:
                     user = user,
                     password = password,
                     autocommit = True,
-                    port = port
+                    port = port,
+                    charset = 'utf8mb4'
             )
         except Error as e:
             print("Error while connecting to database using connection pool: ", e)
@@ -61,7 +62,7 @@ class ConnectionPool:
         if calframe[1][3] in self.__connection_count:
             self.__connection_count[calframe[1][3]] -= 1
         else:
-            irc_logger.log_message("WTF? Somehow closing a connection before we have one.")
+            irc_logger.log_message("WTF? Somehow closing a connection before we have one.", logging.DEBUG)
             self.__connection_count[calframe[1][3]] = 0
 
         irc_logger.log_message(f"DB Closed: {calframe[1][3]} Remaining: {self.__connection_count[calframe[1][3]]}",

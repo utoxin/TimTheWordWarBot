@@ -42,7 +42,7 @@ class BoxODoomCommand(BaseCommand):
                     self.respond_to_user(command_data, "Difficulty must be one of: extraeasy, easy, average, hard, "
                                                        "extreme, insane, impossible, tadiera")
                     return
-            except TypeError:
+            except ValueError:
                 duration = 0
 
             if duration == 0:
