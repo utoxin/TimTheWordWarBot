@@ -279,7 +279,7 @@ class MarkovProcessor:
         self.db.close_connection(conn)
 
         if result is not None:
-            return result['word'].decode('utf-8')
+            return result['word']
         else:
             return None
 
