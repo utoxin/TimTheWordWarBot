@@ -2,6 +2,7 @@ import logging
 import random
 import re
 import time
+from functools import lru_cache
 from typing import Dict, List, Optional, Pattern, Set, Tuple, Union
 
 import schedule
@@ -79,18 +80,22 @@ class MarkovProcessor:
         delete_conn = self.db.get_connection()
         delete_cursor = delete_conn.cursor()
 
+        lines_to_process = []
+
         select_cursor.execute(select_statement)
         for row in select_cursor:
+            lines_to_process.append(row)
+            delete_cursor.execute(delete_statement, {'id': row['id']})
+
+        self.db.close_connection(select_conn)
+        self.db.close_connection(delete_conn)
+
+        for row in lines_to_process:
             if row['type'] == 'emote' or row['type'] == 'say':
                 self._process_markov(row['text'], row['type'])
             elif row['type'] == 'novel':
                 self._process_markov4(row['text'], row['type'])
                 self._process_markov(row['text'], 'say')
-
-            delete_cursor.execute(delete_statement, {'id': row['id']})
-
-        self.db.close_connection(select_conn)
-        self.db.close_connection(delete_conn)
 
         self.jobs_running -= 1
 
@@ -185,8 +190,6 @@ class MarkovProcessor:
         second = self.get_markov_word_id(word2)
         third = self.get_markov_word_id(word3)
 
-        conn = self.db.get_connection()
-
         if message_type != 'emote':
             message_type = 'say'
 
@@ -194,9 +197,10 @@ class MarkovProcessor:
                                f"`count`) VALUES (%(first)s, %(second)s, %(third)s, 1) ON DUPLICATE KEY UPDATE " \
                                f"count = count + 1"
 
-        cursor = conn.cursor()
-
         start_time = time.time()
+
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
 
         cursor.execute(
                 add_triad_expression, {
@@ -206,6 +210,8 @@ class MarkovProcessor:
                 }
         )
 
+        self.db.close_connection(conn)
+
         end_time = time.time()
 
         total_time = round((end_time - start_time) * 1000)
@@ -213,23 +219,20 @@ class MarkovProcessor:
         from timmy.utilities import irc_logger
         irc_logger.log_message(f"Storing Triad Took: {total_time} milliseconds.", logging.DEBUG)
 
-        self.db.close_connection(conn)
-
     def _store_quad(self, word1: str, word2: str, word3: str, word4: str, message_type: str) -> None:
         first = self.get_markov_word_id(word1)
         second = self.get_markov_word_id(word2)
         third = self.get_markov_word_id(word3)
         fourth = self.get_markov_word_id(word4)
 
-        conn = self.db.get_connection()
-
-        if message_type == 'novel':
+        if message_type != 'novel':
             return
 
         add_quad_expression = f"INSERT INTO `markov4_{message_type}_data` (`first_id`, `second_id`, `third_id`, " \
                               f"`fourth_id`, `count`) VALUES (%(first)s, %(second)s, %(third)s, %(fourth)s, 1) ON " \
                               f"DUPLICATE KEY UPDATE count = count + 1"
 
+        conn = self.db.get_connection()
         cursor = conn.cursor()
         cursor.execute(
                 add_quad_expression, {
@@ -239,17 +242,16 @@ class MarkovProcessor:
                     'fourth': fourth
                 }
         )
-
         self.db.close_connection(conn)
 
+    @lru_cache
     def get_markov_word_id(self, word: str) -> int:
-        conn = self.db.get_connection()
-
         word = word[:50]
 
         select_word_statement = "SELECT id FROM markov_words WHERE word = %(word)s"
         add_word_statement = "INSERT INTO markov_words SET word = %(word)s"
 
+        conn = self.db.get_connection()
         cursor = conn.cursor(dictionary = True)
         cursor.execute(select_word_statement, {'word': word})
 
@@ -266,11 +268,11 @@ class MarkovProcessor:
 
             return cursor.lastrowid
 
+    @lru_cache
     def get_markov_word_by_id(self, word_id: int) -> Optional[str]:
-        conn = self.db.get_connection()
-
         select_statement = "SELECT word FROM markov_words WHERE id = %(id)s"
 
+        conn = self.db.get_connection()
         cursor = conn.cursor(dictionary = True)
         cursor.execute(select_statement, {'id': word_id})
 
