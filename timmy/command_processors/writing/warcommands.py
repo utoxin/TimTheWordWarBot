@@ -415,6 +415,7 @@ class WarCommands(BaseCommand):
                                                    f"that wordcount.")
 
                 if not command_data.in_pm:
+                    channel_data = core.bot_instance.channels[command_data.channel]
                     channel_data.raptor_data['strength'] += min(10, int(war.base_duration / 600))
 
                     if not channel_data.is_muzzled():
