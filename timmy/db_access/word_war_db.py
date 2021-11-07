@@ -39,7 +39,7 @@ class WordWarDb:
 
     def save_war_members(self, war: WordWar) -> None:
         delete_statement = "DELETE FROM `war_members` WHERE `war_uuid` = %(uuid)s"
-        insert_statement = "INSERT INTO `war_members` SET `war_uuid` = %(uuid)s, `nick` = %(nick)s"
+        insert_statement = "INSERT IGNORE INTO `war_members` SET `war_uuid` = %(uuid)s, `nick` = %(nick)s"
 
         connection = self.db.get_connection()
         cursor = connection.cursor()
