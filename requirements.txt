@@ -6,3 +6,4 @@ PyMySQL ~= 1.0.2
 dice ~= 3.1.2
 pytz
 schedule
+pypubsub
