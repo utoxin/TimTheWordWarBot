@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 
 from pubsub import pub
@@ -11,43 +12,86 @@ class Irc:
 
     host: str
     port: int
+
+    # TODO: Stop storing passwords in memory.
     server_password: Optional[str]
 
     __bot: Bot
 
     def __init__(self, settings: dict):
-        if 'nickname' in settings:
-            self.nickname = settings['nickname']
+        if 'irc' not in settings:
+            raise ValueError('Settings must contain an irc block.')
+
+        if 'sql' not in settings:
+            raise ValueError('Settings must contain a sql block')
+
+        if 'nickname' in settings['irc']:
+            self.nickname = settings['irc']['nickname']
         else:
             raise ValueError('nickname is a required value')
 
-        if 'realname' in settings:
-            self.realname = settings['realname']
+        if 'realname' in settings['irc']:
+            self.realname = settings['irc']['realname']
         else:
-            self.realname = settings['nickname']
+            self.realname = settings['irc']['nickname']
 
-        if 'host' in settings:
-            self.host = settings['host']
+        if 'host' in settings['irc']:
+            self.host = settings['irc']['host']
         else:
             raise ValueError('host is a required value')
 
-        if 'port' in settings:
-            self.port = int(settings['port'])
+        if 'port' in settings['irc']:
+            self.port = int(settings['irc']['port'])
         else:
             self.port = 6667
 
-        if 'server_password' in settings:
-            self.server_password = settings['server_password']
+        if 'server_password' in settings['irc']:
+            self.server_password = settings['irc']['server_password']
         else:
             self.server_password = None
 
         self.__bot = Bot()
 
-    def initialize(self):
-        self.__bot.setup(self.nickname, self.realname, self.host, self.port, self.server_password)
+    @staticmethod
+    def get_default_config():
+        return {
+            "irc": {
+                "nickname": "Timmy",
+                "realname": "Timmy",
+                "host": "localhost",
+                "port": 6667,
+                "server_password": None
+            },
+            "sql": {
+                "user": "timmy",
+                "password": "password",
+                "host": "localhost",
+                "port": 3306,
+                "database": "timmy"
+            }
+        }
+
+    def initialize(self, connection_tag: uuid):
+        self.__bot.setup(connection_tag, self.nickname, self.realname, self.host, self.port, self.server_password)
         self.__bot.start()
 
         pub.subscribe(self._join_channel, "join-channel")
+        pub.subscribe(self._send_message, "send-message")
+        pub.subscribe(self._send_action, "send-action")
+        pub.subscribe(self._send_pm, "send-pm")
 
-    def _join_channel(self, channel: str):
+    def shutdown(self):
+        self.__bot.connection.quit()
+        return
+
+    def _join_channel(self, message_data: dict):
+        return
+
+    def _send_message(self, message_data: dict):
+        return
+
+    def _send_action(self, message_data: dict):
+        return
+
+    def _send_pm(self, message_data: dict):
         return

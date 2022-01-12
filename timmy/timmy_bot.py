@@ -31,6 +31,7 @@ if __name__ == "__main__":
         config.set("DB", "database", "timmy")
         config.set("DB", "user", "timmy")
         config.set("DB", "password", "password")
+        config.set("DB", "encrypt_passphrase", "you should change this passphrase")
 
         with open('botconfig.ini', 'w') as configfile:
             config.write(configfile)
@@ -52,7 +53,8 @@ if __name__ == "__main__":
             config.get("DB", "database"),
             config.get("DB", "user"),
             config.get("DB", "password"),
-            config.get("DB", "port")
+            config.get("DB", "port"),
+            config.get("DB", "encrypt_passphrase")
     )
 
     bot_instance.start()

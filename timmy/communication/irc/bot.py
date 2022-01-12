@@ -1,5 +1,6 @@
 import itertools
 import re
+import uuid
 from typing import Optional
 
 import irc.client_aio
@@ -7,6 +8,7 @@ import more_itertools
 from irc.bot import ExponentialBackoff, ServerSpec
 from irc.client import Event, ServerConnection
 from irc.dict import IRCDict
+from pubsub import pub
 
 
 class Bot(irc.client_aio.AioSimpleIRCClient):
@@ -36,8 +38,14 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
         self._realname = "Timmy"
         self.servers = None
         self.recon = None
+        self.connection_tag = None
 
-    def setup(self, nickname: str, realname: str, host: str, port: int, server_password: Optional[str]) -> None:
+    def setup(
+            self, connection_tag: uuid, nickname: str, realname: str, host: str, port: int,
+            server_password: Optional[str]
+            ) -> None:
+        self.connection_tag = connection_tag
+
         for i in self.handled_callbacks.keys():
             self.connection.add_global_handler(i, getattr(self, "_on_" + i), -20)
 
@@ -69,9 +77,15 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
 
     def _on_action(self, connection: ServerConnection, event: Event) -> None:
         event = self._cleanup_color(event)
-        for obj in self.handled_callbacks["action"]:
-            if obj.on_action(connection, event):
-                break
+
+        pub.sendMessage(
+            "action-received", message_data={
+                    "connection_tag": self.connection_tag,
+                    "sender":         event.source,
+                    "channel":        event.target,
+                    "message":        event.arguments[0]
+                }
+            )
 
     def _on_disconnect(self, connection: ServerConnection, event: Event) -> None:
         self.channels = IRCDict()
@@ -82,37 +96,46 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
                 break
 
     def _on_invite(self, connection: ServerConnection, event: Event) -> None:
-        for obj in self.handled_callbacks["invite"]:
-            if obj.on_invite(connection, event):
-                break
+        pub.sendMessage(
+            "invite-received", message_data={
+                    "connection_tag": self.connection_tag,
+                    "channel":        event.target
+                }
+            )
 
     def _on_join(self, connection: ServerConnection, event: Event) -> None:
-        ch = event.target
-        nick = event.source.nick
-
-        if nick == connection.get_nickname():
-            self.channels[ch] = ChannelData(ch)
-            self.channels[ch].join_channel()
-
-        self.channels[ch].add_user(nick)
-
-        for obj in self.handled_callbacks["join"]:
-            if obj.on_join(connection, event):
-                break
+        if event.source.nick == connection.get_nickname():
+            pub.sendMessage(
+                    "channel-joined-self", message_data={
+                        "connection_tag": self.connection_tag,
+                        "channel":        event.target,
+                    }
+            )
+        else:
+            pub.sendMessage(
+                    "channel-joined-other", message_data={
+                        "connection_tag": self.connection_tag,
+                        "channel":        event.target,
+                        "username":       event.source.nick
+                    }
+            )
 
     def _on_kick(self, connection: ServerConnection, event: Event) -> None:
-        nick = event.arguments[0]
-        channel = event.target
-
-        if nick == connection.get_nickname():
-            self.channels[channel].leave_channel()
-            del self.channels[channel]
+        if event.source.nick == connection.get_nickname():
+            pub.sendMessage(
+                    "channel-kicked-self", message_data={
+                        "connection_tag": self.connection_tag,
+                        "channel":        event.target,
+                    }
+            )
         else:
-            self.channels[channel].remove_user(nick)
-
-        for obj in self.handled_callbacks["kick"]:
-            if obj.on_kick(connection, event):
-                break
+            pub.sendMessage(
+                    "channel-kicked-other", message_data={
+                        "connection_tag": self.connection_tag,
+                        "channel":        event.target,
+                        "username":       event.source.nick
+                    }
+            )
 
     def _on_mode(self, connection: ServerConnection, event: Event) -> None:
         t = event.target
@@ -163,50 +186,69 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
                 break
 
     def _on_nick(self, connection: ServerConnection, event: Event) -> None:
-        before = event.source.nick
-        after = event.target
-        for ch in self.channels.values():
-            if ch.has_user(before):
-                ch.change_nick(before, after)
-
-        for obj in self.handled_callbacks["nick"]:
-            if obj.on_nick(connection, event):
-                break
+        pub.sendMessage(
+                "nick-change", message_data={
+                    "connection_tag": self.connection_tag,
+                    "before":         event.source.nick,
+                    "after":          event.target
+                }
+        )
 
     def _on_part(self, connection: ServerConnection, event: Event) -> None:
-        nick = event.source.nick
-        channel = event.target
-
-        if nick == connection.get_nickname():
-            del self.channels[channel]
+        if event.source.nick == connection.get_nickname():
+            pub.sendMessage(
+                    "channel-left-self", message_data={
+                        "connection_tag": self.connection_tag,
+                        "channel":        event.target,
+                    }
+            )
         else:
-            self.channels[channel].remove_user(nick)
-
-        for obj in self.handled_callbacks["part"]:
-            if obj.on_part(connection, event):
-                break
+            pub.sendMessage(
+                    "channel-left-other", message_data={
+                        "connection_tag": self.connection_tag,
+                        "channel":        event.target,
+                        "username":       event.source.nick
+                    }
+            )
 
     def _on_privmsg(self, connection: ServerConnection, event: Event) -> None:
         event = self._cleanup_color(event)
-        for obj in self.handled_callbacks["privmsg"]:
-            if obj.on_privmsg(connection, event):
-                break
+
+        pub.sendMessage(
+            "pm-received", message_data={
+                    "connection_tag": self.connection_tag,
+                    "sender":         event.source,
+                    "message":        event.arguments[0]
+                }
+            )
 
     def _on_pubmsg(self, connection: ServerConnection, event: Event) -> None:
         event = self._cleanup_color(event)
-        for obj in self.handled_callbacks["pubmsg"]:
-            if obj.on_pubmsg(connection, event):
-                break
+
+        pub.sendMessage(
+            "message-received", message_data={
+                    "connection_tag": self.connection_tag,
+                    "sender":         event.source,
+                    "channel":        event.target,
+                    "message":        event.arguments[0]
+                }
+            )
 
     def _on_quit(self, connection: ServerConnection, event: Event) -> None:
-        nick = event.source.nick
-        for ch in self.channels.values():
-            if ch.has_user(nick):
-                ch.remove_user(nick)
-
-        for obj in self.handled_callbacks["quit"]:
-            if obj.on_quit(connection, event):
-                break
+        if event.source.nick == connection.get_nickname():
+            pub.sendMessage(
+                    "quit-self", message_data={
+                        "connection_tag": self.connection_tag,
+                    }
+            )
+        else:
+            pub.sendMessage(
+                    "quit-other", message_data={
+                        "connection_tag": self.connection_tag,
+                        "channel":        event.target,
+                        "username":       event.source.nick
+                    }
+            )
 
     def _on_umode(self, connection: ServerConnection, event: Event) -> None:
         for obj in self.handled_callbacks["umode"]:

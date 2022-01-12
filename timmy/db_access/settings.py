@@ -21,3 +21,20 @@ class Settings:
         self.db.close_connection(conn)
 
         return res[0]
+
+    def get_connections(self, encrypt_passphrase: str) -> list[dict]:
+        conn = self.db.get_connection()
+        connection_query = "SELECT `connection_tag`, `module`, AES_DECRYPT(`config`, UNHEX(SHA2(%(passphrase)s, 512" \
+                           "))) AS `config` FROM connections"
+
+        cur = conn.cursor()
+        cur.execute(connection_query, {'passphrase': encrypt_passphrase})
+
+        connections = []
+
+        for connection in cur:
+            connections.append(connection)
+
+        self.db.close_connection(conn)
+
+        return connections
