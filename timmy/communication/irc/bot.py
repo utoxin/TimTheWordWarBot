@@ -256,6 +256,12 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
                 break
 
     def _on_welcome(self, connection: ServerConnection, event: Event) -> None:
+        pub.sendMessage(
+                "server-welcome", message_data={
+                    "connection_tag": self.connection_tag
+                }
+        )
+
         for obj in self.handled_callbacks["welcome"]:
             if obj.on_welcome(connection, event):
                 break
