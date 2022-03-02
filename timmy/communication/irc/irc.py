@@ -1,9 +1,9 @@
 import threading
-import time
 from typing import Optional
 
 from pubsub import pub
 
+from timmy.communication.irc import thread_local
 from timmy.communication.irc.bot import Bot
 
 
@@ -18,7 +18,9 @@ class Irc(threading.Thread):
 
     server_password: Optional[str]
 
-    __bot: Bot
+    auth_config: dict
+
+    bot: Bot = Bot()
     __connection_state: str
 
     def __init__(self, settings: dict):
@@ -59,7 +61,15 @@ class Irc(threading.Thread):
         else:
             self.server_password = None
 
-        self.__bot = Bot()
+        if 'user_auth' in settings['config']['irc']:
+            self.auth_config = settings['config']['irc']['user_auth']
+        else:
+            self.auth_config = {
+                'type': '',
+                'data': '',
+                'post_identify': ''
+            }
+
         self.__connection_state = 'INIT'
 
     @staticmethod
@@ -88,21 +98,21 @@ class Irc(threading.Thread):
         # pub.subscribe(self._send_pm, "send-pm")
         # pub.subscribe(self._shutdown, "shutdown")
 
+        thread_local.connection_tag = self.connection_tag
+
         pub.subscribe(self._server_welcome, "server-welcome")
 
         self.__connection_state = "CONNECTING"
-        self.__bot.setup(self.connection_tag, self.nickname, self.realname, self.host, self.port, self.server_password)
-        self.__bot.start()
+        self.bot.setup(self.connection_tag, self.nickname, self.realname, self.host, self.port, self.server_password,
+                       self.auth_config)
+        self.bot.start()
 
     def _shutdown(self):
-        self.__bot.connection.quit()
+        self.bot.connection.quit()
         return
 
     def _join_channel(self, message_data: dict):
-        while not self.__bot.connection.is_connected():
-            time.sleep(0.25)
-
-        self.__bot.connection.join(message_data["channel"])
+        self.bot.connection.join(message_data["channel"])
         return
 
     def _send_message(self, message_data: dict):
@@ -117,16 +127,32 @@ class Irc(threading.Thread):
     def _server_welcome(self, message_data: dict) -> None:
         if message_data['connection_tag'] == self.connection_tag:
             if self.__connection_state == 'CONNECTING':
-                self.__connection_state = 'CONNECTED'
                 pub.unsubscribe(self._server_welcome, "server-welcome")
 
-                pub.subscribe(self._authenticated, "authenticated")
+                if self.server_password is not None:
+                    self.__connection_state = 'JOINING'
+                    pub.subscribe(self._join_channel, "command-join-channel")
+                    pub.sendMessage(
+                            "state-ready-for-joins", message_data = {
+                                "connection_tag": self.connection_tag
+                            }
+                    )
+
+                else:
+                    self.__connection_state = 'CONNECTED'
+
+                    pub.subscribe(self._authenticated, "authenticated")
 
     def _authenticated(self, message_data: dict) -> None:
         if message_data['connection_tag'] == self.connection_tag:
             if self.__connection_state == 'CONNECTED':
-                self.__connection_state = 'AUTHED'
+                self.__connection_state = 'JOINING'
                 pub.unsubscribe(self._authenticated, "authenticated")
 
-                pub.subscribe
+                pub.subscribe(self._join_channel, "command-join-channel")
+                pub.sendMessage(
+                        "state-ready-for-joins", message_data = {
+                            "connection_tag": self.connection_tag
+                        }
+                )
         return

@@ -5,7 +5,7 @@ from typing import Optional
 
 import irc.client_aio
 import more_itertools
-from irc.bot import ExponentialBackoff, ServerSpec
+from irc.bot import Channel, ExponentialBackoff, ServerSpec
 from irc.client import Event, ServerConnection
 from irc.dict import IRCDict
 from pubsub import pub
@@ -42,7 +42,7 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
 
     def setup(
             self, connection_tag: uuid, nickname: str, realname: str, host: str, port: int,
-            server_password: Optional[str]
+            server_password: Optional[str], auth_config: dict
             ) -> None:
         self.connection_tag = connection_tag
 
@@ -57,6 +57,9 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
 
         self.servers = more_itertools.peekable(itertools.cycle(specs))
         self.recon = ExponentialBackoff()
+
+        from timmy.communication.irc import event_handlers
+        event_handlers.init_event_handlers(auth_config)
 
     def start(self) -> None:
         self._connect()
@@ -104,7 +107,13 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
             )
 
     def _on_join(self, connection: ServerConnection, event: Event) -> None:
+        ch = event.target
+        nick = event.source.nick
+
         if event.source.nick == connection.get_nickname():
+            if nick == connection.get_nickname():
+                self.channels[ch] = Channel()
+
             pub.sendMessage(
                     "channel-joined-self", message_data={
                         "connection_tag": self.connection_tag,
@@ -119,6 +128,8 @@ class Bot(irc.client_aio.AioSimpleIRCClient):
                         "username":       event.source.nick
                     }
             )
+
+        self.channels[ch].add_user(nick)
 
     def _on_kick(self, connection: ServerConnection, event: Event) -> None:
         if event.source.nick == connection.get_nickname():

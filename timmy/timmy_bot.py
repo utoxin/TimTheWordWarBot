@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 from yoyo import get_backend, read_migrations
 

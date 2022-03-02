@@ -1,4 +1,5 @@
 import threading
+import time
 
 from pubsub import pub
 
@@ -38,5 +39,9 @@ class Timmy:
         for tag, connection in self.connection_threads.items():
             connection.start()
 
-        pub.sendMessage('join-channel', message_data = {'channel': '#timmy-debug'})
+        pub.subscribe(self._ready_for_join, "state-ready-for-joins")
 
+        time.sleep(10)
+
+    def _ready_for_join(self, message_data: dict):
+        pub.sendMessage('command-join-channel', message_data = {'channel': '#timmy-debug'})
