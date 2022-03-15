@@ -93,9 +93,6 @@ class Irc(threading.Thread):
 
     def run(self):
         # pub.subscribe(self._join_channel, "join-channel")
-        # pub.subscribe(self._send_message, "send-message")
-        # pub.subscribe(self._send_action, "send-action")
-        # pub.subscribe(self._send_pm, "send-pm")
         # pub.subscribe(self._shutdown, "shutdown")
 
         thread_local.connection_tag = self.connection_tag
@@ -155,4 +152,8 @@ class Irc(threading.Thread):
                             "connection_tag": self.connection_tag
                         }
                 )
+
+                pub.subscribe(self._send_message, "send-message")
+                pub.subscribe(self._send_action, "send-action")
+                pub.subscribe(self._send_pm, "send-pm")
         return
